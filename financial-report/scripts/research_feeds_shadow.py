@@ -55,10 +55,10 @@ EVENTS_URL = (
 )
 _ALLOWED_DOMAINS = ("vbma.org.vn", "hnx.vn", "raw.githubusercontent.com")
 _DATE = re.compile(
-    r"(?<!\\d)(20\\d{2}[-/]\\d{1,2}[-/]\\d{1,2}|"
-    r"\\d{1,2}[-/]\\d{1,2}[-/]20\\d{2})(?!\\d)"
+    r"(?<!\d)(20\d{2}[-/]\d{1,2}[-/]\d{1,2}|"
+    r"\d{1,2}[-/]\d{1,2}[-/]20\d{2})(?!\d)"
 )
-_MONTHLY = re.compile(r"phái sinh tháng\\s*(\\d{1,2})\\s*/\\s*(20\\d{2})", re.I)
+_MONTHLY = re.compile(r"phai sinh thang\s*(\d{1,2})\s*/\s*(20\d{2})", re.I)
 
 
 def now_iso():
@@ -93,7 +93,7 @@ def fetch_bytes(url, provider, timeout=9, limit=MAX_BYTES):
 
 
 def _clean(value):
-    return " ".join(str(value or "").replace("\\ufeff", "").replace("\\xa0", " ").split()).strip()
+    return " ".join(str(value or "").replace("\ufeff", "").replace("\xa0", " ").split()).strip()
 
 
 def _norm(value):
@@ -108,9 +108,9 @@ def _decode_candidates(raw):
             text = raw.decode(encoding, errors="strict")
         except (UnicodeError, LookupError):
             continue
-        if not text or "\\x00" in text[:1000]:
+        if not text or "\x00" in text[:1000]:
             continue
-        if sum(ord(c) < 32 and c not in "\\t\\r\\n" for c in text[:1000]) > 2:
+        if sum(ord(c) < 32 and c not in "\t\r\n" for c in text[:1000]) > 2:
             continue
         yield encoding, text
 
@@ -124,8 +124,8 @@ def parse_vbma_csv(raw):
         if text.lstrip().startswith(("<html", "{", "[")):
             continue
         if text.startswith("sep="):
-            text = "\\n".join(text.splitlines()[1:])
-        for separator in (",", ";", "\\t", "|"):
+            text = "\n".join(text.splitlines()[1:])
+        for separator in (",", ";", "\t", "|"):
             try:
                 grid = list(csv.reader(io.StringIO(text), delimiter=separator, strict=True))
             except (csv.Error, UnicodeError):
@@ -162,7 +162,7 @@ def parse_vbma_csv(raw):
         for item in grid[1:501]
         if len(item) == len(headers)
     ]
-    if not rows or not any(re.search(r"\\d", str(v or "")) for row in rows for v in row.values()):
+    if not rows or not any(re.search(r"\d", str(v or "")) for row in rows for v in row.values()):
         raise ValueError("No numeric-looking observations")
     stamps = [
         _DATE.search(str(value)).group(1)
@@ -235,7 +235,7 @@ def monthly_hnx_link(html_blob, base=HNX_LISTING):
 
 def _int_vi(number):
     value = str(number).strip()
-    if not re.fullmatch(r"\\d{1,3}(?:\\.\\d{3})+|\\d+", value):
+    if not re.fullmatch(r"\d{1,3}(?:\.\d{3})+|\d+", value):
         raise ValueError("Not a formatted integer count")
     return int(value.replace(".", ""))
 
@@ -259,8 +259,8 @@ def parse_hnx_monthly(raw, url, expected_month=None):
     if vn100 < 0:
         raise ValueError("VN100 section absent; contract mix cannot be certified")
     first, second = norm[:vn100], norm[vn100:]
-    vn30_match = re.search(r"kh[oô]i luong hop dong mo.{0,110}?dat\\s+([\\d.]+)\\s+hop dong", first, re.S)
-    vn100_match = re.search(r"\\boi\\b.{0,130}?(?:la|dat)\\s+([\\d.]+)\\s+hop dong", second, re.S)
+    vn30_match = re.search(r"kh[oô]i luong hop dong mo.{0,110}?dat\s+([\d.]+)\s+hop dong", first, re.S)
+    vn100_match = re.search(r"\boi\b.{0,130}?(?:la|dat)\s+([\d.]+)\s+hop dong", second, re.S)
     if not vn30_match or not vn100_match:
         raise ValueError("Monthly OI figures not explicitly separable")
     vn30, vn100_oi = _int_vi(vn30_match.group(1)), _int_vi(vn100_match.group(1))
@@ -300,7 +300,7 @@ def review_pit_events(payload):
         valid = bool(
             timestamp and official and url.startswith("https://")
             and timestamp <= datetime.now(UTC)
-            and re.fullmatch(r"20\\d{2}-\\d{2}-\\d{2}", str(row.get("date")))
+            and re.fullmatch(r"20\d{2}-\d{2}-\d{2}", str(row.get("date")))
         )
         record = {
             "id": str(row.get("id") or "")[:100],
