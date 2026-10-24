@@ -37,7 +37,7 @@ test('Futures dashboard appears before monthly legacy statistics and in CDN buil
  assert.match(page,/<details class="money-derivative-history">/);
  assert.match(page,/src="derivatives-market.js"/);
  assert.match(build,/derivatives-market\.js/);
- assert.match(build,/front \/ 'derivatives-market\\.js'\)\.read_text\(\)/);
+ assert.ok(build.includes("(front / 'derivatives-market.js').read_text()"));
 });
 test('reads VN30F/VN100F price board independently of monthly OI',()=>{
  const {api,get}=harness();api.setData(f);
