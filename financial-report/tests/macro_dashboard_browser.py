@@ -151,7 +151,12 @@ def run():
                     };
                 """)
                 print(f"BROWSER_VISUAL_{width}", json.dumps(report, ensure_ascii=False), flush=True)
-                assert report["macroOpen"] and report["fourCharts"] == 4
+                assert not report["macroOpen"] and report["fourCharts"] == 4
+                driver.execute_script("document.getElementById('macro-chevron').click()")
+                assert driver.execute_script("return document.getElementById('macro-body').hidden") is False
+                driver.execute_script("document.getElementById('macro-chevron').click()")
+                assert driver.execute_script("return document.getElementById('macro-body').hidden") is True
+                driver.execute_script("document.getElementById('macro-chevron').click()")
                 assert report["worldCharts"] == 1 and report["singleYear"]
                 assert report["cardsInside"] and report["wide"] <= report["viewport"] + 3
                 assert report["onRateChart"]==1 and report["futuresCards"]==2 and report["onValue"] and report["swapNoFake"]
