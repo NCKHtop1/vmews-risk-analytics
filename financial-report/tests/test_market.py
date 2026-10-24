@@ -601,21 +601,24 @@ class MarketTests(unittest.TestCase):
         self.assertIn('Pages verifies artifact integrity only',pages)
         self.assertIn("technical-signals.json",pages)
 
-    def test_investment_ideas_v6_dashboard_is_symbol_dynamic(self):
+    def test_research_context_retained_without_duplicate_ideas_section(self):
         html=(ROOT/'frontend/index.html').read_text()
         insights=(ROOT/'frontend/insights.js').read_text()
-        css=(ROOT/'frontend/market.css').read_text()
-        for needle in ('id="investment-ideas"','id="idea-rating-distribution"','id="idea-target-zone"','id="idea-report-list"','id="idea-event-list"'):
-            self.assertIn(needle,html)
-        self.assertIn("Investment Ideas · '+(state.symbol||'—')",insights)
-        self.assertIn("read('event-status.json').catch(()=>null)",insights)
-        self.assertIn('eventSourceHealth',insights)
-        self.assertIn('idea-dashboard',css)
-        self.assertIn('idea-event-mark.cash_dividend',css)
-        self.assertIn('idea-report-item',css)
+        for needle in ('id="investment-ideas"', 'id="idea-rating-distribution"',
+                       'id="idea-target-zone"', 'id="idea-report-list"',
+                       'id="idea-event-list"', 'href="#investment-ideas"'):
+            self.assertNotIn(needle, html)
+        # Broker research and corporate events still power chart markers and the research agent.
+        self.assertIn("read('broker-research.json')", insights)
+        self.assertIn("read('corporate-events.json')", insights)
+        self.assertIn("read('event-status.json').catch(()=>null)", insights)
+        self.assertIn('eventSourceHealth', insights)
+        self.assertIn('markerItems()', insights)
+        self.assertIn('window.FinInsights={select,attachChart,context,open,reload:load}', insights)
         bundle=(ROOT/'index.html').read_text()
-        self.assertIn('id="investment-ideas"',bundle)
-        self.assertIn('eventSourceHealth',bundle)
+        self.assertNotIn('id="investment-ideas"', bundle)
+        self.assertNotIn('href="#investment-ideas"', bundle)
+        self.assertIn('eventSourceHealth', bundle)
 
     def test_hpg_seed_has_cash_stock_dividend_and_multi_broker_research(self):
         events=json.loads((ROOT/'data/corporate-events.json').read_text())

@@ -135,3 +135,19 @@ test('Fixed income yield tenors display signed and accessible chart, not absolut
  assert.match(get('money-vbma-curves').innerHTML,/data-tenor-point="1Y"/);
  assert.match(get('money-vbma-curves').innerHTML,/money-vbma-download/);
 });
+
+test('government bond 10Y minus 2Y spread uses only validated dated yield observations',()=>{
+ const {api,get}=makeEnv();
+ const base={...fixture,vbmaCurves:{gov_bond:{status:'verified',licenseStatus:'source_attributed',unit:'%/năm',
+  asOf:'2026-10-23',source:'https://vbma.org.vn/csv/markets/charts/vi/government_bond_yield.csv',
+  points:[{tenor:'2Y',value:3.5},{tenor:'10Y',value:4.1}]}}};
+ api.setData(base);
+ assert.match(get('money-vbma-curves').innerHTML,/Chênh lệch lợi suất 10Y – 2Y/);
+ assert.match(get('money-vbma-curves').innerHTML,/<strong>\+60<\/strong><span>điểm cơ bản<\/span>/);
+ const future=JSON.parse(JSON.stringify(base));future.vbmaCurves.gov_bond.asOf='2099-10-23';
+ api.setData(future);
+ assert.doesNotMatch(get('money-vbma-curves').innerHTML,/Chênh lệch lợi suất 10Y – 2Y/);
+ const no2y=JSON.parse(JSON.stringify(base));no2y.vbmaCurves.gov_bond.points=[{tenor:'5Y',value:4.2},{tenor:'10Y',value:4.5}];
+ api.setData(no2y);
+ assert.doesNotMatch(get('money-vbma-curves').innerHTML,/Chênh lệch lợi suất 10Y – 2Y/);
+});

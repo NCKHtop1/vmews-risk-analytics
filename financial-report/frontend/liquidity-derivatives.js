@@ -67,6 +67,15 @@ function monthBar(a,b,{unit='',color='#416eca',labelA='Tháng trước',labelB='
 function cardHeader(label,value,unit,period){
  return'<div class="macro-viz-head"><div><span class="macro-viz-kicker">'+esc(period)+'</span><h4>'+esc(label)+'</h4></div><div class="money-main-num"><strong>'+esc(value)+'</strong><small>'+esc(unit)+'</small></div></div>';
 }
+function verifiedBondSpread(curve){
+ if(!curve||curve.status!=='verified'||!['approved','source_attributed'].includes(curve.licenseStatus)||curve.unit!=='%/năm'||!/^(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(curve.asOf||''))return null;
+ const dayStart=new Date(curve.asOf+'T00:00:00+07:00').getTime();
+ if(!Number.isFinite(dayStart)||dayStart>Date.now())return null;
+ const rates=new Map((curve.points||[]).filter(p=>p&&typeof p.value==='number'&&Number.isFinite(p.value)&&p.value>=0&&p.value<=25).map(p=>[String(p.tenor).toUpperCase(),p.value]));
+ const a=rates.get('2Y'),b=rates.get('10Y');
+ if(!Number.isFinite(a)||!Number.isFinite(b))return null;
+ return {difference:b-a,asOf:curve.asOf};
+}
 function renderON(p){
  const host=$('money-on');if(!host)return;
  const on=p.interbank||{},points=(Array.isArray(on.observations)?on.observations:[]).filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)&&typeof x.value==='number'&&Number.isFinite(x.value)&&x.value>=0&&x.value<50).sort((a,b)=>a.date.localeCompare(b.date));
@@ -119,7 +128,8 @@ function renderBondCurves(p){
  const host=$('money-vbma-curves');if(!host)return;
  const sources=[['fi_bond','Trái phiếu và chứng chỉ tiền gửi'],['gov_bond','Lợi suất trái phiếu Chính phủ'],['short_benchmark','Lãi suất tham chiếu ngắn hạn']];
  const data=p.vbmaCurves||p.curves||{};
- host.innerHTML=sources.map(([key,title])=>{
+ const spread=verifiedBondSpread(data.gov_bond);
+ host.innerHTML=(spread?'<article class="macro-viz-card money-spread-card"><div class="macro-viz-head"><div><span class="macro-viz-kicker">ĐỘ DỐC ĐƯỜNG CONG</span><h4>Chênh lệch lợi suất 10Y – 2Y</h4></div><span class="macro-viz-period">'+esc(dateVN(spread.asOf))+'</span></div><div class="macro-viz-value"><strong>'+esc((spread.difference>0?'+':'')+fmt(spread.difference*100,1))+'</strong><span>điểm cơ bản</span></div></article>':'')+sources.map(([key,title])=>{
   const s=data[key]||{},points=Array.isArray(s.points)?s.points.filter(x=>x.tenor&&Number.isFinite(x.value)):[];
   const url=safeURL(s.source||('https://vbma.org.vn/csv/markets/charts/vi/'+({fi_bond:'fi_bond_yield_curve',gov_bond:'government_bond_yield',short_benchmark:'short_term_benchmark_rate'}[key])+'.csv'),'vbma.org.vn');
   const link=vbmaSourceIcon(url,'Tải dữ liệu nguồn');
@@ -159,6 +169,6 @@ if(onHost&&typeof ResizeObserver==='function'){
  let prior=0;
  new ResizeObserver(entries=>{const width=Math.round(entries[0]?.contentRect?.width||0);if(width&&Math.abs(width-prior)>12){prior=width;if(state.payload)renderON(state.payload);}}).observe(onHost);
 }
-window.FinLiquidityDerivatives={refresh:load,_test:{fmt,miniLine,tenorCurve,monthBar,dateVN,monthVN,safeURL},setData:payload=>{state.payload=payload;render();}};
+window.FinLiquidityDerivatives={refresh:load,_test:{fmt,miniLine,tenorCurve,monthBar,dateVN,monthVN,safeURL,verifiedBondSpread},setData:payload=>{state.payload=payload;render();}};
 load();
 })();
