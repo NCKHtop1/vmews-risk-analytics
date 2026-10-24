@@ -16,6 +16,7 @@ on:
       - 'financial-report/frontend/section-collapse.js'
       - 'financial-report/tests/macro_dashboard.test.cjs'
       - 'financial-report/tests/liquidity_derivatives.test.cjs'
+      - 'financial-report/tests/vi_ui_copy.test.cjs'
       - 'financial-report/tests/derivatives_market.test.cjs'
       - 'financial-report/scripts/refresh_derivative_quotes.py'
       - 'financial-report/scripts/test_refresh_derivative_quotes.py'
@@ -40,6 +41,7 @@ on:
       - 'financial-report/frontend/section-collapse.js'
       - 'financial-report/tests/macro_dashboard.test.cjs'
       - 'financial-report/tests/liquidity_derivatives.test.cjs'
+      - 'financial-report/tests/vi_ui_copy.test.cjs'
       - 'financial-report/tests/derivatives_market.test.cjs'
       - 'financial-report/scripts/refresh_derivative_quotes.py'
       - 'financial-report/scripts/test_refresh_derivative_quotes.py'
@@ -77,6 +79,7 @@ jobs:
         run: |
           node --test financial-report/tests/macro_dashboard.test.cjs
           node --test financial-report/tests/liquidity_derivatives.test.cjs
+          node --test financial-report/tests/vi_ui_copy.test.cjs
           node --test financial-report/tests/derivatives_market.test.cjs
           node --test financial-report/tests/workspace_tabs.test.cjs
           node --test financial-report/tests/ownership_intelligence.test.cjs

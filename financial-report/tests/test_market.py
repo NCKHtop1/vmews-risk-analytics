@@ -1937,7 +1937,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn("newsLiveFallback",market)
         self.assertIn("setMarketSourceTime",market)
         self.assertIn("setMarketSourceTime(value)",scanner)
-        self.assertIn("Scanner live chưa đồng bộ với giá mới nhất",scanner)
+        self.assertIn("Dữ liệu chưa đồng bộ.",scanner)
         self.assertIn("current:aligned?",scanner)
         self.assertIn("quoteBundleSourceTime",market)
 
@@ -2018,7 +2018,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('plan.slice(0,6)',js)
         self.assertIn("GEMINI_TRANSIENT_EXHAUSTED",js)
         self.assertIn("thinkingLevel:deep?'medium':'low'",js)
-        self.assertIn("khóa vẫn kết nối",js)
+        self.assertIn("Kết nối đang bận.",js)
         self.assertIn('data-ai-mode="normal" data-ai-prompt="Vì sao mã này tăng hoặc giảm trong phiên hôm nay?"',html)
 
     def test_company_news_is_strict_and_sector_news_cannot_pose_as_company_news(self):
@@ -2294,7 +2294,7 @@ class MarketTests(unittest.TestCase):
         guard=(root/'.github/workflows/market-realtime-guard.yml').read_text() if (root/'.github/workflows/market-realtime-guard.yml').exists() else pathlib.Path('.github/workflows/market-realtime-guard.yml').read_text()
         self.assertIn('data-market-view="scanner"',html)
         self.assertIn('id="technical-scanner-access-code"',html)
-        self.assertIn('MACD · RSI · Volume',html)
+        self.assertIn('MACD · RSI · Khối lượng',html)
         self.assertIn("'scanner'",market)
         self.assertIn('FinTechnicalScanner',market)
         self.assertIn("technical-signals.json",scanner)
@@ -2361,12 +2361,12 @@ class MarketTests(unittest.TestCase):
         self.assertIn("market/universe.json",pages)
         self.assertIn('id="market-universe-filter"',html)
         self.assertIn('id="technical-scanner-universe"',html)
-        self.assertIn('Core · Liquid · Discovery',html)
+        self.assertIn('Nhóm chính · Thanh khoản · Mở rộng',html)
         self.assertIn("get('universe.json')",market)
         self.assertIn('mergeUniverseCompanies',market)
         self.assertIn("tier!=='CORE'",market)
         self.assertIn("universeFilter:'all'",scanner)
-        self.assertIn("Discovery EOD",scanner)
+        self.assertIn("Nhóm mở rộng",scanner)
         self.assertIn("cadence==='EOD'",scanner)
 
     def test_market_has_real_price_peer_and_sector_comparison_tabs(self):
@@ -2387,7 +2387,7 @@ class MarketTests(unittest.TestCase):
         self.assertIn('setMarketView',market)
         self.assertIn('.market-view-tabs',css)
         self.assertIn('.market-compare-panel',css)
-        self.assertIn('đây không phải dữ liệu dòng tiền mua/bán',html)
+        self.assertIn('id="market-compare-chart"',html)
 
     def test_pages_merges_research_seed_and_redeploys_after_research_refresh(self):
         pages=(ROOT.parent/'.github/workflows/pages.yml').read_text() if (ROOT.parent/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()

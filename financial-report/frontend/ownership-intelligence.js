@@ -23,21 +23,21 @@ function render(){
  const symbol=selected();state.symbol=symbol;
  if(!state.data){
   host.innerHTML='<section class="ownership-empty"><strong>'+esc(symbol)+' · Sở hữu người nội bộ</strong><p>'+
-   (state.error?'Nguồn hồ sơ giao dịch người nội bộ chưa sẵn sàng.':'Đang kiểm tra hồ sơ công bố chính thức.')+
-   '</p><p>Chưa có dữ liệu được xác minh thì FinQuery không tự suy ra tỷ lệ nắm giữ, giá vốn hoặc tín hiệu mua bán.</p></section>';
+   (state.error?'Chưa có dữ liệu.':'Đang tải…')+
+   '</p></section>';
   return;
  }
  const rows=state.data.events.filter(r=>verified(r)&&r.symbol===symbol).sort((a,b)=>stamp(b.disclosedAt)-stamp(a.disclosedAt)).slice(0,60);
  if(!rows.length){
-  host.innerHTML='<section class="ownership-empty"><strong>'+esc(symbol)+' · Giao dịch nội bộ</strong><p>Chưa có bản ghi đã xác minh từ công bố của sở giao dịch/doanh nghiệp.</p><p>Tỷ lệ nắm giữ, giao dịch dự kiến và giao dịch đã thực hiện sẽ hiển thị riêng khi có chứng từ nguồn.</p></section>';return;
+  host.innerHTML='<section class="ownership-empty"><strong>'+esc(symbol)+' · Giao dịch nội bộ</strong><p>Chưa có dữ liệu.</p></section>';return;
  }
- const header='<div class="ownership-heading"><strong>'+esc(symbol)+' · '+rows.length+' công bố</strong><small>Ưu tiên mốc ngày công bố, không thay bằng ngày thực hiện</small></div>';
+ const header='<div class="ownership-heading"><strong>'+esc(symbol)+' · '+rows.length+' công bố</strong></div>';
  const trs=rows.map(r=>'<tr><td>'+esc(new Date(r.disclosedAt).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}))+'</td><td><strong>'+esc(r.person)+'</strong><small>'+esc(r.role)+'</small></td>'+
  '<td>'+esc(TYPES[r.type])+(r.executedAt?'<small>Ngày giao dịch '+esc(new Date(r.executedAt).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}))+'</small>':'')+'</td>'+
  '<td>'+fmt(r.quantity)+'</td><td>'+fmt(r.holdingsAfter)+'</td>'+
  '<td><a href="'+esc(safeSource(r.sourceUrl))+'" rel="noopener noreferrer" target="_blank" aria-label="Mở công bố nguồn '+esc(r.person)+'">Nguồn ↗</a></td></tr>').join('');
- host.innerHTML=header+'<div class="ownership-table-scroll"><table class="ownership-table"><thead><tr><th>Công bố</th><th>Người nội bộ</th><th>Loại giao dịch</th><th>Số lượng</th><th>Nắm giữ sau</th><th>Chứng từ</th></tr></thead><tbody>'+trs+'</tbody></table></div>'+
- '<p class="ownership-disclaimer">Giá trị sở hữu hiện tại ≠ lãi/lỗ đầu tư; thiếu giá vốn thì không tính lợi nhuận. Không phát tín hiệu Alpha từ sự kiện chưa kiểm định.</p>';
+ host.innerHTML=header+'<div class="ownership-table-scroll"><table class="ownership-table"><thead><tr><th>Công bố</th><th>Người nội bộ</th><th>Loại giao dịch</th><th>Số lượng</th><th>Nắm giữ sau</th><th>Nguồn</th></tr></thead><tbody>'+trs+'</tbody></table></div>'+
+ '';
 }
 async function load(){
  try{

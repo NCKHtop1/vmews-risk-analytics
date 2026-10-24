@@ -13,6 +13,7 @@ on:
       - 'financial-report/tests/workspace_tabs.test.cjs'
       - 'financial-report/tests/ownership_intelligence.test.cjs'
       - 'financial-report/tests/alpha_radar.test.cjs'
+      - 'financial-report/tests/vi_ui_copy.test.cjs'
       - '.github/workflows/finquery-market-ux-release-gate.yml'
   push:
     branches: [main]
@@ -49,6 +50,7 @@ jobs:
           node --check financial-report/frontend/derivatives-market.js
           node --check financial-report/frontend/ownership-intelligence.js
           node --check financial-report/frontend/alpha-radar.js
+          for file in financial-report/frontend/*.js; do node --check "$file"; done
           python -m py_compile financial-report/scripts/vbma_curve_reader.py
           python -m py_compile financial-report/scripts/scan_private_alpha.py
       - name: Quant contracts, ownership and UI regression
@@ -56,6 +58,7 @@ jobs:
           node --test financial-report/tests/workspace_tabs.test.cjs
           node --test financial-report/tests/ownership_intelligence.test.cjs
           node --test financial-report/tests/alpha_radar.test.cjs
+          node --test financial-report/tests/vi_ui_copy.test.cjs
           node --test financial-report/tests/derivatives_market.test.cjs
           node --test financial-report/tests/liquidity_derivatives.test.cjs
           python -m unittest discover -s financial-report/scripts -p test_vbma_curve_reader.py -v

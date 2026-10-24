@@ -73,7 +73,7 @@ test('HNX VN30 and VN100 derivatives keep OI and volume with monthly labels',()=
 test('unverified swap is empty, never fabricated; verified points show a curve',()=>{
  const {api,get}=makeEnv();
  api.setData(fixture);
- assert.match(get('money-swap').innerHTML,/Chưa có chuỗi FX Swap hợp lệ/);
+ assert.match(get('money-swap').innerHTML,/Chưa có dữ liệu/);
  assert.doesNotMatch(get('money-swap').innerHTML,/money-swap-chart|money-swap-point/);
  const other=JSON.parse(JSON.stringify(fixture));
  other.vbmaSwap.status='verified';
@@ -90,7 +90,7 @@ test('unverified ON or missing observations cannot masquerade as valid chart',()
  const other=JSON.parse(JSON.stringify(fixture));
  other.interbank.status='unavailable';
  api.setData(other);
- assert.match(get('money-on').innerHTML,/Chưa lấy được dữ liệu ON/);
+ assert.match(get('money-on').innerHTML,/Chưa có dữ liệu/);
  assert.doesNotMatch(get('money-on').innerHTML,/<svg/);
 });
 test('URL sanitation and SVG injection gates',()=>{
@@ -116,11 +116,11 @@ test('ON timeline adapts date labels and VBMA references use compact export icon
  api.setData(swap);
  const html=get('money-swap').innerHTML;
  assert.match(html,/money-vbma-download/);
- assert.match(html,/aria-label="Tải tệp dữ liệu/);
+ assert.match(html,/aria-label="Tải dữ liệu nguồn/);
  assert.doesNotMatch(html,/>VBMA FX Swap ↗</);
 });
 
-test('VBMA yield tenors display signed and accessible chart, not absolute magnitude bars',()=>{
+test('Fixed income yield tenors display signed and accessible chart, not absolute magnitude bars',()=>{
  const {api,get}=makeEnv();
  const signed=[{tenor:'1W',value:-2.5},{tenor:'1M',value:1.2},{tenor:'3M',value:3.1}];
  const svg=api._test.tenorCurve(signed,{title:'FX Swap',unit:'%/năm',width:304});

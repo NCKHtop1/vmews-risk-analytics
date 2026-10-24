@@ -55,8 +55,8 @@ console.log(JSON.stringify({vic:m,annual:dash.model(annual,[2020,2025]),bank:das
         html=(ROOT/'frontend/index.html').read_text(encoding='utf-8')
         self.assertIn('<title>FinQuery · Giám sát Thị trường Chứng khoán Việt Nam</title>',html)
         self.assertIn('<h1>Giám sát thị trường chứng khoán Việt Nam</h1>',html)
-        self.assertIn('Core · Liquid · Discovery',html)
-        self.assertIn('Bảng giá HOSE · Core + Liquid',html)
+        self.assertIn('Nhóm chính · Thanh khoản · Mở rộng',html)
+        self.assertIn('Bảng giá cổ phiếu HOSE',html)
         # Báo cáo tài chính vẫn là một module Core bên trong nền tảng.
         self.assertIn('MBB <span>/ Báo cáo tài chính</span>',html)
 

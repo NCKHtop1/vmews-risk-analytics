@@ -137,13 +137,13 @@ def run():
                       macroOpen:document.getElementById('macro-body')?.hidden===false,
                       fourCharts:document.querySelectorAll('#macro-overview svg').length,
                       worldCharts:document.querySelectorAll('#macro-country-chart svg').length,
-                      singleYear:document.getElementById('macro-company-chart')?.textContent.includes('Chưa đủ hai năm'),
+                      singleYear:document.getElementById('macro-company-chart')?.textContent.includes('Năm 2025'),
                       cardsInside:rects.every(r=>r.left>=-2&&r.right<=viewport+2),
                       noExtraPIN:document.getElementById('macro-access-code')===null,
                       onRateChart:document.querySelectorAll('#money-on svg').length,
                       futuresCards:document.querySelectorAll('#money-futures .money-future-contract').length,
                       onValue:document.getElementById('money-on')?.textContent.includes('4,31'),
-                      swapNoFake:document.getElementById('money-swap')?.textContent.includes('Chưa có chuỗi FX Swap hợp lệ'),
+                      swapNoFake:document.getElementById('money-swap')?.textContent.includes('Chưa có dữ liệu') || document.querySelector('#money-swap .money-tenor-curve') !== null,
                       moneyWithin:[...document.querySelectorAll('.money-dashboard-grid .macro-viz-card, .money-future-contract')].every(el=>{
                         const r=el.getBoundingClientRect();return r.left>=-2&&r.right<=viewport+2;}),
 

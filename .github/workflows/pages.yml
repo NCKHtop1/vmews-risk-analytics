@@ -60,11 +60,13 @@ jobs:
           node --test financial-report/tests/liquidity_derivatives.test.cjs
           node --test financial-report/tests/ownership_intelligence.test.cjs
           node --test financial-report/tests/alpha_radar.test.cjs
+          node --test financial-report/tests/vi_ui_copy.test.cjs
           node --check financial-report/frontend/chart-engine.js
           node --check financial-report/frontend/workspace-tabs.js
           node --check financial-report/frontend/derivatives-market.js
           node --check financial-report/frontend/ownership-intelligence.js
           node --check financial-report/frontend/alpha-radar.js
+          for file in financial-report/frontend/*.js; do node --check "$file"; done
       - name: Verify Strategy Intelligence core and frontend syntax
         run: |
           node --check financial-report/frontend/strategy-intelligence-core.js
@@ -252,7 +254,7 @@ jobs:
           grep -q 'id="chart-oscillator-focus"' financial-report/index.html
           grep -q 'id="money-futures-live"' financial-report/index.html
           grep -q 'FINQUERY-STRATEGY-INTELLIGENCE-1.0' financial-report/index.html
-          grep -q '>AI Strategy Agent<' financial-report/index.html
+          grep -q '>Trợ lý chiến lược<' financial-report/index.html
           grep -q 'sai-top-strategies' financial-report/index.html
           ! grep -q 'src="strategy-intelligence-core.js"' financial-report/index.html
           ! grep -q 'src="strategy-intelligence.js"' financial-report/index.html
@@ -338,7 +340,7 @@ jobs:
           grep -q 'window.FinAlphaRadar=' /tmp/page.html
           grep -q 'id="market-futures-workspace"' /tmp/page.html
           grep -q 'id="macro-primary-tabs"' /tmp/page.html
-          grep -q 'Strategy Builder & Screener' /tmp/page.html
+          grep -q 'Tạo và lọc chiến lược' /tmp/page.html
           grep -q 'openChart:openMarketChart' /tmp/page.html
           grep -q 'ensureGlobalAILayer' /tmp/page.html
           grep -q 'sai-action-status' /tmp/page.html
@@ -358,7 +360,7 @@ jobs:
           missing=[x for x in required if x not in page]
           assert not missing,('deployed News bundle missing contract markers',missing)
           PY
-          grep -q '>Investment Ideas<' /tmp/page.html
+          grep -q '>Ý tưởng đầu tư<' /tmp/page.html
           grep -q '>Phân tích<' /tmp/page.html
           grep -q '>Vĩ mô<' /tmp/page.html
           grep -q '>Tổng quan<' /tmp/page.html

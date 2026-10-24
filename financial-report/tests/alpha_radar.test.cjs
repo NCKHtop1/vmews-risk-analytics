@@ -31,7 +31,7 @@ test('masked validated source renders statuses only',()=>{
  const html=get('alpha-radar-list').innerHTML;
  assert.match(html,/ALPHA_01/);
  assert.match(html,/MBB/);
- assert.match(html,/Đã xác nhận/);
+ assert.match(html,/Đạt điều kiện/);
  assert.doesNotMatch(html,/formula|rsi14|MACD\s*Signal/);
  assert.equal(api._test.valid({...d,privateRulesIncluded:true}),false);
 });

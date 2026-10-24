@@ -35,11 +35,11 @@ function series(ds,key,scale=1){
 }
 function httpsUrl(raw){try{const u=new URL(String(raw||''));return u.protocol==='https:'?u.href:'';}catch{return'';}}
 function sourceLink(raw,label){
- const url=httpsUrl(raw);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(label)+' ↗</a>':'<span>Nguồn chưa có đường dẫn xác minh</span>';
+ const url=httpsUrl(raw);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(label)+' ↗</a>' :'';
 }
 function plot(data,opts={}){
  const pts=data.slice(-(opts.limit||24));
- if(pts.length<2)return'<div class="macro-no-chart">Chưa đủ hai kỳ số liệu so sánh.</div>';
+ if(pts.length<2)return'<div class="macro-no-chart">Chưa có dữ liệu.</div>';
  let low=Math.min(...pts.map(p=>p.y)),high=Math.max(...pts.map(p=>p.y));
  if(typeof opts.threshold==='number'){low=Math.min(low,opts.threshold);high=Math.max(high,opts.threshold);}
  const range=Math.max(high-low,Math.abs(high)*.035,.1);low-=range*.1;high+=range*.14;
@@ -69,13 +69,13 @@ function renderMacro(data){
   // January would misrepresent the accounting reset as a sudden downturn.
   const drawn=c.id==='fdi'&&last?pts.filter(p=>p.label.endsWith(last.label.slice(-4))):pts;
   const head='<div class="macro-viz-head"><div><span class="macro-viz-kicker">KINH TẾ VIỆT NAM</span><h4>'+esc(c.title)+'</h4></div>'+(last?'<span class="macro-viz-period">'+esc(last.label)+'</span>':'')+'</div>';
-  const link=sourceLink(src?.url,'VBMA');
-  if(pts.length<2)return'<article class="macro-viz-card">'+head+'<div class="macro-no-chart">Chưa có chuỗi được xác minh để vẽ biểu đồ.</div><div class="macro-viz-source">'+link+'<span>Trạng thái: '+esc(src?.qualityStatus||src?.status||'không rõ')+'</span></div></article>';
+  const link=sourceLink(src?.url,'Nguồn');
+  if(pts.length<2)return'<article class="macro-viz-card">'+head+'<div class="macro-no-chart">Chưa có dữ liệu.</div><div class="macro-viz-source">'+link+'</div></article>';
   let context='';
   if(c.id==='pmi')context=last.y>=50?'Trên mốc 50 · sản xuất đang mở rộng':'Dưới mốc 50 · sản xuất đang thu hẹp';
-  else if(c.id==='fdi')context='Lũy kế trong năm · không diễn giải thành tăng trưởng tháng';
+  else if(c.id==='fdi')context='';
   else context='So với '+esc(earlier.label)+': '+(last.y>=earlier.y?'+':'')+esc(fmt(last.y-earlier.y))+' '+esc(c.unit);
-  return'<article class="macro-viz-card">'+head+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'<span>'+esc(c.info)+' · kỳ '+esc(last.label)+'</span></div></article>';
+  return'<article class="macro-viz-card">'+head+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'</div></article>';
  }).join('');
  const checkDate=new Date(data?.checkedAt);
  const freshness=$('macro-data-freshness');
@@ -87,9 +87,9 @@ function renderCountry(data){
  if(!body||!select||!foot)return;
  const choices=WORLD.filter(m=>series(ds,m.id).length>=2);
  if(!choices.length||!['ok','cached','retained'].includes(ds?.status)||ds?.qualityStatus==='warning'){
-  select.innerHTML='<option>Chưa có chuỗi đủ điều kiện</option>';select.disabled=true;
-  body.innerHTML='<div class="macro-no-chart">Không có chuỗi ESG quốc gia đã kiểm tra để vẽ.</div>';
-  foot.textContent='Nguồn World Bank ESG hiện chưa sẵn sàng.';return;
+  select.innerHTML='<option>Chưa có dữ liệu</option>';select.disabled=true;
+  body.innerHTML='<div class="macro-no-chart">Chưa có dữ liệu.</div>';
+  foot.textContent='';return;
  }
  select.disabled=false;
  const selected=select.value;
@@ -99,9 +99,9 @@ function renderCountry(data){
  select.value=countryId;
  const metric=choices.find(m=>m.id===countryId);
  const pts=series(ds,metric.id),latest=pts.at(-1);
- body.innerHTML='<div class="macro-viz-value"><strong>'+esc(fmt(latest.y))+'</strong><span>'+esc(metric.unit)+'</span></div><p class="macro-viz-comment">Kỳ công bố gần nhất: '+esc(latest.label)+' · các kỳ không có số liệu được để trống</p><div class="macro-viz-plot">'+plot(pts,{title:metric.title,unit:metric.unit,color:'#158c83',limit:24})+'</div>';
+ body.innerHTML='<div class="macro-viz-value"><strong>'+esc(fmt(latest.y))+'</strong><span>'+esc(metric.unit)+'</span></div><p class="macro-viz-comment">Năm '+esc(latest.label)+'</p><div class="macro-viz-plot">'+plot(pts,{title:metric.title,unit:metric.unit,color:'#158c83',limit:24})+'</div>';
  const source=(data.sources||[]).find(s=>s.id==='esg_world_bank');
- foot.innerHTML=sourceLink(source?.url,'World Bank ESG')+'<span>Kỳ quan sát '+esc(latest.label)+' · không đồng nghĩa cập nhật năm hiện tại</span>';
+ foot.innerHTML=sourceLink(source?.url,'Ngân hàng Thế giới');
 }
 function corporateRows(esg,symbol){
  const company=esg?.companies?.[symbol];
@@ -122,10 +122,10 @@ function renderCorporate(esg,symbol){
  const ids=[...groups.keys()];
  if(key!==companySymbol){companySymbol=key;corporateId='';}
  if(!ids.length){
-  select.disabled=true;select.innerHTML='<option value="">Chưa có KPI đủ điều kiện</option>';
-  body.innerHTML='<div class="macro-no-chart"><b>'+esc(key)+'</b> chưa có KPI ESG định lượng đã chuẩn hóa. Không tự tạo điểm tổng hợp hoặc suy đoán xu hướng.</div>';
+  select.disabled=true;select.innerHTML='<option value="">Chưa có dữ liệu</option>';
+  body.innerHTML='<div class="macro-no-chart"><b>'+esc(key)+'</b> · Chưa có dữ liệu ESG.</div>';
   const doc=(company?.documents||[]).find(d=>httpsUrl(d.url));
-  foot.innerHTML=doc?sourceLink(doc.url,'Công bố doanh nghiệp'):'<span>Chưa có công bố KPI đủ chuẩn liên kết.</span>';
+  foot.innerHTML=doc?sourceLink(doc.url,'Công bố doanh nghiệp'):'<span></span>';
   return;
  }
  select.disabled=false;
@@ -154,10 +154,10 @@ function renderCorporate(esg,symbol){
   visual+='<p class="macro-viz-comparison">So với '+esc(prev.label)+': '+(delta>0?'+':'')+esc(fmt(delta))+' '+esc(unitRaw==='%'?'điểm phần trăm':unit)+'</p>';
   visual+='<div class="macro-viz-plot">'+plot(points,{title:latestRaw.label||corporateId,unit,color:'#7561c0',limit:16})+'</div>';
  }else{
-  visual+='<div class="macro-single-year"><span class="macro-single-dot" aria-hidden="true"></span><strong>Mới có dữ liệu năm '+esc(last.label)+'</strong><small>Chưa đủ hai năm cùng chỉ tiêu, cùng đơn vị để kết luận xu hướng.</small></div>';
+  visual+='<div class="macro-single-year"><span class="macro-single-dot" aria-hidden="true"></span><strong>Năm '+esc(last.label)+'</strong></div>';
  }
  body.innerHTML=visual;
- foot.innerHTML=sourceLink(latestRaw.sourceUrl,'Công bố gốc '+key)+'<span>'+esc(points.length)+' năm so sánh được · không có điểm ESG tổng hợp tự tính</span>';
+ foot.innerHTML=sourceLink(latestRaw.sourceUrl,'Công bố gốc');
 }
 function renderEsg(data,esg,symbol){
  renderCountry(data);

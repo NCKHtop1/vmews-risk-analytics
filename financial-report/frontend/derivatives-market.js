@@ -39,7 +39,7 @@ function withAliases(list){
 }
 function statusFor(c,now=Date.now()){
  const source=validStamp(c.sourceTime);const age=source?(now-source)/60000:Infinity;
- if(marketOpen(now))return age<=10?'Trong phiên · giá có độ trễ':age<=45?'Chưa có khớp mới':'Dữ liệu chậm cập nhật';
+ if(marketOpen(now))return age<=10?'Trong phiên':age<=45?'Chưa có khớp mới':'Dữ liệu chậm cập nhật';
  return 'Giá ghi nhận phiên gần nhất';
 }
 function miniHistory(rows){
@@ -50,29 +50,29 @@ function miniHistory(rows){
  const x=i=>8+i/(data.length-1)*624;
  const path=data.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(p.price).toFixed(1)).join(' ');
  const dots=data.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.price).toFixed(1)+'" r="2.5" fill="#2966bb"><title>'+esc(datetimeVN(p.time)+' · '+fmt(p.price))+'</title></circle>').join('');
- return '<svg class="derivative-spark derivative-spark-wide" viewBox="0 0 640 80" role="img" aria-label="Diễn biến giá từ các quan sát thực, không phải nến OHLC"><path d="'+path+'" fill="none" stroke="#2966bb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'</svg>';
+ return '<svg class="derivative-spark derivative-spark-wide" viewBox="0 0 640 80" role="img" aria-label="Diễn biến giá hợp đồng"><path d="'+path+'" fill="none" stroke="#2966bb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'</svg>';
 }
 function diff(c){return Number.isFinite(c.change)?c.change:c.price-c.reference;}
 function move(c){const change=diff(c),pct=(c.price/c.reference-1)*100;
  return '<span class="derivative-move '+(change>0?'up':change<0?'down':'flat')+'">'+(change>0?'+':'')+fmt(change)+' · '+(pct>0?'+':'')+fmt(pct)+'%</span>';
 }
 function render(){
- if(!state.data){host.innerHTML='<div class="derivative-head"><h4>Bảng giá VN30F / VN100F</h4></div><p class="money-source-pending">'+(state.failed?'Nguồn giá phái sinh đang gián đoạn.':'Đang tải dữ liệu hợp đồng...')+'</p>';return;}
+ if(!state.data){host.innerHTML='<div class="derivative-head"><h4>Bảng giá VN30F / VN100F</h4></div><p class="money-source-pending">'+(state.failed?'Chưa tải được dữ liệu.':'Đang tải dữ liệu…')+'</p>';return;}
  const all=withAliases(contracts(state.data)),subset=all.filter(c=>state.filter==='all'||c.underlying===state.filter);
  if(!all.some(c=>c.symbol===state.selected))state.selected=all[0]?.symbol||null;
  const c=all.find(x=>x.symbol===state.selected);
  const sourceAge=validStamp(state.data.latestSourceTime);
  const fresh=sourceAge?Math.round((Date.now()-sourceAge)/60000):null;
  const stale=marketOpen()&&fresh!==null&&fresh>15;
- const badge=marketOpen()?(stale?'Giá chậm cập nhật':'Đang trong giờ giao dịch'):'Ngoài giờ giao dịch';
+ const badge=marketOpen()?(stale?'Giá chậm cập nhật':'Trong giờ giao dịch'):'Ngoài giờ giao dịch';
  const choice=[['all','Tất cả'],['VN30','VN30F'],['VN100','VN100F']].map(([id,label])=>'<button type="button" data-futures-underlying="'+id+'" class="'+(state.filter===id?'active':'')+'" aria-pressed="'+(state.filter===id)+'">'+label+'</button>').join('');
  const selector=all.map(x=>'<option value="'+esc(x.symbol)+'" '+(x.symbol===state.selected?'selected':'')+'>'+esc(x.alias)+' · '+esc(x.symbol)+' · '+esc(x.expiry)+'</option>').join('');
  const pricePanel=c?'<div class="derivative-focus-head"><div><strong>'+esc(c.alias)+' <span>'+esc(c.symbol)+'</span></strong><small>Đáo hạn '+esc(c.expiry)+' · '+esc(statusFor(c))+'</small></div><div class="derivative-focus-price"><strong>'+fmt(c.price)+'</strong><small>điểm</small>'+move(c)+'</div></div>'+
- '<div class="derivative-focus-metrics"><span>Tham chiếu <b>'+fmt(c.reference)+'</b></span><span>KLGD <b>'+fmt(c.volume,0)+'</b></span><span>OI <b>'+fmt(c.openInterest,0)+'</b></span><span>Cao / Thấp <b>'+fmt(c.high)+' / '+fmt(c.low)+'</b></span></div>'+
+ '<div class="derivative-focus-metrics"><span>Tham chiếu <b>'+fmt(c.reference)+'</b></span><span>Khối lượng <b>'+fmt(c.volume,0)+'</b></span><span>Vị thế mở <b>'+fmt(c.openInterest,0)+'</b></span><span>Cao / Thấp <b>'+fmt(c.high)+' / '+fmt(c.low)+'</b></span></div>'+
  '<div class="derivative-chart-wrap">'+miniHistory(c.series)+'</div>'+
- '<p class="derivative-series-note">Đường giá biểu diễn các quan sát có thời điểm nguồn đã xác minh. Chưa có lịch sử OHLCV đầy đủ nên chưa dựng nến 1 phút hoặc tín hiệu chỉ báo phái sinh.</p>'
- :'<p class="money-source-pending">Không tìm thấy hợp đồng còn hiệu lực với giá và thời điểm nguồn hợp lệ.</p>';
- const headers=['Mã / Kỳ hạn','Giá','Thay đổi','KLGD','OI','Dư mua 1','Dư bán 1','Nguồn'];
+ ''
+ :'<p class="money-source-pending">Chưa có dữ liệu.</p>';
+ const headers=['Mã / Kỳ hạn','Giá','Thay đổi','Khối lượng','Vị thế mở','Dư mua 1','Dư bán 1','Nguồn'];
  const rows=subset.map(x=>{
   const selected=x.symbol===state.selected;
   const cls='derivative-live-contract'+(selected?' active':'');
@@ -82,13 +82,13 @@ function render(){
   '<td>'+fmt(x.bid1)+' <small>('+fmt(x.bidVol1,0)+')</small></td><td>'+fmt(x.ask1)+' <small>('+fmt(x.askVol1,0)+')</small></td>'+
   '<td class="derivative-time">'+esc(datetimeVN(x.sourceTime))+'</td></tr>';
  }).join('');
- host.innerHTML='<div class="derivative-head"><div><span class="macro-viz-kicker">HNX · KBS</span><h4>Bảng giá hợp đồng tương lai</h4><p>'+esc(badge)+' · Giao dịch ghi nhận '+esc(datetimeVN(state.data.latestSourceTime))+'</p></div><button type="button" class="money-refresh" data-futures-refresh>Làm mới</button></div>'+
+ host.innerHTML='<div class="derivative-head"><div><span class="macro-viz-kicker">HNX · KBS</span><h4>Bảng giá hợp đồng tương lai</h4><p>'+esc(badge)+' · Giá lúc '+esc(datetimeVN(state.data.latestSourceTime))+'</p></div><button type="button" class="money-refresh" data-futures-refresh>Làm mới</button></div>'+
  '<div class="derivative-filter" role="group" aria-label="Lọc chỉ số hợp đồng">'+choice+'</div>'+
- '<div class="derivative-focus-select"><label for="futures-contract-select">Hợp đồng đang phân tích</label><select id="futures-contract-select" aria-label="Chọn hợp đồng tương lai">'+selector+'</select></div>'+
+ '<div class="derivative-focus-select"><label for="futures-contract-select">Chọn hợp đồng</label><select id="futures-contract-select" aria-label="Chọn hợp đồng tương lai">'+selector+'</select></div>'+
  '<section class="derivative-focus" aria-label="Chi tiết giá và biểu đồ hợp đồng">'+pricePanel+'</section>'+
  '<div class="derivative-board-scroll"><table class="derivative-board-table"><thead><tr>'+headers.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+
  (rows||'<tr><td colspan="8">Không có hợp đồng phù hợp bộ lọc.</td></tr>')+'</tbody></table></div>'+
- '<div class="macro-viz-source"><span>Nguồn KBS, pipeline đặt lịch khoảng 5 phút; không phải luồng tick thời gian thực. Dữ liệu không có khớp mới được ghi đúng thời điểm.</span><a href="https://kbbuddywts.kbsec.com.vn/" target="_blank" rel="noopener noreferrer">Nguồn giá ↗</a></div>';
+ '<div class="macro-viz-source"><span>Nguồn giá: KBS · cập nhật định kỳ.</span><a href="https://kbbuddywts.kbsec.com.vn/" target="_blank" rel="noopener noreferrer">Nguồn giá ↗</a></div>';
 }
 async function load(){
  if(state.loading)return;state.loading=true;state.lastAttempt=Date.now();

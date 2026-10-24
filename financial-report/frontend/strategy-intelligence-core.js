@@ -6,11 +6,11 @@
  'use strict';
  const VERSION='FINQUERY-STRATEGY-INTELLIGENCE-1.0';
  const STRATEGIES={
-  breakout_volume:{label:'Breakout + Volume',family:'Breakout',horizon:'5–20 phiên',risk:'Trung bình',regime:{UPTREND_STRONG:96,UPTREND_FRAGILE:82,SIDEWAYS:52,DOWNTREND:30,STRESS:20}},
-  ema_adx:{label:'EMA Trend + ADX',family:'Xu hướng',horizon:'10–30 phiên',risk:'Trung bình',regime:{UPTREND_STRONG:94,UPTREND_FRAGILE:86,SIDEWAYS:48,DOWNTREND:34,STRESS:20}},
+  breakout_volume:{label:'Phá vỡ kèm khối lượng',family:'Phá vỡ',horizon:'5–20 phiên',risk:'Trung bình',regime:{UPTREND_STRONG:96,UPTREND_FRAGILE:82,SIDEWAYS:52,DOWNTREND:30,STRESS:20}},
+  ema_adx:{label:'Xu hướng EMA và ADX',family:'Xu hướng',horizon:'10–30 phiên',risk:'Trung bình',regime:{UPTREND_STRONG:94,UPTREND_FRAGILE:86,SIDEWAYS:48,DOWNTREND:34,STRESS:20}},
   macd_rsi:{label:'MACD + RSI xác nhận',family:'Động lượng',horizon:'5–15 phiên',risk:'Trung bình',regime:{UPTREND_STRONG:88,UPTREND_FRAGILE:82,SIDEWAYS:66,DOWNTREND:42,STRESS:30}},
-  momentum_recovery:{label:'Momentum hồi phục',family:'Hồi phục',horizon:'3–12 phiên',risk:'Trung bình–cao',regime:{UPTREND_STRONG:78,UPTREND_FRAGILE:84,SIDEWAYS:74,DOWNTREND:56,STRESS:36}},
-  bollinger_rebound:{label:'Bollinger Rebound',family:'Mean reversion',horizon:'2–10 phiên',risk:'Trung bình–cao',regime:{UPTREND_STRONG:38,UPTREND_FRAGILE:48,SIDEWAYS:86,DOWNTREND:70,STRESS:45}}
+  momentum_recovery:{label:'Động lượng hồi phục',family:'Hồi phục',horizon:'3–12 phiên',risk:'Trung bình–cao',regime:{UPTREND_STRONG:78,UPTREND_FRAGILE:84,SIDEWAYS:74,DOWNTREND:56,STRESS:36}},
+  bollinger_rebound:{label:'Hồi phục Bollinger',family:'Hồi về trung bình',horizon:'2–10 phiên',risk:'Trung bình–cao',regime:{UPTREND_STRONG:38,UPTREND_FRAGILE:48,SIDEWAYS:86,DOWNTREND:70,STRESS:45}}
  };
  const DEFAULT_EXECUTION=Object.freeze({
   exchange:'HOSE',boardLot:100,priceBandPct:7,sellTaxPct:0.1,settlement:'T+2',
@@ -126,7 +126,7 @@
  function money(v){return Number.isFinite(v)?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:0}).format(v):'—';}
  function investmentView(symbol,opportunities,regime){
   const x=(opportunities||[]).find(o=>o.symbol===String(symbol||'').toUpperCase());
-  if(!x)return{symbol:String(symbol||'').toUpperCase(),stance:'Chưa có tín hiệu',score:null,positives:[],cautions:['Mã chưa khớp các chiến lược đang được xếp hạng ở snapshot hiện tại.'],invalidation:'Chưa có điều kiện vô hiệu để theo dõi.',primary:null};
+  if(!x)return{symbol:String(symbol||'').toUpperCase(),stance:'Chưa có tín hiệu',score:null,positives:[],cautions:['Mã chưa khớp các chiến lược đang được xếp hạng ở thời điểm hiện tại.'],invalidation:'Chưa có điều kiện vô hiệu để theo dõi.',primary:null};
   const c=x.row?.current||{},positives=[],cautions=[],primary=x.primary?.id;
   positives.push('Khớp '+x.primary.label+' với mức xác nhận '+x.primary.strength+'/100.');
   if(regime?.label)positives.push('Trạng thái thị trường: '+regime.label+'.');

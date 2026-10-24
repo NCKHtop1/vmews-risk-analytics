@@ -110,16 +110,16 @@ test('technical scanner rules remain unchanged and evidence is additive',()=>{
  assert.match(source,/'rsi_oversold': 28/);
  assert.match(source,/'volume_spike': 22/);
  const ui=fs.readFileSync(require('node:path').join(__dirname,'../frontend/technical-scanner.js'),'utf8');
- assert.match(ui,/Rule priority/);
- assert.match(ui,/EOD proxy T\+3/);
+ assert.match(ui,/Điểm ưu tiên/);
+ assert.match(ui,/Kiểm định T\+3/);
 });
 test('live technical UI does not mislabel evolving daily indicators as 15-minute bars',()=>{
  const html=fs.readFileSync(require('node:path').join(__dirname,'../frontend/index.html'),'utf8');
  const app=fs.readFileSync(require('node:path').join(__dirname,'../frontend/app.js'),'utf8');
  const scanner=fs.readFileSync(require('node:path').join(__dirname,'../frontend/technical-scanner.js'),'utf8');
  const source=fs.readFileSync(require('node:path').join(__dirname,'../scripts/refresh_market.py'),'utf8');
- assert.match(html,/Core \+ Liquid · Trong phiên/);
- assert.match(html,/Scanner cập nhật theo dữ liệu trong phiên/);
+ assert.match(html,/Nhóm chính và thanh khoản · Trong phiên/);
+ assert.match(html,/Nhập mã truy cập để xem tín hiệu/);
  assert.doesNotMatch(html,/Core \+ Liquid · 15P|snapshot live 15 phút|snapshot giá 15 phút/i);
  assert.doesNotMatch(app,/Cập nhật 15 phút\/lần|textContent='15P'|:'15P'/);
  assert.match(scanner,/Trong phiên/);
@@ -257,7 +257,7 @@ test('context help is compact, plain-language and Strategy Lab has usage guide',
  assert.match(index,/class="strategy-title-row"/);
  assert.doesNotMatch(app,/FinQuery không coi một chỉ báo riêng lẻ là đủ/);
  assert.match(app,/Xu hướng:<\/b> giá đang đi lên hay đi xuống/);
- assert.match(app,/Strategy Builder & Screener/);
+ assert.match(app,/Tạo và lọc chiến lược/);
  assert.match(app,/sửa rule hoặc tự tạo chiến lược/);
  assert.match(style,/width:16px;height:16px/);
  assert.match(marketCss,/technical-scanner-head \.term-info-button/);
@@ -269,8 +269,8 @@ test('full contextual-help audit covers site-specific terms without oversized in
  const app=fs.readFileSync(require('node:path').join(__dirname,'../frontend/app.js'),'utf8');
  const style=fs.readFileSync(require('node:path').join(__dirname,'../frontend/style.css'),'utf8');
  for(const key of ['risk-score','technical-signals','scanner-guide','scanner-bias','volume-ratio','strategy-builder','universe-tiers','market-driver','broker-consensus'])assert.match(index,new RegExp('data-info-key="'+key+'"'));
- assert.match(app,/Cách dùng Technical Scanner/);
- assert.match(app,/Core · Liquid · Discovery/);
+ assert.match(app,/Cách dùng bộ lọc kỹ thuật/);
+ assert.match(app,/Nhóm cổ phiếu/);
  assert.match(app,/Động lực \/ hệ số/);
  assert.match(app,/Lấy giá mục tiêu gần nhất của từng CTCK/);
  assert.match(style,/button\.term-info-button\{[^}]*width:16px!important/);
@@ -368,7 +368,7 @@ test('risk navigation badge and compact dashboard copy stay focused',()=>{
  assert.match(index,/Số cảnh báo cần chú ý/);
  assert.match(index,/Giám sát thị trường chứng khoán Việt Nam/);
  assert.match(index,/data-platform-view="analysis">Giám sát thị trường/);
- assert.match(index,/data-platform-view="strategy"[^>]*>[^<]*<span[^>]*><\/span>AI Strategy Agent|data-platform-view="strategy"[^>]*>AI Strategy Agent/);
+ assert.match(index,/data-platform-view="strategy"[^>]*>[^<]*<span[^>]*><\/span>Trợ lý chiến lược|data-platform-view="strategy"[^>]*>Trợ lý chiến lược/);
  assert.match(risk,/function updateNavBadge/);
  assert.match(risk,/filter\(x=>x\.alertActive===true\)/);
  assert.match(risk,/badge\.title=sectorCount\+' cảnh báo rủi ro ngành đang hoạt động'/);

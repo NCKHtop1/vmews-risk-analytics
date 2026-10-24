@@ -1088,8 +1088,8 @@ async function ask(question,preferredMode=null){
  }catch(error){
   waiting?.remove();if(error?.name==='AbortError'&&!deadlineExpired){addAnalysis({html:'<div class="analysis-empty">Đã dừng phân tích.</div>'});return;}
   const local=analyze(q),noKey=error?.code==='NO_GEMINI_KEY',transient=error?.code==='GEMINI_TRANSIENT_EXHAUSTED'||transientGemini(error?.status),detail=String(error?.message||'').slice(0,320);
-  local.html='<div class="analysis-empty">'+(deadlineExpired?'Đã quá '+Math.round(maxWaitMs/1000)+' giây chờ Gemini. FinQuery chuyển sang phân tích cục bộ và đã hủy yêu cầu AI bị chậm. ':noKey?'Gemini chưa kết nối. Muốn bật AI, làm 3 bước ở phía trên. ':transient?'Gemini đang quá tải tạm thời; Dolphin đã tự retry và đổi model nhưng chưa nhận được phản hồi. FinQuery local đang tiếp tục. ':'Gemini lỗi: '+esc(detail||'không có phản hồi')+' · FinQuery local đang tiếp tục. ')+'</div>'+local.html;addAnalysis(local);
-  if(error?.message&&!noKey){if(!transient)state.geminiReady=false;state.lastGeminiError=detail;renderGeminiStatus(transient?'Gemini đang bận · khóa vẫn kết nối · câu hỏi tiếp theo sẽ tự retry/failover.':detail);}
+  local.html='<div class="analysis-empty">'+(noKey?'Chưa kết nối trợ lý.':'Không nhận được phản hồi. Đang sử dụng dữ liệu có sẵn.')+'</div>'+local.html;addAnalysis(local);
+  if(error?.message&&!noKey){if(!transient)state.geminiReady=false;state.lastGeminiError=detail;renderGeminiStatus(transient?'Kết nối đang bận.':'Chưa kết nối được.');}
  }finally{if(deadlineId!==null)clearTimeout(deadlineId);state.busy=false;state.currentController=null;if(send){send.disabled=false;send.textContent='Phân tích';delete send.dataset.busy;}}
 }
 function sync(symbol){const next=symbol||'';if(state.symbol&&next&&next!==state.symbol)state.history=[];state.symbol=next;const title=$('research-ai-title'),fab=$('ai-fab');if(title)title.textContent=`Phân tích chuyên sâu · ${state.symbol||'VN100'}`;if(fab)fab.dataset.symbol=state.symbol||'VN100';}
