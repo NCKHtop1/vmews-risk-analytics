@@ -1,0 +1,89 @@
+name: FinQuery futures real-browser QA
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finquery-futures-browser-qa.yml'
+      - 'financial-report/frontend/derivatives-market.js'
+      - 'financial-report/frontend/index.html'
+      - 'financial-report/scripts/build_cdn.py'
+  workflow_run:
+    workflows: ['Deploy VMEWS Pages']
+    branches: [main]
+    types: [completed]
+permissions:
+  contents: read
+concurrency:
+  group: finquery-futures-browser
+  cancel-in-progress: true
+jobs:
+  browser:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Install browser test dependency
+        run: pip install --disable-pip-version-check -q selenium==4.36.0
+      - name: Verify HNX live futures contract prices render from published data
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from selenium import webdriver
+          from selenium.webdriver.chrome.options import Options
+          from selenium.webdriver.support.ui import WebDriverWait
+          from selenium.common.exceptions import TimeoutException
+          url='https://nckhtop1.github.io/vmews-risk-analytics/financial-report/'
+          opts=Options()
+          for option in ('--headless=new','--no-sandbox','--disable-dev-shm-usage','--window-size=390,844'):
+              opts.add_argument(option)
+          opts.set_capability('goog:loggingPrefs',{'browser':'ALL'})
+          driver=webdriver.Chrome(options=opts)
+          try:
+              driver.get(url)
+              driver.execute_script("sessionStorage.setItem('finquery-site-access','1');sessionStorage.setItem('finquery-technical-access','1');")
+              driver.refresh()
+              WebDriverWait(driver,25).until(lambda d:d.execute_script("return Boolean(window.FinDerivativeQuotes && document.getElementById('money-futures-live'))"))
+              wait=WebDriverWait(driver,15)
+              try:
+                  wait.until(lambda d:d.execute_script("""
+                      const cards=[...document.querySelectorAll('#money-futures-live .derivative-live-contract')];
+                      const names=cards.map(c=>c.querySelector('.derivative-contract-title strong')?.textContent||'');
+                      return cards.length>=2 && names.some(s=>s.startsWith('VN30F')) && names.some(s=>s.startsWith('VN100F'));
+                  """))
+              except TimeoutException:
+                  pass
+              state=driver.execute_script("""
+                  const host=document.getElementById('money-futures-live');
+                  const script=[...document.scripts].some(s=>s.textContent.includes('FinDerivativeQuotes'));
+                  return {href:location.href,host:!!host,
+                          scriptInstalled:script,jsInstalled:!!window.FinDerivativeQuotes,
+                          count:host?.querySelectorAll('.derivative-live-contract').length||0,
+                          text:host?.innerText?.slice(0,1400)||'',
+                          readyState:document.readyState,
+                          resources:performance.getEntriesByType('resource').filter(x=>x.name.includes('derivatives-live')).map(x=>({name:x.name,duration:x.duration,transferSize:x.transferSize})),
+                          width:document.documentElement.scrollWidth,viewport:innerWidth};
+              """)
+              print('FINQUERY_FUTURES_BROWSER_STATE',json.dumps(state,ensure_ascii=False),flush=True)
+              probe=driver.execute_async_script("""
+                  const done=arguments[arguments.length-1];
+                  const url='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/derivatives-live.json';
+                  fetch(url+'?qa='+Date.now(),{cache:'no-store'})
+                    .then(async r=>{const s=await r.text();done({status:r.status,bytes:s.length,head:s.slice(0,130),cors:r.type})})
+                    .catch(e=>done({error:String(e)}));
+              """)
+              print('FINQUERY_FUTURES_BROWSER_FETCH',json.dumps(probe,ensure_ascii=False),flush=True)
+              try: print('FINQUERY_FUTURES_BROWSER_CONSOLE',json.dumps(driver.get_log('browser')[-18:],ensure_ascii=False),flush=True)
+              except Exception: pass
+              assert state['jsInstalled'] and state['host'], 'Missing deployed futures JS or HTML board'
+              assert state['count']>=2 and 'VN30F' in state['text'] and 'VN100F' in state['text'], 'Real futures contracts not rendered from published source'
+              assert state['width']<=state['viewport']+3, 'Mobile horizontal overflow'
+              assert probe.get('status')==200, 'Futures JSON unavailable in browser'
+              print('FINQUERY_FUTURES_REAL_BROWSER_PASS',flush=True)
+          finally:
+              driver.quit()
+          PY
