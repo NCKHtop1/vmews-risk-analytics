@@ -38,7 +38,7 @@ test('real ON and VN30/VN100 charts are part of the primary FinQuery section',()
 });
 test('old source-card destination redirects to the main Macro & ESG charts',()=>{
  assert.match(hub,/http-equiv="refresh"/);
- assert.match(hub,/location\.replace\("\/financial-report\/index\.html#macro"\)/);
+ assert.match(hub,/content="0; url=\/financial-report\/index\.html#macro"/);
  assert.doesNotMatch(html,/>Kho dữ liệu<\/a>/);
 });
 test('removed all banned user-facing copy from the primary dashboard',()=>{
