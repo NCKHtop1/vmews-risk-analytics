@@ -1,4 +1,4 @@
-"""Isolated VBMA, corporate-event and SBV money-market research feed probes.
+"""Isolated, read-only FinQuery research feed probes.
 
 NEVER publishes quotes, model inputs, public JSON or generated recommendations.
 Only records source-linked observations in private CI artifacts until license,
@@ -14,8 +14,9 @@ import json
 import re
 import unicodedata
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import urljoin, urlsplit
 from urllib.request import Request, urlopen
 
 UTC = timezone.utc
@@ -47,15 +48,17 @@ VBMA = {
         "unit": "SOURCE_UNIT_NOT_VERIFIED",
     },
 }
+HNX_LISTING = "https://www.hnx.vn/vi-vn/phai-sinh.html"
 EVENTS_URL = (
     "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/"
     "financial-insights-data/data/corporate-events.json"
 )
-_ALLOWED_DOMAINS = ("vbma.org.vn", "raw.githubusercontent.com")
+_ALLOWED_DOMAINS = ("vbma.org.vn", "hnx.vn", "raw.githubusercontent.com")
 _DATE = re.compile(
     r"(?<!\d)(20\d{2}[-/]\d{1,2}[-/]\d{1,2}|"
     r"\d{1,2}[-/]\d{1,2}[-/]20\d{2})(?!\d)"
 )
+_MONTHLY = re.compile(r"phai sinh thang\s*(\d{1,2})\s*/\s*(20\d{2})", re.I)
 
 
 def now_iso():
@@ -69,9 +72,11 @@ def approved_url(url, provider=None):
     host = parts.hostname.lower()
     if provider == "vbma":
         return host in ("vbma.org.vn", "www.vbma.org.vn")
+    if provider == "hnx":
+        return host == "hnx.vn" or host.endswith(".hnx.vn")
     if provider == "events":
         return host == "raw.githubusercontent.com"
-    return host in _ALLOWED_DOMAINS
+    return host in _ALLOWED_DOMAINS or host.endswith(".hnx.vn")
 
 
 def fetch_bytes(url, provider, timeout=9, limit=MAX_BYTES):
@@ -178,6 +183,98 @@ def parse_vbma_csv(raw):
     }
 
 
+class PageParser(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts = []
+        self.links = []
+        self._href = None
+        self._title = []
+        self._blocked = 0
+
+    def handle_starttag(self, tag, attrs):
+        tag = tag.lower()
+        if tag in ("style", "script"):
+            self._blocked += 1
+        if tag == "a":
+            self._href = dict(attrs).get("href", "")
+            self._title = []
+
+    def handle_data(self, data):
+        if self._blocked or not data.strip():
+            return
+        self.parts.append(data.strip())
+        if self._href is not None:
+            self._title.append(data.strip())
+
+    def handle_endtag(self, tag):
+        tag = tag.lower()
+        if tag in ("script", "style") and self._blocked:
+            self._blocked -= 1
+        if tag == "a" and self._href is not None:
+            self.links.append((self._href, _clean(" ".join(self._title))))
+            self._href = None
+            self._title = []
+
+
+def monthly_hnx_link(html_blob, base=HNX_LISTING):
+    if not approved_url(base, "hnx"):
+        raise ValueError("Non-HNX listing")
+    parser = PageParser()
+    parser.feed(html_blob.decode("utf-8-sig", "replace"))
+    links = []
+    for href, label in parser.links:
+        match = _MONTHLY.search(_norm(label))
+        url = urljoin(base, href)
+        if match and approved_url(url, "hnx"):
+            month, year = int(match.group(1)), int(match.group(2))
+            if 1 <= month <= 12:
+                links.append((year * 12 + month, url, f"{year}-{month:02d}"))
+    return max(links, default=None)
+
+
+def _int_vi(number):
+    value = str(number).strip()
+    if not re.fullmatch(r"\d{1,3}(?:\.\d{3})+|\d+", value):
+        raise ValueError("Not a formatted integer count")
+    return int(value.replace(".", ""))
+
+
+def parse_hnx_monthly(raw, url, expected_month=None):
+    if not approved_url(url, "hnx"):
+        raise ValueError("Untrusted HNX report origin")
+    parser = PageParser()
+    parser.feed(raw.decode("utf-8-sig", "replace"))
+    text = _clean(" ".join(parser.parts))
+    norm = _norm(text)
+    m = _MONTHLY.search(norm)
+    if not m:
+        raise ValueError("Not an identifiable HNX monthly report")
+    month, year = int(m.group(1)), int(m.group(2))
+    period = f"{year}-{month:02d}"
+    if not (1 <= month <= 12) or (expected_month and period != expected_month):
+        raise ValueError("HNX publication/period mismatch")
+    # Only month-end aggregate open interest; NEVER daily or per-contract OI.
+    vn100 = norm.find("ve giao dich hop dong tuong lai chi so vn100")
+    if vn100 < 0:
+        raise ValueError("VN100 section absent; contract mix cannot be certified")
+    first, second = norm[:vn100], norm[vn100:]
+    vn30_match = re.search(r"kh[oô]i luong hop dong mo.{0,110}?dat\s+([\d.]+)\s+hop dong", first, re.S)
+    vn100_match = re.search(r"\boi\b.{0,130}?(?:la|dat)\s+([\d.]+)\s+hop dong", second, re.S)
+    if not vn30_match or not vn100_match:
+        raise ValueError("Monthly OI figures not explicitly separable")
+    vn30, vn100_oi = _int_vi(vn30_match.group(1)), _int_vi(vn100_match.group(1))
+    if vn30 > 20_000_000 or vn100_oi > 20_000_000:
+        raise ValueError("Implausible aggregate OI")
+    return {
+        "provider": "HNX", "url": url, "sourceMonth": period,
+        "frequency": "MONTHLY", "aggregation": "MONTH_END_OPEN_INTEREST",
+        "contracts": {"VN30_FUTURES": {"oi": vn30}, "VN100_FUTURES": {"oi": vn100_oi}},
+        "assetClass": "EQUITY_INDEX_FUTURES", "equityShareFeed": False,
+        "dailyContractDataAvailable": False, "modelEligible": False, "publicationEligible": False,
+    }
+
+
 def _aware_timestamp(value):
     try:
         parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
@@ -200,9 +297,16 @@ def review_pit_events(payload):
         url = str(source.get("url") or "")
         disclosed = (row.get("details") or {}).get("publishedAt") or row.get("publishedAt")
         timestamp = _aware_timestamp(disclosed)
+        # Only HOSE-listed equities are eligible for research. HNX is permitted
+        # exclusively as the official derivatives-market source above.
+        exchange = str(row.get("exchange") or source.get("exchange") or "").strip().upper()
+        if exchange in ("HNX", "UPCOM"):
+            equity_in_scope = False
+        else:
+            equity_in_scope = exchange == "HOSE" or ("hose" in publisher and exchange == "")
         official = any(key in publisher for key in ("hose", "vsdc"))
         valid = bool(
-            timestamp and official and url.startswith("https://")
+            equity_in_scope and timestamp and official and url.startswith("https://")
             and timestamp <= datetime.now(UTC)
             and re.fullmatch(r"20\d{2}-\d{2}-\d{2}", str(row.get("date")))
         )
@@ -213,6 +317,8 @@ def review_pit_events(payload):
             "firstPublishedAt": timestamp.isoformat() if timestamp else None,
             "sourceUrl": url[:500],
             "eventType": str(row.get("type") or "other")[:48],
+            "equityExchange": exchange or "UNVERIFIED",
+            "equityScope": "HOSE_ONLY",
             "pitVerified": valid,
             "modelEligible": False,
         }
@@ -242,6 +348,25 @@ def probe(fetch=fetch_bytes):
                 "reason": (type(exc).__name__ + ": " + str(exc))[:220],
                 "modelEligible": False, "publicationEligible": False,
             }
+    try:
+        listing = fetch(HNX_LISTING, "hnx")
+        found = monthly_hnx_link(listing)
+        if not found:
+            raise ValueError("No HNX monthly derivative report in official listing")
+        _, url, period = found
+        raw = fetch(url, "hnx")
+        hnx = parse_hnx_monthly(raw, url, period)
+        results["hnx_derivatives_monthly"] = {
+            "status": "needs_review", "checkedAt": stamp,
+            "sha256": hashlib.sha256(raw).hexdigest(), "observation": hnx,
+            "licenseStatus": "review_required",
+        }
+    except Exception as exc:
+        results["hnx_derivatives_monthly"] = {
+            "status": "unavailable", "checkedAt": stamp,
+            "sourceUrl": HNX_LISTING, "reason": (type(exc).__name__ + ": " + str(exc))[:220],
+            "modelEligible": False, "publicationEligible": False,
+        }
     try:
         raw = fetch(EVENTS_URL, "events")
         checked = review_pit_events(json.loads(raw))
@@ -299,6 +424,11 @@ def probe(fetch=fetch_bytes):
     return {
         "schemaVersion": 1, "checkedAt": stamp, "mode": "SHADOW_ONLY",
         "pipeline": "finquery_research_feeds",
+        "scope": {
+            "equities": {"allowedExchanges": ["HOSE"], "excludedExchanges": ["HNX", "UPCOM"]},
+            "derivatives": ["VN30_FUTURES", "VN100_FUTURES"],
+            "derivativesOfficialVenue": "HNX",
+        },
         "publicServingEnabled": False, "strategyInputsChanged": False,
         "forecastInputsChanged": False, "licenseApproved": False,
         "quality": "needs_review" if any(v["status"] == "needs_review" for v in results.values()) else "unavailable",
