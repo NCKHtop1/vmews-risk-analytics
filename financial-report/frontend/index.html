@@ -276,20 +276,29 @@
 </div>
 </div>
 </section>
-<section id="macro" class="macro-section is-collapsed" aria-label="Dữ liệu vĩ mô">
+<section id="macro" class="macro-section is-expanded" aria-label="Biểu đồ vĩ mô và ESG doanh nghiệp">
 <div class="macro-head">
-<button id="macro-toggle" class="collapse-head-toggle" type="button" aria-expanded="false" aria-controls="macro-body"><span class="research-ai-label">MACRO & ESG DATA</span><h2>Vĩ mô & ESG doanh nghiệp</h2></button>
-<div class="collapse-head-actions"><span id="macro-source-status"></span><button id="macro-chevron" class="section-chevron" type="button" aria-label="Mở Macro & ESG" aria-controls="macro-body" aria-expanded="false"><span class="section-chevron-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" focusable="false"><path d="M5.25 7.75 10 12.25l4.75-4.5"/></svg></span></button></div>
+<button id="macro-toggle" class="collapse-head-toggle" type="button" aria-expanded="true" aria-controls="macro-body"><span class="research-ai-label">MACRO &amp; ESG INTELLIGENCE</span><h2>Vĩ mô &amp; ESG doanh nghiệp</h2><p class="macro-head-note">Biểu đồ từ chuỗi số liệu công bố · dữ liệu rõ kỳ và nguồn</p></button>
+<div class="collapse-head-actions"><span id="macro-source-status" aria-live="polite">Đang kiểm tra dữ liệu</span><button id="macro-chevron" class="section-chevron is-open" type="button" aria-label="Thu gọn Macro &amp; ESG" aria-controls="macro-body" aria-expanded="true"><span class="section-chevron-icon" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" focusable="false"><path d="M5.25 7.75 10 12.25l4.75-4.5"/></svg></span></button></div>
 </div>
-<div id="macro-body" class="collapsible-section-body" hidden>
-<div id="macro-gate" class="macro-gate"><div><strong>Khu vực dữ liệu giới hạn</strong><p>Nhập mã truy cập để mở dữ liệu vĩ mô và ESG doanh nghiệp.</p></div><form id="macro-unlock-form"><input id="macro-access-code" type="password" inputmode="numeric" autocomplete="off" placeholder="Mã truy cập" aria-label="Mã truy cập dữ liệu vĩ mô"><button type="submit">Mở dữ liệu</button></form><p id="macro-gate-error" role="status"></p></div>
-<div id="macro-workspace" class="macro-workspace" hidden>
-<div class="macro-tabs" id="macro-tabs"></div>
-<div class="macro-toolbar"><label>Chỉ tiêu<select id="macro-metric"></select></label><button id="macro-refresh" type="button">Cập nhật ↻</button></div>
+<div id="macro-body" class="collapsible-section-body">
+<div id="macro-workspace" class="macro-workspace">
+<div class="macro-dashboard-head"><div><span class="macro-eyebrow">BỨC TRANH DỮ LIỆU</span><h3>Diễn biến kinh tế Việt Nam</h3><p>PMI, cung tiền, tín dụng và FDI giải ngân. Mỗi biểu đồ dùng đúng đơn vị, kỳ quan sát và nguồn; không coi số liệu tháng là realtime.</p></div><span id="macro-data-freshness" class="macro-data-freshness">Đang kiểm tra nguồn...</span></div>
+<div id="macro-overview" class="macro-overview-grid" aria-label="Biểu đồ vĩ mô Việt Nam" aria-live="polite"><p class="macro-pending">Đang tải chuỗi dữ liệu vĩ mô...</p></div>
+<div class="macro-dashboard-head macro-esg-dashboard-head"><div><span class="macro-eyebrow">CHỈ TIÊU ĐƯỢC CÔNG BỐ</span><h3>ESG quốc gia &amp; doanh nghiệp</h3><p>Số liệu ESG quốc gia từ World Bank; chỉ tiêu doanh nghiệp lấy theo mã đang chọn, không tự quy đổi thành điểm ESG tổng hợp.</p></div></div>
+<div class="macro-esg-dashboard-grid">
+<article class="macro-viz-card macro-esg-card" aria-labelledby="macro-country-heading"><div class="macro-viz-head"><div><span class="macro-viz-kicker">WORLD BANK · VIỆT NAM</span><h4 id="macro-country-heading">ESG quốc gia</h4></div><select id="macro-country-metric" aria-label="Chọn chỉ tiêu ESG quốc gia"></select></div><div id="macro-country-chart" aria-live="polite" class="macro-esg-visual">Đang tải dữ liệu World Bank...</div><div id="macro-country-source" class="macro-viz-source"></div></article>
+<article class="macro-viz-card macro-esg-card" aria-labelledby="macro-company-heading"><div class="macro-viz-head"><div><span id="macro-company-symbol" class="macro-viz-kicker">DOANH NGHIỆP ĐANG XEM</span><h4 id="macro-company-heading">ESG doanh nghiệp</h4></div><select id="macro-company-metric" aria-label="Chọn chỉ tiêu ESG doanh nghiệp"></select></div><div id="macro-company-chart" aria-live="polite" class="macro-esg-visual">Đang tải chỉ tiêu doanh nghiệp...</div><div id="macro-company-source" class="macro-viz-source"></div></article>
+</div>
+<p class="macro-method-note">Đường biểu diễn thể hiện đúng các kỳ có số liệu, không nội suy dữ liệu còn thiếu. Với chỉ một năm công bố, hệ thống hiển thị giá trị và ghi rõ chưa đủ dữ liệu để kết luận xu hướng. Các nguồn cảnh báo được giữ ngoài biểu đồ tổng quan.</p>
+<details id="macro-explore" class="macro-explore"><summary>Khám phá chỉ tiêu chi tiết, lịch sử và nguồn gốc <span aria-hidden="true">↗</span></summary>
+<div class="macro-explore-inner"><div class="macro-tabs" id="macro-tabs"></div>
+<div class="macro-toolbar"><label for="macro-metric">Chỉ tiêu<select id="macro-metric"></select></label><button id="macro-refresh" type="button">Cập nhật nguồn ↻</button></div>
 <div id="macro-kpis" class="macro-kpis"></div>
 <div id="macro-esg-assessments" class="macro-esg-assessments" hidden></div>
 <div class="macro-chart-card"><div class="macro-chart-head"><div><h3 id="macro-chart-title">Dữ liệu vĩ mô</h3><span id="macro-chart-subtitle"></span></div></div><div id="macro-chart"></div></div>
 <div class="macro-table-wrap"><table class="macro-table"><thead id="macro-table-head"></thead><tbody id="macro-table-body"></tbody></table></div>
+</div></details>
 </div>
 </div>
 </section>
