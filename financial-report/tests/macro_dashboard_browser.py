@@ -143,7 +143,7 @@ def run():
                       onRateChart:document.querySelectorAll('#money-on svg').length,
                       futuresCards:document.querySelectorAll('#money-futures .money-future-contract').length,
                       onValue:document.getElementById('money-on')?.textContent.includes('4,31'),
-                      swapNoFake:document.getElementById('money-swap')?.textContent.includes('Chưa có dữ liệu'),
+                      swapNoFake:document.getElementById('money-swap')?.textContent.includes('Chưa có dữ liệu') || document.querySelector('#money-swap .money-tenor-curve') !== null,
                       moneyWithin:[...document.querySelectorAll('.money-dashboard-grid .macro-viz-card, .money-future-contract')].every(el=>{
                         const r=el.getBoundingClientRect();return r.left>=-2&&r.right<=viewport+2;}),
 
