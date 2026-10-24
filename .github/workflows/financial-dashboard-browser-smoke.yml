@@ -286,11 +286,23 @@ jobs:
                   raise AssertionError(f'Strategy Agent deep-analysis action failed: {ai_action}')
               driver.execute_script("window.FinQueryAI.close();")
 
-              # A Liquid symbol outside the financial-report universe must still be
-              # routable through market/strategy analysis, without leaking stale BCTC.
+              # Choose a HOSE Liquid ticker which is PRESENT in today's market
+              # universe but ABSENT from VN100 BCTC. Hard-coded AAA was excluded
+              # from the current 111-quote universe and produced a false QA alarm.
+              market_only_symbol=driver.execute_script("""
+                const candidates=['DGC','DHC','HAH','PET','DCL','NAF','HHP','ORS','PVP','HVN','GEL'];
+                const market=new Set((window.FinancialMarket?.alertContext?.()?.companies||[])
+                  .map(x=>String(x.symbol||'').toUpperCase()));
+                const financial=new Set((window.FinancialReportContext?.companies?.()||[])
+                  .map(x=>String(x.symbol||'').toUpperCase()));
+                return candidates.find(s=>market.has(s)&&!financial.has(s))||null;
+              """)
+              if not market_only_symbol:
+                  raise AssertionError('No eligible HOSE market-only symbol in live market context')
               market_only=driver.execute_async_script("""
+                const ticker=String(arguments[0]||'');
                 const done=arguments[arguments.length-1];
-                window.FinResearchAgent.run('Phân tích chuyên sâu AAA theo kỹ thuật và rủi ro hiện tại.')
+                window.FinResearchAgent.run('Phân tích chuyên sâu '+ticker+' theo kỹ thuật và rủi ro hiện tại.')
                   .then(x=>done({
                     activeSymbol:x?.audit?.symbol?.activeSymbol||null,
                     marketSymbol:x?.context?.agent?.evidence?.market?.symbol||null,
@@ -298,9 +310,9 @@ jobs:
                     status:x?.context?.agent?.validation?.status||null
                   }))
                   .catch(e=>done({error:String(e),code:e?.code||null}));
-              """)
-              if market_only.get('error') or market_only.get('activeSymbol')!='AAA' or market_only.get('marketSymbol')!='AAA' or market_only.get('hasFinancial'):
-                  raise AssertionError(f'Market-only Strategy/Research routing failed: {market_only}')
+              """, market_only_symbol)
+              if market_only.get('error') or market_only.get('activeSymbol')!=market_only_symbol or market_only.get('marketSymbol')!=market_only_symbol or market_only.get('hasFinancial'):
+                  raise AssertionError(f'Market-only Strategy/Research routing failed for {market_only_symbol}: {market_only}')
 
               driver.execute_async_script("""
                 const done=arguments[arguments.length-1];
