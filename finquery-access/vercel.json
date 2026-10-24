@@ -1,0 +1,62 @@
+{
+  "version": 2,
+  "framework": null,
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30
+    }
+  },
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/financial-report/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "destination": "/login.html",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/healthz",
+      "destination": "/api/index?route=healthz"
+    },
+    {
+      "source": "/admin",
+      "destination": "/api/index?route=admin"
+    },
+    {
+      "source": "/api/auth/:path",
+      "destination": "/api/index?route=api/auth/:path"
+    },
+    {
+      "source": "/api/admin/:path",
+      "destination": "/api/index?route=api/admin/:path"
+    },
+    {
+      "source": "/financial-report/:path*",
+      "destination": "/api/index?route=financial-report/:path*"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/api/index?route=:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
+}
