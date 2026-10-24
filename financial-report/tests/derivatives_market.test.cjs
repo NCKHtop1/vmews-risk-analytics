@@ -48,7 +48,7 @@ test('reads VN30F/VN100F price board independently of monthly OI',()=>{
  assert.match(html,/1\.878,7/);
  assert.match(html,/34\.000/);
  assert.match(html,/35\.000/);
- assert.match(html,/Theo dõi trong phiên|Ngoài giờ giao dịch|Giá đang trễ/);
+ assert.match(html,/Trong giờ giao dịch|Ngoài giờ giao dịch|Giá chậm cập nhật/);
  assert.match(html,/KBS/);
  assert.match(html,/derivative-spark/);
  assert.doesNotMatch(html,/KLGD bình quân\/phiên/);
@@ -62,7 +62,7 @@ test('drops unverified, impossible, expired or unauthorized contract values',()=
  assert.doesNotMatch(html,/<img/);
  assert.doesNotMatch(html,/1\.842,5/);
  assert.doesNotMatch(html,/1\.878,7/);
- assert.match(html,/Chưa có báo giá hợp đồng hợp lệ/);
+ assert.match(html,/Không tìm thấy hợp đồng còn hiệu lực/);
 });
 test('timestamp freshness and weekend close labels are not falsely live',()=>{
  const {api}=harness();
@@ -82,4 +82,17 @@ test('data source schema check and XSS encoding',()=>{
  assert.equal(api._test.healthy(f),true);
  assert.equal(api._test.contracts(f).length,2);
  assert.doesNotMatch(api._test.miniHistory([{time:refTime,price:1},{time:refTime,price:2}]),/<script/);
+});
+
+test('futures are rendered as a compact terminal with valid rolling aliases',()=>{
+ const {api,get}=harness();api.setData(f);
+ const html=get('money-futures-live').innerHTML;
+ assert.match(page,/id="market-futures-workspace"/);
+ assert.ok(page.indexOf('id="money-futures-live"')<page.indexOf('id="macro-liquidity-overview"'),'futures in Market rather than Macro');
+ assert.match(html,/derivative-board-table/);
+ assert.match(html,/Hợp đồng đang phân tích/);
+ assert.match(html,/VN30F1M/);
+ assert.match(html,/VN100F1M/);
+ assert.equal(api._test.withAliases(api._test.contracts(f))[0].alias,'VN30F1M');
+ assert.doesNotMatch(html,/<canvas[^>]*OHLC/);
 });
