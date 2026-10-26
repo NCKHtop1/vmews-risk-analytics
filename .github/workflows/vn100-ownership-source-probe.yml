@@ -1,0 +1,38 @@
+name: VN100 ownership source probe
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/vn100-ownership-source-probe.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check source schema on three HOSE issuers
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,urllib.request,urllib.error,time
+          base='https://kbbuddywts.kbsec.com.vn/iis-server/investment/stockinfo'
+          for sym in ('MBB','FPT','HPG'):
+            for action in ('profile','news/internal-trading','event'):
+              url=f'{base}/{action}/{sym}?l=1'
+              if action!='profile':url+='&p=1&s=5'
+              if action=='event':url+='&eID=4'
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Accept':'application/json','Accept-Language':'vi-VN,vi;q=0.9','x-lang':'vi'})
+              try:
+                with urllib.request.urlopen(req,timeout=12) as r:
+                  body=r.read(200000)
+                  data=json.loads(body)
+                  sample=data[0] if isinstance(data,list) and data else data
+                  keys=list(sample)[:35] if isinstance(sample,dict) else []
+                  samplehint={k:str(sample.get(k,''))[:80] for k in keys if k in ('EventID','EventDate','PublishDate','RegisterBuyVolume','Title','StockCode','PN','NM','EventType','Leaders','Shareholders','Ownership','PublicDate')}
+                  counts={k:len(data.get(k) or []) for k in ('Leaders','Shareholders','Ownership') if isinstance(data,dict)}
+                  print('SOURCE_RESULT',sym,action,r.status,'len',len(data) if isinstance(data,list) else 'obj','keys',keys,'counts',counts,'sample',samplehint,flush=True)
+              except Exception as e:print('SOURCE_ERROR',sym,action,type(e).__name__,str(e)[:180],flush=True)
+              time.sleep(.4)
+          PY
