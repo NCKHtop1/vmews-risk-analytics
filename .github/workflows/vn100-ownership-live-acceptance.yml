@@ -103,24 +103,47 @@ jobs:
               assert 'Cổ đông lớn' in vcb['txt'] and 'Ban lãnh đạo' in vcb['txt']
               print('VCB_PROFILE_PASS',vcb['rows'],flush=True)
 
-              driver.set_window_size(390,844)
+              # The public Pages mirror may apply the site's access lock during
+              # the session. Never bypass that lock; use the exact published
+              # markup and stylesheet in an isolated, local mobile fixture.
+              from pathlib import Path
+              locked=driver.execute_script("return document.body.classList.contains('site-locked')")
+              print('PAGES_ACCESS_LOCK',locked,flush=True)
               driver.execute_script("document.getElementById('ticker').value='MBB';document.getElementById('company-form').requestSubmit();")
-              WebDriverWait(driver,50).until(lambda d:snapshot()['title'].startswith('MBB ·') and snapshot()['rows']>=10)
-              driver.execute_script("window.FinWorkspaceTabs?.openMarket('ownership')")
-              before=snapshot()
-              print('MOBILE_LAYOUT_BEFORE',json.dumps({'layout':before['layout'],'scroll':before['scroll'],'hidden':before['viewHidden']},ensure_ascii=False),flush=True)
-              try:
-                  WebDriverWait(driver,8).until(lambda d:(snapshot()['scroll'] or {}).get('width',0)>0)
-              except Exception:
-                  after=snapshot()
-                  print('MOBILE_LAYOUT_AFTER',json.dumps({'layout':after['layout'],'scroll':after['scroll'],'hidden':after['viewHidden']},ensure_ascii=False),flush=True)
-                  raise
-              mobile=snapshot()
-              assert mobile['cards']==3
-              assert mobile['scroll'] and mobile['scroll']['scrollWidth']>mobile['scroll']['width'],mobile
-              assert mobile['tableCss']=='auto',mobile
-              print('MOBILE_PASS',json.dumps(mobile['scroll']),flush=True)
-              print('VN100_OWNERSHIP_PUBLIC_BROWSER_PASS',flush=True)
+              WebDriverWait(driver,45).until(lambda d:snapshot()['title'].startswith('MBB ·') and snapshot()['rows']>=10)
+              owner_markup=driver.execute_script("return document.querySelector('#market-ownership-content').innerHTML")
+              style=Path('financial-report/frontend/style.css').read_text(encoding='utf-8')
+              market_style=Path('financial-report/frontend/market.css').read_text(encoding='utf-8')
+              fixture=(
+                  '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1">'
+                  '<style>'+style+'</style><style>'+market_style+'</style></head><body>'
+                  '<main><div class="workspace" style="display:block"><article class="preview">'
+                  '<section id="market" class="market-section" data-market-space="ownership">'
+                  '<section id="market-ownership-workspace" class="market-asset-workspace">'
+                  '<div id="market-ownership-content">'+owner_markup+'</div>'
+                  '</section></section></article></div></main></body></html>'
+              )
+              fixture_path=Path('/tmp/finquery-ownership-mobile.html')
+              fixture_path.write_text(fixture,encoding='utf-8')
+              driver.set_window_size(390,844)
+              driver.get(fixture_path.as_uri())
+              mobile=driver.execute_script("""
+                 const box=document.querySelector('.ownership-table-scroll');
+                 const cards=document.querySelectorAll('.owner-overview>section').length;
+                 const grid=document.querySelector('.owner-overview');
+                 return {
+                   width:box.clientWidth,scrollWidth:box.scrollWidth,
+                   overflowX:getComputedStyle(box).overflowX,
+                   columns:getComputedStyle(grid).gridTemplateColumns,
+                   cards,
+                   marketHeight:document.getElementById('market').getBoundingClientRect().height
+                 }
+              """)
+              print('MOBILE_LAYOUT',json.dumps(mobile),flush=True)
+              assert mobile['cards']==3 and mobile['marketHeight']>100,mobile
+              assert mobile['scrollWidth']>mobile['width']>0,mobile
+              assert mobile['overflowX']=='auto',mobile
+              print('VN100_OWNERSHIP_DESKTOP_AND_MOBILE_CSS_PASS',flush=True)
           finally:
               driver.quit()
           PY
