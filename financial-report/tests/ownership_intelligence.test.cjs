@@ -36,7 +36,7 @@ test('unverified or spoofed disclosures are rejected',()=>{
  assert.equal(api._test.safeSource('javascript:alert(1)'),"");
  api.setData({schemaVersion:1,status:'verified',events:[malicious]});
  assert.doesNotMatch(host.innerHTML,/<img/);
- assert.match(host.innerHTML,/Chưa có dữ liệu/);
+ assert.match(host.innerHTML,/Chưa có công bố được đối chiếu/);
 });
 
 test('primary issuer disclosure without reported quantity is shown without fabricated zeros',()=>{
