@@ -10,9 +10,10 @@ const now=new Date().toISOString();
 function harness(){
  const host={innerHTML:''};const ticker={value:'MBB',addEventListener(){}};
  const document={getElementById:id=>id==='market-ownership-content'?host:id==='ticker'?ticker:null,addEventListener(){}};
- const context={window:{},document,fetch:async()=>({ok:false}),AbortSignal,Date,Intl,URL,Math,Object,console};
+ const window={listeners:{},addEventListener(name,fn){this.listeners[name]=fn;}};
+ const context={window,document,fetch:async()=>({ok:false}),AbortSignal,Date,Intl,URL,Math,Object,console};
  vm.createContext(context);vm.runInContext(src,context,{timeout:3000});
- return {api:context.window.FinOwnership,host,ticker};
+ return {api:context.window.FinOwnership,host,ticker,window};
 }
 const row={symbol:'MBB',person:'Nguyễn A',role:'Thành viên HĐQT',type:'registered_buy',disclosedAt:now,
  quantity:10000,sourceUrl:'https://www.hsx.vn/Modules/Cms/Web/News/123',holdingsAfter:350000};
@@ -105,4 +106,23 @@ test('VN100 ownership profile, shareholders, leadership and price reaction rende
  assert.match(host.innerHTML,/Đã đăng ký/);
  assert.match(host.innerHTML,/Tăng · KL cao/);
  assert.doesNotMatch(host.innerHTML,/Đã mua/);
+});
+
+test('changing ticker through application event switches ownership view without reopening the tab',async()=>{
+ const {api,host,ticker,window}=harness();
+ const mk=(symbol,person)=>({
+  symbol,person,role:'Người nội bộ',type:'registered_buy',
+  disclosedAt:now,quantity:500,sourceUrl:'https://www.hsx.vn/Modules/Cms/Web/News/123'
+ });
+ api.setData({schemaVersion:2,checkedAt:now,symbols:{
+  MBB:{profile:null,events:[mk('MBB','Nguyễn A')],sourceStatus:{events:'ok'}},
+  FPT:{profile:null,events:[mk('FPT','Trương B')],sourceStatus:{events:'ok'}}
+ }});
+ assert.match(host.innerHTML,/Nguyễn A/);
+ window.listeners['finquery:symbol-change']({detail:{symbol:'FPT'}});
+ ticker.value='FPT';
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.match(host.innerHTML,/FPT · Sở hữu/);
+ assert.match(host.innerHTML,/Trương B/);
+ assert.doesNotMatch(host.innerHTML,/Nguyễn A/);
 });
