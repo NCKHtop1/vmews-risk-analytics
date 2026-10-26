@@ -29,7 +29,7 @@ async function loadVN100(){
   if(INDEPENDENT_CORE_PAGE)return null;
   if(!VN100_BUNDLE_PROMISE){
     VN100_BUNDLE_PROMISE=(async()=>{
-      const data=await fetchJsonBounded(`${VN100_BUNDLE_URL}?refresh=${Math.floor(Date.now()/60000)}`,Math.min(FETCH_TIMEOUT_MS,1800));
+      const data=await fetchJsonBounded(`${VN100_BUNDLE_URL}?refresh=${Math.floor(Date.now()/60000)}`,Math.min(FETCH_TIMEOUT_MS,8000));
       if(data?.status!=="PASS"||data?.gates?.status!=="PASS"||data?.universe?.available!==100||Object.keys(data?.dashboard?.symbols||{}).length!==100)return null;
       return data;
     })().catch(()=>null);
