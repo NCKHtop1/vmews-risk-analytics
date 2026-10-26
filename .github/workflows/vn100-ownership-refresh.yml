@@ -1,0 +1,102 @@
+name: Refresh VN100 ownership and disclosure reactions
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/refresh_vn100_ownership_intelligence.py'
+      - 'financial-report/frontend/ownership-intelligence.js'
+      - '.github/workflows/vn100-ownership-refresh.yml'
+  pull_request:
+    paths:
+      - 'scripts/refresh_vn100_ownership_intelligence.py'
+      - 'financial-report/frontend/ownership-intelligence.js'
+      - 'financial-report/frontend/market.css'
+      - 'financial-report/tests/*ownership*'
+      - '.github/workflows/vn100-ownership-refresh.yml'
+  schedule:
+    - cron: "25 3,8,11 * * 1-5"
+    - cron: "25 5 * * 6,0"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vn100-ownership-publisher
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 27
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test data transformation and existing ownership UI
+        run: |
+          python -m unittest financial-report/tests/test_vn100_ownership_intelligence.py -v
+          node --check financial-report/frontend/ownership-intelligence.js
+          node --test financial-report/tests/ownership_intelligence.test.cjs
+          python financial-report/scripts/build_cdn.py
+      - name: Snapshot source market data without changing publisher branch
+        run: |
+          git fetch origin financial-market-data
+          git worktree add -B financial-market-data /tmp/finquery-market origin/financial-market-data
+      - name: Fetch real VN100 ownership and compute post-disclosure reactions
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            python scripts/refresh_vn100_ownership_intelligence.py --market /tmp/finquery-market/market --previous /tmp/finquery-market/market/ownership-intelligence-v2.json --output /tmp/vn100-ownership-v2.json --limit 3
+          else
+            python scripts/refresh_vn100_ownership_intelligence.py --market /tmp/finquery-market/market --previous /tmp/finquery-market/market/ownership-intelligence-v2.json --output /tmp/vn100-ownership-v2.json
+          fi
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          x=json.loads(Path('/tmp/vn100-ownership-v2.json').read_text())
+          expected=json.loads(Path('financial-report/data/companies.json').read_text())
+          symbols={row['symbol'] for row in expected}
+          processed=set(x['symbols'])
+          if os.environ.get('GITHUB_EVENT_NAME')=='pull_request':
+              assert len(processed)==3,processed
+          else:
+              assert x['status']=='ok',x['universe']
+              assert processed==symbols,(len(processed),len(symbols))
+              assert x['universe']['profileFresh']>=90,x['universe']
+              assert x['universe']['eventSourceFresh']>=90,x['universe']
+              assert x['universe']['historyAvailable']==100,x['universe']
+              assert x['universe']['eventsWithPriceReaction']>0,x['universe']
+          for symbol,row in x['symbols'].items():
+              assert row['symbol']==symbol
+              for event in row['events']:
+                  assert event['symbol']==symbol
+                  r=event.get('reaction') or {}
+                  for h,val in (r.get('returnPct') or {}).items():
+                      assert h in ('1','3','5','10')
+                      assert val is None or -100 <= val < 500
+          print('VN100_OWNERSHIP_QA_PASS',json.dumps(x['universe']))
+          PY
+      - name: Publish complete verified snapshot as one atomic file
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          cp /tmp/vn100-ownership-v2.json /tmp/finquery-market/market/ownership-intelligence-v2.json
+          git -C /tmp/finquery-market config user.name 'github-actions[bot]'
+          git -C /tmp/finquery-market config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C /tmp/finquery-market add market/ownership-intelligence-v2.json
+          if git -C /tmp/finquery-market diff --cached --quiet; then exit 0; fi
+          git -C /tmp/finquery-market commit -m 'Refresh HOSE VN100 ownership, leadership and event-price reactions'
+          for retry in 1 2 3; do
+            git -C /tmp/finquery-market fetch origin financial-market-data
+            git -C /tmp/finquery-market rebase origin/financial-market-data
+            if git -C /tmp/finquery-market push origin HEAD:financial-market-data; then exit 0; fi
+            sleep "$retry"
+          done
+          exit 1
