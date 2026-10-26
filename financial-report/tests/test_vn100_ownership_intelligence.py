@@ -4,11 +4,15 @@ from datetime import date,timedelta
 from pathlib import Path
 
 p=Path(__file__).resolve().parents[2]/"scripts/refresh_vn100_ownership_intelligence.py"
-spec=importlib.util.spec_from_file_location("ownerpub",p)
-m=importlib.util.module_from_spec(spec)
-spec.loader.exec_module(m)
+if p.exists():
+    spec=importlib.util.spec_from_file_location("ownerpub",p)
+    m=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+else:
+    m=None
 
 
+@unittest.skipUnless(m is not None, "Standalone publisher omitted by sparse checkout")
 class OwnershipPublisherTests(unittest.TestCase):
     def test_vietcap_registration_does_not_become_an_execution(self):
         obj={'id':'sample_event_1','ticker':'FPT','eventCode':'DDIND',
