@@ -72,7 +72,7 @@ jobs:
               assert x['universe']['profileFresh']>=90,x['universe']
               assert x['universe']['profileAvailable']==100,x['universe']
               assert x['universe']['historyAvailable']==100,x['universe']
-              assert x['universe']['eventSourceQueried']==48,x['universe']
+              assert x['universe']['eventSourceQueried']==24,x['universe']
               assert x['universe']['eventSourceFresh']>=8 or x['universe']['eventSourceAvailable']>=80,x['universe']
               assert x['universe']['eventsWithPriceReaction']>0,x['universe']
           for symbol,row in x['symbols'].items():
