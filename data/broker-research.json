@@ -1,8 +1,41 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-26T04:58:31+00:00",
+  "updatedAt": "2026-10-26T13:17:11+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-LPB-2026-10-26-001b1c7b",
+      "symbol": "LPB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-26",
+      "title": "Cập nhật KQKD LPB – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo LPB ngày 26/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-HT1-2026-10-26-001b1c7b",
+      "symbol": "HT1",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-26",
+      "title": "Cập nhật KQKD HT1 – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo HT1 ngày 26/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-HCM-2026-10-26-001b1c7b",
+      "symbol": "HCM",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-26",
+      "title": "Cập nhật KQKD HCM – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo HCM ngày 26/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "YUANTA-HCM-2026-10-23-806341d2",
       "symbol": "HCM",
@@ -30,6 +63,19 @@
       "recommendation": "MUA",
       "targetPrice": 41800,
       "summary": "BSC có báo cáo TCB ngày 23/10/2026 với khuyến nghị MUA, giá mục tiêu 41.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "ACBS-KBC-2026-10-23-180b4b2f",
+      "symbol": "KBC",
+      "broker": "ACBS",
+      "brokerName": "ACB Securities",
+      "publishedAt": "2026-10-23",
+      "title": "Khuyến nghị gần nhất KBC",
+      "currency": "VND",
+      "sourceUrl": "https://acbs.com.vn/bao-cao",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 32000,
+      "summary": "ACBS có báo cáo KBC ngày 23/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "ACBS-HHV-2026-10-23-180b4b2f",
