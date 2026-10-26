@@ -115,7 +115,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   <section class="panel mainChart" id="forecast">
     <div class="panelHead"><div><div class="eyebrow">Diễn biến & dự báo</div><h2 id="chartTitle">—</h2></div><div class="chartTools"><div class="chartRanges" role="group" aria-label="Khoảng lịch sử biểu đồ"><button type="button" data-range="30">1T</button><button type="button" data-range="65" class="active">3T</button><button type="button" data-range="125">6T</button></div></div></div>
     <div class="chartWrap"><canvas id="chart" aria-label="Biểu đồ giá lịch sử và kịch bản dự báo T+1 đến T+5"></canvas><canvas id="chartOverlay" class="chartOverlay" aria-hidden="true"></canvas><div id="tooltip" class="tooltip"></div></div>
-    <div class="legend"><span><i style="background:#c9d1bc"></i>Giá lịch sử</span><span><i style="background:#a8eb65"></i>Dự báo T+1 → T+5</span><span><i style="background:#82956d"></i>Vùng xác suất Q20–Q80</span><span><i style="background:#b1a1e8"></i>Giá tại T0</span></div>
+    <div class="legend"><span><i style="background:#c9d1bc"></i>Giá lịch sử</span><span><i style="background:#edba7c"></i>Dự báo lịch sử</span><span><i style="background:#a8eb65"></i>Dự báo T+1 → T+5</span><span><i style="background:#82956d"></i>Vùng xác suất Q20–Q80</span><span><i style="background:#b1a1e8"></i>Giá tại T0</span></div>
     <div id="forecastCards" class="forecastCards"></div>
   </section>
 
@@ -163,7 +163,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   <form id="solutionAiForm" class="solutionAiForm"><textarea id="solutionAiInput" rows="1" maxlength="1800" placeholder="Hỏi sâu forecast, nguồn mới, vĩ mô hoặc dán một liên kết…" aria-label="Nội dung câu hỏi"></textarea><button id="solutionAiSend" type="submit" aria-label="Gửi câu hỏi">↑</button></form>
 </aside>
 <script src="./forecast-freshness.js?release=44.0"></script>
-<script src="./forecast-final-v12.js?release=47.6"></script>
+<script src="./forecast-final-v12.js?release=47.7"></script>
 <script src="./forecast-polish-v12.js?release=20.0"></script>
 <script src="./forecast-portfolio-v14.js?release=42.0"></script>
 <script src="./forecast-live-leaders-v14.js?release=42.1"></script>
