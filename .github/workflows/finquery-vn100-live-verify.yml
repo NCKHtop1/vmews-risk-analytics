@@ -1,0 +1,81 @@
+name: FinQuery VN100 live forecast browser verification
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/finquery-vn100-live-verify.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-source-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install browser runner
+        run: pip install --disable-pip-version-check -q selenium==4.36.0
+      - name: Verify actual published VN100 series and visible chart without login bypass
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, time, urllib.request
+          from selenium import webdriver
+          from selenium.webdriver.chrome.options import Options
+          from selenium.webdriver.support.ui import WebDriverWait
+          src='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/finquery-vn100-data/data/finquery-vn100-forecast.json'
+          with urllib.request.urlopen(urllib.request.Request(src,headers={'Cache-Control':'no-cache'}),timeout=25) as r:
+              b=json.loads(r.read())
+          assert b.get('status')=='PASS'
+          assert b.get('universe',{}).get('available')==100
+          assert len(b['dashboard']['symbols'])==100
+          assert sum(len(row['horizons']) for row in b['dashboard']['symbols'].values())==500
+          assert len(b['dashboard']['charts'])==100
+          assert all(any(x.get('walkforwardPrice') for x in chart) for chart in b['dashboard']['charts'].values())
+          print('DATA_PASS',b['asOf'],len(b['dashboard']['symbols']),500,flush=True)
+          options=Options()
+          for flag in ('--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--window-size=1440,1000'):
+              options.add_argument(flag)
+          driver=webdriver.Chrome(options=options)
+          try:
+              driver.set_page_load_timeout(55)
+              url='https://nckhtop1.github.io/vmews-risk-analytics/forecast-final.html?dataRef=main&symbol=FPT&smoke=vn100'
+              driver.get(url)
+              WebDriverWait(driver,90).until(lambda d: d.execute_script('return Boolean(window.__VMEWS_LOAD_BASE__)'))
+              driver.set_script_timeout(45)
+              result=driver.execute_async_script("""
+                const done=arguments[0];
+                window.__VMEWS_LOAD_BASE__().then(B=>{
+                  const keys=Object.keys(B.dash?.symbols||{});
+                  const fpt=B.dash?.symbols?.FPT;
+                  const rows=B.dash?.charts?.FPT||[];
+                  done({
+                    source:B.model?.source,
+                    symbols:keys.length,
+                    horizons:Object.keys(fpt?.horizons||{}).length,
+                    walk:rows.filter(x=>Number(x.walkforwardPrice)>0).length,
+                    last:rows.at(-1)?.date||'',
+                    legend:document.querySelector('.legend')?.textContent||'',
+                    cards:document.querySelectorAll('.forecastCard').length,
+                    canvasWidth:document.querySelector('#chart')?.width||0,
+                    title:document.title
+                  })
+                }).catch(e=>done({error:String(e?.message||e)}));
+              """)
+              print('BROWSER_STATE',json.dumps(result,ensure_ascii=False),flush=True)
+              assert result.get('source')=='FINQUERY-VN100-TS-1',result
+              assert result.get('symbols')==100,result
+              assert result.get('horizons')==5,result
+              assert result.get('walk',0)>=100,result
+              assert 'Dự báo lịch sử' in result.get('legend',''),result
+              WebDriverWait(driver,40).until(lambda d: d.execute_script("return (document.querySelector('#chart')?.width||0)>0 && document.querySelectorAll('.forecastCard').length===5"))
+              driver.set_window_size(390,844)
+              WebDriverWait(driver,15).until(lambda d: d.execute_script("return (document.querySelector('#chart')?.width||0)>0"))
+              print('VN100_BROWSER_PASS',flush=True)
+          finally:
+              driver.quit()
+          PY
