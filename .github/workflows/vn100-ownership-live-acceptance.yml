@@ -68,11 +68,16 @@ jobs:
                       tableCss:box?getComputedStyle(box).overflowX:null,
                       viewHidden:document.querySelector('#market-ownership-workspace')?.hidden,
                       layout:{
+                        html:document.documentElement.clientWidth,
+                        body:document.body.clientWidth,
+                        preview:getComputedStyle(document.querySelector('.preview')).display,
                         market:getComputedStyle(document.querySelector('#market')).display,
                         ownership:getComputedStyle(document.querySelector('#market-ownership-workspace')).display,
                         content:getComputedStyle(h).display,
                         table:box?getComputedStyle(box).display:null,
-                        viewport:window.innerWidth
+                        viewport:window.innerWidth,
+                        marketHeight:document.querySelector('#market').getBoundingClientRect().height,
+                        tableRect:box?{height:box.getBoundingClientRect().height,width:box.getBoundingClientRect().width}:null
                       }
                     }
                   """)
@@ -102,7 +107,14 @@ jobs:
               driver.execute_script("document.getElementById('ticker').value='MBB';document.getElementById('company-form').requestSubmit();")
               WebDriverWait(driver,50).until(lambda d:snapshot()['title'].startswith('MBB ·') and snapshot()['rows']>=10)
               driver.execute_script("window.FinWorkspaceTabs?.openMarket('ownership')")
-              WebDriverWait(driver,25).until(lambda d:(snapshot()['scroll'] or {}).get('width',0)>0)
+              before=snapshot()
+              print('MOBILE_LAYOUT_BEFORE',json.dumps({'layout':before['layout'],'scroll':before['scroll'],'hidden':before['viewHidden']},ensure_ascii=False),flush=True)
+              try:
+                  WebDriverWait(driver,8).until(lambda d:(snapshot()['scroll'] or {}).get('width',0)>0)
+              except Exception:
+                  after=snapshot()
+                  print('MOBILE_LAYOUT_AFTER',json.dumps({'layout':after['layout'],'scroll':after['scroll'],'hidden':after['viewHidden']},ensure_ascii=False),flush=True)
+                  raise
               mobile=snapshot()
               assert mobile['cards']==3
               assert mobile['scroll'] and mobile['scroll']['scrollWidth']>mobile['scroll']['width'],mobile
