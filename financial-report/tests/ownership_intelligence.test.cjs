@@ -103,5 +103,6 @@ test('VN100 ownership profile, shareholders, leadership and price reaction rende
  assert.match(host.innerHTML,/\+3,4%/);
  assert.match(host.innerHTML,/T\+10/);
  assert.match(host.innerHTML,/Đã đăng ký/);
+ assert.match(host.innerHTML,/Tăng · KL cao/);
  assert.doesNotMatch(host.innerHTML,/Đã mua/);
 });
