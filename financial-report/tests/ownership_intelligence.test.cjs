@@ -36,5 +36,43 @@ test('unverified or spoofed disclosures are rejected',()=>{
  assert.equal(api._test.safeSource('javascript:alert(1)'),"");
  api.setData({schemaVersion:1,status:'verified',events:[malicious]});
  assert.doesNotMatch(host.innerHTML,/<img/);
- assert.match(host.innerHTML,/Chưa có dữ liệu/);
+ assert.match(host.innerHTML,/Chưa có công bố được đối chiếu/);
+});
+
+test('primary issuer disclosure without reported quantity is shown without fabricated zeros',()=>{
+ const {api,host}=harness();
+ const result={
+  symbol:'MBB',person:'Nguyễn Thị Thủy',role:'Người nội bộ',
+  type:'reported_result',disclosedAt:'2026-10-07T12:00:00+07:00',
+  title:'Báo cáo kết quả giao dịch cổ phiếu',
+  quantity:null,holdingsAfter:null,
+  sourceUrl:'https://www.mbbank.com.vn/chi-tiet/thong-bao/thong-bao/61/index?page=16'
+ };
+ assert.equal(api._test.verified(result),true);
+ api.setData({schemaVersion:1,status:'verified',events:[result]});
+ assert.match(host.innerHTML,/Nguyễn Thị Thủy/);
+ assert.match(host.innerHTML,/Báo cáo kết quả/);
+ assert.match(host.innerHTML,/www\.mbbank\.com\.vn/);
+ assert.doesNotMatch(host.innerHTML,/>0<\/td>/);
+ assert.doesNotMatch(host.innerHTML,/Đã bán/);
+});
+test('only verified MBB issuer domain is accepted; other symbols cannot spoof it',()=>{
+ const {api}=harness();
+ assert.equal(api._test.safeSource('https://www.mbbank.com.vn/chi-tiet/x','MBB').startsWith('https:'),true);
+ assert.equal(api._test.safeSource('https://www.mbbank.com.vn/chi-tiet/x','HPG'),'');
+ assert.equal(api._test.safeSource('https://www.mbbank.com.vn.evil.test/x','MBB'),'');
+ assert.equal(api._test.safeSource('http://www.mbbank.com.vn/x','MBB'),'');
+});
+test('verified registration is not presented as an executed trade and numberless executed trade is rejected',()=>{
+ const {api,host}=harness();
+ const announcement={
+  symbol:'MBB',person:'Nguyễn Thị Thủy',role:'Người nội bộ',
+  type:'reported_registration',disclosedAt:now,quantity:null,
+  sourceUrl:'https://www.mbbank.com.vn/chi-tiet/thong-bao/thong-bao/61/index?page=16'
+ };
+ assert.equal(api._test.verified(announcement),true);
+ assert.equal(api._test.verified({...announcement,type:'executed_sell'}),false);
+ api.setData({schemaVersion:1,status:'verified',events:[announcement]});
+ assert.match(host.innerHTML,/Thông báo giao dịch/);
+ assert.doesNotMatch(host.innerHTML,/Đã bán/);
 });
