@@ -117,6 +117,40 @@ class OwnershipPublisherTests(unittest.TestCase):
             self.assertEqual(report['symbols'][symbols[0]]['events'][0]['quantity'],500)
 
 
+    def test_hsg_invalid_kbs_ratio_uses_dated_vietcap_shareholders(self):
+        from unittest import mock
+        from datetime import datetime
+        raw_profile={
+            'SB':'HSG','Shareholders':[{'NM':'Lê Phước Vũ','OR':1669,
+                                      'V':136949728,'D':'2026-06-30'}],
+            'Leaders':[{'NM':'Lê Phước Vũ','PN':'CTHĐQT'}],
+            'Ownership':[{'NM':'Cổ đông cá nhân','OR':20.0,'D':'2026-06-30'}]
+        }
+        response={'data':[
+            {'ownerName':'Lê Phước Vũ','percentage':0.1696,'quantity':136949728,
+             'publicDate':'2026-06-30'},
+            {'ownerName':'Cổ đông rất cũ','percentage':0.50,'quantity':0,
+             'publicDate':'2012-11-28'},
+            {'ownerName':'Cổ đông nhỏ','percentage':0.005,'quantity':150,
+             'publicDate':'2026-06-30'}
+        ]}
+        def fetch_mock(url,*args,**kwargs):
+            if '/profile/' in url:return raw_profile
+            if url.endswith('/HSG/shareholder'):return response
+            raise AssertionError(url)
+        with mock.patch.object(m,'fetch_json',side_effect=fetch_mock):
+            result=m.fetch_company('HSG',fetch_events=False)
+        self.assertTrue(result['profileOk'])
+        self.assertEqual(result['errors'],[])
+        profile=m.profile_sections('HSG',result['profile'])
+        self.assertEqual(len(profile['shareholders']),1)
+        self.assertEqual(profile['shareholders'][0]['name'],'Lê Phước Vũ')
+        self.assertAlmostEqual(profile['shareholders'][0]['percentage'],16.96)
+        self.assertEqual(profile['shareholders'][0]['shares'],136949728)
+        self.assertTrue(profile['shareholdersSource'].endswith('/HSG/shareholder'))
+        self.assertEqual(len(profile['leaders']),1)
+
+
 
 if __name__=='__main__':
     unittest.main()
