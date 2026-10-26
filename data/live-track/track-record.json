@@ -1,6 +1,6 @@
 {
   "version": "VMEWS-LIVE-MONITOR-1.0.0",
-  "generatedAt": "2026-10-23T15:11:19.849662+00:00",
+  "generatedAt": "2026-10-26T03:42:14.545132+00:00",
   "trackingStarted": "2026-08-11",
   "latestArchivedEod": "2026-10-23",
   "archivedSnapshots": 31,
@@ -16,15 +16,19 @@
     "policyAligned": true,
     "marketVersion": "VMEWS-MARKET-SCAN-4.2.0",
     "pooledVersion": "VMEWS-POOLED-HOSE-1.2.0",
-    "marketContextDate": "2026-10-22",
+    "marketContextDate": "2026-10-23",
     "marketContextStatus": "EXCLUDED_UNAVAILABLE",
     "marketContextImputed": false,
     "pointInTimeReady": true,
     "timeBasis": "LATEST_COMPLETED_EOD_ONLY",
     "watchlistBasis": "SAME_CANONICAL_EOD_AS_MARKET_SCAN",
     "rule": "Archive only aligned market + pooled completed-EOD states. Missing/stale auxiliary context is excluded, never neutral-imputed.",
-    "archiveStatus": "CREATED",
-    "revision": null
+    "archiveStatus": "REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE",
+    "revision": {
+      "existingHash": "e8f42746893f3f8bded0c78119d634094f79637214cfc588b075f0e4bafb0457",
+      "newHash": "d588bb72d75244f8f8b6e2bde64b90c63d752ae86c0f7a3feef6eb889ac95414",
+      "modelDate": "2026-10-23"
+    }
   },
   "tDayLiveTrack": {
     "status": "LIVE_EVIDENCE_AVAILABLE",
