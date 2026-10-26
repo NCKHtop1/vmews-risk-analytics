@@ -143,6 +143,8 @@ async function load(){
  return state.pending;
 }
 document.addEventListener('finquery:symbol-change',render);
+// app.js dispatches on window before updating the input; render on the next microtask.
+window.addEventListener?.('finquery:symbol-change',()=>Promise.resolve().then(render));
 document.getElementById('ticker')?.addEventListener('change',render);
 window.FinOwnership={
  refresh:()=>{if(state.legacy&&Date.now()-state.lastAttempt>30000)return load();if(!state.checked)return load();render();return Promise.resolve();},
