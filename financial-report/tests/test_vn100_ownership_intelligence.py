@@ -66,6 +66,57 @@ class OwnershipPublisherTests(unittest.TestCase):
              'actionTypeVi':'Mua','publicDate':'2026-06-29T00:00:00'}
         self.assertIsNone(m.parse_vci_event('FPT',obj)['quantity'])
 
+    def test_vn100_partial_api_failure_keeps_prior_verified_events(self):
+        import json
+        import tempfile
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as td:
+            root=Path(td)
+            symbols=['ACB','ANV','BAF']
+            core=root/'companies.json'
+            core.write_text(json.dumps([
+                {'symbol':f'X{n:02d}','exchange':'HOSE','name':f'Company {n}'}
+                for n in range(100)
+            ]),encoding='utf-8')
+            expected=json.loads(core.read_text(encoding='utf-8'))
+            symbols=[x['symbol'] for x in expected[:3]]
+            market=root/'market'
+            (market/'history').mkdir(parents=True)
+            bars=[{'time':(date.today()-timedelta(days=60-i)).isoformat(),
+                   'close':100+i,'volume':1000} for i in range(60)]
+            for sym in symbols:
+                (market/'history'/f'{sym}.json').write_text(json.dumps({'bars':bars}),encoding='utf-8')
+            prior_event={
+                'id':'VCI-prior-verified','symbol':symbols[0],
+                'person':'Nguyễn A','role':'Người nội bộ','type':'registered_buy',
+                'disclosedAt':(date.today()-timedelta(days=20)).isoformat()+'T12:00:00+07:00',
+                'date':(date.today()-timedelta(days=20)).isoformat(),
+                'title':'Nguyễn A - Đăng kí Mua 500 cổ phiếu',
+                'quantity':500,'sourceUrl':'https://iq.vietcap.com.vn/api/iq-insight-service/v1/events?ticker=ACB'
+            }
+            previous=root/'previous.json'
+            previous.write_text(json.dumps({'symbols':{
+                symbols[0]:{'events':[prior_event],'lastEventsSuccess':(date.today()-timedelta(days=2)).isoformat()}
+            }}),encoding='utf-8')
+            def source(sym,fetch_events=True):
+                self.assertTrue(fetch_events)
+                profile={'SB':sym,'Leaders':[{'NM':'Lãnh đạo thử nghiệm','PN':'CTHĐQT'}],
+                         'Shareholders':[],'Ownership':[]}
+                return {'symbol':sym,'profile':profile,'profileOk':True,
+                        'eventsOk':sym==symbols[1],'events':[] if sym==symbols[1] else None,
+                        'errors':[]}
+            with mock.patch.object(m,'fetch_company',side_effect=source):
+                report=m.build(core,market,root/'result.json',limit=3,previous=previous)
+            self.assertEqual(report['universe']['processed'],3)
+            self.assertEqual(report['universe']['profileFresh'],3)
+            self.assertEqual(report['universe']['eventSourceAvailable'],2)
+            self.assertEqual(report['universe']['events'],1)
+            self.assertEqual(report['symbols'][symbols[0]]['sourceStatus']['events'],'retained')
+            self.assertEqual(report['symbols'][symbols[1]]['sourceStatus']['events'],'ok')
+            self.assertEqual(report['symbols'][symbols[2]]['sourceStatus']['events'],'unavailable')
+            self.assertEqual(report['symbols'][symbols[0]]['events'][0]['quantity'],500)
+
+
 
 if __name__=='__main__':
     unittest.main()
