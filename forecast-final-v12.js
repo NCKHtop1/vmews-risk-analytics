@@ -23,6 +23,19 @@ const FETCH_TIMEOUT_MS=Math.max(30,Math.min(30000,Number(window.__FINQUERY_FOREC
 const CHART_EXECUTABLE_CLOSE=item=>finite(item?.rawClose)?+item.rawClose:finite(item?.close)?+item.close:NaN;
 let BASE=null,BASE_PROMISE=null,LEADER_BASE_PROMISE=null,last=null,btH=0,hoverPoints=[],chartRange=65,chartFrame=0,chartBounds=null;
 const JSON_PROMISES=new Map();
+const VN100_BUNDLE_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/finquery-vn100-data/data/finquery-vn100-forecast.json";
+let VN100_BUNDLE_PROMISE=null;
+async function loadVN100(){
+  if(INDEPENDENT_CORE_PAGE)return null;
+  if(!VN100_BUNDLE_PROMISE){
+    VN100_BUNDLE_PROMISE=(async()=>{
+      const data=await fetchJsonBounded(`${VN100_BUNDLE_URL}?refresh=${Math.floor(Date.now()/60000)}`,Math.min(FETCH_TIMEOUT_MS,1800));
+      if(data?.status!=="PASS"||data?.gates?.status!=="PASS"||data?.universe?.available!==100||Object.keys(data?.dashboard?.symbols||{}).length!==100)return null;
+      return data;
+    })().catch(()=>null);
+  }
+  return VN100_BUNDLE_PROMISE;
+}
 const FINQUERY_LIVE_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json";
 let LIVE_QUOTES=null,LIVE_QUOTES_REFRESHING=null;
 
@@ -105,8 +118,8 @@ async function json(name){
   try{return await request}
   catch(error){if(JSON_PROMISES.get(name)===request)JSON_PROMISES.delete(name);throw error}
 }
-async function loadLeaderBase(){if(LEADER_BASE_PROMISE)return LEADER_BASE_PROMISE;LEADER_BASE_PROMISE=(async()=>{const[dash,gates]=await Promise.all([json("forecast-dashboard-v12.json"),json("phase-gates-v12.json")]);return{dash,gates,model:{promotion:dash.promotion}}})().catch(error=>{LEADER_BASE_PROMISE=null;JSON_PROMISES.clear();throw error});return LEADER_BASE_PROMISE}
-async function loadBase(){if(BASE)return BASE;if(BASE_PROMISE)return BASE_PROMISE;BASE_PROMISE=(async()=>{const bundle=await fetchJsonBounded('https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/finquery-vn100-data/data/finquery-vn100-forecast.json?refresh='+Math.floor(Date.now()/60000),10000).catch(()=>null);if(bundle?.status==='PASS'&&bundle.universe?.available===100&&Object.keys(bundle.dashboard?.symbols||{}).length===100){BASE={dash:bundle.dashboard,model:bundle.model,back:bundle.backtest,audit:{},gates:bundle.gates,market:null,legacyModel:bundle.model};return BASE}const[dash,legacyModel,audit,gates,market]=await Promise.all([json("forecast-dashboard-v12.json"),json("forecast-model-v12.json"),json("data-audit-v12.json"),json("phase-gates-v12.json"),json("forecast-market-v13.json").catch(()=>null)]);const model=market?.model||legacyModel,back=market?.backtest||await json("forecast-backtest-v12.json");BASE={dash,model,back,audit,gates,market,legacyModel};return BASE})().catch(error=>{BASE_PROMISE=null;JSON_PROMISES.clear();throw error});return BASE_PROMISE}
+async function loadLeaderBase(){if(LEADER_BASE_PROMISE)return LEADER_BASE_PROMISE;LEADER_BASE_PROMISE=(async()=>{const bundle=await loadVN100();if(bundle)return{dash:bundle.dashboard,gates:bundle.gates,model:bundle.model};const[dash,gates]=await Promise.all([json("forecast-dashboard-v12.json"),json("phase-gates-v12.json")]);return{dash,gates,model:{promotion:dash.promotion}}})().catch(error=>{LEADER_BASE_PROMISE=null;JSON_PROMISES.clear();throw error});return LEADER_BASE_PROMISE}
+async function loadBase(){if(BASE)return BASE;if(BASE_PROMISE)return BASE_PROMISE;BASE_PROMISE=(async()=>{const bundle=await loadVN100();if(bundle?.status==='PASS'&&bundle.universe?.available===100&&Object.keys(bundle.dashboard?.symbols||{}).length===100){BASE={dash:bundle.dashboard,model:bundle.model,back:bundle.backtest,audit:{},gates:bundle.gates,market:null,legacyModel:bundle.model,source:"VN100"};return BASE}const[dash,legacyModel,audit,gates,market]=await Promise.all([json("forecast-dashboard-v12.json"),json("forecast-model-v12.json"),json("data-audit-v12.json"),json("phase-gates-v12.json"),json("forecast-market-v13.json").catch(()=>null)]);const model=market?.model||legacyModel,back=market?.backtest||await json("forecast-backtest-v12.json");BASE={dash,model,back,audit,gates,market,legacyModel};return BASE})().catch(error=>{BASE_PROMISE=null;JSON_PROMISES.clear();throw error});return BASE_PROMISE}
 window.__VMEWS_LOAD_BASE__=loadBase;
 window.__VMEWS_LOAD_LEADER_BASE__=loadLeaderBase;
 window.__VMEWS_DATA_ROOT__=ROOT;
@@ -259,7 +272,7 @@ function draw(sym,z,history,animate=true){
 canvas.dataset.quoteMode=z.liveSession?"VERIFIED_CURRENT":"VERIFIED_EOD";
   const current=+z.close,forecasts=[];
   for(let n=1;n<=5;n++){const item=h(z,n);if(forecastUsableForDecision(item,z))forecasts.push({n,price:+item.expectedPrice,lo:+item.q20Price,hi:+item.q80Price,p:+item.probUp,dir:validatedDirection(item),validated:validatedPrice(item)&&reliablePoint(item),ret:+item.expectedReturn,active:item.activeExperts||[],contrib:item.expertContributions||{},calN:item.calibrationN})}
-  const values=hist.map(CHART_EXECUTABLE_CLOSE).concat(forecasts.flatMap(item=>[item.lo,item.price,item.hi]),[current]);
+  const values=hist.map(CHART_EXECUTABLE_CLOSE).concat(hist.map(item=>finite(item.walkforwardPrice)?+item.walkforwardPrice:NaN).filter(Number.isFinite),forecasts.flatMap(item=>[item.lo,item.price,item.hi]),[current]);
   let minimum=Math.min(...values),maximum=Math.max(...values);const gutter=(maximum-minimum)*.11||1;minimum-=gutter;maximum+=gutter;
   const innerWidth=width-padding.left-padding.right,historyWidth=innerWidth*(compact?.62:.69),forecastWidth=innerWidth-historyWidth;
   const xHistory=index=>padding.left+index*historyWidth/(hist.length-1),xForecast=index=>padding.left+historyWidth+forecastWidth*index/5;
@@ -493,7 +506,7 @@ async function refreshCore(){
   if(last)rerender(last.B,last.sym,last.z);
   try{
     const coreRoot=CORE_ROOT;
-    const next=await fetchJsonBounded(`${coreRoot}/forecast-dashboard-v12.json?refresh=${Date.now()}`,12000);
+    const next=BASE?.source==="VN100"?await fetchJsonBounded(`${VN100_BUNDLE_URL}?refresh=${Date.now()}`,Math.min(FETCH_TIMEOUT_MS,2500)).then(x=>x?.dashboard):await fetchJsonBounded(`${coreRoot}/forecast-dashboard-v12.json?refresh=${Date.now()}`,12000);
     if(BASE&&next.generatedAt!==BASE.dash.generatedAt&&next.asOf>=BASE.dash.asOf)location.reload();
   }catch{}
 }
