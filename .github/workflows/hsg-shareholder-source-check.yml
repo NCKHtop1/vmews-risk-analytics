@@ -1,0 +1,36 @@
+name: Probe HSG shareholder source
+on:
+  pull_request:
+    paths: ['.github/workflows/hsg-shareholder-source-check.yml']
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect public HSG shareholder responses
+        shell: bash
+        run: |
+          python - <<'PY'
+          import urllib.request,json
+          endpoints=[
+            'https://iq.vietcap.com.vn/api/iq-insight-service/v1/company/HSG/shareholder',
+            'https://iq.vietcap.com.vn/api/iq-insight-service/v1/company/HSG/shareholder-structure',
+            'https://kbbuddywts.kbsec.com.vn/iis-server/investment/stockinfo/profile/HSG?l=1'
+          ]
+          for url in endpoints:
+            try:
+              with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0','Origin':'https://trading.vietcap.com.vn','Accept':'application/json'}),timeout=15) as resp:
+                data=json.load(resp)
+              rows=data.get('data') if 'vietcap' in url else data.get('Shareholders') if isinstance(data,dict) else data
+              count=len(rows) if isinstance(rows,(list,dict)) else -1
+              if isinstance(rows,list):
+                sample=rows[:4]
+              elif isinstance(rows,dict):
+                sample={k:rows[k] for k in list(rows)[:3]}
+              else: sample=str(rows)[:200]
+              print('HSG_SHARE_SOURCE',url,'count',count,'sample',str(sample)[:1500],flush=True)
+            except Exception as ex:print('HSG_SHARE_ERROR',url,str(ex)[:300],flush=True)
+          PY
