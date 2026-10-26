@@ -4153,13 +4153,13 @@ const TYPE={
  reported_registration:'Thông báo giao dịch',reported_result:'Báo cáo kết quả'
 };
 const SIGNAL={
- TANG_KEM_THANH_KHOAN:['Tích cực','up'],
- GIAM_KEM_THANH_KHOAN:['Tiêu cực','down'],
+ TANG_KEM_THANH_KHOAN:['Tăng · KL cao','up'],
+ GIAM_KEM_THANH_KHOAN:['Giảm · KL cao','down'],
  DI_NGANG:['Đi ngang','flat'],
- THEO_DOI:['Theo dõi','watch'],
- CHO_DU_LIEU:['Chờ phiên tiếp theo','watch']
+ THEO_DOI:['Có biến động','watch'],
+ CHO_DU_LIEU:['Chờ phiên','watch']
 };
-const state={data:null,error:null,checked:false,pending:null,legacy:false};
+const state={data:null,error:null,checked:false,pending:null,legacy:false,lastAttempt:0};
 function verified(r){
  if(!r||!Object.hasOwn(TYPE,r.type)||!stamp(r.disclosedAt)||!/^[A-Z]{3}$/.test(r.symbol||'')||!safeSource(r.sourceUrl,r.symbol))return false;
  if(typeof r.person!=='string'||!r.person.trim()||typeof r.role!=='string')return false;
@@ -4204,9 +4204,9 @@ function summarySection(symbol,profile){
  '<section><h4>Ban lãnh đạo</h4>'+leaderRows+otherLeaders+'</section></div>'+meta;
 }
 function marketSignal(event){
- if(event.type.startsWith('registered_'))return['Đã đăng ký','watch'];
  const r=event.reaction||{};
  if(r.status==='pending')return['Chờ phiên','watch'];
+ if(!r.status||r.status==='unavailable')return['Chưa có giá','watch'];
  return SIGNAL[r.signal]||['Theo dõi','watch'];
 }
 function render(){
@@ -4222,21 +4222,26 @@ function render(){
  const summary=summarySection(symbol,card?.profile);
  const counts='<div class="owner-reaction-head"><h4>Giao dịch nội bộ &amp; phản ứng sau công bố</h4><small>'+events.length+' công bố</small></div>';
  if(!events.length){
-   host.innerHTML=head+summary+counts+'<section class="ownership-empty"><p>Chưa có công bố được đối chiếu.</p></section>';
+   const code=card?.sourceStatus?.events;
+   const message=code==='ok'?'Chưa có công bố giao dịch nội bộ trong 24 tháng gần đây.':
+     code==='unavailable'||code==='not_checked'?'Đang bổ sung công bố giao dịch nội bộ.':
+     'Chưa có công bố được đối chiếu.';
+   host.innerHTML=head+summary+counts+'<section class="ownership-empty"><p>'+esc(message)+'</p></section>';
    return;
  }
  const list=events.map(r=>{
   const signal=marketSignal(r),re=r.reaction||{},ret=re.returnPct||{};
   const title=r.title&&r.title!==r.role?'<small>'+esc(r.title)+'</small>':'';
   const step=h=>pct(ret[String(h)]);
-  const volume=re.volumeRatio3!=null?' · KL '+fmt(re.volumeRatio3,2)+'×':'';
+  const volume=re.volumeRatio3!=null?'KL '+fmt(re.volumeRatio3,2)+'×':''; 
+  const kind=r.type.startsWith('registered_')?'Đã đăng ký':r.type.startsWith('executed_')?'Đã thực hiện':r.type==='reported_result'?'Báo cáo kết quả':'';
   const type='<strong>'+esc(TYPE[r.type])+'</strong>'+title;
   return'<tr><td class="owner-date">'+day(r.disclosedAt)+'</td>'+
    '<td><strong>'+esc(r.person)+'</strong><small>'+esc(r.role)+'</small></td>'+
    '<td>'+type+'</td><td class="owner-number">'+fmt(r.quantity)+'</td><td class="owner-number">'+fmt(r.holdingsAfter)+'</td>'+
    '<td>'+step(1)+'</td><td>'+step(3)+'</td><td>'+step(5)+'</td><td>'+step(10)+'</td>'+
    '<td><span class="owner-signal owner-signal-'+signal[1]+'">'+esc(signal[0])+'</span>'+
-   (re.volumeRatio3!=null?'<small>'+esc(volume.trim())+'</small>':'')+'</td>'+
+   (kind||volume?'<small>'+esc([kind,volume].filter(Boolean).join(' · '))+'</small>':'')+'</td>'+
    '<td>'+sourceLink(r.sourceUrl,r.symbol,r.sourcePublisher||'Nguồn')+'</td></tr>';
  }).join('');
  const table='<div class="ownership-table-scroll"><table class="ownership-table"><thead><tr>'+
@@ -4252,6 +4257,7 @@ async function fetchBounded(url){
 }
 async function load(){
  if(state.pending)return state.pending;
+ state.lastAttempt=Date.now();
  state.pending=(async()=>{
   try{
    let next=null;
@@ -4264,9 +4270,11 @@ async function load(){
  return state.pending;
 }
 document.addEventListener('finquery:symbol-change',render);
+// app.js dispatches on window before updating the input; render on the next microtask.
+window.addEventListener?.('finquery:symbol-change',()=>Promise.resolve().then(render));
 document.getElementById('ticker')?.addEventListener('change',render);
 window.FinOwnership={
- refresh:()=>state.checked?(render(),Promise.resolve()):load(),
+ refresh:()=>{if(state.legacy&&Date.now()-state.lastAttempt>30000)return load();if(!state.checked)return load();render();return Promise.resolve();},
  setData:data=>{state.data=data;state.error=null;state.checked=true;render()},
  reload:()=>{state.checked=false;state.pending=null;return load()},
  _test:{verified,safeSource,validRows,marketSignal}
