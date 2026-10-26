@@ -114,7 +114,7 @@ def vci_url(symbol, page=0, from_date=None):
     return VCI + "?" + urllib.parse.urlencode(params)
 
 
-def fetch_company(symbol):
+def fetch_company(symbol, fetch_events=True):
     out = {"symbol": symbol, "profile": None, "events": None, "profileOk": False,
            "eventsOk": False, "errors": []}
     try:
@@ -126,6 +126,8 @@ def fetch_company(symbol):
             raise ValueError("Issuer profile symbol mismatch")
     except Exception as exc:
         out["errors"].append("profile:" + type(exc).__name__)
+    if not fetch_events:
+        return out
     try:
         rows = []
         for page in range(3):
@@ -334,9 +336,19 @@ def build(core, market, output, limit=None, previous=None):
             old = {}
     source_file = Path(market) / "ownership-disclosures.json"
     issuer_events = json.loads(source_file.read_text(encoding="utf-8")).get("events", []) if source_file.exists() else []
+    # The discovery API sometimes rate-limits sustained requests. Publish all 100
+    # source profiles every run, but rotate event queries across the least recently
+    # successful issuers. A missed request is not evidence that no event exists.
+    quota = len(symbols) if limit else min(len(symbols), 48)
+    priority = sorted(symbols, key=lambda symbol: (
+        bool((old.get(symbol) or {}).get("lastEventsSuccess")),
+        str((old.get(symbol) or {}).get("lastEventsSuccess") or ""),
+        symbols.index(symbol),
+    ))
+    event_symbols = set(priority[:quota])
     fresh = {}
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
-        futures = {pool.submit(fetch_company, symbol): symbol for symbol in symbols}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+        futures = {pool.submit(fetch_company, symbol, symbol in event_symbols): symbol for symbol in symbols}
         for future in concurrent.futures.as_completed(futures):
             sym = futures[future]
             fresh[sym] = future.result()
@@ -346,6 +358,7 @@ def build(core, market, output, limit=None, previous=None):
     records = {}
     successes = 0
     event_successes = 0
+    event_available = 0
     total_events = 0
     reactions = 0
     for symbol in symbols:
@@ -354,11 +367,18 @@ def build(core, market, output, limit=None, previous=None):
         profile = profile_sections(symbol, incoming["profile"]) if incoming["profileOk"] else prev.get("profile")
         if incoming["profileOk"]:
             successes += 1
+        retained_vci = [x for x in prev.get("events") or []
+                        if str(x.get("id","")).startswith("VCI-")]
         if incoming["eventsOk"]:
             event_successes += 1
-            vci = [item for item in (parse_vci_event(symbol, r) for r in incoming["events"]) if item]
+            fetched_vci = [item for item in
+                           (parse_vci_event(symbol, row) for row in incoming["events"])
+                           if item]
+            vci = fetched_vci + retained_vci
         else:
-            vci = [x for x in prev.get("events") or [] if str(x.get("id","")).startswith("VCI-")]
+            vci = retained_vci
+        if incoming["eventsOk"] or prev.get("lastEventsSuccess"):
+            event_available += 1
         issuer = [normalize_seed(x) for x in issuer_events if is_source_event(x,symbol)]
         published = issuer + vci
         dedup = {}
@@ -379,18 +399,26 @@ def build(core, market, output, limit=None, previous=None):
             "profile":profile,
             "events":rows,
             "priceAsOf":bars[-1]["date"] if bars else None,
+            "lastEventsSuccess":today().isoformat() if incoming["eventsOk"] else
+                prev.get("lastEventsSuccess"),
             "sourceStatus":{
                 "profile": "ok" if incoming["profileOk"] else ("retained" if profile else "unavailable"),
-                "events": "ok" if incoming["eventsOk"] else ("retained" if vci else "unavailable"),
+                "events": "ok" if incoming["eventsOk"] else
+                    ("retained" if prev.get("lastEventsSuccess") else
+                     ("unavailable" if symbol in event_symbols else "not_checked")),
                 "market": "ok" if len(bars)>=30 else "unavailable",
             }
         }
     fetched = len(symbols)
     report = {
-        "schemaVersion": 2, "status": "ok" if fetched==100 and successes>=90 and event_successes>=90 else "partial",
+        "schemaVersion": 2, "status": "ok" if fetched==100 and successes>=90 and
+            all(records[symbol]["sourceStatus"]["market"]=="ok" for symbol in symbols)
+            else "partial",
         "asOf":today().isoformat(), "checkedAt":datetime.now(VN).isoformat(timespec="seconds"),
         "universe":{"expected":100,"processed":fetched,"profileFresh":successes,
                     "eventSourceFresh":event_successes,
+                    "eventSourceAvailable":event_available,
+                    "eventSourceQueried":len(event_symbols),
                     "profileAvailable":sum(bool(v["profile"]) for v in records.values()),
                     "historyAvailable":sum(v["sourceStatus"]["market"]=="ok" for v in records.values()),
                     "symbolsWithEvents":sum(bool(v["events"]) for v in records.values()),
