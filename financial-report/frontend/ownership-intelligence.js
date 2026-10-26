@@ -36,6 +36,7 @@ const state={data:null,error:null,checked:false,pending:null,legacy:false};
 function verified(r){
  if(!r||!Object.hasOwn(TYPE,r.type)||!stamp(r.disclosedAt)||!/^[A-Z]{3}$/.test(r.symbol||'')||!safeSource(r.sourceUrl,r.symbol))return false;
  if(typeof r.person!=='string'||!r.person.trim()||typeof r.role!=='string')return false;
+ if(r.type.startsWith('executed_')&&(r.quantity==null||!Number.isSafeInteger(r.quantity)))return false;
  if(r.quantity!=null&&(!Number.isSafeInteger(r.quantity)||r.quantity<0))return false;
  if(r.holdingsAfter!=null&&(!Number.isSafeInteger(r.holdingsAfter)||r.holdingsAfter<0))return false;
  if(r.executedAt!=null&&!stamp(r.executedAt))return false;
@@ -105,14 +106,14 @@ function render(){
   const type='<strong>'+esc(TYPE[r.type])+'</strong>'+title;
   return'<tr><td class="owner-date">'+day(r.disclosedAt)+'</td>'+
    '<td><strong>'+esc(r.person)+'</strong><small>'+esc(r.role)+'</small></td>'+
-   '<td>'+type+'</td><td class="owner-number">'+fmt(r.quantity)+'</td>'+
+   '<td>'+type+'</td><td class="owner-number">'+fmt(r.quantity)+'</td><td class="owner-number">'+fmt(r.holdingsAfter)+'</td>'+
    '<td>'+step(1)+'</td><td>'+step(3)+'</td><td>'+step(5)+'</td><td>'+step(10)+'</td>'+
    '<td><span class="owner-signal owner-signal-'+signal[1]+'">'+esc(signal[0])+'</span>'+
    (re.volumeRatio3!=null?'<small>'+esc(volume.trim())+'</small>':'')+'</td>'+
    '<td>'+sourceLink(r.sourceUrl,r.symbol,r.sourcePublisher||'Nguồn')+'</td></tr>';
  }).join('');
  const table='<div class="ownership-table-scroll"><table class="ownership-table"><thead><tr>'+
- '<th>Công bố</th><th>Người/tổ chức</th><th>Giao dịch</th><th>Số lượng</th>'+
+ '<th>Công bố</th><th>Người/tổ chức</th><th>Giao dịch</th><th>Số lượng</th><th>Nắm giữ sau</th>'+
  '<th>T+1</th><th>T+3</th><th>T+5</th><th>T+10</th><th>Diễn biến</th><th>Nguồn</th>'+
  '</tr></thead><tbody>'+list+'</tbody></table></div>';
  host.innerHTML=head+summary+counts+table;
