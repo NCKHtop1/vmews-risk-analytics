@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/**/*.py": {
+      "excludeFiles": "{data/deep-alerts/**,data/flow-v12.json,data/event-intelligence-v12.json,data/v12-frozen-source.json.gz,data/forecast-current-v12.json,data/research-news-v10.json,data/forecast-market-v13.json,data/forecast-backtest-v12.json}"
+    }
+  }
+}
