@@ -4176,7 +4176,13 @@ function validRows(d,symbol){
  const seen=new Set();
  return events.filter(r=>r.symbol===symbol&&verified(r))
    .sort((a,b)=>stamp(b.disclosedAt)-stamp(a.disclosedAt))
-   .filter(r=>{const k=r.id||[r.symbol,r.person,r.type,r.disclosedAt,r.title].join('|');if(seen.has(k))return false;seen.add(k);return true})
+   .filter(r=>{
+     // Upstream feeds can publish identical notices with different IDs.
+     const key=[r.symbol,r.person,r.type,String(r.disclosedAt).slice(0,10),
+       r.quantity??'',r.title??''].join('|').toLowerCase();
+     if(seen.has(key))return false;
+     seen.add(key);return true;
+   })
    .slice(0,90);
 }
 function sourceLink(url,symbol,label='Nguồn'){
@@ -4207,6 +4213,13 @@ function marketSignal(event){
  const r=event.reaction||{};
  if(r.status==='pending')return['Chờ phiên','watch'];
  if(!r.status||r.status==='unavailable')return['Chưa có giá','watch'];
+ if(r.signal==='THEO_DOI'){
+   const v=r.returnPct?.['3'];
+   if(v!=null&&Number.isFinite(Number(v))){
+     if(Number(v)>=1)return['Tăng sau công bố','up'];
+     if(Number(v)<=-1)return['Giảm sau công bố','down'];
+   }
+ }
  return SIGNAL[r.signal]||['Theo dõi','watch'];
 }
 function render(){
@@ -4220,7 +4233,7 @@ function render(){
  const head='<div class="ownership-section-title"><h4>'+esc(symbol)+' · Sở hữu, lãnh đạo và giao dịch</h4>'+
    '<small>'+('Cập nhật '+day(state.data?.checkedAt||state.data?.updatedAt))+'</small></div>';
  const summary=summarySection(symbol,card?.profile);
- const counts='<div class="owner-reaction-head"><h4>Giao dịch nội bộ &amp; phản ứng sau công bố</h4><small>'+events.length+' công bố</small></div>';
+ const counts='<div class="owner-reaction-head"><h4>Giao dịch nội bộ &amp; diễn biến sau công bố</h4><small>'+events.length+' công bố</small></div>';
  if(!events.length){
    const code=card?.sourceStatus?.events;
    const message=code==='ok'?'Chưa có công bố giao dịch nội bộ trong 24 tháng gần đây.':
