@@ -142,3 +142,24 @@ test('measured post-disclosure movement has a direction separate from registrati
  const buy={...sell,type:'registered_buy',reaction:{...sell.reaction,returnPct:{'3':2.5}}};
  assert.deepEqual([...api._test.marketSignal(buy)],['Tăng sau công bố','up']);
 });
+
+test('HSG fallback shareholder source preserves visible attribution',()=>{
+ const {api,host,ticker}=harness();
+ ticker.value='HSG';
+ api.setData({schemaVersion:2,checkedAt:now,symbols:{HSG:{
+  profile:{
+   ownership:[{name:'Cổ đông cá nhân',percentage:20,asOf:'2026-06-30'}],
+   shareholders:[{name:'Lê Phước Vũ',percentage:16.96,shares:136949728,asOf:'2026-06-30'}],
+   leaders:[{name:'Lê Phước Vũ',role:'CTHĐQT'}],
+   shareholdersSource:'https://iq.vietcap.com.vn/api/iq-insight-service/v1/company/HSG/shareholder',
+   source:'https://kbbuddywts.kbsec.com.vn/iis-server/investment/stockinfo/profile/HSG?l=1',
+   sourceName:'KBS'
+  },events:[],sourceStatus:{events:'ok'}
+ }}});
+ assert.match(host.innerHTML,/HSG · Sở hữu/);
+ assert.match(host.innerHTML,/Lê Phước Vũ/);
+ assert.match(host.innerHTML,/16,96%/);
+ assert.match(host.innerHTML,/Vietcap/);
+ assert.match(host.innerHTML,/HSG\/shareholder/);
+ assert.match(host.innerHTML,/KBS/);
+});
