@@ -1,0 +1,38 @@
+name: FinQuery ownership disclosure QA
+on:
+  pull_request:
+    paths:
+      - 'financial-report/frontend/ownership-intelligence.js'
+      - 'financial-report/tests/ownership_intelligence.test.cjs'
+      - '.github/workflows/finquery-ownership-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ownership:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Frontend source and data integrity
+        run: |
+          node --check financial-report/frontend/ownership-intelligence.js
+          node --test financial-report/tests/ownership_intelligence.test.cjs
+          python financial-report/scripts/build_cdn.py
+          python - <<'PY'
+          import json,urllib.request
+          url='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/ownership-disclosures.json'
+          req=urllib.request.Request(url,headers={'Cache-Control':'no-cache'})
+          with urllib.request.urlopen(req,timeout=25) as r:data=json.load(r)
+          assert data['schemaVersion']==1 and data['status']=='verified'
+          rows=[r for r in data['events'] if r['symbol']=='MBB']
+          assert len(rows)>=9,len(rows)
+          assert len({x['id'] for x in rows})==len(rows)
+          assert any(x['type']=='reported_result' and x['disclosedAt'].startswith('2026-10-07') for x in rows)
+          assert all(x['sourceUrl'].startswith(('https://www.mbbank.com.vn/','https://www.hsx.vn/')) for x in rows)
+          assert 'ownership-intelligence' not in __import__('pathlib').Path('financial-report/index.html').read_text(encoding='utf8')[:1000] or len(__import__('pathlib').Path('financial-report/index.html').read_text(encoding='utf8'))>100000
+          print('MBB_OFFICIAL_DISCLOSURES_PASS',len(rows))
+          PY
