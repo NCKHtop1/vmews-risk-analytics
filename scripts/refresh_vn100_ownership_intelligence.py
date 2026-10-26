@@ -28,6 +28,7 @@ from zoneinfo import ZoneInfo
 VN = ZoneInfo("Asia/Ho_Chi_Minh")
 KBS = "https://kbbuddywts.kbsec.com.vn/iis-server/investment/stockinfo"
 VCI = "https://iq.vietcap.com.vn/api/iq-insight-service/v1/events"
+VCI_COMPANY = "https://iq.vietcap.com.vn/api/iq-insight-service/v1/company"
 HORIZONS = (1, 3, 5, 10)
 EVENT_CODES = "DDIND,DDINS,DDRP"
 
@@ -122,6 +123,43 @@ def fetch_company(symbol, fetch_events=True):
         if isinstance(profile, dict) and profile.get("SB") == symbol:
             out["profile"] = profile
             out["profileOk"] = True
+            # Some KBS profiles encode percentage as scaled integers (HSG has
+            # OR=1669 instead of 16.xx). Never guess a divisor. Fetch a
+            # separately dated shareholder list from Vietcap when needed.
+            valid = [row for row in (profile.get("Shareholders") or [])
+                     if isinstance(row, dict) and string(row.get("NM")) and
+                     number(row.get("OR")) is not None and
+                     number(row.get("OR")) <= 100]
+            if not valid:
+                try:
+                    alternate = fetch_json(f"{VCI_COMPANY}/{symbol}/shareholder")
+                    items = alternate.get("data") if isinstance(alternate, dict) else None
+                    if not isinstance(items, list):
+                        raise ValueError("Missing Vietcap shareholders")
+                    fallback = []
+                    cutoff = (today() - timedelta(days=730)).isoformat()
+                    for item in items:
+                        if not isinstance(item, dict):
+                            continue
+                        disclosed = asday(item.get("publicDate"))
+                        fraction = number(item.get("percentage"))
+                        if (not disclosed or disclosed < cutoff or
+                            fraction is None or fraction > 1 or fraction < 0.01):
+                            continue
+                        name = string(item.get("ownerName"))
+                        if name:
+                            fallback.append({
+                                "name": name, "percentage": round(100*fraction, 4),
+                                "shares": safe_count(item.get("quantity")),
+                                "asOf": disclosed
+                            })
+                    fallback.sort(key=lambda x: (-x["percentage"], x["name"]))
+                    if fallback:
+                        profile["_fallbackShareholders"] = fallback
+                        profile["_shareholdersSource"] = (
+                            f"{VCI_COMPANY}/{symbol}/shareholder")
+                except Exception as exc:
+                    out["errors"].append("shareholders:" + type(exc).__name__)
         else:
             raise ValueError("Issuer profile symbol mismatch")
     except Exception as exc:
@@ -173,6 +211,10 @@ def profile_sections(symbol, source):
                 "name": name, "percentage": round(ratio, 4),
                 "shares": safe_count(row.get("V")), "asOf": d
             })
+    shareholder_source = ""
+    if not shareholders and source.get("_fallbackShareholders"):
+        shareholders = source["_fallbackShareholders"][:45]
+        shareholder_source = str(source.get("_shareholdersSource") or "")
     ownership = []
     for row in (source.get("Ownership") or [])[:30]:
         if not isinstance(row, dict):
@@ -186,6 +228,7 @@ def profile_sections(symbol, source):
             })
     return {
         "asOf": asof, "leaders": leaders, "shareholders": shareholders,
+        "shareholdersSource": shareholder_source,
         "ownership": ownership,
         "source": f"{KBS}/profile/{symbol}?l=1",
         "sourceName": "KBS"
