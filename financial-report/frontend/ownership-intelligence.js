@@ -15,7 +15,7 @@ function safeSource(raw,symbol){
   const h=u.hostname.toLowerCase();
   if(/(^|\.)(hnx\.vn|hsx\.vn|ssc\.gov\.vn|vsd\.vn|vsd\.com\.vn)$/.test(h))return u.href;
   if(h==='kbbuddywts.kbsec.com.vn'&&u.pathname.startsWith('/iis-server/investment/stockinfo/'))return u.href;
-  if(h==='iq.vietcap.com.vn'&&u.pathname.startsWith('/api/iq-insight-service/v1/events'))return u.href;
+  if(h==='iq.vietcap.com.vn'&&(u.pathname.startsWith('/api/iq-insight-service/v1/events')||u.pathname.startsWith('/api/iq-insight-service/v1/company/')))return u.href;
   if(symbol==='MBB'&&(h==='mbbank.com.vn'||h.endsWith('.mbbank.com.vn')))return u.href;
   return'';
  }catch{return''}
@@ -79,7 +79,9 @@ function summarySection(symbol,profile){
  const latest=[profile.asOf,...own.map(x=>x.asOf),...holders.map(x=>x.asOf)].filter(Boolean).sort().at(-1)||null;
  const meta='<small class="owner-source">'+(latest?'Số liệu kỳ '+day(latest)+' · ':'')+sourceLink(profile.source,symbol,profile.sourceName||'Nguồn')+'</small>';
  return'<div class="owner-overview"><section><h4>Cơ cấu sở hữu</h4>'+ownRows+'</section>'+
- '<section><h4>Cổ đông lớn</h4>'+holderRows+otherHolders+'</section>'+
+ '<section><h4>Cổ đông lớn</h4>'+
+  (profile.shareholdersSource?'<small>'+sourceLink(profile.shareholdersSource,symbol,'Vietcap')+'</small>':'')+
+  holderRows+otherHolders+'</section>'+
  '<section><h4>Ban lãnh đạo</h4>'+leaderRows+otherLeaders+'</section></div>'+meta;
 }
 function marketSignal(event){
