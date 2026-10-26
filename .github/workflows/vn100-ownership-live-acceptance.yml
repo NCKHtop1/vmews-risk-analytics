@@ -66,7 +66,14 @@ jobs:
                       rows:h?.querySelectorAll('.ownership-table tbody tr').length||0,
                       scroll:box?{width:box.clientWidth,scrollWidth:box.scrollWidth}:null,
                       tableCss:box?getComputedStyle(box).overflowX:null,
-                      viewHidden:document.querySelector('#market-ownership-workspace')?.hidden
+                      viewHidden:document.querySelector('#market-ownership-workspace')?.hidden,
+                      layout:{
+                        market:getComputedStyle(document.querySelector('#market')).display,
+                        ownership:getComputedStyle(document.querySelector('#market-ownership-workspace')).display,
+                        content:getComputedStyle(h).display,
+                        table:box?getComputedStyle(box).display:null,
+                        viewport:window.innerWidth
+                      }
                     }
                   """)
               WebDriverWait(driver,55).until(lambda d:snapshot()['rows']>=10 and snapshot()['cards']==3)
@@ -94,6 +101,8 @@ jobs:
               driver.set_window_size(390,844)
               driver.execute_script("document.getElementById('ticker').value='MBB';document.getElementById('company-form').requestSubmit();")
               WebDriverWait(driver,50).until(lambda d:snapshot()['title'].startswith('MBB ·') and snapshot()['rows']>=10)
+              driver.execute_script("window.FinWorkspaceTabs?.openMarket('ownership')")
+              WebDriverWait(driver,25).until(lambda d:(snapshot()['scroll'] or {}).get('width',0)>0)
               mobile=snapshot()
               assert mobile['cards']==3
               assert mobile['scroll'] and mobile['scroll']['scrollWidth']>mobile['scroll']['width'],mobile
