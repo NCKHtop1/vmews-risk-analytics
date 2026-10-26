@@ -76,3 +76,32 @@ test('verified registration is not presented as an executed trade and numberless
  assert.match(host.innerHTML,/Thông báo giao dịch/);
  assert.doesNotMatch(host.innerHTML,/Đã bán/);
 });
+
+test('VN100 ownership profile, shareholders, leadership and price reaction render together',()=>{
+ const {api,host,ticker}=harness();
+ ticker.value='FPT';
+ const event={
+  id:'VCI-test',symbol:'FPT',person:'Nguyễn Văn Khoa',role:'Người nội bộ / cổ đông lớn',
+  title:'Nguyễn Văn Khoa - Đăng kí Mua 428,368 FPT',type:'registered_buy',
+  disclosedAt:now,quantity:428368,sourceUrl:'https://iq.vietcap.com.vn/api/iq-insight-service/v1/events?ticker=FPT',
+  sourcePublisher:'Vietcap',reaction:{status:'observed',returnPct:{'1':1.2,'3':3.4,'5':2.1,'10':null},signal:'TANG_KEM_THANH_KHOAN',volumeRatio3:1.4}
+ };
+ api.setData({schemaVersion:2,status:'ok',checkedAt:now,universe:{expected:100,processed:100},
+  symbols:{FPT:{profile:{asOf:'2025-12-31',
+   source:'https://kbbuddywts.kbsec.com.vn/iis-server/investment/stockinfo/profile/FPT?l=1',sourceName:'KBS',
+   ownership:[{name:'CĐ nội bộ',percentage:16.05,asOf:'2025-12-31'}],
+   shareholders:[{name:'SCIC',percentage:5.67,asOf:'2025-12-31'}],
+   leaders:[{name:'Trương Gia Bình',role:'Chủ tịch HĐQT'}]},
+   events:[event],sourceStatus:{profile:'ok',events:'ok',market:'ok'}}}
+ });
+ assert.match(host.innerHTML,/Cơ cấu sở hữu/);
+ assert.match(host.innerHTML,/Cổ đông lớn/);
+ assert.match(host.innerHTML,/Ban lãnh đạo/);
+ assert.match(host.innerHTML,/16,05%/);
+ assert.match(host.innerHTML,/Trương Gia Bình/);
+ assert.match(host.innerHTML,/428\.368/);
+ assert.match(host.innerHTML,/\+3,4%/);
+ assert.match(host.innerHTML,/T\+10/);
+ assert.match(host.innerHTML,/Đã đăng ký/);
+ assert.doesNotMatch(host.innerHTML,/Đã mua/);
+});
