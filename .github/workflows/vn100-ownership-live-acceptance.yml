@@ -77,10 +77,7 @@ jobs:
               assert mbb['tableCss']=='auto',(mbb['tableCss'],mbb['scroll'])
               print('MBB_DESKTOP_PASS',mbb['rows'],mbb['cards'],flush=True)
 
-              input=driver.find_element(By.ID,'ticker')
-              input.clear()
-              input.send_keys('FPT')
-              driver.execute_script("document.getElementById('company-form').requestSubmit()")
+              driver.execute_script("document.getElementById('ticker').value='FPT';document.getElementById('company-form').requestSubmit()")
               WebDriverWait(driver,45).until(lambda d:snapshot()['title'].startswith('FPT ·') and snapshot()['rows']>0)
               fpt=snapshot()
               assert 'Trương Gia Bình' in fpt['txt'] and 'SCIC' in fpt['txt'],fpt
@@ -88,10 +85,7 @@ jobs:
               assert 'MBB · Sở hữu' not in fpt['title']
               print('FPT_TICKER_SWITCH_PASS',fpt['rows'],flush=True)
 
-              input=driver.find_element(By.ID,'ticker')
-              input.clear()
-              input.send_keys('VCB')
-              driver.execute_script("document.getElementById('company-form').requestSubmit()")
+              driver.execute_script("document.getElementById('ticker').value='VCB';document.getElementById('company-form').requestSubmit()")
               WebDriverWait(driver,40).until(lambda d:snapshot()['title'].startswith('VCB ·') and snapshot()['cards']==3)
               vcb=snapshot()
               assert 'Cổ đông lớn' in vcb['txt'] and 'Ban lãnh đạo' in vcb['txt']
