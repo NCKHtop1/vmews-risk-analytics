@@ -126,3 +126,19 @@ test('changing ticker through application event switches ownership view without 
  assert.match(host.innerHTML,/Trương B/);
  assert.doesNotMatch(host.innerHTML,/Nguyễn A/);
 });
+
+test('identical notices with different upstream IDs are shown once',()=>{
+ const {api}=harness();
+ const first={...row,id:'upstream-a',title:'Nguyễn A - Đăng kí Mua 10.000 MBB'};
+ const second={...first,id:'upstream-b'};
+ const data={schemaVersion:2,symbols:{MBB:{events:[first,second]}}};
+ assert.equal(api._test.validRows(data,'MBB').length,1);
+});
+test('measured post-disclosure movement has a direction separate from registration',()=>{
+ const {api}=harness();
+ const sell={...row,type:'registered_sell',
+  reaction:{status:'observed',signal:'THEO_DOI',returnPct:{'1':-0.6,'3':-2.5},volumeRatio3:0.85}};
+ assert.deepEqual([...api._test.marketSignal(sell)],['Giảm sau công bố','down']);
+ const buy={...sell,type:'registered_buy',reaction:{...sell.reaction,returnPct:{'3':2.5}}};
+ assert.deepEqual([...api._test.marketSignal(buy)],['Tăng sau công bố','up']);
+});
