@@ -771,3 +771,45 @@ body.strategy-lab-view .strategy-page{display:block}
 #macro-panel-vbma .money-vbma-grid{align-items:stretch}
 #macro-panel-vbma .money-curve{width:100%;min-height:170px}
 @media(max-width:640px){.money-tenor-curve{max-height:215px}.money-curve{margin:8px 0}}
+
+
+/* VN100 ownership tab. Scope every selector to this tab; other views remain unchanged. */
+#market-ownership-content{min-width:0;color:#243c59}
+#market-ownership-content h4{font-size:15px;margin:0;color:#223957}
+#market-ownership-content p{font-size:13px;line-height:1.55;color:#63758c}
+.ownership-section-title,.owner-reaction-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:14px 0 12px}
+.ownership-section-title small,.owner-reaction-head small,.owner-source{font-size:11px;color:#74849a}
+.owner-overview{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0}
+.owner-overview>section{border:1px solid #e4eaf2;background:#fbfcff;border-radius:12px;padding:14px 15px;min-width:0}
+.owner-overview h4{border-bottom:1px solid #e5ebf3;padding-bottom:10px;margin-bottom:7px!important}
+.owner-structure-row{display:flex;gap:10px;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid #edf1f6;font-size:12px;line-height:1.4}
+.owner-structure-row:last-child{border-bottom:0}
+.owner-structure-row span{min-width:0;overflow-wrap:anywhere}
+.owner-structure-row b{white-space:nowrap;font-variant-numeric:tabular-nums;color:#174b88}
+.owner-structure-row small{color:#70829b;font-size:11px;text-align:right;line-height:1.4}
+.owner-overview details{margin-top:10px}
+.owner-overview summary{font-size:12px;color:#275ab0;cursor:pointer;font-weight:600}
+.owner-source{display:block;margin:8px 0 22px}
+.owner-source a,.ownership-table a{color:#245cb2;text-decoration:underline;text-underline-offset:2px}
+.owner-reaction-head{margin:18px 0 12px}
+.ownership-table-scroll{overflow:auto;max-width:100%;border:1px solid #e1e8f1;border-radius:12px;background:#fff;overscroll-behavior-x:contain}
+.ownership-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;min-width:920px}
+.ownership-table th{position:sticky;top:0;background:#f3f6fb;color:#48617f;font-size:11px;letter-spacing:.01em;text-align:left;border-bottom:1px solid #dfe7f1;padding:11px 10px;white-space:nowrap}
+.ownership-table td{border-bottom:1px solid #edf1f5;padding:11px 10px;vertical-align:top;line-height:1.5}
+.ownership-table tr:last-child td{border-bottom:0}
+.ownership-table tr:hover td{background:#f9fbfe}
+.ownership-table td strong{display:block;font-weight:650;color:#243d60;max-width:250px}
+.ownership-table td small{display:block;margin-top:4px;color:#7a899f;line-height:1.4;max-width:275px}
+.owner-date,.owner-number{white-space:nowrap;font-variant-numeric:tabular-nums}
+.owner-pos{font-weight:650;color:#098265;white-space:nowrap}
+.owner-neg{font-weight:650;color:#bd4457;white-space:nowrap}
+.owner-zero,.owner-missing{color:#7b8aa0;white-space:nowrap}
+.owner-signal{display:inline-block;padding:4px 9px;border-radius:6px;background:#edf2f9;color:#48617f;font-size:11px;font-weight:650;white-space:nowrap}
+.owner-signal-up{color:#087a5a;background:#e9f7f1}
+.owner-signal-down{color:#b23548;background:#fff0f1}
+.owner-signal-flat{color:#506b87;background:#edf2f9}
+.owner-signal-watch{color:#745918;background:#faf4e7}
+.ownership-empty{padding:18px;border:1px dashed #d6e1ef;border-radius:11px;background:#fafcff}
+.ownership-empty strong{font-weight:650}
+@media(max-width:900px){.owner-overview{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.owner-overview{grid-template-columns:minmax(0,1fr)}.owner-overview>section{padding:12px}.ownership-section-title{align-items:flex-start}.ownership-table{font-size:11px}.ownership-table td{padding:9px 8px}}
