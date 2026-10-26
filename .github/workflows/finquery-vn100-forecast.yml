@@ -1,6 +1,11 @@
 name: FinQuery VN100 forecast refresh
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/finquery_vn100_timeseries.py"
+      - ".github/workflows/finquery-vn100-forecast.yml"
   schedule:
     - cron: "20 2,3,4,6,7 * * 1-5"
     - cron: "20 8 * * 1-5"
