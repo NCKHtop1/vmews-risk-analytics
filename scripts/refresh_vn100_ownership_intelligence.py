@@ -382,7 +382,7 @@ def build(core, market, output, limit=None, previous=None):
     # The discovery API sometimes rate-limits sustained requests. Publish all 100
     # source profiles every run, but rotate event queries across the least recently
     # successful issuers. A missed request is not evidence that no event exists.
-    quota = len(symbols) if limit else min(len(symbols), 48)
+    quota = len(symbols) if limit else min(len(symbols), 24)
     priority = sorted(symbols, key=lambda symbol: (
         bool((old.get(symbol) or {}).get("lastEventsSuccess")),
         str((old.get(symbol) or {}).get("lastEventsSuccess") or ""),
@@ -391,7 +391,11 @@ def build(core, market, output, limit=None, previous=None):
     event_symbols = set(priority[:quota])
     fresh = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
-        futures = {pool.submit(fetch_company, symbol, symbol in event_symbols): symbol for symbol in symbols}
+        # Submit in priority order, not alphabetical symbol order. Previously
+        # late-alphabet missing symbols were fetched only after the data provider
+        # had handled dozens of requests, repeatedly leaving the same 12 gaps.
+        futures = {pool.submit(fetch_company, symbol, symbol in event_symbols): symbol
+                   for symbol in priority}
         for future in concurrent.futures.as_completed(futures):
             sym = futures[future]
             fresh[sym] = future.result()
