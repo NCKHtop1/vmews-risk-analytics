@@ -366,6 +366,28 @@ def build(core_path: Path, market_dir: Path, now: datetime | None = None) -> dic
             "horizons": horizon_rows,
             "evidence": {"recent": [], "decisionRecent": []},
         }
+    # Keep existing non-forecast company context in the unchanged dashboard.
+    # These fields are for display only and are never used in the predictor.
+    legacy_file = core_path.resolve().parents[2] / "data" / "forecast-dashboard-v12.json"
+    if legacy_file.is_file():
+        try:
+            legacy = json.loads(legacy_file.read_text(encoding="utf-8"))
+            for symbol, current in symbols.items():
+                previous = (legacy.get("symbols") or {}).get(symbol) or {}
+                for key in (
+                    "name", "companyName", "sector", "newsFeatures", "flow",
+                    "fundContext", "fundamentalContext", "rumorContext",
+                    "priceSourceAgreement",
+                ):
+                    value = previous.get(key)
+                    if value is not None and (key != "sector" or value != "UNKNOWN"):
+                        current[key] = value
+                previous_evidence = previous.get("evidence") or {}
+                if previous_evidence:
+                    current["evidence"] = previous_evidence
+                current["contextAsOf"] = str(legacy.get("asOf") or "")[:10]
+        except (OSError, ValueError, TypeError):
+            pass
     if len(symbols) != 100 or set(symbols) != set(histories):
         raise RuntimeError("VN100 forecast coverage is not exactly 100/100")
     if recent_bars < 95:
@@ -374,6 +396,7 @@ def build(core_path: Path, market_dir: Path, now: datetime | None = None) -> dic
         raise RuntimeError(f"Intraday verified quote coverage below 90/100: {quote_count}")
     model = {
         "source": VERSION,
+        "universe": {"currentSymbols": 100},
         "promotion": {"status": "PASS", "directPriceHorizons": list(HORIZONS), "preferredRankingHorizon": 3},
         "horizons": {str(h): {"priceStatus": "PASS", "sealedAudit": audit["horizons"][str(h)]["metrics"]} for h in HORIZONS},
     }
