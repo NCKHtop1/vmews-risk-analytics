@@ -31,7 +31,7 @@ jobs:
           rows=[r for r in data['events'] if r['symbol']=='MBB']
           assert len(rows)>=9,len(rows)
           assert len({x['id'] for x in rows})==len(rows)
-          assert any(x['type']=='reported_result' and x['disclosedAt'].startswith('2026-10-07') for x in rows)
+          assert any(x['type']=='executed_sell' and x['quantity']==113000 and x['disclosedAt'].startswith('2026-10-07') for x in rows)
           assert all(x['sourceUrl'].startswith(('https://www.mbbank.com.vn/','https://www.hsx.vn/')) for x in rows)
           assert 'ownership-intelligence' not in __import__('pathlib').Path('financial-report/index.html').read_text(encoding='utf8')[:1000] or len(__import__('pathlib').Path('financial-report/index.html').read_text(encoding='utf8'))>100000
           print('MBB_OFFICIAL_DISCLOSURES_PASS',len(rows))
