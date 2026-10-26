@@ -1,0 +1,72 @@
+name: FinQuery VN100 forecast refresh
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "20 2,3,4,6,7 * * 1-5"
+    - cron: "20 8 * * 1-5"
+  pull_request:
+    paths:
+      - "scripts/finquery_vn100_timeseries.py"
+      - ".github/workflows/finquery-vn100-forecast.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finquery-vn100-timeseries-publisher
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: ${{ github.event_name != 'pull_request' }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Checkout verified price histories
+        run: |
+          git fetch origin financial-market-data
+          git worktree add --detach /tmp/finquery-market FETCH_HEAD
+      - name: Generate and validate VN100 forecast
+        run: |
+          python scripts/finquery_vn100_timeseries.py --market /tmp/finquery-market/market --output /tmp/finquery-vn100-forecast.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path("/tmp/finquery-vn100-forecast.json").read_text())
+          core=json.loads(Path("financial-report/data/companies.json").read_text())
+          expected={x["symbol"] for x in core}
+          assert len(expected)==100
+          assert p["status"]=="PASS"
+          assert set(p["dashboard"]["symbols"])==expected
+          assert set(p["dashboard"]["charts"])==expected
+          for symbol,row in p["dashboard"]["symbols"].items():
+              assert set(row["horizons"])=={"1","2","3","4","5"},symbol
+              assert all(q["priceValidated"] and q["expectedPrice"]>0 for q in row["horizons"].values()),symbol
+              assert len(p["dashboard"]["charts"][symbol])>=8,symbol
+          print("VN100 100/100, 500/500 horizon prices, walk-forward validation passed")
+          PY
+      - name: Publish atomically to dedicated data branch
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/finquery-vn100-publish
+          if git ls-remote --exit-code --heads origin finquery-vn100-data >/dev/null 2>&1; then
+            git fetch origin finquery-vn100-data
+            git worktree add -B finquery-vn100-data /tmp/finquery-vn100-publish FETCH_HEAD
+          else
+            git worktree add -b finquery-vn100-data /tmp/finquery-vn100-publish HEAD
+          fi
+          mkdir -p /tmp/finquery-vn100-publish/data
+          cp /tmp/finquery-vn100-forecast.json /tmp/finquery-vn100-publish/data/finquery-vn100-forecast.json
+          git -C /tmp/finquery-vn100-publish config user.name "github-actions[bot]"
+          git -C /tmp/finquery-vn100-publish config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C /tmp/finquery-vn100-publish add data/finquery-vn100-forecast.json
+          if git -C /tmp/finquery-vn100-publish diff --cached --quiet; then exit 0; fi
+          git -C /tmp/finquery-vn100-publish commit -m "Refresh verified VN100 walk-forward forecasts"
+          git -C /tmp/finquery-vn100-publish push origin HEAD:refs/heads/finquery-vn100-data
