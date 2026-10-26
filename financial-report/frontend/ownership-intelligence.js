@@ -1,93 +1,147 @@
 (function(){'use strict';
-/* Use issuer/exchange announcements, not inferred trades or portfolio holdings. */
 const host=document.getElementById('market-ownership-content');
 if(!host)return;
-const SOURCE='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/ownership-disclosures.json';
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmt=(v,d=0)=>Number.isFinite(v)?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(v):'—';
-const stamp=s=>{const d=Date.parse(s||'');return Number.isFinite(d)&&d<=Date.now()+300000&&d>0?d:null;};
-function safeSource(u,symbol){
+const ROOT='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/';
+const V2=ROOT+'ownership-intelligence-v2.json';
+const FALLBACK=ROOT+'ownership-disclosures.json';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+const fmt=(v,d=0)=>Number.isFinite(Number(v))&&v!==null&&v!==undefined&&v!==''?Number(v).toLocaleString('vi-VN',{minimumFractionDigits:0,maximumFractionDigits:d}):'—';
+const day=s=>{const t=Date.parse(s||'');return Number.isFinite(t)&&t<=Date.now()+300000&&t>0?new Date(t).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):'—'};
+const stamp=s=>{const t=Date.parse(s||'');return Number.isFinite(t)&&t<=Date.now()+300000&&t>0?t:null};
+function safeSource(raw,symbol){
  try{
-  const x=new URL(u);
-  if(x.protocol!=='https:'||x.username||x.password)return'';
-  const h=x.hostname.toLowerCase();
-  const regulator=/(^|\.)(hnx\.vn|hsx\.vn|ssc\.gov\.vn|vsd\.vn|vsd\.com\.vn)$/.test(h);
-  const mbIssuer=symbol==='MBB'&&(h==='mbbank.com.vn'||h.endsWith('.mbbank.com.vn'));
-  return regulator||mbIssuer?x.href:'';
- }catch{return'';}
+  const u=new URL(raw);
+  if(u.protocol!=='https:'||u.username||u.password)return'';
+  const h=u.hostname.toLowerCase();
+  if(/(^|\.)(hnx\.vn|hsx\.vn|ssc\.gov\.vn|vsd\.vn|vsd\.com\.vn)$/.test(h))return u.href;
+  if(h==='kbbuddywts.kbsec.com.vn'&&u.pathname.startsWith('/iis-server/investment/stockinfo/'))return u.href;
+  if(h==='iq.vietcap.com.vn'&&u.pathname.startsWith('/api/iq-insight-service/v1/events'))return u.href;
+  if(symbol==='MBB'&&(h==='mbbank.com.vn'||h.endsWith('.mbbank.com.vn')))return u.href;
+  return'';
+ }catch{return''}
 }
-const TYPES={
+const TYPE={
  registered_buy:'Đăng ký mua',registered_sell:'Đăng ký bán',
- executed_buy:'Đã mua',executed_sell:'Đã bán',
- ownership_change:'Thay đổi sở hữu',
- reported_registration:'Thông báo giao dịch',
- reported_result:'Báo cáo kết quả'
+ executed_buy:'Đã mua',executed_sell:'Đã bán',ownership_change:'Thay đổi sở hữu',
+ reported_registration:'Thông báo giao dịch',reported_result:'Báo cáo kết quả'
 };
-const state={data:null,error:null,checked:false,symbol:''};
-function verified(row){
- if(!row||!Object.hasOwn(TYPES,row.type)||!stamp(row.disclosedAt))return false;
- if(!/^[A-Z]{3}$/.test(row.symbol||'')||!safeSource(row.sourceUrl,row.symbol))return false;
- if(typeof row.person!=='string'||!row.person.trim()||typeof row.role!=='string')return false;
- const isDocumentOnly=row.type==='reported_registration'||row.type==='reported_result';
- if(isDocumentOnly){
-  if(row.quantity!==null&&row.quantity!==undefined&&(!Number.isSafeInteger(row.quantity)||row.quantity<0))return false;
- }else if(!Number.isSafeInteger(row.quantity)||row.quantity<0)return false;
- if(row.holdingsAfter!=null&&(!Number.isSafeInteger(row.holdingsAfter)||row.holdingsAfter<0))return false;
- if(row.executedAt!=null&&!stamp(row.executedAt))return false;
- if(row.title!=null&&(typeof row.title!=='string'||row.title.length>300))return false;
+const SIGNAL={
+ TANG_KEM_THANH_KHOAN:['Tích cực','up'],
+ GIAM_KEM_THANH_KHOAN:['Tiêu cực','down'],
+ DI_NGANG:['Đi ngang','flat'],
+ THEO_DOI:['Theo dõi','watch'],
+ CHO_DU_LIEU:['Chờ phiên tiếp theo','watch']
+};
+const state={data:null,error:null,checked:false,pending:null,legacy:false};
+function verified(r){
+ if(!r||!Object.hasOwn(TYPE,r.type)||!stamp(r.disclosedAt)||!/^[A-Z]{3}$/.test(r.symbol||'')||!safeSource(r.sourceUrl,r.symbol))return false;
+ if(typeof r.person!=='string'||!r.person.trim()||typeof r.role!=='string')return false;
+ if(r.quantity!=null&&(!Number.isSafeInteger(r.quantity)||r.quantity<0))return false;
+ if(r.holdingsAfter!=null&&(!Number.isSafeInteger(r.holdingsAfter)||r.holdingsAfter<0))return false;
+ if(r.executedAt!=null&&!stamp(r.executedAt))return false;
  return true;
 }
-function selected(){return String(document.getElementById('ticker')?.value||'MBB').trim().toUpperCase();}
-function validRows(data,symbol){
- if(data?.schemaVersion!==1||data?.status!=='verified'||!Array.isArray(data.events))return[];
- const found=data.events.filter(r=>r.symbol===symbol&&verified(r))
-   .sort((a,b)=>stamp(b.disclosedAt)-stamp(a.disclosedAt));
+function selected(){return String(document.getElementById('ticker')?.value||'MBB').trim().toUpperCase()}
+function validRows(d,symbol){
+ const events=d?.schemaVersion===2?d.symbols?.[symbol]?.events:d?.events;
+ if(!Array.isArray(events))return[];
  const seen=new Set();
- return found.filter(r=>{
-  const key=r.id||[r.symbol,r.person,r.type,r.disclosedAt,r.sourceUrl].join('|');
-  if(seen.has(key))return false;
-  seen.add(key);return true;
- }).slice(0,60);
+ return events.filter(r=>r.symbol===symbol&&verified(r))
+   .sort((a,b)=>stamp(b.disclosedAt)-stamp(a.disclosedAt))
+   .filter(r=>{const k=r.id||[r.symbol,r.person,r.type,r.disclosedAt,r.title].join('|');if(seen.has(k))return false;seen.add(k);return true})
+   .slice(0,90);
+}
+function sourceLink(url,symbol,label='Nguồn'){
+ const href=safeSource(url,symbol);
+ return href?'<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+esc(label)+' ↗</a>':'';
+}
+function pct(v){if(v===null||v===undefined||!Number.isFinite(Number(v)))return'<span class="owner-missing">—</span>';
+ const n=Number(v),tone=n>0?'owner-pos':n<0?'owner-neg':'owner-zero';
+ return'<span class="'+tone+'">'+(n>0?'+':'')+fmt(n,2)+'%</span>';
+}
+function summarySection(symbol,profile){
+ if(!profile)return'<div class="owner-overview"><section><h4>Cơ cấu sở hữu</h4><p>Chưa có số liệu đã đối chiếu.</p></section><section><h4>Cổ đông lớn</h4><p>Chưa có số liệu đã đối chiếu.</p></section><section><h4>Ban lãnh đạo</h4><p>Chưa có số liệu đã đối chiếu.</p></section></div>';
+ const own=(profile.ownership||[]).filter(x=>x&&typeof x.name==='string'&&Number.isFinite(Number(x.percentage))&&x.percentage!==null);
+ const holders=(profile.shareholders||[]).filter(x=>x&&typeof x.name==='string'&&Number.isFinite(Number(x.percentage))&&x.percentage!==null);
+ const leaders=(profile.leaders||[]).filter(x=>x&&x.name&&x.role);
+ const ownRows=own.map(x=>'<div class="owner-structure-row"><span>'+esc(x.name)+'</span><b>'+fmt(x.percentage,2)+'%</b></div>').join('')||'<p>Chưa có số liệu đã đối chiếu.</p>';
+ const holderRows=holders.slice(0,6).map(x=>'<div class="owner-structure-row"><span>'+esc(x.name)+'</span><b>'+fmt(x.percentage,2)+'%</b></div>').join('')||'<p>Chưa có số liệu đã đối chiếu.</p>';
+ const otherHolders=holders.length>6?'<details><summary>Xem thêm '+(holders.length-6)+' cổ đông</summary>'+holders.slice(6).map(x=>'<div class="owner-structure-row"><span>'+esc(x.name)+'</span><b>'+fmt(x.percentage,2)+'%</b></div>').join('')+'</details>':'';
+ const leaderRows=leaders.slice(0,6).map(x=>'<div class="owner-structure-row"><span>'+esc(x.name)+'</span><small>'+esc(x.role)+'</small></div>').join('')||'<p>Chưa có danh sách đã đối chiếu.</p>';
+ const otherLeaders=leaders.length>6?'<details><summary>Xem thêm '+(leaders.length-6)+' thành viên</summary>'+leaders.slice(6).map(x=>'<div class="owner-structure-row"><span>'+esc(x.name)+'</span><small>'+esc(x.role)+'</small></div>').join('')+'</details>':'';
+ const latest=[profile.asOf,...own.map(x=>x.asOf),...holders.map(x=>x.asOf)].filter(Boolean).sort().at(-1)||null;
+ const meta='<small class="owner-source">'+(latest?'Số liệu kỳ '+day(latest)+' · ':'')+sourceLink(profile.source,symbol,profile.sourceName||'Nguồn')+'</small>';
+ return'<div class="owner-overview"><section><h4>Cơ cấu sở hữu</h4>'+ownRows+'</section>'+
+ '<section><h4>Cổ đông lớn</h4>'+holderRows+otherHolders+'</section>'+
+ '<section><h4>Ban lãnh đạo</h4>'+leaderRows+otherLeaders+'</section></div>'+meta;
+}
+function marketSignal(event){
+ if(event.type.startsWith('registered_'))return['Đã đăng ký','watch'];
+ const r=event.reaction||{};
+ if(r.status==='pending')return['Chờ phiên','watch'];
+ return SIGNAL[r.signal]||['Theo dõi','watch'];
 }
 function render(){
- const symbol=selected();state.symbol=symbol;
+ const symbol=selected();
  if(!state.data){
-  host.innerHTML='<section class="ownership-empty"><strong>'+esc(symbol)+' · Giao dịch người nội bộ</strong><p>'+
-   (state.error?'Chưa tải được dữ liệu.':'Đang tải…')+'</p></section>';
+  host.innerHTML='<section class="ownership-empty"><strong>'+esc(symbol)+' · Sở hữu và giao dịch</strong><p>'+(state.error?'Chưa tải được dữ liệu.':'Đang tải…')+'</p></section>';
   return;
  }
- const rows=validRows(state.data,symbol);
- if(!rows.length){
-  host.innerHTML='<section class="ownership-empty"><strong>'+esc(symbol)+' · Giao dịch người nội bộ</strong><p>Chưa có công bố được đối chiếu.</p></section>';return;
+ const card=state.data?.schemaVersion===2?state.data.symbols?.[symbol]:null;
+ const events=validRows(state.data,symbol);
+ const head='<div class="ownership-section-title"><h4>'+esc(symbol)+' · Sở hữu, lãnh đạo và giao dịch</h4>'+
+   '<small>'+('Cập nhật '+day(state.data?.checkedAt||state.data?.updatedAt))+'</small></div>';
+ const summary=summarySection(symbol,card?.profile);
+ const counts='<div class="owner-reaction-head"><h4>Giao dịch nội bộ &amp; phản ứng sau công bố</h4><small>'+events.length+' công bố</small></div>';
+ if(!events.length){
+   host.innerHTML=head+summary+counts+'<section class="ownership-empty"><p>Chưa có công bố được đối chiếu.</p></section>';
+   return;
  }
- const header='<div class="ownership-heading"><strong>'+esc(symbol)+' · '+rows.length+' công bố</strong></div>';
- const trs=rows.map(r=>{
-  const desc=String(r.title||r.role||'').trim();
-  const role=String(r.role||'').trim();
-  const detail=desc&&desc!==role?desc:role;
-  const source=safeSource(r.sourceUrl,r.symbol);
-  return '<tr><td>'+esc(new Date(r.disclosedAt).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}))+'</td>'+
-   '<td><strong>'+esc(r.person)+'</strong>'+(role?'<small>'+esc(role)+'</small>':'')+'</td>'+
-   '<td>'+esc(TYPES[r.type])+(detail?'<small>'+esc(detail)+'</small>':'')+
-   (r.executedAt?'<small>Ngày giao dịch '+esc(new Date(r.executedAt).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}))+'</small>':'')+'</td>'+
-   '<td>'+fmt(r.quantity)+'</td><td>'+fmt(r.holdingsAfter)+'</td>'+
-   '<td><a href="'+esc(source)+'" rel="noopener noreferrer" target="_blank" aria-label="Mở công bố nguồn '+esc(r.person)+'">Nguồn ↗</a></td></tr>';
+ const list=events.map(r=>{
+  const signal=marketSignal(r),re=r.reaction||{},ret=re.returnPct||{};
+  const title=r.title&&r.title!==r.role?'<small>'+esc(r.title)+'</small>':'';
+  const step=h=>pct(ret[String(h)]);
+  const volume=re.volumeRatio3!=null?' · KL '+fmt(re.volumeRatio3,2)+'×':'';
+  const type='<strong>'+esc(TYPE[r.type])+'</strong>'+title;
+  return'<tr><td class="owner-date">'+day(r.disclosedAt)+'</td>'+
+   '<td><strong>'+esc(r.person)+'</strong><small>'+esc(r.role)+'</small></td>'+
+   '<td>'+type+'</td><td class="owner-number">'+fmt(r.quantity)+'</td>'+
+   '<td>'+step(1)+'</td><td>'+step(3)+'</td><td>'+step(5)+'</td><td>'+step(10)+'</td>'+
+   '<td><span class="owner-signal owner-signal-'+signal[1]+'">'+esc(signal[0])+'</span>'+
+   (re.volumeRatio3!=null?'<small>'+esc(volume.trim())+'</small>':'')+'</td>'+
+   '<td>'+sourceLink(r.sourceUrl,r.symbol,r.sourcePublisher||'Nguồn')+'</td></tr>';
  }).join('');
- host.innerHTML=header+'<div class="ownership-table-scroll"><table class="ownership-table"><thead><tr>'+
-  '<th>Công bố</th><th>Người/tổ chức</th><th>Nội dung</th><th>Số lượng</th><th>Nắm giữ sau</th><th>Nguồn</th>'+
-  '</tr></thead><tbody>'+trs+'</tbody></table></div>';
+ const table='<div class="ownership-table-scroll"><table class="ownership-table"><thead><tr>'+
+ '<th>Công bố</th><th>Người/tổ chức</th><th>Giao dịch</th><th>Số lượng</th>'+
+ '<th>T+1</th><th>T+3</th><th>T+5</th><th>T+10</th><th>Diễn biến</th><th>Nguồn</th>'+
+ '</tr></thead><tbody>'+list+'</tbody></table></div>';
+ host.innerHTML=head+summary+counts+table;
+}
+async function fetchBounded(url){
+ const ctl=new AbortController();const timer=setTimeout(()=>ctl.abort(),12000);
+ try{const r=await fetch(url+'?v='+Math.floor(Date.now()/3600000),{cache:'no-store',signal:ctl.signal});if(!r.ok)throw Error('HTTP '+r.status);return await r.json();}
+ finally{clearTimeout(timer);}
 }
 async function load(){
- try{
-  const r=await fetch(SOURCE+'?v='+Math.floor(Date.now()/3600000),{cache:'no-store',signal:AbortSignal.timeout(10000)});
-  if(!r.ok)throw Error('Missing ownership data');
-  const d=await r.json();
-  if(d.schemaVersion!==1||d.status!=='verified'||!Array.isArray(d.events))throw Error('Invalid ownership data');
-  state.data=d;state.error=null;
- }catch(e){state.error=e?.message||'unavailable';}finally{state.checked=true;render();}
+ if(state.pending)return state.pending;
+ state.pending=(async()=>{
+  try{
+   let next=null;
+   try{const d=await fetchBounded(V2);if(d.schemaVersion===2&&d.symbols&&Object.keys(d.symbols).length===100)next=d;}catch(_){}
+   if(!next){const d=await fetchBounded(FALLBACK);if(d.schemaVersion!==1||!Array.isArray(d.events))throw Error('No verified ownership');next=d;}
+   state.data=next;state.error=null;state.legacy=next.schemaVersion===1;
+  }catch(e){state.error=String(e?.message||'unavailable');}
+  finally{state.checked=true;state.pending=null;render();}
+ })();
+ return state.pending;
 }
 document.addEventListener('finquery:symbol-change',render);
 document.getElementById('ticker')?.addEventListener('change',render);
-window.FinOwnership={refresh:()=>{if(!state.checked)return load();render();},setData:data=>{state.data=data;state.error=null;state.checked=true;render();},_test:{verified,safeSource,validRows}};
+window.FinOwnership={
+ refresh:()=>state.checked?(render(),Promise.resolve()):load(),
+ setData:data=>{state.data=data;state.error=null;state.checked=true;render()},
+ reload:()=>{state.checked=false;state.pending=null;return load()},
+ _test:{verified,safeSource,validRows,marketSignal}
+};
 render();load();
 })();
