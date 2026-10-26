@@ -1,0 +1,67 @@
+name: FinQuery MBB live ownership browser verification
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/finquery-ownership-live-browser.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Selenium
+        run: pip install --disable-pip-version-check -q selenium==4.36.0
+      - name: Verify MBB disclosures on the published Pages UI
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, time
+          from selenium import webdriver
+          from selenium.webdriver.chrome.options import Options
+          from selenium.webdriver.support.ui import WebDriverWait
+          url='https://nckhtop1.github.io/vmews-risk-analytics/financial-report/index.html?symbol=MBB&smoke=ownership'
+          opts=Options()
+          for flag in ('--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--window-size=1440,1000'):
+              opts.add_argument(flag)
+          browser=webdriver.Chrome(options=opts)
+          try:
+              browser.set_page_load_timeout(55)
+              browser.get(url)
+              WebDriverWait(browser,70).until(lambda d: d.execute_script("return Boolean(window.FinOwnership)&&Boolean(document.querySelector('[data-market-space=\"ownership\"]'))"))
+              browser.execute_script("document.querySelector('[data-market-space=\"ownership\"]').click()")
+              def state():
+                  return browser.execute_script("""
+                    const host=document.getElementById('market-ownership-content');
+                    const view=document.getElementById('market-ownership-workspace');
+                    return {
+                       ticker:document.getElementById('ticker')?.value,
+                       hidden:view?.hidden,
+                       count:host?.querySelectorAll('tbody tr').length||0,
+                       content:(host?.textContent||'').slice(0,2200),
+                       links:[...(host?.querySelectorAll('a[href]')||[])].map(x=>x.href).slice(0,25)
+                    };
+                  """)
+              WebDriverWait(browser,55).until(lambda d: state()['count']>=10)
+              result=state()
+              print('MBB_OWNERSHIP_BROWSER',json.dumps(result,ensure_ascii=False),flush=True)
+              assert not result['hidden'],result
+              assert result['ticker']=='MBB',result
+              assert result['count']==11,result
+              assert 'Nguyễn Thị Thủy' in result['content'],result
+              assert '113.000' in result['content'],result
+              assert 'Báo cáo kết quả' in result['content'] and 'Đăng ký bán' in result['content'],result
+              assert all(x.startswith(('https://www.mbbank.com.vn/','https://www.hsx.vn/')) for x in result['links']),result
+              browser.set_window_size(390,844)
+              WebDriverWait(browser,10).until(lambda d: state()['count']==11)
+              print('MBB_OWNERSHIP_BROWSER_PASS',flush=True)
+          finally:
+              browser.quit()
+          PY
