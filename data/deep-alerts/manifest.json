@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-10-23T14:32:51.416056+00:00",
+  "generatedAt": "2026-10-26T01:29:27.029700+00:00",
   "marketModelDate": "2026-10-23",
   "requested": 21,
-  "reused": 20,
-  "fetched": 1,
+  "reused": 21,
+  "fetched": 0,
   "cached": 21,
   "symbols": {
     "PPT": {
@@ -35,6 +35,11 @@
     "HBC": {
       "rows": 1800,
       "modelAsOf": "2026-08-12",
+      "source": "Vnstock"
+    },
+    "SZG": {
+      "rows": 658,
+      "modelAsOf": "2026-10-23",
       "source": "Vnstock"
     },
     "SVN": {
@@ -105,11 +110,6 @@
     "PVX": {
       "rows": 732,
       "modelAsOf": "2026-10-02",
-      "source": "Vnstock"
-    },
-    "SZG": {
-      "rows": 658,
-      "modelAsOf": "2026-10-23",
       "source": "Vnstock"
     }
   },
