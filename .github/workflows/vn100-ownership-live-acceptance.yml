@@ -1,0 +1,111 @@
+name: FinQuery VN100 ownership live browser acceptance
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/vn100-ownership-live-acceptance.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Chrome driver
+        run: pip install -q selenium==4.36.0
+      - name: Verify real published ownership and signals on desktop and phone
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json,urllib.request,time
+          from selenium import webdriver
+          from selenium.webdriver.common.by import By
+          from selenium.webdriver.support.ui import WebDriverWait
+          from selenium.webdriver.chrome.options import Options
+
+          source='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/ownership-intelligence-v2.json'
+          bundle=None
+          for attempt in range(5):
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(source+'?check='+str(attempt),headers={'Cache-Control':'no-cache'}),timeout=25) as response:
+                      bundle=json.loads(response.read())
+                  if bundle.get('schemaVersion')==2 and len(bundle.get('symbols',{}))==100:break
+              except Exception as exc:
+                  print('RETRY_BUNDLE',attempt,type(exc).__name__,flush=True)
+                  time.sleep(10)
+          assert bundle is not None and bundle.get('status')=='ok'
+          cov=bundle['universe']
+          assert cov['profileAvailable']==100 and cov['historyAvailable']==100,cov
+          assert len(bundle['symbols'])==100,cov
+          assert cov['eventsWithPriceReaction']>0,cov
+          assert len(bundle['symbols']['MBB']['profile']['leaders'])>0
+          assert len(bundle['symbols']['FPT']['profile']['shareholders'])>0
+          print('VN100_DATA_PASS',json.dumps(cov),flush=True)
+
+          opts=Options()
+          for flag in ('--headless=new','--no-sandbox','--disable-dev-shm-usage','--disable-gpu','--window-size=1440,1000'):
+              opts.add_argument(flag)
+          driver=webdriver.Chrome(options=opts)
+          driver.set_page_load_timeout(60)
+          try:
+              driver.get('https://nckhtop1.github.io/vmews-risk-analytics/financial-report/index.html?symbol=MBB&mode=quarter&smoke=vn100-owner')
+              WebDriverWait(driver,65).until(lambda d:d.execute_script("return Boolean(window.FinOwnership)&&Boolean(document.querySelector('[data-market-space=\"ownership\"]'))"))
+              driver.execute_script("document.querySelector('[data-market-space=\"ownership\"]').click()")
+              def snapshot():
+                  return driver.execute_script("""
+                    const h=document.querySelector('#market-ownership-content');
+                    const box=h?.querySelector('.ownership-table-scroll');
+                    return {
+                      symbol:document.querySelector('#ticker')?.value,
+                      title:h?.querySelector('.ownership-section-title')?.textContent||'',
+                      txt:(h?.textContent||'').slice(0,14000),
+                      cards:h?.querySelectorAll('.owner-overview>section').length||0,
+                      rows:h?.querySelectorAll('.ownership-table tbody tr').length||0,
+                      scroll:box?{width:box.clientWidth,scrollWidth:box.scrollWidth}:null,
+                      tableCss:box?getComputedStyle(box).overflowX:null,
+                      viewHidden:document.querySelector('#market-ownership-workspace')?.hidden
+                    }
+                  """)
+              WebDriverWait(driver,55).until(lambda d:snapshot()['rows']>=10 and snapshot()['cards']==3)
+              mbb=snapshot()
+              assert not mbb['viewHidden'] and mbb['symbol']=='MBB',mbb
+              assert '113.000' in mbb['txt'] and 'Cơ cấu sở hữu' in mbb['txt'],mbb
+              assert 'T+1' in mbb['txt'] and 'T+10' in mbb['txt'],mbb
+              assert mbb['tableCss']=='auto',(mbb['tableCss'],mbb['scroll'])
+              print('MBB_DESKTOP_PASS',mbb['rows'],mbb['cards'],flush=True)
+
+              input=driver.find_element(By.ID,'ticker')
+              input.clear()
+              input.send_keys('FPT')
+              driver.execute_script("document.getElementById('company-form').requestSubmit()")
+              WebDriverWait(driver,45).until(lambda d:snapshot()['title'].startswith('FPT ·') and snapshot()['rows']>0)
+              fpt=snapshot()
+              assert 'Trương Gia Bình' in fpt['txt'] and 'SCIC' in fpt['txt'],fpt
+              assert 'T+3' in fpt['txt'] and 'T+5' in fpt['txt']
+              assert 'MBB · Sở hữu' not in fpt['title']
+              print('FPT_TICKER_SWITCH_PASS',fpt['rows'],flush=True)
+
+              input=driver.find_element(By.ID,'ticker')
+              input.clear()
+              input.send_keys('VCB')
+              driver.execute_script("document.getElementById('company-form').requestSubmit()")
+              WebDriverWait(driver,40).until(lambda d:snapshot()['title'].startswith('VCB ·') and snapshot()['cards']==3)
+              vcb=snapshot()
+              assert 'Cổ đông lớn' in vcb['txt'] and 'Ban lãnh đạo' in vcb['txt']
+              print('VCB_PROFILE_PASS',vcb['rows'],flush=True)
+
+              driver.set_window_size(390,844)
+              driver.execute_script("document.getElementById('ticker').value='MBB';document.getElementById('company-form').requestSubmit();")
+              WebDriverWait(driver,50).until(lambda d:snapshot()['title'].startswith('MBB ·') and snapshot()['rows']>=10)
+              mobile=snapshot()
+              assert mobile['cards']==3
+              assert mobile['scroll'] and mobile['scroll']['scrollWidth']>mobile['scroll']['width'],mobile
+              assert mobile['tableCss']=='auto',mobile
+              print('MOBILE_PASS',json.dumps(mobile['scroll']),flush=True)
+              print('VN100_OWNERSHIP_PUBLIC_BROWSER_PASS',flush=True)
+          finally:
+              driver.quit()
+          PY
