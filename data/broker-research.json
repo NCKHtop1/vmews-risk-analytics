@@ -1,8 +1,78 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-27T05:15:49+00:00",
+  "updatedAt": "2026-10-27T12:25:09+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-VND-2026-10-27-001b1c7b",
+      "symbol": "VND",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-27",
+      "title": "Cập nhật KQKD VND – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VND ngày 27/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-VCK-2026-10-27-001b1c7b",
+      "symbol": "VCK",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-27",
+      "title": "Cập nhật KQKD VCK – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VCK ngày 27/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-EVF-2026-10-27-001b1c7b",
+      "symbol": "EVF",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-27",
+      "title": "Cập nhật KQKD EVF – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo EVF ngày 27/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "AGR-HT1-2026-10-27-205ed2e3",
+      "symbol": "HT1",
+      "broker": "AGR",
+      "brokerName": "AGR",
+      "publishedAt": "2026-10-27",
+      "title": "HT1: Khuyến nghị NẮM GIỮ với giá mục tiêu 14,500 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/ht1-khuyen-nghi-nam-giu-voi-gia-muc-tieu-14-500-dong-co-phieu-rpid6211.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "NẮM GIỮ",
+      "targetPrice": 14500,
+      "summary": "AGR có báo cáo HT1 ngày 27/10/2026 với khuyến nghị NẮM GIỮ, giá mục tiêu 14.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "AGR-FPT-2026-10-27-15544daa",
+      "symbol": "FPT",
+      "broker": "AGR",
+      "brokerName": "AGR",
+      "publishedAt": "2026-10-27",
+      "title": "FPT: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/fpt-bao-cao-cap-nhat-kqkd-q3-2026-rpid6210.html",
+      "dataProvider": "24HMONEY",
+      "summary": "AGR có báo cáo FPT ngày 27/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-LPB-2026-10-26-001b1c7b",
+      "symbol": "LPB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-26",
+      "title": "Cập nhật KQKD LPB – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElementById('tcbs-ticker-options'); if (!datalist) { return; } fetch('https://www.tcbs.com.vn/wp-c",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo LPB ngày 26/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "TCBS-LPB-2026-10-26-001b1c7b",
       "symbol": "LPB",
@@ -24,6 +94,18 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo HT1 ngày 26/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-HCM-2026-10-26-c628562a",
+      "symbol": "HCM",
+      "broker": "TCBS",
+      "brokerName": "TCBS",
+      "publishedAt": "2026-10-26",
+      "title": "HCM: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hcm-bao-cao-cap-nhat-kqkd-q3-2026-rpid6212.html",
+      "dataProvider": "24HMONEY",
+      "summary": "TCBS có báo cáo HCM ngày 26/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-HCM-2026-10-26-001b1c7b",
