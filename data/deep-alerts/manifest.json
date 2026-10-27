@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-10-26T16:31:51.387592+00:00",
+  "generatedAt": "2026-10-27T02:17:38.134049+00:00",
   "marketModelDate": "2026-10-26",
   "requested": 25,
-  "reused": 24,
-  "fetched": 1,
+  "reused": 25,
+  "fetched": 0,
   "cached": 25,
   "symbols": {
     "PPT": {
@@ -92,6 +92,11 @@
       "modelAsOf": "2026-09-01",
       "source": "Yahoo Finance"
     },
+    "TIG": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-26",
+      "source": "Vnstock"
+    },
     "NVL": {
       "rows": 1800,
       "modelAsOf": "2026-09-14",
@@ -125,11 +130,6 @@
     "PVX": {
       "rows": 732,
       "modelAsOf": "2026-10-02",
-      "source": "Vnstock"
-    },
-    "TIG": {
-      "rows": 1994,
-      "modelAsOf": "2026-10-26",
       "source": "Vnstock"
     }
   },
