@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "asOf": "2026-10-22",
+  "asOf": "2026-10-23",
   "publishedAt": "2026-10-23T18:18:00+07:00",
-  "lastCheckedAt": "2026-10-26T16:50:56+00:00",
+  "lastCheckedAt": "2026-10-27T15:56:07+00:00",
   "mode": "SOURCE_REFERENCE",
   "title": "Interbank VND & HNX futures; VBMA FX swap curve if verified",
   "disclaimer": "Public observation archive, no investment signals, no invented observations.",
@@ -13,7 +13,7 @@
     "status": "secondary_source_crosschecked",
     "originAgency": "NHNN",
     "frequency": "business_daily",
-    "asOf": "2026-10-22",
+    "asOf": "2026-10-23",
     "source": "https://stockbiz.vn/vi-mo/du-lieu/lai-suat-lien-ngan-hang",
     "crossCheck": "https://dulieukinhte.com/du-lieu-dong/lai-suat-thi-truong-lien-ngan-hang-qua-dem-34248",
     "observations": [
@@ -64,6 +64,10 @@
       {
         "date": "2026-10-22",
         "value": 4.31
+      },
+      {
+        "date": "2026-10-23",
+        "value": 3.95
       }
     ]
   },
@@ -114,52 +118,52 @@
     "instrument": "USD/VND FX Swap",
     "measurement": "FX Swap implied yield curve",
     "unit": "%/năm",
-    "asOf": "2026-10-26",
+    "asOf": "2026-10-27",
     "status": "verified",
     "points": [
       {
         "tenor": "SPOT",
-        "value": 0.723
+        "value": 1.477
       },
       {
         "tenor": "ON",
-        "value": 0.65
+        "value": 1.483
       },
       {
         "tenor": "1W",
-        "value": 1.595
+        "value": 1.933
       },
       {
         "tenor": "2W",
-        "value": 1.547
+        "value": 1.75
       },
       {
         "tenor": "3W",
-        "value": 1.533
+        "value": 1.587
       },
       {
         "tenor": "1M",
-        "value": 1.383
+        "value": 1.553
       },
       {
         "tenor": "2M",
-        "value": 1.592
+        "value": 1.742
       },
       {
         "tenor": "3M",
-        "value": 2.286
+        "value": 2.375
       },
       {
         "tenor": "6M",
-        "value": 2.596
+        "value": 2.614
       },
       {
         "tenor": "9M",
-        "value": 2.654
+        "value": 2.686
       },
       {
         "tenor": "1Y",
-        "value": 2.653
+        "value": 2.683
       }
     ],
     "licenseStatus": "source_attributed",
@@ -177,7 +181,7 @@
   "vbmaCurves": {
     "swap": {
       "status": "verified",
-      "asOf": "2026-10-26",
+      "asOf": "2026-10-27",
       "unit": "%/năm",
       "measurement": "FX Swap implied yield curve",
       "dateLayout": "MM/DD/YYYY",
@@ -185,47 +189,47 @@
       "points": [
         {
           "tenor": "SPOT",
-          "value": 0.723
+          "value": 1.477
         },
         {
           "tenor": "ON",
-          "value": 0.65
+          "value": 1.483
         },
         {
           "tenor": "1W",
-          "value": 1.595
+          "value": 1.933
         },
         {
           "tenor": "2W",
-          "value": 1.547
+          "value": 1.75
         },
         {
           "tenor": "3W",
-          "value": 1.533
+          "value": 1.587
         },
         {
           "tenor": "1M",
-          "value": 1.383
+          "value": 1.553
         },
         {
           "tenor": "2M",
-          "value": 1.592
+          "value": 1.742
         },
         {
           "tenor": "3M",
-          "value": 2.286
+          "value": 2.375
         },
         {
           "tenor": "6M",
-          "value": 2.596
+          "value": 2.614
         },
         {
           "tenor": "9M",
-          "value": 2.654
+          "value": 2.686
         },
         {
           "tenor": "1Y",
-          "value": 2.653
+          "value": 2.683
         }
       ],
       "source": "https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv",
@@ -241,7 +245,7 @@
     },
     "gov_bond": {
       "status": "verified",
-      "asOf": "2026-10-26",
+      "asOf": "2026-10-27",
       "unit": "%/năm",
       "measurement": "Government Bond Yield",
       "dateLayout": "MM/DD/YYYY",
