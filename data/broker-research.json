@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-26T13:17:11+00:00",
+  "updatedAt": "2026-10-27T05:15:49+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
     {
@@ -37,6 +37,32 @@
       "summary": "TCBS có báo cáo HCM ngày 26/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
+      "id": "SSV-VRE-2026-10-26-b1a1584b",
+      "symbol": "VRE",
+      "broker": "SSV",
+      "brokerName": "SSV",
+      "publishedAt": "2026-10-26",
+      "title": "VRE: Khuyến nghị MUA với giá mục tiêu 33,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vre-khuyen-nghi-mua-voi-gia-muc-tieu-33-000-dong-co-phieu-rpid6208.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 33000,
+      "summary": "SSV có báo cáo VRE ngày 26/10/2026 với khuyến nghị MUA, giá mục tiêu 33.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "BETA-VCI-2026-10-26-4a6ed8c7",
+      "symbol": "VCI",
+      "broker": "BETA",
+      "brokerName": "BETA",
+      "publishedAt": "2026-10-26",
+      "title": "VCI: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vci-bao-cao-cap-nhat-kqkd-q3-2026-rpid6209.html",
+      "dataProvider": "24HMONEY",
+      "summary": "BETA có báo cáo VCI ngày 26/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "YUANTA-HCM-2026-10-23-806341d2",
       "symbol": "HCM",
       "broker": "YUANTA",
@@ -51,6 +77,20 @@
       "summary": "YUANTA có báo cáo HCM ngày 23/10/2026 với khuyến nghị NẮM GIỮ, giá mục tiêu 26.775 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "KIS-TCB-2026-10-23-a519f080",
+      "symbol": "TCB",
+      "broker": "KIS",
+      "brokerName": "KIS",
+      "publishedAt": "2026-10-23",
+      "title": "TCB: Khuyến nghị MUA với giá mục tiêu 43,300 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tcb-khuyen-nghi-mua-voi-gia-muc-tieu-43-300-dong-co-phieu-rpid6207.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 43300,
+      "summary": "KIS có báo cáo TCB ngày 23/10/2026 với khuyến nghị MUA, giá mục tiêu 43.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "BSC-TCB-2026-10-23-02ae9413",
       "symbol": "TCB",
       "broker": "BSC",
@@ -63,6 +103,20 @@
       "recommendation": "MUA",
       "targetPrice": 41800,
       "summary": "BSC có báo cáo TCB ngày 23/10/2026 với khuyến nghị MUA, giá mục tiêu 41.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "ACBS-TCB-2026-10-23-70ef4992",
+      "symbol": "TCB",
+      "broker": "ACBS",
+      "brokerName": "ACBS",
+      "publishedAt": "2026-10-23",
+      "title": "TCB: Khuyến nghị KHẢ QUAN với giá mục tiêu 38,300 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tcb-khuyen-nghi-kha-quan-voi-gia-muc-tieu-38-300-dong-co-phieu-rpid6206.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 38300,
+      "summary": "ACBS có báo cáo TCB ngày 23/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 38.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "ACBS-KBC-2026-10-23-180b4b2f",
