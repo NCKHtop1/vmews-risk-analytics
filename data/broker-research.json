@@ -1,8 +1,99 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-28T05:54:22+00:00",
+  "updatedAt": "2026-10-28T13:11:03+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "YUANTA-VCI-2026-10-28-57a14db2",
+      "symbol": "VCI",
+      "broker": "YUANTA",
+      "brokerName": "YSVN",
+      "publishedAt": "2026-10-28",
+      "title": "VCI: Khuyến nghị MUA với giá mục tiêu 21,509 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vci-khuyen-nghi-mua-voi-gia-muc-tieu-21-509-dong-co-phieu-rpid6221.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 21509,
+      "summary": "YUANTA có báo cáo VCI ngày 28/10/2026 với khuyến nghị MUA, giá mục tiêu 21.509 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIKKIBANKS-DGW-2026-10-28-ff4c7f9a",
+      "symbol": "DGW",
+      "broker": "VIKKIBANKS",
+      "brokerName": "VikkiBankS",
+      "publishedAt": "2026-10-28",
+      "title": "DGW: Khuyến nghị MUA với giá mục tiêu 55,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/dgw-khuyen-nghi-mua-voi-gia-muc-tieu-55-000-dong-co-phieu-rpid6223.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 55000,
+      "summary": "VIKKIBANKS có báo cáo DGW ngày 28/10/2026 với khuyến nghị MUA, giá mục tiêu 55.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-VPX-2026-10-28-001b1c7b",
+      "symbol": "VPX",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-28",
+      "title": "Cập nhật KQKD VPX – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VPX ngày 28/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-MCH-2026-10-28-001b1c7b",
+      "symbol": "MCH",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-28",
+      "title": "Cập nhật KQKD MCH – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo MCH ngày 28/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "BSC-HT1-2026-10-28-fe4abca8",
+      "symbol": "HT1",
+      "broker": "BSC",
+      "brokerName": "BSC",
+      "publishedAt": "2026-10-28",
+      "title": "HT1: Khuyến nghị MUA với giá mục tiêu 16,700 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/ht1-khuyen-nghi-mua-voi-gia-muc-tieu-16-700-dong-co-phieu-rpid6226.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 16700,
+      "summary": "BSC có báo cáo HT1 ngày 28/10/2026 với khuyến nghị MUA, giá mục tiêu 16.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "ACBS-NT2-2026-10-28-402099c7",
+      "symbol": "NT2",
+      "broker": "ACBS",
+      "brokerName": "ACBS",
+      "publishedAt": "2026-10-28",
+      "title": "NT2: Khuyến nghị MUA với giá mục tiêu 28,100 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/nt2-khuyen-nghi-mua-voi-gia-muc-tieu-28-100-dong-co-phieu-rpid6225.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 28100,
+      "summary": "ACBS có báo cáo NT2 ngày 28/10/2026 với khuyến nghị MUA, giá mục tiêu 28.100 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIKKIBANKS-TCB-2026-10-27-70575362",
+      "symbol": "TCB",
+      "broker": "VIKKIBANKS",
+      "brokerName": "VikkiBankS",
+      "publishedAt": "2026-10-27",
+      "title": "TCB: Khuyến nghị THEO DÕI với giá mục tiêu 37,500 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tcb-khuyen-nghi-theo-doi-voi-gia-muc-tieu-37-500-dong-co-phieu-rpid6227.html",
+      "dataProvider": "24HMONEY",
+      "targetPrice": 37500,
+      "summary": "VIKKIBANKS có báo cáo TCB ngày 27/10/2026 với giá mục tiêu 37.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "TCBS-VND-2026-10-27-001b1c7b",
       "symbol": "VND",
@@ -35,6 +126,18 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo EVF ngày 27/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "BETA-TCB-2026-10-27-fd48cfc1",
+      "symbol": "TCB",
+      "broker": "BETA",
+      "brokerName": "BETA",
+      "publishedAt": "2026-10-27",
+      "title": "TCB: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tcb-bao-cao-cap-nhat-kqkd-q3-2026-rpid6228.html",
+      "dataProvider": "24HMONEY",
+      "summary": "BETA có báo cáo TCB ngày 27/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "AGR-HT1-2026-10-27-205ed2e3",
@@ -83,6 +186,17 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo LPB ngày 26/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-HT1-2026-10-26-001b1c7b",
+      "symbol": "HT1",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-26",
+      "title": "Cập nhật KQKD HT1 – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElementById('tcbs-ticker-options'); if (!datalist) { return; } fetch('https://www.tcbs.com.vn/wp-c",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo HT1 ngày 26/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "TCBS-HT1-2026-10-26-001b1c7b",
