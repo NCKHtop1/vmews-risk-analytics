@@ -241,7 +241,7 @@ class ChartController{
    if(last){
     node.textContent=(live?'NẾN MỚI · ':'NẾN GẦN NHẤT · ')+this.symbol+' · '+
      timeLabel(last.time)+' · C '+fmt(last.close)+(direction?' · '+direction:'');
-    node.setAttribute('aria-label',live?'Nến thị trường vừa cập nhật':'Nến cuối trong dữ liệu đã tải');
+    node.setAttribute?.('aria-label',live?'Nến thị trường vừa cập nhật':'Nến cuối trong dữ liệu đã tải');
    }
   }
   if(!last||!this.series.price)return;
