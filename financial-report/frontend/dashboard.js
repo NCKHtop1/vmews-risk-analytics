@@ -71,15 +71,39 @@ function geometry(series,width=560,height=190,padding={left:65,right:24,top:18,b
  const points=series.map(s=>({...s,x:x(s.period),y:s.value===null?null:y(s.value)}));let pen=false;const path=points.map(p=>{if(p.y===null){pen=false;return'';}const out=`${pen?'L':'M'}${p.x.toFixed(2)},${p.y.toFixed(2)}`;pen=true;return out;}).join(' ');
  return{points,path,zero:y(0),lo,hi,y,padding,width,height};
 }
-function sparkline(series){const g=geometry(series,96,32,{left:4,right:4,top:4,bottom:4});return`<svg class="sparkline" viewBox="0 0 96 32" aria-hidden="true"><path d="${g.path}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;}
-function cards(m){return m.metrics.map((k,i)=>{const context=k.value===null?'Chưa có dữ liệu':m.compare?(k.before===null?`Không có số liệu ${label(m.compare)}`:`so với ${label(m.compare)}`):label(m.latest);return`<article class="kpi-card kpi-${i}"><div class="kpi-label"><span>${esc(k.label)}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${k.icon}"/></svg></div><div class="kpi-value">${k.value===null?'—':nf.format(k.value)}<span>tỷ đồng</span></div><div class="kpi-bottom"><div>${k.delta===null?`<span class="kpi-context">${esc(context)}</span>`:`<span class="kpi-change ${k.delta<0?'down':'up'}">${k.delta>0?'+':''}${nf.format(k.delta)}%</span><span class="kpi-context">${esc(context)}</span>`}</div>${sparkline(k.series)}</div></article>`}).join('');}
+function sparkline(series,title='Chỉ tiêu'){
+ const g=geometry(series,96,32,{left:4,right:4,top:4,bottom:4});
+ const dots=g.points.filter(p=>Number.isFinite(p.value)&&Number.isFinite(p.y)).map((p,i)=>
+  '<circle data-fq-point="'+i+'" data-fq-x="'+p.x.toFixed(2)+'" data-fq-y="'+p.y.toFixed(2)+
+  '" data-fq-label="'+esc(label(p.period))+'" data-fq-series="'+esc(title)+
+  '" data-fq-value="'+esc(new Intl.NumberFormat('vi-VN',{maximumFractionDigits:4}).format(p.value))+
+  '" data-fq-unit="tỷ đồng" cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+
+  '" r="1.5" fill="currentColor"/>').join('');
+ return '<svg class="sparkline" viewBox="0 0 96 32" data-fq-inspect="kpi" data-fq-top="2" data-fq-bottom="30" data-fq-color="#5264dc" tabindex="0" role="img" aria-label="'+
+  esc(title+' theo kỳ')+'"><path d="'+g.path+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'</svg>';
+}
+function cards(m){return m.metrics.map((k,i)=>{const context=k.value===null?'Chưa có dữ liệu':m.compare?(k.before===null?`Không có số liệu ${label(m.compare)}`:`so với ${label(m.compare)}`):label(m.latest);return`<article class="kpi-card kpi-${i}"><div class="kpi-label"><span>${esc(k.label)}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${k.icon}"/></svg></div><div class="kpi-value">${k.value===null?'—':nf.format(k.value)}<span>tỷ đồng</span></div><div class="kpi-bottom"><div>${k.delta===null?`<span class="kpi-context">${esc(context)}</span>`:`<span class="kpi-change ${k.delta<0?'down':'up'}">${k.delta>0?'+':''}${nf.format(k.delta)}%</span><span class="kpi-context">${esc(context)}</span>`}</div>${sparkline(k.series,k.label)}</div></article>`}).join('');}
 function axisNumber(v){return Math.abs(v)>=1e6?nf.format(v/1e6)+'tr':Math.abs(v)>=1000?nf.format(v/1000)+'k':nf.format(v);}
 function trend(metric){
  if(!metric||!metric.series.some(s=>s.value!==null))return'<div class="chart-empty">Chưa có dữ liệu cho chỉ tiêu này.</div>';
  const g=geometry(metric.series),ticks=Array.from({length:4},(_,i)=>g.lo+(g.hi-g.lo)*i/3),valid=g.points.filter(p=>p.value!==null);
- const axis=ticks.map(v=>`<g><line x1="65" x2="536" y1="${g.y(v)}" y2="${g.y(v)}" class="chart-gridline"/><text x="55" y="${g.y(v)+4}" text-anchor="end">${esc(axisNumber(v))}</text></g>`).join('');
- const points=g.points.map((p,i)=>`${i===0||i===g.points.length-1||g.points.length<=7?`<text x="${p.x}" y="178" text-anchor="${i===0?'start':i===g.points.length-1?'end':'middle'}">${esc(label(p.period))}</text>`:''}${p.value===null?'':`<g class="chart-point" tabindex="0" role="img" aria-label="${esc(label(p.period)+': '+precise.format(p.value)+' tỷ đồng')}" data-tooltip="${esc(label(p.period)+' · '+metric.label+': '+precise.format(p.value)+' tỷ đồng')}"><title>${esc(label(p.period)+': '+precise.format(p.value)+' tỷ đồng')}</title><circle cx="${p.x}" cy="${p.y}" r="12" class="point-hit"/><circle cx="${p.x}" cy="${p.y}" r="4" class="point-dot"/></g>`}`).join('');
- return`<svg class="trend-svg" viewBox="0 0 560 190" role="group" aria-label="${esc(metric.label)} theo kỳ, đơn vị tỷ đồng">${axis}<line x1="65" x2="536" y1="${g.zero}" y2="${g.zero}" class="zero-line"/><path d="${g.path}" class="trend-line"/>${points}</svg><div class="chart-readout" aria-live="polite">${esc(label(valid.at(-1).period))}<strong>${precise.format(valid.at(-1).value)} <span>tỷ đồng</span></strong></div>`;
+ const axis=ticks.map(v=>'<g><line x1="65" x2="536" y1="'+g.y(v)+'" y2="'+g.y(v)+'" class="chart-gridline"/><text x="55" y="'+(g.y(v)+4)+'" text-anchor="end">'+esc(axisNumber(v))+'</text></g>').join('');
+ const points=g.points.map((p,i)=>{
+  const tick=i===0||i===g.points.length-1||g.points.length<=7?
+   '<text x="'+p.x+'" y="178" text-anchor="'+(i===0?'start':i===g.points.length-1?'end':'middle')+'">'+esc(label(p.period))+'</text>':'';
+  if(p.value===null)return tick;
+  const shown=precise.format(p.value),full=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:4}).format(p.value);
+  return tick+'<g class="chart-point" tabindex="0" role="img" aria-label="'+esc(label(p.period)+': '+shown+' tỷ đồng')+
+   '" data-tooltip="'+esc(label(p.period)+' · '+metric.label+': '+shown+' tỷ đồng')+
+   '" data-fq-point="'+i+'" data-fq-x="'+p.x+'" data-fq-y="'+p.y+
+   '" data-fq-label="'+esc(label(p.period))+'" data-fq-series="'+esc(metric.label)+
+   '" data-fq-value="'+esc(full)+'" data-fq-unit="tỷ đồng">'+
+   '<circle cx="'+p.x+'" cy="'+p.y+'" r="12" class="point-hit"/>'+
+   '<circle cx="'+p.x+'" cy="'+p.y+'" r="4" class="point-dot"/></g>';
+ }).join('');
+ return'<svg class="trend-svg" data-fq-inspect="financial" data-fq-top="18" data-fq-bottom="155" data-fq-color="#5264dc" viewBox="0 0 560 190" role="group" tabindex="0" aria-label="'+esc(metric.label)+' theo kỳ, đơn vị tỷ đồng">'+axis+
+  '<line x1="65" x2="536" y1="'+g.zero+'" y2="'+g.zero+'" class="zero-line"/><path d="'+g.path+'" class="trend-line"/>'+points+'</svg>'+
+  '<div class="chart-readout" aria-live="polite">'+esc(label(valid.at(-1).period))+'<strong>'+precise.format(valid.at(-1).value)+' <span>tỷ đồng</span></strong></div>';
 }
 function capital(m){
  if(!m.capital)return'<div class="chart-empty">Chưa đủ dữ liệu cơ cấu nguồn vốn.</div>';
