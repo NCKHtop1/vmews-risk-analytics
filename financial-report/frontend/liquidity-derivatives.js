@@ -142,7 +142,7 @@ function renderBondCurves(p){
   const valid=['verified','retained'].includes(row.status)&&['approved','source_attributed'].includes(row.licenseStatus)&&
     row.unit&&/^\d{4}-\d\d-\d\d$/.test(row.asOf||'')&&points.length>=2;
   if(!valid){
-   const reason=row.status==='unavailable'?'Nguồn công bố chưa có đường cong đã xác minh':
+   const reason=row.status==='unavailable'?'Nguồn chưa cung cấp đường cong có ngày và kỳ hạn hợp lệ trong lượt thu thập mới nhất.':
     row.status==='retained'?'Bản lưu chưa đủ điều kiện sử dụng':'Chưa có đủ kỳ hạn và quyền sử dụng được kiểm chứng';
    pending.push('<span class="money-source-pending">'+esc(title)+' · '+esc(reason)+
       (link?' · '+link:'')+'</span>');
