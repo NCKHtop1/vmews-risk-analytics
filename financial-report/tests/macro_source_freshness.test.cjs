@@ -32,7 +32,7 @@ function harness(){
   return{ok:true,json:async()=>payload};
  };
  const window={
-  addEventListener(){},setInterval(){},FinMacroDashboard:{
+  addEventListener(){},dispatchEvent(){},setInterval(){},FinMacroDashboard:{
    corporateRows:(data,symbol)=>data?.companies?.[symbol]?.canonicalMetrics||[],
    render:(data,esg,symbol)=>renders.push({checkedAt:data.checkedAt,
     esgCheckedAt:esg?.checkedAt,symbol})
