@@ -54,7 +54,8 @@ test('academic references are canonical and scoped with caveats',()=>{
 test('academic evidence stays in context while public response hides source panels',()=>{
  assert.match(src,/academic=academicLenses\(question,knowledge,deep\)/);
  assert.match(src,/academicSources:\(agentContext\?\.academicContext\?\.references\|\|\[\]\)/);
- assert.match(src,/WEB\|ACADEMIC/);\n assert.doesNotMatch(src.slice(src.indexOf('function llmHTML('),src.indexOf('function nearBottom(')),/Nguồn đối chiếu|Dấu vết dữ liệu|Khung học thuật tham chiếu/);
+ assert.match(src,/WEB\|ACADEMIC/);
+ assert.doesNotMatch(src.slice(src.indexOf('function llmHTML('),src.indexOf('function nearBottom(')),/Nguồn đối chiếu|Dấu vết dữ liệu|Khung học thuật tham chiếu/);
 });
 
 test('deep answers have deterministic quality audit and bounded repair pass',()=>{
