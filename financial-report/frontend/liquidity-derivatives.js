@@ -76,6 +76,7 @@ function verifiedBondSpread(curve){
  if(!Number.isFinite(a)||!Number.isFinite(b))return null;
  return {difference:b-a,asOf:curve.asOf};
 }
+function onEntryForm(){return state.canEditOn?'<form id="finquery-on-manual-form" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:end"><label>Ngày<br><input name="date" type="date" required></label><label>ON (%/năm)<br><input name="value" type="number" min="0" max="25" step="0.0001" required placeholder="3.95"></label><button type="submit">Lưu ON</button><span id="finquery-on-entry-status" role="status"></span></form>':'';}
 function renderON(p){
  const host=$('money-on');if(!host)return;
  const on=p.interbank||{},crawled=(Array.isArray(on.observations)?on.observations:[]).filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)&&typeof x.value==='number'&&Number.isFinite(x.value)&&x.value>=0&&x.value<=25);
@@ -87,7 +88,7 @@ function renderON(p){
  const cross=safeURL(on.crossCheck,'dulieukinhte.com');
  const verified=['secondary_source_crosschecked','official_source'].includes(on.status);
  if(!last||(!verified&&!state.manual.length)){host.innerHTML=cardHeader('Lãi suất qua đêm','—','%/năm','VND')+
-  '<p class="money-source-pending">Chưa nhận được quan sát ON đã đối chiếu đủ nguồn. Không lấy giá tạm tính thay lãi suất liên ngân hàng.</p>';return;}
+  '<p class="money-source-pending">Chuỗi ON đang chờ cập nhật.</p>'+onEntryForm();return;}
  const difference=prev?last.value-prev.value:null;
  const lag=(Date.now()-Date.parse(last.date+'T00:00:00+07:00'))/86400000;
  const late=Number.isFinite(lag)&&lag>3;
@@ -96,7 +97,7 @@ function renderON(p){
   ' · nguồn liên ngân hàng chưa xác minh được kỳ mới; không xem là lãi suất hiện tại.</p>':'')+
  '<p class="money-card-caption">'+(difference===null?'':((difference>=0?'+':'')+fmt(difference)+' điểm % so với '+dateVN(prev.date)))+'</p>'+
  '<div class="money-chart">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe',width:Math.max(250,host.clientWidth-36)})+'</div>'+
- (state.canEditOn?'<form id="finquery-on-manual-form" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:end"><label>Ngày<br><input name="date" type="date" required></label><label>ON (%/năm)<br><input name="value" type="number" min="0" max="25" step="0.0001" required placeholder="3.95"></label><button type="submit">Lưu ON</button><span id="finquery-on-entry-status" role="status"></span></form>':'');
+ onEntryForm();
 }
 function renderFutures(p){
  const root=$('money-futures');if(!root)return;
@@ -176,7 +177,7 @@ async function loadManualON(){
   if(state.payload)renderON(state.payload);
  }catch(e){console.warn('ON manual observations unavailable');}
 }
-document.addEventListener('submit',async function(event){
+document.addEventListener?.('submit',async function(event){
  const form=event.target;if(form?.id!=='finquery-on-manual-form')return;
  event.preventDefault();if(!state.canEditOn)return;
  const note=$('finquery-on-entry-status');
