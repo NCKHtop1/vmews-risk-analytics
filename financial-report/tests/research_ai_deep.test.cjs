@@ -48,7 +48,7 @@ test('academic references are canonical and scoped with caveats',()=>{
  ])assert.ok(src.includes(needle),needle);
  assert.match(src,/không phải công thức dự báo giá ngắn hạn/);
  assert.match(src,/không được đồng nhất máy móc momentum 5 phiên/);
- assert.match(src,/không thay thế bằng chứng doanh nghiệp/);
+ assert.match(src,/FRAMEWORK_ONLY_NOT_COMPANY_EVIDENCE/);
 });
 
 test('academic evidence stays in context while public response hides source panels',()=>{
