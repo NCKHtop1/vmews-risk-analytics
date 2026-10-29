@@ -5,8 +5,10 @@ on:
     paths:
       - 'scripts/forecast_core_real_browser_smoke.py'
       - '.github/workflows/finquery-forecast-core-production-smoke.yml'
-  # Production browser checks must wait for a verified Pages deployment.
-  # PR checks exercise their own localhost copy, never the old live website.
+  # Production checks run after verified Pages deployment. The Vercel
+  # application intentionally requires Google login, so unauthenticated E2E
+  # checks its auth redirect while the full browser regression uses the same
+  # deployed code and real published market sources in an isolated preview.
   workflow_run:
     workflows: ['Deploy VMEWS Pages']
     branches: [main]
@@ -25,24 +27,24 @@ concurrency:
 
 jobs:
   forecast-ui:
-    # PR runs exercise the actual branch revision on a localhost preview.
-    # Post-Pages runs exercise the live Vercel domain only after successful deploy.
+    # PR checks the exact proposed branch; post-Pages checks the commit that
+    # triggered deploy with the production data feed, without bypassing auth.
     if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 9
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - name: Install Selenium
         run: pip install --disable-pip-version-check -q selenium==4.36.0
-      # PR checks run the exact branch files under localhost. Production HTML
-      # cannot validate an unmerged JS fallback change.
-      - name: Start isolated branch preview
-        if: github.event_name == 'pull_request'
+      # Use the same source commit on localhost in production because the
+      # canonical FinQuery domain is Google-authenticated by design.
+      - name: Start isolated forecast preview with published market data
         shell: bash
         run: |
           set -euo pipefail
@@ -53,9 +55,36 @@ jobs:
           done
           cat /tmp/forecast-preview-http.log
           exit 1
-      - name: Verify Forecast Core loads, exposes stale warnings, changes all nine disputed symbols, and works on mobile
+      - name: Verify protected production route and real VN100 data publisher
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          STATUS_URL='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/finquery-vn100-data/data/finquery-vn100-status.json'
+          curl --retry 3 --retry-delay 2 -fsSL --max-time 20 "$STATUS_URL?check=$GITHUB_RUN_ID" -o /tmp/vn100-status.json
+          python - <<'PY'
+          import json
+          from datetime import datetime,timezone
+          p=json.load(open('/tmp/vn100-status.json'))
+          assert p.get('status')=='PASS' and p.get('symbols')==100 and p.get('horizons')==500,p
+          stamp=datetime.fromisoformat(str(p.get('generatedAt') or '').replace('Z','+00:00'))
+          assert stamp.tzinfo and stamp.astimezone(timezone.utc)<=datetime.now(timezone.utc),p
+          print('AUTH_AWARE_FORECAST_SOURCE_PASS',p['generatedAt'],p.get('inputMode'),p['symbols'],p['horizons'])
+          PY
+          curl -sS --retry 3 --retry-delay 2 --max-time 20 -D /tmp/finquery-auth-headers.txt -o /dev/null \
+            "https://finquery.info.vn/forecast-final.html?symbol=FPT"
+          python - <<'PY'
+          import re
+          text=open('/tmp/finquery-auth-headers.txt').read()
+          code=re.findall(r'^HTTP/\S+\s+(\d{3})',text,re.M)
+          locations=re.findall(r'^location:\s*([^\r\n]+)',text,re.I|re.M)
+          assert code and code[-1] in {'301','302','303','307','308'},(code,locations)
+          assert locations and '/login' in locations[-1].lower(),(code,locations)
+          print('AUTH_PROTECTED_FORECAST_PASS',code[-1])
+          PY
+      - name: Verify Forecast Core loads, refreshes intraday quotes and forecasts, changes nine VN100 symbols and works on mobile
         env:
-          FINQUERY_FORECAST_URL: ${{ github.event_name == 'pull_request' && 'http://127.0.0.1:8765/forecast-final.html' || 'https://finquery.info.vn/forecast-final.html' }}
+          FINQUERY_FORECAST_URL: http://127.0.0.1:8765/forecast-final.html
         run: python scripts/forecast_core_real_browser_smoke.py
       - name: Preserve failure evidence only
         if: failure()
