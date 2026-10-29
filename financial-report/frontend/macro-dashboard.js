@@ -41,7 +41,7 @@ function httpsUrl(raw){try{const u=new URL(String(raw||''));return u.protocol===
 function sourceLink(raw,label){
  const url=httpsUrl(raw);
  if(!url)return '';
- return '<a class="macro-source-quicklink" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" title="'+esc('Mở công bố: '+label)+'" aria-label="'+esc('Mở công bố: '+label)+'"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5h6v6m-1-5-9 9M19 14v5H5V5h5"/></svg></a>';
+ return '<a class="macro-source-quicklink" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" title="'+esc('Mở công bố: '+label)+'" aria-label="'+esc('Mở công bố: '+label)+'"><span aria-hidden="true">↗</span></a>';
 }
 function plot(data,opts={}){
  const pts=data.slice(-(opts.limit||24));
@@ -97,7 +97,7 @@ function renderMacro(data){
   else context='So với '+esc(earlier.label)+': '+(last.y>=earlier.y?'+':'')+esc(fmt(last.y-earlier.y))+' '+esc(c.unit);
   const retained=ds?.status==='retained'||src?.status==='retained'||src?.status==='error';
   return'<article class="macro-viz-card">'+head+(retained?'<span class="macro-quiet-note">Kỳ công bố gần nhất</span>':'')+
-    (qualityNotice?'<span class="macro-quiet-note" title="Một số kỳ công bố cần xác minh thêm">Một số kỳ cần xác minh</span>':'')+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'</div></article>';
+    (qualityNotice?'<span class="macro-quiet-note" title="Một số kỳ công bố có cảnh báo chất lượng, cần xác minh thêm">Một số kỳ cần xác minh</span>':'')+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'</div></article>';
  }).join('');
  const checkDate=new Date(data?.checkedAt);
  const freshness=$('macro-data-freshness');
@@ -229,7 +229,7 @@ function renderEsg(data,esg,symbol){
     !(c.documents||[]).some(d=>httpsUrl(d.url))).length;
   const last=esg?.checkedAt?new Date(esg.checkedAt):null;
   const lastCheck=last&&Number.isFinite(+last)?last.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):'chưa rõ';
-  coverage.textContent=esg?'VN100 · '+companies.length+' doanh nghiệp · '+withDocs+' có tài liệu ESG · '+withKpi+' có KPI chuẩn hóa':'ESG doanh nghiệp đang kết nối.';
+  coverage.textContent=esg?'VN100 · '+companies.length+' doanh nghiệp · '+withDocs+' có tài liệu ESG · '+withKpi+' có KPI chuẩn hóa':'Dữ liệu ESG doanh nghiệp đang kết nối.';
   coverage.title=esg?'Chi tiết dữ liệu ESG: '+documentedWithoutKpi+' có tài liệu nhưng chưa có KPI · '+searching+' chưa có hồ sơ phù hợp · kiểm tra '+lastCheck:'';
  }
  renderCountry(data);
