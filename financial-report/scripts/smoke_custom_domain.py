@@ -61,7 +61,7 @@ def verify_hub_page(content):
         "FinQuery", "Kho dữ liệu", "Hợp đồng tương lai VN30",
         "Hợp đồng tương lai VN100", "39.543", "203 hợp đồng",
         "không bổ sung cổ phiếu niêm yết HNX",
-        "HNX chỉ là nguồn công bố chính thức của dữ liệu phái sinh",
+        "Dữ liệu phái sinh được tổng hợp riêng",
     ]
     # Real text has HTML nodes separating words: use a semantic rather than
     # an exact adjacent phrase match on company names and displayed numbers.
