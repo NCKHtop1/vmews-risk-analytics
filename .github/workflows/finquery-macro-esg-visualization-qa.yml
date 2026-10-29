@@ -19,6 +19,7 @@ on:
       - 'financial-report/frontend/market.css'
       - 'financial-report/frontend/section-collapse.js'
       - 'financial-report/tests/macro_dashboard.test.cjs'
+      - 'financial-report/tests/macro_source_freshness.test.cjs'
       - 'financial-report/tests/liquidity_derivatives.test.cjs'
       - 'financial-report/tests/vi_ui_copy.test.cjs'
       - 'financial-report/tests/derivatives_market.test.cjs'
@@ -48,6 +49,7 @@ on:
       - 'financial-report/frontend/market.css'
       - 'financial-report/frontend/section-collapse.js'
       - 'financial-report/tests/macro_dashboard.test.cjs'
+      - 'financial-report/tests/macro_source_freshness.test.cjs'
       - 'financial-report/tests/liquidity_derivatives.test.cjs'
       - 'financial-report/tests/vi_ui_copy.test.cjs'
       - 'financial-report/tests/derivatives_market.test.cjs'
@@ -86,6 +88,7 @@ jobs:
       - name: Evidence-linked macro and ESG chart regression
         run: |
           node --test financial-report/tests/macro_dashboard.test.cjs
+          node --test financial-report/tests/macro_source_freshness.test.cjs
           node --test financial-report/tests/liquidity_derivatives.test.cjs
           node --test financial-report/tests/vi_ui_copy.test.cjs
           node --test financial-report/tests/derivatives_market.test.cjs
