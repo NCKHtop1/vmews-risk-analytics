@@ -579,7 +579,7 @@ function renderSource(B,sym){
   const fundDetail=fund.available&&finite(fund.weightedNavMomentum20)?`NAV 20P ${+fund.weightedNavMomentum20>=0?"+":""}${pct(fund.weightedNavMomentum20,1)}`:"Danh mục · tỷ trọng · NAV · biến động";
   const rows=[
     ["Giá thị trường",z.date||"—",priceDetail],
-    ["Tin doanh nghiệp",`${LIVE_COMPANY_NEWS?liveNewsCount:(+signal.acceptedEvents||0)} bài`,LIVE_COMPANY_NEWS?`Cập nhật ${new Date(LIVE_COMPANY_NEWS.checkedAt).toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh"})}`:`${signal.newsSymbols??"—"} mã cổ phiếu`],
+    [B.source==="VN100"?"Tin doanh nghiệp":"Tin đã đối chiếu",`${B.source==="VN100"&&LIVE_COMPANY_NEWS?liveNewsCount:(+signal.acceptedEvents||0)} bài`,B.source==="VN100"&&LIVE_COMPANY_NEWS?`Cập nhật ${new Date(LIVE_COMPANY_NEWS.checkedAt).toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh"})}`:`${signal.newsSymbols??"—"} mã cổ phiếu`],
     ["Dòng tiền khối ngoại",flowValue(foreign),flowDetail(foreign)],
     ["Dòng tiền tự doanh",flowValue(prop),flowDetail(prop)],
     ["Danh mục quỹ",fundValue,fundDetail],
