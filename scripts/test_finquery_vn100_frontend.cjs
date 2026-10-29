@@ -33,9 +33,9 @@ function runtime(host,respond){
  return{window,urls};
 }
 const ok=data=>({ok:true,status:200,json:async()=>data});
-test('Pages and authenticated product use VN100, not abandoned independent core',async()=>{
+test('FinQuery domain and localhost preview use verified VN100 instead of retired core',async()=>{
  const payload=fixture();
- for(const host of ['nckhtop1.github.io','finquery.info.vn']){
+ for(const host of ['localhost','finquery.info.vn']){
   const app=runtime(host,async url=>url.includes('finquery-vn100-product.json')?ok(payload):{ok:false,status:404});
   const B=await app.window.__VMEWS_LOAD_BASE__();
   assert.equal(B.source,'VN100');
@@ -46,6 +46,17 @@ test('Pages and authenticated product use VN100, not abandoned independent core'
   assert.equal((await app.window.__VMEWS_LOAD_LEADER_BASE__()).dash.asOf,'2026-10-28');
  }
 });
+test('independent public Pages retains its separate full-HOSE validated model',async()=>{
+ const app=runtime('nckhtop1.github.io',async url=>{
+  if(url.includes('/forecast-dashboard-v12.json'))return ok({asOf:'2026-10-28',promotion:{status:'PASS'}});
+  if(url.includes('/phase-gates-v12.json'))return ok({status:'PASS'});
+  return {ok:false,status:404};
+ });
+ const leader=await app.window.__VMEWS_LOAD_LEADER_BASE__();
+ assert.equal(leader.gates.status,'PASS');
+ assert(leader.dash.promotion.status==='PASS');
+ assert(!app.urls.some(url=>url.includes('finquery-vn100-product.json')));
+});
 test('mirror recovers the VN100 product when GitHub Raw is temporarily unavailable',async()=>{
  const payload=fixture(),app=runtime('finquery.info.vn',async url=>
   url.includes('cdn.jsdelivr.net')?ok(payload):{ok:false,status:503});
@@ -54,7 +65,7 @@ test('mirror recovers the VN100 product when GitHub Raw is temporarily unavailab
  assert(app.urls.some(u=>u.includes('cdn.jsdelivr.net')));
 });
 test('verified full last-good forecast remains a fallback when compact bundle is missing',async()=>{
- const payload=fixture(),app=runtime('nckhtop1.github.io',async url=>
+ const payload=fixture(),app=runtime('localhost',async url=>
   url.includes('/finquery-vn100-forecast.json')?ok(payload):{ok:false,status:404});
  assert.equal((await app.window.__VMEWS_LOAD_BASE__()).source,'VN100');
 });
@@ -68,7 +79,7 @@ test('news refresh is independent from model availability',async()=>{
   title:'Kết quả kinh doanh FPT',symbols:['FPT'],url:'https://example.com/verified',
   source:'Nguồn công khai',publishedAt:stamp
  }]};
- const app=runtime('nckhtop1.github.io',async url=>
+ const app=runtime('localhost',async url=>
   url.includes('news-company-latest.json')?ok(fresh):{ok:false,status:404});
  const updated=await app.window.__VMEWS_REFRESH_COMPANY_NEWS__();
  assert.equal(updated,true);
