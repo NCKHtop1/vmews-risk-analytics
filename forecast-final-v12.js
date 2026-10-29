@@ -506,7 +506,7 @@ async function refreshCompanyNews(){
 }
 function renderLegacyNews(z){const box=$("#news");box.replaceChildren();const a=(z?.evidence?.decisionRecent||z?.evidence?.recent||[]).filter(item=>issuerHeadlineMatches(z?.symbol,item?.title));for(const x of a.slice(0,12)){const e=document.createElement(x.link?"a":"div");e.className="newsItem";if(x.link){e.href=x.link;e.target="_blank";e.rel="noopener"}const label=({POS:"TÍCH CỰC",NEG:"TIÊU CỰC",NEU:"TRUNG TÍNH"})[x.label]||x.label||"TRUNG TÍNH",event=({GENERAL:"THỊ TRƯỜNG",CORPORATE_ACTION:"DOANH NGHIỆP",EARNINGS:"KINH DOANH",OWNERSHIP:"SỞ HỮU",OPERATIONS_MA:"HOẠT ĐỘNG",ANALYST:"PHÂN TÍCH",REGULATORY:"PHÁP LÝ",FINANCING:"TÀI CHÍNH",MARKET_FLOW:"DÒNG TIỀN"})[x.event]||"SỰ KIỆN";e.innerHTML=`<b>${esc(x.title)}</b><small>${esc(x.publisher)} · ${esc(x.publishedAt||x.availableDate||"")}</small><div class="chips"><span class="chip">${esc(event)}</span><span class="chip">${esc(label)}</span>${x.decisionTimeEligible?'<span class="chip">MỚI CÔNG BỐ</span>':''}</div>`;box.append(e)}if(!a.length)box.innerHTML='<div class="empty">Chưa có tin mới đáng chú ý.</div>'}
 function renderNews(z){
- if(last?.B?.source!=="VN100")return renderLegacyNews(z);
+ if(last?.B&&last.B.source!=="VN100")return renderLegacyNews(z);
  const box=$("#news");if(!box)return;box.replaceChildren();
  const live=currentCompanyNews(z?.symbol);
  const source=live.length?live.map(item=>({
