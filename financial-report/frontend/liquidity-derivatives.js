@@ -157,7 +157,9 @@ function render(){
 async function load(){
  if(state.loading)return;state.loading=true;
  const btn=$('money-refresh');if(btn)btn.disabled=true;
- const mirror=new URL('/financial-report/market/finquery-liquidity.json',location.origin).href;
+ const mirror=document.documentElement.dataset.hosting==='pages'?
+  new URL('market/finquery-liquidity.json',location.href).href:
+  new URL('/financial-report/market/finquery-liquidity.json',location.origin).href;
  const urls=[SOURCE,mirror];let failure=null;
  try{
   let received=null;
