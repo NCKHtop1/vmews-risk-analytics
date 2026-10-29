@@ -125,7 +125,7 @@ def run():
                     return {line:cue.classList.contains('is-line'),hidden:cue.hidden,
                       label:cue.textContent,animate:getComputedStyle(cue).animationName};
                 """)
-                assert line=={"line":True,"hidden":False,"label":"","animate":"finquery-bar-focus"},line
+                assert line=={"line":True,"hidden":False,"label":"","animate":"finquery-last-subtle"},line
                 driver.execute_script("""
                     const select=document.getElementById('chart-type');
                     select.value='candles';select.dispatchEvent(new Event('change',{bubbles:true}));
