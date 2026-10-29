@@ -220,3 +220,12 @@ test('live ESG coverage does not mistake disclosure-only issuers for zero ESG ac
  assert.match(disclosure,/https:\/\/example.com\/hpg.pdf/);
  assert.doesNotMatch(disclosure,/<svg|0 điểm ESG|ESG bằng 0/);
 });
+
+
+test('World Bank aggregate warning does not hide independently valid country ESG trend',()=>{
+  const {api,$}=harness(),data=fixture();
+  data.datasets.esg_world_bank.qualityStatus='warning';
+  api.render(data,mbb(),'MBB');
+  assert.match($('macro-country-chart').innerHTML,/class="macro-trend-svg"/);
+  assert.match($('macro-country-chart').innerHTML,/2023/);
+});
