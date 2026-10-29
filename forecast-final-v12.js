@@ -442,6 +442,38 @@ function bindChartHover(){
   }
 }
 
+const MARKET_DRIVERS_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/drivers.json";
+const FINANCIAL_MANIFEST_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-report-data/data/manifest.json";
+let LIVE_MARKET_DRIVERS=null,LIVE_FINANCIAL_MANIFEST=null;
+async function refreshDataContext(){
+ const tick=Math.floor(Date.now()/300000);
+ const jobs=[
+  fetchJsonBounded(MARKET_DRIVERS_URL+"?refresh="+tick,8500).then(payload=>{
+   if(!payload?.generatedAt||!payload.symbols)return false;
+   const when=Date.parse(payload.generatedAt);
+   if(!Number.isFinite(when)||when>Date.now()+300000||
+      when<=Date.parse(LIVE_MARKET_DRIVERS?.generatedAt||""))return false;
+   LIVE_MARKET_DRIVERS=payload;return true;
+  }).catch(()=>false),
+  fetchJsonBounded(FINANCIAL_MANIFEST_URL+"?refresh="+tick,8500).then(payload=>{
+   if(payload?.universe!=="VN100"||payload?.coverage?.members!==100||!Array.isArray(payload?.companies))return false;
+   const when=Date.parse(payload.updatedAt);
+   if(!Number.isFinite(when)||when>Date.now()+300000||
+      when<=Date.parse(LIVE_FINANCIAL_MANIFEST?.updatedAt||""))return false;
+   LIVE_FINANCIAL_MANIFEST=payload;return true;
+  }).catch(()=>false),
+ ];
+ const result=await Promise.all(jobs);
+ if(result.some(Boolean)&&last?.B){
+  renderSource(last.B,last.sym);
+  window.dispatchEvent(new CustomEvent("vmews:source-updated",{detail:{
+   marketAt:LIVE_MARKET_DRIVERS?.generatedAt||null,
+   financialAt:LIVE_FINANCIAL_MANIFEST?.updatedAt||null
+  }}));
+ }
+ return result.some(Boolean);
+}
+window.__VMEWS_REFRESH_DATA_CONTEXT__=refreshDataContext;
 const COMPANY_NEWS_RAW="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/news-company-latest.json";
 const COMPANY_NEWS_MIRROR="https://nckhtop1.github.io/vmews-risk-analytics/financial-report/market/news-company-latest.json";
 let LIVE_COMPANY_NEWS=null;
@@ -536,6 +568,11 @@ function renderSource(B,sym){
   const flowDetail=item=>item?.available?`${item.latestDate||"Phiên gần nhất"}${finite(item.net5)?` · 5P ${+item.net5>=0?"+":""}${(+item.net5/1e9).toFixed(1)} tỷ`:""}`:"Phiên gần nhất · lũy kế 5/20 phiên";
   const tracked=(z.rumorContext?.claimCount||0)+(z.evidence?.communityWatchlist?.length||0);
   const liveNewsCount=currentCompanyNews(sym).length;
+  const liveDriver=LIVE_MARKET_DRIVERS?.symbols?.[sym]||null;
+  const companyManifest=LIVE_FINANCIAL_MANIFEST?.companies?.find(item=>item.symbol===sym);
+  const latestQuarter=companyManifest?.quarters?.at(-1)||companyManifest?.years?.at(-1)||null;
+  const fundamentalValue=companyManifest?(latestQuarter||"Có BCTC"):(financial.available?(financial.incomePeriod||financial.period||"BCTC gần nhất"):"Đang đồng bộ");
+  const fundamentalDetail=companyManifest?("BCTC có kỳ đến "+(latestQuarter||"—")+" · nguồn "+LIVE_FINANCIAL_MANIFEST.updatedAt.slice(0,10)):(financialBits.join(" · ")||"Đang đối chiếu báo cáo doanh nghiệp");
   const communitySource=rumorAudit.source?.publishers?.join(" · ")||"Nguồn cộng đồng";
   const priceDetail=window.__VMEWS_FRESHNESS__?.inspect(z).stale?"Cần cập nhật phiên mới":z.priceSourceAgreement?.status==="PASS"?"Đã đối chiếu nguồn giá":z.dataFreshness==="CURRENT"?"Dữ liệu cùng phiên":"Cần làm mới dữ liệu";
   const fundValue=fund.available?`${fund.fundCount||0} quỹ`:"Mở dữ liệu quỹ";
@@ -550,7 +587,9 @@ function renderSource(B,sym){
     ["Dòng tiền khối ngoại",flowValue(foreign),flowDetail(foreign)],
     ["Dòng tiền tự doanh",flowValue(prop),flowDetail(prop)],
     ["Danh mục quỹ",fundValue,fundDetail],
-    ["Tài chính doanh nghiệp",financialValue,financialBits.join(" · ")||"Doanh thu · lợi nhuận · dòng tiền · nợ · định giá"],
+    ["Tài chính doanh nghiệp",fundamentalValue,fundamentalDetail],
+    ["Giá & thanh khoản",liveDriver?"Phiên mới nhất":(LIVE_MARKET_DRIVERS?"Chưa đủ dữ liệu":"Đang đồng bộ"),
+      liveDriver?`Biến động ${(+liveDriver.changePct||0).toFixed(2)}% · KL/TB20 ${finite(liveDriver.volumeRatio20)?(+liveDriver.volumeRatio20).toFixed(2)+"x":"—"} · ${LIVE_MARKET_DRIVERS.generatedAt.slice(0,16).replace("T"," ")}`:"Nguồn giá thị trường độc lập"],
     ["Tín hiệu cộng đồng",`${tracked} tín hiệu`,rumorAudit.source?.articles?`${communitySource} · ${rumorAudit.source.articles} bài`:communitySource],
   ];
   for(const[label,value,detail]of rows){const e=document.createElement("article");e.className="sourceCard";e.dataset.deepTopic=label;e.innerHTML=`<span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(detail)}</small>`;box.append(e)}
@@ -671,6 +710,8 @@ async function init(){
   // News remains live even while the numerical forecast source is unavailable.
   void refreshCompanyNews();
   window.setInterval(()=>{if(!document.hidden)void refreshCompanyNews()},180000);
+  void refreshDataContext();
+  window.setInterval(()=>{if(!document.hidden)void refreshDataContext()},300000);
   const priceFetch=refreshLiveQuotes(true).then(ready=>{
     if(!ready||BASE)return;
     const observed=LIVE_QUOTES?.quotes?.[q];
