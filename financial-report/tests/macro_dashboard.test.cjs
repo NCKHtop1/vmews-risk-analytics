@@ -217,7 +217,7 @@ test('live ESG coverage does not mistake disclosure-only issuers for zero ESG ac
  assert.match($('macro-esg-coverage').textContent,/3 doanh nghiệp · 2 có tài liệu ESG · 1 có KPI chuẩn hóa/);
  const disclosure=$('macro-company-chart').innerHTML;
  assert.match(disclosure,/1 hồ sơ công bố/);
- assert.match(disclosure,/https:\/\/example.com\/hpg.pdf/);
+ assert.doesNotMatch(disclosure,/https:\/\/example.com\/hpg.pdf/);
  assert.doesNotMatch(disclosure,/<svg|0 điểm ESG|ESG bằng 0/);
 });
 
