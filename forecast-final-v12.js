@@ -691,7 +691,9 @@ function vnModelTime(value){
 function renderVN100Status(B,sym,view){
  if(B?.source!=="VN100")return;
  const snapshot=B.dash?.symbols?.[sym]||{},updatedAt=snapshot.forecastCalculatedAt||B.publishedAt,
-  basis=snapshot.forecastAnchorBasis==="INTRADAY_QUOTE"?"giá phiên":"giá EOD",
+  basis=(snapshot.forecastAnchorBasis==="INTRADAY_QUOTE"||
+    (!snapshot.forecastAnchorBasis&&snapshot.forecastAnchorAt&&
+     vnDateKey(snapshot.forecastAnchorAt)>String(snapshot.date||B.dash.asOf||"")))?"giá phiên":"giá EOD",
   anchorAt=snapshot.forecastAnchorAt||null,
   marketAt=view?.liveSession?.updateAt||null,
   marketText=marketAt?"Giá thị trường "+vnModelTime(marketAt):"Giá tham chiếu EOD "+(snapshot.date||B.dash.asOf||"—");
