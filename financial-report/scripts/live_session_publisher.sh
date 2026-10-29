@@ -55,6 +55,11 @@ from pathlib import Path
 
 root=Path(os.environ['SNAPSHOT_DIR'])
 max_age=float(os.environ.get('MAX_AGE_MINUTES','18'))
+# During lunch / official close catch, derived Risk/Strategy can correctly
+# retain the last verified market print: their own generation timestamps need
+# not advance every 10 minutes when the exchange itself is not trading.
+# Still enforce the same quote sourceTime across ALL derived reports.
+derived_budget_minutes=10 if max_age<=20 else max_age
 now=datetime.now(timezone.utc)
 
 def load(name):
@@ -89,6 +94,7 @@ if quotes.get('status')!='ok' or len(fresh)<required:
     raise SystemExit(f'fresh quote coverage below 90%: {len(fresh)}/{expected}')
 if age(latest)>max_age:
     raise SystemExit(f'latest quote source is stale: {age(latest):.1f} minutes')
+# Collector must still be alive on each 5-minute publishing cycle.
 if age(quotes.get('checkedAt'))>10:
     raise SystemExit(f'quote collector heartbeat stale: {age(quotes.get("checkedAt")):.1f} minutes')
 
@@ -117,8 +123,8 @@ for label,data in [('scanner',scanner),('strategy',strategy),('watch',watch),('r
     if str(data.get('sourceTime') or '') != str(latest or ''):
         raise SystemExit(f'{label} sourceTime is not aligned with quotes')
     stamp=data.get('checkedAt') or data.get('generatedAt')
-    if age(stamp)>10:
-        raise SystemExit(f'{label} heartbeat stale: {age(stamp):.1f} minutes')
+    if age(stamp)>derived_budget_minutes:
+        raise SystemExit(f'{label} heartbeat stale: {age(stamp):.1f} minutes (budget {derived_budget_minutes:.0f})')
 
 if risk.get('status')!='ok' or not (0<=float((risk.get('overall') or {}).get('score',-1))<=100):
     raise SystemExit('risk monitor score/status is invalid')
@@ -151,9 +157,9 @@ if funds.get('status')!='ok' or funds.get('source')!='FMARKET' or int(funds.get(
     raise SystemExit(f'fund holdings context is unavailable: {funds.get("status")} {funds.get("source")}')
 if funds.get('previousAsOf') and funds.get('comparisonMode')!='LAST_MEANINGFUL_HOLDING_CHANGE':
     raise SystemExit(f'fund comparison mode invalid: {funds.get("comparisonMode")}')
-if status.get('status')!='ok' or age(status.get('checkedAt'))>10:
+if status.get('status')!='ok' or age(status.get('checkedAt'))>derived_budget_minutes:
     raise SystemExit('prices-status heartbeat is stale')
-if age(drivers.get('generatedAt'))>10:
+if age(drivers.get('generatedAt'))>derived_budget_minutes:
     raise SystemExit('drivers snapshot heartbeat is stale')
 
 print({
