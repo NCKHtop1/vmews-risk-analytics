@@ -850,3 +850,43 @@ body.strategy-lab-view .strategy-page{display:block}
 }
 
 .macro-esg-coverage{font-size:12px;line-height:1.6;color:#506c8c;margin:7px 0 0;max-width:960px}
+
+/* Macro/ESG: data-quality notes should not suppress verified independent charts. */
+.macro-quality-inline{
+ padding:7px 10px;margin:9px 0 5px;border-radius:8px;
+ color:#795720;background:#fff8eb;border:1px solid #f0ddbb;
+ font-size:11px;line-height:1.55;
+}
+.macro-single-observation{display:flex;flex-direction:column;gap:6px;align-items:flex-start;
+ min-height:130px;justify-content:center;padding:22px;border:1px solid #d9e5f4;
+ border-radius:13px;background:#f7fbff}
+.macro-single-observation strong{font-size:clamp(24px,2.3vw,34px);font-weight:800;
+ color:#205b86;font-variant-numeric:tabular-nums}
+.macro-single-observation span{color:#466986;font-size:12px;font-weight:700}
+.macro-single-observation small{color:#667c96;font-size:11px;line-height:1.6}
+/* A glanceable chart is more important than displaying 100 compressed bars. */
+.chart-canvas-wrap{isolation:isolate}
+.chart-latest-candle{
+ max-width:min(86%,420px);
+ background:rgba(248,255,251,.97);
+ border-color:#a7d8c6;
+ box-shadow:0 6px 22px rgba(10,96,83,.15),0 0 0 1px rgba(13,150,117,.1);
+ color:#104d3e;font-size:12px;
+}
+.chart-latest-candle.is-live{
+ background:#edfff6;border-color:#4cb895;border-left-color:#00845c;
+ box-shadow:0 0 0 4px rgba(24,163,114,.12),0 5px 28px rgba(9,124,92,.18);
+ animation:finquery-latest-soft-pulse 2.8s ease-in-out infinite;
+}
+@keyframes finquery-latest-soft-pulse{
+ 0%,100%{box-shadow:0 0 0 3px rgba(24,163,114,.12),0 5px 24px rgba(9,124,92,.16)}
+ 50%{box-shadow:0 0 0 8px rgba(24,163,114,.035),0 6px 29px rgba(9,124,92,.23)}
+}
+#chart-range-label:not([hidden]){display:block!important;font-size:12px;color:#355a79;
+ font-weight:670;padding:7px 0;line-height:1.5}
+@media(prefers-reduced-motion:reduce){
+ .chart-latest-candle.is-live{animation:none}
+}
+@media(max-width:560px){
+ .chart-latest-candle{max-width:88%;font-size:10px}
+}
