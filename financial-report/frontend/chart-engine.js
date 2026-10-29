@@ -41,7 +41,15 @@ class ChartController{
     if(!this.bars.length||$('chart-period')?.value!=='recent'){raf(()=>this.positionLatestCue());return;}
     const visible=this.chart.timeScale().getVisibleLogicalRange?.();
     if(visible&&visible.to<this.bars.length-1.25){raf(()=>this.positionLatestCue());return;}
-    raf(()=>{this.range();this.positionLatestCue();});
+    raf(()=>{
+     // The user can pan while a resize animation is queued. Recheck at
+     // execution time so a stale resize callback cannot snap to latest.
+     const current=this.chart.timeScale().getVisibleLogicalRange?.();
+     if(current&&current.to<this.bars.length-1.25){
+      this.positionLatestCue();return;
+     }
+     this.range();this.positionLatestCue();
+    });
    });
    this.focusResizeObserver.observe($('price-chart'));
   }
