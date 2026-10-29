@@ -60,7 +60,7 @@ function plot(data,opts={}){
 function renderMacro(data){
  const host=$('macro-overview');if(!host)return;
  const sources=data?.sources||[];
- if(!data?.datasets||!Object.keys(data.datasets).length){
+ if(!data?.datasets||!FEATURES.some(feature=>data.datasets[feature.id])){
   host.innerHTML='<article class="macro-viz-card macro-state-full" role="status"><h4>Đang kiểm tra nguồn vĩ mô</h4><p>Dữ liệu vĩ mô chưa kết nối được đến bản phát hành đã xác minh. Thử Cập nhật nguồn; ESG doanh nghiệp vẫn hoạt động độc lập nếu có dữ liệu.</p></article>';
   return;
  }
