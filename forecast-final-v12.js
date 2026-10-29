@@ -761,11 +761,14 @@ async function startForecastProduct(B,q,priceFetch){
 }
 async function init(){
  const q=(new URLSearchParams(location.search).get("symbol")||"FPT").toUpperCase();
- // These feeds must run independently of numerical forecast availability.
- void refreshCompanyNews();
- window.setInterval(()=>{if(!document.hidden)void refreshCompanyNews()},180000);
- void refreshDataContext();
- window.setInterval(()=>{if(!document.hidden)void refreshDataContext()},300000);
+ // FinQuery's independent live context must not alter SoluTION.AI's
+ // immutable full-HOSE CDN runtime or its source allow-list.
+ if(!INDEPENDENT_CORE_PAGE){
+  void refreshCompanyNews();
+  window.setInterval(()=>{if(!document.hidden)void refreshCompanyNews()},180000);
+  void refreshDataContext();
+  window.setInterval(()=>{if(!document.hidden)void refreshDataContext()},300000);
+ }
  const priceFetch=refreshLiveQuotes(true).then(ready=>{
   if(!ready||BASE)return;
   const observed=LIVE_QUOTES?.quotes?.[q];
