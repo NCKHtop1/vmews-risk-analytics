@@ -244,6 +244,10 @@ class ChartController{
   const node=$('chart-latest-candle'),bar=this.bars.at(-1),root=$('price-chart');
   if(!node||!root||!bar||!this.series.price){if(node)node.hidden=true;return;}
   const wrap=root.parentElement,timeScale=this.chart.timeScale();
+  const viewport=timeScale.getVisibleLogicalRange?.(),lastIndex=this.bars.length-1;
+  if(viewport&&(viewport.to<lastIndex-.25||viewport.from>lastIndex+.25)){
+   node.hidden=true;return;
+  }
   const x=timeScale.timeToCoordinate?.(bar.time);
   const closeY=this.series.price.priceToCoordinate?.(Number(bar.close));
   if(!wrap||!Number.isFinite(x)||!Number.isFinite(closeY)){node.hidden=true;return;}
