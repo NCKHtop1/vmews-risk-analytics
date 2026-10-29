@@ -221,6 +221,16 @@ $('macro-tabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-ma
 $('macro-metric')?.addEventListener('change',e=>{state.metric=e.target.value;renderKpis();renderAssessments();renderChart();renderTable();});
 $('macro-explore')?.addEventListener('toggle',renderExplore);
 $('macro-refresh')?.addEventListener('click',load);
+// Macro/Esg are publication-frequency datasets, not intraday prices: revalidate
+// the two feed clocks when the page is visible, without refetching on each tab.
+let lastSourceCheck=Date.now();
+const refreshBounded=()=>{if(document.hidden||state.loading)return;
+ if(Date.now()-lastSourceCheck<30*60000)return;
+ lastSourceCheck=Date.now();void load();
+};
+window.setInterval(refreshBounded,15*60000);
+document.addEventListener('visibilitychange',refreshBounded);
+window.addEventListener('focus',refreshBounded);
 $('macro-country-metric')?.addEventListener('change',e=>{state.countryMetric=e.target.value;renderEsgPanels();});
 $('macro-company-metric')?.addEventListener('change',e=>{state.companyMetric=e.target.value;renderEsgPanels();});
 window.addEventListener('finquery:symbol-change',e=>{
