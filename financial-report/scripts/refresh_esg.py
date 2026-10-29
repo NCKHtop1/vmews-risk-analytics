@@ -69,11 +69,16 @@ def build_company_registry(config):
     if len(symbols) != 100:
         raise RuntimeError(f"Expected 100 Core companies, got {len(symbols)}")
 
-    curated = config.get("banks", {})
+    # Banks are not the only issuers that publish ESG. The prior registry
+    # assigned official sources only to 18 banks; most non-bank VN100 issuers
+    # consequently had zero discovered documents even when official reports
+    # existed. Keep the bank identity separate from company seed discovery.
+    curated_banks = config.get("banks", {})
+    curated_issuers = config.get("issuers", {})
     out = {}
     for item in core:
         symbol = str(item.get("symbol") or "").strip().upper()
-        cfg = dict(curated.get(symbol, {}))
+        cfg = {**curated_issuers.get(symbol, {}), **curated_banks.get(symbol, {})}
         cfg["name"] = cfg.get("name") or item.get("name") or symbol
         aliases = list(cfg.get("aliases", []))
         for alias in (symbol, item.get("name")):
@@ -85,8 +90,10 @@ def build_company_registry(config):
         if generic not in seeds:
             seeds.append(generic)
         cfg["seed_urls"] = seeds
-        cfg["entityType"] = "bank" if symbol in curated else "company"
-        cfg["sourcePolicy"] = "curated+disclosure-index" if symbol in curated else "disclosure-index"
+        cfg["entityType"] = "bank" if symbol in curated_banks else "company"
+        cfg["sourcePolicy"] = ("curated-issuer+disclosure-index" if symbol in curated_issuers else
+                               "curated-bank+disclosure-index" if symbol in curated_banks else
+                               "disclosure-index")
         out[symbol] = cfg
     return out
 
