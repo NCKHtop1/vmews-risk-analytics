@@ -39,7 +39,9 @@ function series(ds,key,scale=1){
 }
 function httpsUrl(raw){try{const u=new URL(String(raw||''));return u.protocol==='https:'?u.href:'';}catch{return'';}}
 function sourceLink(raw,label){
- const url=httpsUrl(raw);return url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(label)+' ↗</a>' :'';
+ const url=httpsUrl(raw);
+ if(!url)return '';
+ return '<a class="macro-source-quicklink" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" title="'+esc('Mở công bố: '+label)+'" aria-label="'+esc('Mở công bố: '+label)+'"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5h6v6m-1-5-9 9M19 14v5H5V5h5"/></svg></a>';
 }
 function plot(data,opts={}){
  const pts=data.slice(-(opts.limit||24));
@@ -83,9 +85,7 @@ function renderMacro(data){
   const head='<div class="macro-viz-head"><div><span class="macro-viz-kicker">KINH TẾ VIỆT NAM</span><h4>'+esc(c.title)+'</h4></div>'+(last?'<span class="macro-viz-period">'+esc(last.label)+'</span>':'')+'</div>';
   const link=sourceLink(src?.url,'Nguồn');
   if(pts.length<2){
-    const issue=qualityNotice?'Cần đối chiếu chỉ tiêu này trong báo cáo gốc; các chuỗi khác vẫn hiển thị độc lập.':
-      ds?.status==='retained'?'Nguồn mới tạm gián đoạn; chưa có đủ quan sát đã kiểm chứng trong bản lưu.':
-      'Nguồn hiện chưa công bố đủ hai kỳ số liệu hợp lệ để vẽ xu hướng.';
+    const issue='Chưa đủ số liệu hợp lệ để vẽ xu hướng.';
     return'<article class="macro-viz-card">'+head+
       (last?'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">Mốc công bố '+esc(last.label)+' · chưa đủ hai kỳ để vẽ đường.</p>':
       '<div class="macro-source-notice" role="status">'+issue+'</div>')+
@@ -96,8 +96,8 @@ function renderMacro(data){
   else if(c.id==='fdi')context='';
   else context='So với '+esc(earlier.label)+': '+(last.y>=earlier.y?'+':'')+esc(fmt(last.y-earlier.y))+' '+esc(c.unit);
   const retained=ds?.status==='retained'||src?.status==='retained'||src?.status==='error';
-  return'<article class="macro-viz-card">'+head+(retained?'<div class="macro-source-notice">Dữ liệu kỳ gần nhất đã kiểm chứng · nguồn cập nhật mới đang gián đoạn</div>':'')+
-    (qualityNotice?'<div class="macro-quality-inline">Nguồn có cảnh báo ở một số chỉ tiêu; chuỗi hợp lệ vẫn được hiển thị, không điền số thiếu.</div>':'')+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'</div></article>';
+  return'<article class="macro-viz-card">'+head+(retained?'<span class="macro-quiet-note">Kỳ công bố gần nhất</span>':'')+
+    (qualityNotice?'<span class="macro-quiet-note" title="Một số kỳ công bố cần xác minh thêm">Một số kỳ cần xác minh</span>':'')+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'</div></article>';
  }).join('');
  const checkDate=new Date(data?.checkedAt);
  const freshness=$('macro-data-freshness');
@@ -229,7 +229,8 @@ function renderEsg(data,esg,symbol){
     !(c.documents||[]).some(d=>httpsUrl(d.url))).length;
   const last=esg?.checkedAt?new Date(esg.checkedAt):null;
   const lastCheck=last&&Number.isFinite(+last)?last.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):'chưa rõ';
-  coverage.textContent=esg?'Độ phủ VN100: '+companies.length+' doanh nghiệp · '+withDocs+' có tài liệu ESG · '+withKpi+' có KPI chuẩn hóa · '+documentedWithoutKpi+' có tài liệu nhưng chưa có KPI · '+searching+' chưa có hồ sơ đủ điều kiện · kiểm tra '+lastCheck+'.':'Dữ liệu ESG doanh nghiệp đang kết nối; ESG quốc gia hoạt động độc lập.';
+  coverage.textContent=esg?'VN100 · '+companies.length+' doanh nghiệp · '+withDocs+' có tài liệu ESG · '+withKpi+' có KPI chuẩn hóa':'ESG doanh nghiệp đang kết nối.';
+  coverage.title=esg?'Chi tiết dữ liệu ESG: '+documentedWithoutKpi+' có tài liệu nhưng chưa có KPI · '+searching+' chưa có hồ sơ phù hợp · kiểm tra '+lastCheck:'';
  }
  renderCountry(data);
  renderCorporate(esg,symbol);
