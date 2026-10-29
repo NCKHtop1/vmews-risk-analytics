@@ -890,3 +890,13 @@ body.strategy-lab-view .strategy-page{display:block}
 @media(max-width:560px){
  .chart-latest-candle{max-width:88%;font-size:10px}
 }
+
+/* Macro/ESG: make issuer coverage discoverable without switching market ticker. */
+.macro-company-picker{display:flex;flex-direction:column;gap:5px;color:#526b8e;font-size:11px;font-weight:700;min-width:210px;max-width:100%}
+.macro-company-picker select{max-width:100%;min-height:38px;padding:7px 30px 7px 10px;border:1px solid #b9cce6;border-radius:10px;background:#f8fbff;color:#28496f;font-size:12px;font-weight:650}
+.macro-company-picker select:focus-visible{outline:2px solid #477cdb;outline-offset:2px}
+/* One clearly focused, truthful LAST candle: subtle EOD halo, stronger live glow. */
+.chart-latest-candle.is-last-verified:not(.is-live){border-left-color:#3d79cb;background:#f0f6ff;color:#234c7d;box-shadow:0 0 0 3px rgba(61,121,203,.11),0 6px 21px rgba(28,72,138,.15);animation:finquery-last-eod-attention 1.6s ease-out 2}
+@keyframes finquery-last-eod-attention{0%{box-shadow:0 0 0 2px rgba(61,121,203,.08)}45%{box-shadow:0 0 0 8px rgba(61,121,203,.22),0 7px 25px rgba(28,72,138,.16)}100%{box-shadow:0 0 0 3px rgba(61,121,203,.11),0 6px 21px rgba(28,72,138,.15)}}
+@media(prefers-reduced-motion:reduce){.chart-latest-candle.is-last-verified:not(.is-live){animation:none}}
+@media(max-width:670px){.macro-company-picker{width:100%;min-width:0}.macro-company-picker select{width:100%}}
