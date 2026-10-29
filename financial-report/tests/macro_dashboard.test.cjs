@@ -73,7 +73,7 @@ test('source quality warnings suppress only the affected plot, not all charts',(
  data.datasets.pmi.qualityStatus='warning';
  api.render(data,mbb(),'MBB');
  const grid=$('macro-overview').innerHTML;
- assert.match(grid,/Chưa có dữ liệu/);
+ assert.match(grid,/đối chiếu chất lượng/);
  assert.equal((grid.match(/class="macro-trend-svg"/g)||[]).length,3);
 });
 test('sparse or invalid data never turn missing observation into zero',()=>{
@@ -120,7 +120,7 @@ test('two genuine comparable annual disclosures draw one ESG company chart',()=>
 test('unverified ESG company has no fabricated score or bar',()=>{
  const {api,$}=harness();
  api.render(fixture(),{companies:{FPT:{canonicalMetrics:[],documents:[]}}},'FPT');
- assert.match($('macro-company-chart').innerHTML,/Chưa có dữ liệu ESG/);
+ assert.match($('macro-company-chart').innerHTML,/Chưa tìm được báo cáo ESG đủ điều kiện/);
  assert.doesNotMatch($('macro-company-chart').innerHTML,/<svg/);
  assert.equal($('macro-company-metric').disabled,true);
 });
@@ -144,4 +144,22 @@ test('FDI cumulative curve stays within a year instead of showing January collap
  assert.match(plotted,/FDI giải ngân/);
  assert.doesNotMatch(plotted,/T12 2025/);
  assert.match(plotted,/FDI giải ngân/);
+});
+
+test('disclosure-only issuer is documented without claiming a metric or fake ESG score',()=>{
+ const{api,$}=harness();const esg={checkedAt:'2026-10-28T00:00:00Z',companies:{FPT:{name:'FPT Corporation',canonicalMetrics:[],documents:[
+  {url:'https://example.com/verified-fpt-2025.pdf',type:'sustainability_report',year:2025,processedAt:'2026-10-22T00:00:00Z'}
+ ]}}};
+ api.render(fixture(),esg,'FPT');
+ const body=$('macro-company-chart').innerHTML;
+ assert.match(body,/1 tài liệu công bố, 1 tài liệu đã xử lý/);
+ assert.match(body,/https:\/\/example.com\/verified-fpt-2025.pdf/);
+ assert.doesNotMatch(body,/<svg|KPI=0|điểm ESG tổng hợp: 0/);
+ assert.match($('macro-esg-coverage').textContent,/1 doanh nghiệp|1 có hồ sơ/);
+});
+test('macro numerical data can render while company ESG feed is disconnected',()=>{
+ const {api,$}=harness();api.render(fixture(),null,'FPT');
+ assert.match($('macro-overview').innerHTML,/PMI sản xuất/);
+ assert.match($('macro-company-chart').innerHTML,/Nguồn công bố ESG đang gián đoạn/);
+ assert.match($('macro-esg-coverage').textContent,/Chưa kết nối được nguồn/);
 });
