@@ -4,28 +4,31 @@ const RAW='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/finan
 const LOCAL=document.documentElement.dataset.hosting==='pages'?
   new URL('market/',location.href).href:new URL('/financial-report/market/',location.origin).href;
 const BASE=document.documentElement.dataset.hosting==='pages'?LOCAL:RAW;
-const ROOTS=[...new Set([BASE,BASE===RAW?LOCAL:RAW])];
+// Concurrently verify both publishers: a fast mirrored snapshot can be stale.
+const ROOTS=[...new Set([RAW,LOCAL])];
 const state={data:null,rawMacro:null,esg:null,symbol:'',active:'pmi',metric:'',
  countryMetric:'AG.LND.FRST.ZS',companyMetric:'',unlocked:true,
  sourceStatus:{macro:'loading',esg:'loading'},loading:false};
 const fmt=v=>typeof v==='number'&&Number.isFinite(v)?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2}).format(v):String(v??'—');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 async function fetchVerifiedFile(file,validator,timeout=12000){
- let error=null;
- for(const root of ROOTS){
-  try{
-   const r=await fetch(root+file+'?v='+Math.floor(Date.now()/60000),{
-    cache:'no-store',signal:AbortSignal.timeout(timeout)
-   });
-   if(!r.ok)throw Error('HTTP '+r.status);
-   const payload=await r.json();
-   const stamp=Date.parse(payload?.checkedAt||'');
-   if(!Number.isFinite(stamp)||stamp>Date.now()+300000||!validator(payload))
-    throw Error('Snapshot/source metadata invalid');
-   return payload;
-  }catch(e){error=e}
- }
- throw Error(file+' không tải được từ cả hai nguồn: '+String(error?.message||error||'unknown'));
+ const revision=Math.floor(Date.now()/60000);
+ const results=await Promise.allSettled(ROOTS.map(async root=>{
+  const r=await fetch(root+file+'?v='+revision,{
+   cache:'no-store',signal:AbortSignal.timeout(timeout)
+  });
+  if(!r.ok)throw Error('HTTP '+r.status);
+  const payload=await r.json();
+  const stamp=Date.parse(payload?.checkedAt||'');
+  if(!Number.isFinite(stamp)||stamp>Date.now()+300000||!validator(payload))
+   throw Error('Snapshot/source metadata invalid');
+  return {payload,stamp,origin:root};
+ }));
+ const valid=results.filter(r=>r.status==='fulfilled').map(r=>r.value)
+  .sort((a,b)=>b.stamp-a.stamp);
+ if(valid.length)return valid[0].payload;
+ const errors=results.map(r=>r.status==='rejected'?String(r.reason?.message||r.reason):'').filter(Boolean);
+ throw Error(file+' không tải được từ nguồn chính và dự phòng: '+errors.join('; ').slice(0,230));
 }
 const fetchMacro=()=>fetchVerifiedFile('macro.json',d=>d?.datasets&&
  Object.keys(d.datasets).length>0&&d.status!=='error',11000);
@@ -55,7 +58,25 @@ function normalizeDataset(ds){
  }
  return {...ds,orientation:'time-rows'};
 }
-function currentSymbol(){return String(new URL(location.href).searchParams.get('symbol')||$('ticker')?.value||'').trim().toUpperCase();}
+let manuallySelectedCompany='';
+function currentSymbol(){
+ return String(manuallySelectedCompany||new URL(location.href).searchParams.get('symbol')||
+  $('ticker')?.value||'FPT').trim().toUpperCase();
+}
+function renderCompanyPicker(){
+ const select=$('macro-company-ticker');
+ if(!select||!state.esg)return;
+ const records=Object.entries(state.esg.companies||{}).sort(([a],[b])=>a.localeCompare(b));
+ const selected=state.symbol;
+ select.innerHTML=records.map(([symbol,c])=>{
+  const trusted=window.FinMacroDashboard?.corporateRows?.(state.esg,symbol)||[];
+  const docs=(c.documents||[]).filter(d=>/^https:\/\//.test(String(d.url||''))).length;
+  const suffix=trusted.length?' · KPI '+trusted.length:docs?' · '+docs+' tài liệu':' · đang tìm nguồn';
+  return '<option value="'+esc(symbol)+'"'+(symbol===selected?' selected':'')+'>'+esc(symbol+suffix)+'</option>';
+ }).join('');
+ if(records.some(([key])=>key===selected))select.value=selected;
+}
+
 function corporateDataset(esg,symbol){
  const company=esg?.companies?.[symbol];if(!company)return null;
  const years={},labels={},units={},pillars={};
@@ -69,7 +90,7 @@ function corporateDataset(esg,symbol){
  const rows=Object.values(years).sort((a,b)=>a.Year-b.Year),metrics=[...new Set(rows.flatMap(r=>Object.keys(r).filter(k=>k!=='Year'&&Number.isFinite(r[k]))))];
  return{id:'company_esg_'+symbol,title:'ESG doanh nghiệp · '+symbol,source:'Công bố doanh nghiệp',status:'ok',companySymbol:symbol,columns:['Year',...metrics],numericColumns:metrics,metricLabels:labels,metricUnits:units,metricPillars:pillars,rows,allYears:true,metricTable:true};
 }
-function normalizePayload(data,esg,symbol){const datasets={};for(const[id,ds]of Object.entries(data.datasets||{}))datasets[id]=normalizeDataset(ds);const corporate=corporateDataset(esg,symbol);if(corporate)datasets[corporate.id]=normalizeDataset(corporate);return{...data,datasets};}
+function normalizePayload(data,esg,symbol){const datasets={};for(const[id,ds]of Object.entries(data.datasets||{}))datasets[id]=normalizeDataset({...ds,id});const corporate=corporateDataset(esg,symbol);if(corporate)datasets[corporate.id]=normalizeDataset(corporate);return{...data,datasets};}
 function firstColumn(ds){return(ds.columns||[])[0]||'Date';}
 function latestRow(ds){const rows=ds.rows||[];for(let i=rows.length-1;i>=0;i--){if(Object.values(rows[i]||{}).some(v=>v!==null&&v!==''))return rows[i];}return null;}
 function latestMetricPoint(ds,key){const rows=(ds?.rows||[]).slice().reverse();for(const row of rows){const value=row?.[key];if(typeof value==='number'&&Number.isFinite(value))return{year:row[firstColumn(ds)],value};}return null;}
@@ -209,7 +230,7 @@ function render(){
   state.active=String(state.active||'').startsWith('company_esg_')&&sets[companyTab]?
     companyTab:sets.pmi?'pmi':Object.keys(sets)[0]||'';
  }
- renderDashboard();renderExplore();updateSourceStatus();
+ renderCompanyPicker();renderDashboard();renderExplore();updateSourceStatus();
 }
 async function load(){
  if(state.loading)return;
@@ -228,7 +249,7 @@ async function load(){
    const last=Date.parse(state.rawMacro?.checkedAt||'');
    if(!Number.isFinite(last)||Date.parse(value.checkedAt)>=last)
     state.rawMacro=value;
-   state.sourceStatus.macro='ok';update();
+   state.sourceStatus.macro=Date.parse(value.checkedAt)<last?'retained':'ok';update();
   }).catch(error=>{
    state.sourceStatus.macro=state.rawMacro?'retained':'error';
    console.warn('FinQuery macro source:',String(error?.message||error));update();
@@ -237,7 +258,7 @@ async function load(){
    const last=Date.parse(state.esg?.checkedAt||'');
    if(!Number.isFinite(last)||Date.parse(value.checkedAt)>=last)
     state.esg=value;
-   state.sourceStatus.esg='ok';update();
+   state.sourceStatus.esg=Date.parse(value.checkedAt)<last?'retained':'ok';update();
   }).catch(error=>{
    state.sourceStatus.esg=state.esg?'retained':'error';
    console.warn('FinQuery company ESG source:',String(error?.message||error));update();
@@ -252,6 +273,16 @@ function renderExplore(){
 }
 $('macro-tabs')?.addEventListener('click',e=>{const b=e.target.closest('[data-macro-tab]');if(!b)return;state.active=b.dataset.macroTab;state.metric='';renderExplore();});
 $('macro-metric')?.addEventListener('change',e=>{state.metric=e.target.value;renderKpis();renderAssessments();renderChart();renderTable();});
+$('macro-company-ticker')?.addEventListener('change',e=>{
+ const symbol=String(e.target.value||'').toUpperCase();
+ if(!state.esg?.companies?.[symbol])return;
+ manuallySelectedCompany=symbol;
+ state.symbol=symbol;state.companyMetric='';
+ state.data=normalizePayload(state.rawMacro||{datasets:{},sources:[],checkedAt:''},state.esg,symbol);
+ // Follow the selected issuer without switching the actual stock chart.
+ render();
+ window.dispatchEvent(new CustomEvent('finquery:macro-company-change',{detail:{symbol}}));
+});
 $('macro-explore')?.addEventListener('toggle',renderExplore);
 $('macro-refresh')?.addEventListener('click',load);
 // Macro/Esg are publication-frequency datasets, not intraday prices: revalidate
@@ -269,7 +300,7 @@ $('macro-company-metric')?.addEventListener('change',e=>{state.companyMetric=e.t
 window.addEventListener('finquery:symbol-change',e=>{
  const symbol=String(e.detail?.symbol||'').toUpperCase();
  if(!symbol||symbol===state.symbol)return;
- state.symbol=symbol;state.companyMetric='';
+ manuallySelectedCompany='';state.symbol=symbol;state.companyMetric='';
  if(state.rawMacro||state.esg){state.data=normalizePayload(state.rawMacro||{datasets:{},sources:[],checkedAt:''},state.esg,symbol);render();}
  else load();
 });

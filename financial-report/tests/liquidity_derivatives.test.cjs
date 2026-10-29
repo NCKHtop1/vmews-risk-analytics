@@ -151,3 +151,21 @@ test('government bond 10Y minus 2Y spread uses only validated dated yield observ
  api.setData(no2y);
  assert.doesNotMatch(get('money-vbma-curves').innerHTML,/Chênh lệch lợi suất 10Y – 2Y/);
 });
+
+test('production-shaped fixed-income view keeps sovereign curve and compacts unavailable references',()=>{
+ const {api,get}=makeEnv();
+ const data={...fixture,vbmaCurves:{
+  gov_bond:{status:'verified',licenseStatus:'source_attributed',source:'https://vbma.org.vn/csv/markets/charts/vi/government_bond_yield.csv',
+   unit:'%/năm',asOf:'2026-10-28',points:[{tenor:'2Y',value:4.02},{tenor:'10Y',value:4.47}]},
+  fi_bond:{status:'unavailable',source:'https://vbma.org.vn/csv/markets/charts/vi/fi_bond_yield_curve.csv',points:[]},
+  short_benchmark:{status:'unavailable',source:'https://vbma.org.vn/csv/markets/charts/vi/short_term_benchmark_rate.csv',points:[]}
+ }};
+ api.setData(data);
+ const shown=get('money-vbma-curves').innerHTML;
+ assert.equal((shown.match(/money-tenor-curve/g)||[]).length,1);
+ assert.match(shown,/Lợi suất trái phiếu Chính phủ/);
+ assert.match(shown,/Nguồn đang theo dõi · 2 chỉ tiêu/);
+ assert.match(shown,/Trái phiếu và chứng chỉ tiền gửi/);
+ assert.match(shown,/Lãi suất tham chiếu ngắn hạn/);
+ assert.doesNotMatch(shown,/Chưa có dữ liệu\.<\/div><\/article>/);
+});

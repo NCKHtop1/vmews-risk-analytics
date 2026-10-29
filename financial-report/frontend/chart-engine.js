@@ -28,9 +28,23 @@ function moneyFlowText(current,previous){
 }
 class ChartController{
  constructor(base,onQuote){this.base=base;this.onQuote=onQuote;this.cache=new Map();this.params={...defaults};this.symbol='';this.tf=$('chart-interval')?.value||'1d';this.type='candles';this.bars=[];this.baseBars=[];this.values=[];this.series={};this.watch=[];this.generation=0;this.retries=0;this.stopped=false;this.buffer=[];this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown=new Map();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.insightItems=[];this.insightOpen=null;this.insightsVisible=false;this.focusOscillator=null;
- this.chart=L.createChart($('price-chart'),{autoSize:true,height:540,layout:{background:{type:'solid',color:'#ffffff'},textColor:'#65728b',fontFamily:'Arial',attributionLogo:false},grid:{vertLines:{color:'#f2f4f8'},horzLines:{color:'#edf0f6'}},rightPriceScale:{borderColor:'#e5eaf3'},timeScale:{borderColor:'#e5eaf3',timeVisible:false,rightOffset:5,lockVisibleTimeRangeOnResize:true},crosshair:{mode:L.CrosshairMode.Normal},localization:{locale:'vi-VN',timeFormatter:timeLabel}});
+ this.chart=L.createChart($('price-chart'),{autoSize:true,height:620,layout:{background:{type:'solid',color:'#ffffff'},textColor:'#65728b',fontFamily:'Arial',attributionLogo:false},grid:{vertLines:{color:'#f2f4f8'},horzLines:{color:'#edf0f6'}},rightPriceScale:{borderColor:'#e5eaf3'},timeScale:{borderColor:'#e5eaf3',timeVisible:false,rightOffset:5,lockVisibleTimeRangeOnResize:true},crosshair:{mode:L.CrosshairMode.Normal},localization:{locale:'vi-VN',timeFormatter:timeLabel}});
  this.chart.subscribeCrosshairMove(e=>{const b=e.seriesData.get(this.series.price);if(b)this.readout({...b,volume:e.seriesData.get(this.series.volume)?.value});else this.readout(this.bars.at(-1));});
  this.chart.timeScale().subscribeVisibleLogicalRangeChange?.(()=>raf(()=>this.renderInsights()));
+  // Reframe after authentication or resizes; preserve a deliberate historical pan.
+  this.visibleChartWidth=0;
+  if(typeof ResizeObserver!=='undefined'){
+   this.focusResizeObserver=new ResizeObserver(entries=>{
+    const width=Math.round(entries[0]?.contentRect?.width||0);
+    if(width<220||Math.abs(width-this.visibleChartWidth)<45)return;
+    this.visibleChartWidth=width;
+    if(!this.bars.length||$('chart-period')?.value!=='recent')return;
+    const visible=this.chart.timeScale().getVisibleLogicalRange?.();
+    if(visible&&visible.to<this.bars.length-1.25)return;
+    raf(()=>this.range());
+   });
+   this.focusResizeObserver.observe($('price-chart'));
+  }
  $('chart-insight-markers')?.addEventListener('click',e=>{const b=e.target.closest('[data-insight-id]');if(b)this.insightOpen?.(b.dataset.insightId);});
  this.controls();this.configPromise=this.config();window.addEventListener('pagehide',()=>this.close());window.addEventListener('pageshow',e=>{if(e.persisted){this.stopped=false;this.connect();}});
  window.addEventListener('online',()=>this.connect());
@@ -192,7 +206,7 @@ class ChartController{
    const available=Number($('price-chart')?.clientWidth)||960;
    // Default 18-48 visible bars: wide enough for context, large enough to
    // read candle bodies without manually zooming on desktop or phone.
-   const budget=Math.max(18,Math.min(48,Math.round((available-100)/18)));
+   const budget=Math.max(12,Math.min(34,Math.floor(Math.max(280,available-92)/25)));
    const count=Math.min(this.bars.length,
     this.tf==='1mo'?Math.min(budget,36):this.tf==='1w'?Math.min(budget,48):budget);
    const from=Math.max(0,this.bars.length-count),to=this.bars.length+2.5;
@@ -238,6 +252,7 @@ class ChartController{
   if(node){
    node.hidden=!last;
    node.classList?.toggle('is-live',!!live);
+   node.classList?.toggle('is-last-verified',!live);
    if(last){
     node.textContent=(live?'NẾN MỚI · ':'NẾN GẦN NHẤT · ')+this.symbol+' · '+
      timeLabel(last.time)+' · C '+fmt(last.close)+(direction?' · '+direction:'');
@@ -255,7 +270,7 @@ class ChartController{
   }
   if(typeof L.createSeriesMarkers==='function'){
    const marker=[{time:last.time,position:'aboveBar',color,
-     shape:'circle',text:live?'VỪA CẬP NHẬT':'NẾN CUỐI',size:live?2:1}];
+     shape:'circle',text:live?'VỪA CẬP NHẬT':'NẾN CUỐI',size:2}];
    try{
     if(this.latestMarkers?.setMarkers)this.latestMarkers.setMarkers(marker);
     else this.latestMarkers=L.createSeriesMarkers(this.series.price,marker);
@@ -282,7 +297,7 @@ class ChartController{
  }
  this.updateLatestCue();this.readout(b);this.evaluateSignals(true);this.renderInsights();this.cache.delete(this.symbol+':'+baseTF);this.status(`WebSocket · Nến ${timeLabel(next.time)} · Nhận lúc ${new Date().toLocaleTimeString('vi-VN')}`);
  }
- close(){this.stopped=true;clearTimeout(this.retry);clearTimeout(this.staleTimer);this.abort?.abort();this.socket?.close();}
+ close(){this.stopped=true;clearTimeout(this.retry);clearTimeout(this.staleTimer);this.focusResizeObserver?.disconnect();this.abort?.abort();this.socket?.close();}
 }
 window.FinChart={create:(base,onQuote)=>{if(!L||!M){$('chart-status').textContent='Không tải được thư viện biểu đồ. Vui lòng mở lại trang.';return {select(){},load(){},snapshot(){},noteNews(){},setInsights(){},technicalContext(){return null;}};}return new ChartController(base,onQuote);}};
 })();

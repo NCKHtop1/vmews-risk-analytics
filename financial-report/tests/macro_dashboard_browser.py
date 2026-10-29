@@ -101,6 +101,22 @@ def run():
                      "--hide-scrollbars", "--window-size=1280,900"):
             options.add_argument(flag)
         driver = webdriver.Chrome(options=options)
+        # The browser fixture must test deterministic, source-shaped rows,
+        # not unexpectedly mix a newer real GitHub Raw snapshot into the
+        # local fixtures when the application's freshness arbitration works.
+        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": """
+          (() => {
+            const original = window.fetch.bind(window);
+            window.fetch = (resource, options) => {
+              const url=String(resource?.url||resource||'');
+              const prefix='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/';
+              if(url.startsWith(prefix)){
+                return original(location.origin+'/market/'+url.slice(prefix.length),options);
+              }
+              return original(resource,options);
+            };
+          })();
+        """})
         try:
             for width, height in ((1280, 920), (390, 844)):
                 driver.set_window_size(width, height)

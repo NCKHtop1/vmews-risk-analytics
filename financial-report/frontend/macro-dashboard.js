@@ -223,9 +223,13 @@ function renderEsg(data,esg,symbol){
   const companies=Object.values(esg?.companies||{}),withKpi=companies.filter(c=>
    Array.isArray(c.canonicalMetrics)&&c.canonicalMetrics.some(r=>typeof r.value==='number'&&Number.isFinite(r.value)&&httpsUrl(r.sourceUrl))).length;
   const withDocs=companies.filter(c=>(c.documents||[]).some(d=>httpsUrl(d.url))).length;
+  const documentedWithoutKpi=companies.filter(c=>(c.documents||[]).some(d=>httpsUrl(d.url))&&
+    !corporateRows(esg,c.symbol).length).length;
+  const searching=companies.filter(c=>!corporateRows(esg,c.symbol).length&&
+    !(c.documents||[]).some(d=>httpsUrl(d.url))).length;
   const last=esg?.checkedAt?new Date(esg.checkedAt):null;
   const lastCheck=last&&Number.isFinite(+last)?last.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):'chưa rõ';
-  coverage.textContent=esg?'Độ phủ VN100: '+companies.length+' doanh nghiệp · '+withDocs+' có tài liệu ESG · '+withKpi+' có KPI chuẩn hóa · '+Math.max(0,companies.length-withKpi)+' đang rà soát nguồn/KPI · kiểm tra '+lastCheck+'.':'Dữ liệu ESG doanh nghiệp đang kết nối; ESG quốc gia hoạt động độc lập.';
+  coverage.textContent=esg?'Độ phủ VN100: '+companies.length+' doanh nghiệp · '+withDocs+' có tài liệu ESG · '+withKpi+' có KPI chuẩn hóa · '+documentedWithoutKpi+' có tài liệu nhưng chưa có KPI · '+searching+' chưa có hồ sơ đủ điều kiện · kiểm tra '+lastCheck+'.':'Dữ liệu ESG doanh nghiệp đang kết nối; ESG quốc gia hoạt động độc lập.';
  }
  renderCountry(data);
  renderCorporate(esg,symbol);

@@ -195,3 +195,25 @@ test('issuer numeric unit conversion anomaly is quarantined, not presented as bi
  assert.doesNotMatch(body,/0,000002/);
  assert.match(body,/nguồn|hồ sơ/i);
 });
+
+test('Macro ESG public UI provides an explicit VN100 issuer selector and freshest source priority',()=>{
+ assert.match(html,/id="macro-company-ticker"/);
+ assert.match(macroSource,/manuallySelectedCompany/);
+ assert.match(macroSource,/function renderCompanyPicker\(/);
+ assert.match(macroSource,/Promise\.allSettled\(ROOTS\.map/);
+ assert.match(macroSource,/sort\(\(a,b\)=>b\.stamp-a\.stamp\)/);
+ assert.match(macroSource,/normalizeDataset\(\{\.\.\.ds,id\}\)/);
+});
+test('live ESG coverage does not mistake disclosure-only issuers for zero ESG activity',()=>{
+ const {api,$}=harness(),esg={checkedAt:'2026-10-29T07:47:00Z',companies:{
+  FPT:{name:'FPT Corporation',canonicalMetrics:[{metricId:'women_workforce_pct',label:'Tỷ lệ nữ',year:2025,value:37.7,unit:'%',sourceUrl:'https://example.com/fpt.pdf'}],documents:[{url:'https://example.com/fpt.pdf'}]},
+  HPG:{name:'Hoa Phat',canonicalMetrics:[],documents:[{url:'https://example.com/hpg.pdf',type:'annual_report',year:2025,processedAt:'2026-10-20'}]},
+  VCB:{name:'Vietcombank',canonicalMetrics:[],documents:[]}
+ }};
+ api.render(fixture(),esg,'HPG');
+ assert.match($('macro-esg-coverage').textContent,/3 doanh nghiệp · 2 có tài liệu ESG · 1 có KPI chuẩn hóa/);
+ const disclosure=$('macro-company-chart').innerHTML;
+ assert.match(disclosure,/1 hồ sơ công bố/);
+ assert.match(disclosure,/https:\/\/example.com\/hpg.pdf/);
+ assert.doesNotMatch(disclosure,/<svg|0 điểm ESG|ESG bằng 0/);
+});
