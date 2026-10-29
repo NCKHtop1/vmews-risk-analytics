@@ -143,7 +143,7 @@ test('measured post-disclosure movement has a direction separate from registrati
  assert.deepEqual([...api._test.marketSignal(buy)],['Tăng sau công bố','up']);
 });
 
-test('HSG fallback shareholder source preserves visible attribution',()=>{
+test('HSG verified ownership omits all source-provider captions and links',()=>{
  const {api,host,ticker}=harness();
  ticker.value='HSG';
  api.setData({schemaVersion:2,checkedAt:now,symbols:{HSG:{
@@ -159,7 +159,7 @@ test('HSG fallback shareholder source preserves visible attribution',()=>{
  assert.match(host.innerHTML,/HSG · Sở hữu/);
  assert.match(host.innerHTML,/Lê Phước Vũ/);
  assert.match(host.innerHTML,/16,96%/);
- assert.match(host.innerHTML,/Vietcap/);
- assert.match(host.innerHTML,/HSG\/shareholder/);
- assert.match(host.innerHTML,/KBS/);
+ assert.doesNotMatch(host.innerHTML,/Vietcap|Nguồn|KBS|sourceUrl|mbbank\.com\.vn/i);
+ assert.doesNotMatch(host.innerHTML,/HSG\/shareholder/);
+ assert.match(host.innerHTML,/Cập nhật/);
 });
