@@ -195,9 +195,18 @@ function renderCorporate(esg,symbol){
  foot.innerHTML=sourceLink(latestRaw.sourceUrl,'Công bố gốc');
 }
 function renderEsg(data,esg,symbol){
+ const coverage=$('macro-esg-coverage');
+ if(coverage){
+  const companies=Object.values(esg?.companies||{}),withKpi=companies.filter(c=>
+   Array.isArray(c.canonicalMetrics)&&c.canonicalMetrics.some(r=>typeof r.value==='number'&&Number.isFinite(r.value)&&httpsUrl(r.sourceUrl))).length;
+  const withDocs=companies.filter(c=>(c.documents||[]).some(d=>httpsUrl(d.url))).length;
+  const last=esg?.checkedAt?new Date(esg.checkedAt):null;
+  const lastCheck=last&&Number.isFinite(+last)?last.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):'chưa rõ';
+  coverage.textContent=esg?'Theo dõi '+companies.length+' doanh nghiệp · '+withKpi+' có KPI ESG định lượng đã kiểm chứng · '+withDocs+' có hồ sơ công bố · kiểm tra nguồn '+lastCheck+'.':'Chưa kết nối được nguồn ESG doanh nghiệp; chỉ tiêu quốc gia được tải độc lập.';
+ }
  renderCountry(data);
  renderCorporate(esg,symbol);
-}
+} 
 function render(data,esg,symbol){
  renderMacro(data);
  renderEsg(data,esg,symbol);
