@@ -193,3 +193,37 @@ test('curve source status never replaces an actual chart or creates duplicate bu
  assert.equal((html.match(/data-download-curve=/g)||[]).length,1);
  assert.doesNotMatch(html,/money-source-summary|money-source-separator|Nguồn đang theo dõi/);
 });
+
+
+test('ON plot encodes exact date/rate for every point and offers an accessible focus cursor',()=>{
+ const {api,get}=makeEnv();
+ const sample=JSON.parse(JSON.stringify(fixture));
+ sample.interbank.observations=[
+  {date:'2026-10-20',value:3.71},
+  {date:'2026-10-21',value:3.39},
+  {date:'2026-10-22',value:4.3125}
+ ];
+ api.setData(sample);
+ const html=get('money-on').innerHTML;
+ assert.equal((html.match(/data-on-point="\d+"/g)||[]).length,3);
+ assert.match(html,/data-on-point="1" data-on-date="21\/10\/2026" data-on-rate="3,39"/);
+ assert.match(html,/data-on-point="2" data-on-date="22\/10\/2026" data-on-rate="4,3125"/);
+ assert.match(html,/data-on-guide/);
+ assert.match(html,/data-on-focus/);
+ assert.match(html,/tabindex="0"/);
+ assert.match(html,/class="money-on-tooltip" role="tooltip" hidden/);
+ assert.match(html,/data-on-tooltip-date/);
+ assert.match(html,/data-on-tooltip-rate/);
+ assert.doesNotMatch(html,/Nguồn\s*:|vietcap|kbs|vbma\.org\.vn/i);
+});
+test('ON tooltip preserves historical values, not interpolation, on narrow screens',()=>{
+ const {api}=makeEnv();
+ const points=Array.from({length:25},(_,i)=>({date:'2026-10-'+String(i+1).padStart(2,'0'),value:3+i*.1234}));
+ const svg=api._test.miniLine(points,{unit:'%/năm',title:'ON rate',width:304});
+ assert.equal((svg.match(/data-on-point="\d+"/g)||[]).length,25);
+ assert.match(svg,/data-on-point="24" data-on-date="25\/10\/2026" data-on-rate="5,9616"/);
+ assert.match(svg,/data-on-width="304"/);
+ assert.match(svg,/data-on-left="49"/);
+ assert.match(svg,/data-on-right="22"/);
+ assert.doesNotMatch(svg,/<circle[^>]*><title>/);
+});
