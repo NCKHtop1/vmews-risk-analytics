@@ -119,7 +119,7 @@ function renderFutures(p){
 function renderSwap(p){
  const host=$('money-swap');if(!host)return;const s=p.vbmaSwap||{},source=safeURL(s.source,'vbma.org.vn');
  const points=(Array.isArray(s.points)?s.points:[]).filter(x=>x.tenor&&typeof x.value==='number'&&Number.isFinite(x.value)&&Math.abs(x.value)<100000).slice(0,30);
- const enabled=s.status==='verified'&&s.unit&&/^\d{4}-\d\d-\d\d$/.test(s.asOf||'')&&points.length>=2;
+ const enabled=['verified','retained'].includes(s.status)&&s.unit&&/^\d{4}-\d\d-\d\d$/.test(s.asOf||'')&&points.length>=2;
  const link=vbmaSourceIcon(source,'Tải dữ liệu nguồn');
  if(!enabled){
     
@@ -127,26 +127,37 @@ function renderSwap(p){
       '<p class="money-source-pending">Chưa xác minh được ít nhất hai kỳ hạn hoán đổi từ nguồn công bố. Không nội suy đường cong.</p>'+
       '<div class="macro-viz-source">'+link+'</div>';return;
  }
- host.innerHTML=cardHeader('Hoán đổi USD/VND',dateVN(s.asOf),s.unit,'Kỳ hạn')+'<div class="money-curve" role="group" aria-label="Đường cong Hoán đổi USD/VND theo kỳ hạn">'+tenorCurve(points,{title:'Hoán đổi USD/VND',unit:s.unit,color:'#276bb7',width:Math.max(270,host.clientWidth-38)})+'</div><div class="macro-viz-source"><span>'+(s.asOf?'Ngày '+esc(dateVN(s.asOf)):'')+'</span>'+link+'</div>';
+ host.innerHTML=cardHeader('Hoán đổi USD/VND',dateVN(s.asOf),s.unit,'Kỳ hạn')+
+ (s.status==='retained'?'<p class="money-source-pending">Bản công bố đã lưu, cập nhật mới chưa xác minh. Không coi như giá hoán đổi hiện tại.</p>':'')+'<div class="money-curve" role="group" aria-label="Đường cong Hoán đổi USD/VND theo kỳ hạn">'+tenorCurve(points,{title:'Hoán đổi USD/VND',unit:s.unit,color:'#276bb7',width:Math.max(270,host.clientWidth-38)})+'</div><div class="macro-viz-source"><span>'+(s.asOf?'Ngày '+esc(dateVN(s.asOf)):'')+'</span>'+link+'</div>';
 }
 function renderBondCurves(p){
  const host=$('money-vbma-curves');if(!host)return;
  const sources=[['fi_bond','Trái phiếu và chứng chỉ tiền gửi'],['gov_bond','Lợi suất trái phiếu Chính phủ'],['short_benchmark','Lãi suất tham chiếu ngắn hạn']];
- const data=p.vbmaCurves||p.curves||{};
- const spread=verifiedBondSpread(data.gov_bond);
- host.innerHTML=(spread?'<article class="macro-viz-card money-spread-card"><div class="macro-viz-head"><div><span class="macro-viz-kicker">ĐỘ DỐC ĐƯỜNG CONG</span><h4>Chênh lệch lợi suất 10Y – 2Y</h4></div><span class="macro-viz-period">'+esc(dateVN(spread.asOf))+'</span></div><div class="macro-viz-value"><strong>'+esc((spread.difference>0?'+':'')+fmt(spread.difference*100,1))+'</strong><span>điểm cơ bản</span></div></article>':'')+sources.map(([key,title])=>{
-  const s=data[key]||{},points=Array.isArray(s.points)?s.points.filter(x=>x.tenor&&Number.isFinite(x.value)):[];
-  const url=safeURL(s.source||('https://vbma.org.vn/csv/markets/charts/vi/'+({fi_bond:'fi_bond_yield_curve',gov_bond:'government_bond_yield',short_benchmark:'short_term_benchmark_rate'}[key])+'.csv'),'vbma.org.vn');
+ const data=p.vbmaCurves||p.curves||{},spread=verifiedBondSpread(data.gov_bond),cards=[],pending=[];
+ if(spread)cards.push('<article class="macro-viz-card money-spread-card"><div class="macro-viz-head"><div><span class="macro-viz-kicker">ĐỘ DỐC ĐƯỜNG CONG</span><h4>Chênh lệch lợi suất 10Y – 2Y</h4></div><span class="macro-viz-period">'+esc(dateVN(spread.asOf))+'</span></div><div class="macro-viz-value"><strong>'+esc((spread.difference>0?'+':'')+fmt(spread.difference*100,1))+'</strong><span>điểm cơ bản</span></div></article>');
+ for(const[key,title]of sources){
+  const row=data[key]||{},points=Array.isArray(row.points)?row.points.filter(x=>x.tenor&&Number.isFinite(x.value)):[];
+  const url=safeURL(row.source||('https://vbma.org.vn/csv/markets/charts/vi/'+({fi_bond:'fi_bond_yield_curve',gov_bond:'government_bond_yield',short_benchmark:'short_term_benchmark_rate'}[key])+'.csv'),'vbma.org.vn');
   const link=vbmaSourceIcon(url,'Tải dữ liệu nguồn');
-  const verified=s.status==='verified'&&['approved','source_attributed'].includes(s.licenseStatus)&&s.unit&&s.asOf&&points.length>=2;
-  
-  const note=s.status==='unavailable'?'Nguồn chưa cung cấp đường cong có ngày và kỳ hạn hợp lệ trong lượt thu thập mới nhất.':
-   s.status==='retained'?'Nguồn mới gián đoạn; đang giữ quan sát đã công bố trước đó.':
-   'Chưa có ít nhất hai kỳ hạn được kiểm chứng, hoặc quyền sử dụng dữ liệu chưa được xác nhận.';
-  const visual=verified?'<div class="money-curve">'+tenorCurve(points,{title,unit:s.unit,color:'#28837a',width:Math.max(270,(host.clientWidth||960)/(window.innerWidth<950?1:3)-40)})+'</div>' :
-   '<p class="money-source-pending" role="status">'+esc(note)+'</p>';
-  return '<article class="macro-viz-card">'+cardHeader(title,verified?dateVN(s.asOf):'—',verified?s.unit:'','Kỳ hạn')+visual+'<div class="macro-viz-source">'+link+'</div></article>';
- }).join('');
+  const valid=['verified','retained'].includes(row.status)&&['approved','source_attributed'].includes(row.licenseStatus)&&
+    row.unit&&/^\d{4}-\d\d-\d\d$/.test(row.asOf||'')&&points.length>=2;
+  if(!valid){
+   const reason=row.status==='unavailable'?'Nguồn công bố chưa có đường cong đã xác minh':
+    row.status==='retained'?'Bản lưu chưa đủ điều kiện sử dụng':'Chưa có đủ kỳ hạn và quyền sử dụng được kiểm chứng';
+   pending.push('<span class="money-source-pending">'+esc(title)+' · '+esc(reason)+
+      (link?' · '+link:'')+'</span>');
+   continue;
+  }
+  cards.push('<article class="macro-viz-card">'+cardHeader(title,dateVN(row.asOf),row.unit,'Kỳ hạn')+
+   (row.status==='retained'?'<p class="money-source-pending">Đường cong từ kỳ công bố đã lưu '+esc(dateVN(row.asOf))+'. Không phải số liệu mới.</p>':'')+
+   '<div class="money-curve">'+tenorCurve(points,{title,unit:row.unit,color:'#28837a',
+    width:Math.max(270,(host.clientWidth||960)/(window.innerWidth<950?1:3)-40)})+
+   '</div><div class="macro-viz-source">'+link+'</div></article>');
+ }
+ // Keep the verified charts visible, collapse unsupported feeds into one
+ // factual source-status strip instead of multiple giant empty graphs.
+ host.innerHTML=cards.join('')+(pending.length?'<div class="macro-source-notice money-source-summary" role="status"><strong>Nguồn đang theo dõi · '+pending.length+' chỉ tiêu</strong><div>'+
+  pending.join('<span class="money-source-separator"> · </span>')+'</div></div>':'');
 }
 function render(){
  const p=state.payload;if(!p)return;
