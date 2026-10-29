@@ -49,7 +49,7 @@ test('reads VN30F/VN100F price board independently of monthly OI',()=>{
  assert.match(html,/34\.000/);
  assert.match(html,/35\.000/);
  assert.match(html,/Trong giờ giao dịch|Ngoài giờ giao dịch|Giá chậm cập nhật/);
- assert.match(html,/KBS/);
+ assert.doesNotMatch(html,/KBS|Nguồn|kbbuddywts|<th>\s*Nguồn\s*<\/th>/i);
  assert.match(html,/derivative-spark/);
  assert.doesNotMatch(html,/KLGD bình quân\/phiên/);
 });
