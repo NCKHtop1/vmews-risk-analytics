@@ -86,3 +86,17 @@ test('news refresh is independent from model availability',async()=>{
  assert.equal(app.window.__VMEWS_LIVE_COMPANY_NEWS__.items.length,1);
  assert(app.urls.some(u=>u.includes('news-company-latest.json')));
 });
+
+test('market movement and financial reporting feeds refresh without blocking model',async()=>{
+ const payloads={
+  drivers:{generatedAt:stamp,symbols:{FPT:{symbol:'FPT',volumeRatio20:1.3,changePct:0.9}}},
+  manifest:{universe:'VN100',updatedAt:stamp,coverage:{members:100},companies:[{symbol:'FPT',quarters:['2026-Q3']}]}
+ };
+ const app=runtime('finquery.info.vn',async url=>
+  url.includes('drivers.json')?ok(payloads.drivers):
+  url.includes('manifest.json')?ok(payloads.manifest):{ok:false,status:404});
+ const complete=await app.window.__VMEWS_REFRESH_DATA_CONTEXT__();
+ assert.equal(complete,true);
+ assert(app.urls.some(u=>u.includes('drivers.json')));
+ assert(app.urls.some(u=>u.includes('manifest.json')));
+});
