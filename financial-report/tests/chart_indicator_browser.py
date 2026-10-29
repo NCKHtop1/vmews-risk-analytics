@@ -147,10 +147,18 @@ def run():
                 print("FINQUERY_CHART_PAN_DIAGNOSTIC",width,json.dumps(pan),flush=True)
                 assert pan["cueHidden"], ("cue must disappear when user pans away",pan)
                 driver.execute_script("document.getElementById('chart-focus-latest').click();")
-                centered=driver.execute_script("""
-                    return window.__qaChart.chart.timeScale().getVisibleLogicalRange();
-                """)
-                assert centered["to"]>=focus["bars"]-1, "one-click latest focus does not recenter"
+                # LightweightCharts applies a range on the next render pass.
+                # Verify the settled viewport, not the previous synchronous frame.
+                centered=WebDriverWait(driver,6,poll_frequency=.1).until(
+                    lambda d:d.execute_script("""
+                      const ctrl=window.__qaChart,range=ctrl.chart.timeScale().getVisibleLogicalRange();
+                      ctrl.positionLatestCue();
+                      return range?.to>=ctrl.bars.length-1
+                        ? {from:range.from,to:range.to,cueHidden:document.getElementById('chart-latest-candle').hidden}
+                        : null;
+                    """)
+                )
+                assert centered["to"]>=focus["bars"]-1 and not centered["cueHidden"], ("one-click latest focus does not recenter",centered)
                 print("CHART_LATEST_FOCUS",width,json.dumps(focus),flush=True)
                 driver.execute_script("""
                     const dialog=document.getElementById('chart-indicators');
