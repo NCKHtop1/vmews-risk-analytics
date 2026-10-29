@@ -504,7 +504,9 @@ async function refreshCompanyNews(){
  }
  return false;
 }
+function renderLegacyNews(z){const box=$("#news");box.replaceChildren();const a=(z?.evidence?.decisionRecent||z?.evidence?.recent||[]).filter(item=>issuerHeadlineMatches(z?.symbol,item?.title));for(const x of a.slice(0,12)){const e=document.createElement(x.link?"a":"div");e.className="newsItem";if(x.link){e.href=x.link;e.target="_blank";e.rel="noopener"}const label=({POS:"TÍCH CỰC",NEG:"TIÊU CỰC",NEU:"TRUNG TÍNH"})[x.label]||x.label||"TRUNG TÍNH",event=({GENERAL:"THỊ TRƯỜNG",CORPORATE_ACTION:"DOANH NGHIỆP",EARNINGS:"KINH DOANH",OWNERSHIP:"SỞ HỮU",OPERATIONS_MA:"HOẠT ĐỘNG",ANALYST:"PHÂN TÍCH",REGULATORY:"PHÁP LÝ",FINANCING:"TÀI CHÍNH",MARKET_FLOW:"DÒNG TIỀN"})[x.event]||"SỰ KIỆN";e.innerHTML=`<b>${esc(x.title)}</b><small>${esc(x.publisher)} · ${esc(x.publishedAt||x.availableDate||"")}</small><div class="chips"><span class="chip">${esc(event)}</span><span class="chip">${esc(label)}</span>${x.decisionTimeEligible?'<span class="chip">MỚI CÔNG BỐ</span>':''}</div>`;box.append(e)}if(!a.length)box.innerHTML='<div class="empty">Chưa có tin mới đáng chú ý.</div>'}
 function renderNews(z){
+ if(last?.B?.source!=="VN100")return renderLegacyNews(z);
  const box=$("#news");if(!box)return;box.replaceChildren();
  const live=currentCompanyNews(z?.symbol);
  const source=live.length?live.map(item=>({
@@ -561,7 +563,34 @@ function renderRumors(z){
   }
 }
 
+function renderLegacySource(B,sym){
+  const box=$("#sourceAudit");box.replaceChildren();
+  const z=B.dash.symbols?.[sym]||{},signal=B.market?.sources?.signalAudit||{},rumorAudit=B.market?.sources?.rumorAudit||{},flow=z.flow||{},fund=z.fundContext||{},financial=z.fundamentalContext||{},foreign=flow.foreign||{},prop=flow.proprietary||{};
+  const flowValue=item=>item?.available&&finite(item.net1)?`${+item.net1>=0?"+":""}${(+item.net1/1e9).toFixed(1)} tỷ`:"Mở dữ liệu";
+  const flowDetail=item=>item?.available?`${item.latestDate||"Phiên gần nhất"}${finite(item.net5)?` · 5P ${+item.net5>=0?"+":""}${(+item.net5/1e9).toFixed(1)} tỷ`:""}`:"Phiên gần nhất · lũy kế 5/20 phiên";
+  const tracked=(z.rumorContext?.claimCount||0)+(z.evidence?.communityWatchlist?.length||0);
+  const communitySource=rumorAudit.source?.publishers?.join(" · ")||"Nguồn cộng đồng";
+  const priceDetail=window.__VMEWS_FRESHNESS__?.inspect(z).stale?"Cần cập nhật phiên mới":z.priceSourceAgreement?.status==="PASS"?"Đã đối chiếu nguồn giá":z.dataFreshness==="CURRENT"?"Dữ liệu cùng phiên":"Cần làm mới dữ liệu";
+  const fundValue=fund.available?`${fund.fundCount||0} quỹ`:"Mở dữ liệu quỹ";
+  const fundDetail=fund.available&&finite(fund.weightedNavMomentum20)?`NAV 20P ${+fund.weightedNavMomentum20>=0?"+":""}${pct(fund.weightedNavMomentum20,1)}`:"Danh mục · tỷ trọng · NAV · biến động";
+  const financialValue=financial.available?(financial.incomePeriod||financial.period||"BCTC gần nhất"):"Mở BCTC";
+  const financialBits=[];
+  if(financial.available&&finite(financial.profitQoQ))financialBits.push(`LN QoQ ${+financial.profitQoQ>=0?"+":""}${pct(financial.profitQoQ,1)}`);
+  if(financial.available&&finite(financial.revenueQoQ))financialBits.push(`DT QoQ ${+financial.revenueQoQ>=0?"+":""}${pct(financial.revenueQoQ,1)}`);
+  const rows=[
+    ["Giá thị trường",z.date||"—",priceDetail],
+    ["Tin đã đối chiếu",`${(+signal.acceptedEvents||0).toLocaleString("vi-VN")} bài`,`${signal.newsSymbols??"—"} mã cổ phiếu`],
+    ["Dòng tiền khối ngoại",flowValue(foreign),flowDetail(foreign)],
+    ["Dòng tiền tự doanh",flowValue(prop),flowDetail(prop)],
+    ["Danh mục quỹ",fundValue,fundDetail],
+    ["Tài chính doanh nghiệp",financialValue,financialBits.join(" · ")||"Doanh thu · lợi nhuận · dòng tiền · nợ · định giá"],
+    ["Tín hiệu cộng đồng",`${tracked} tín hiệu`,rumorAudit.source?.articles?`${communitySource} · ${rumorAudit.source.articles} bài`:communitySource],
+  ];
+  for(const[label,value,detail]of rows){const e=document.createElement("article");e.className="sourceCard";e.dataset.deepTopic=label;e.innerHTML=`<span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(detail)}</small>`;box.append(e)}
+}
+
 function renderSource(B,sym){
+ if(B.source!=="VN100")return renderLegacySource(B,sym);
   const box=$("#sourceAudit");box.replaceChildren();
   const z=B.dash.symbols?.[sym]||{},signal=B.market?.sources?.signalAudit||{},rumorAudit=B.market?.sources?.rumorAudit||{},flow=z.flow||{},fund=z.fundContext||{},financial=z.fundamentalContext||{},foreign=flow.foreign||{},prop=flow.proprietary||{};
   const flowValue=item=>item?.available&&finite(item.net1)?`${+item.net1>=0?"+":""}${(+item.net1/1e9).toFixed(1)} tỷ`:"Mở dữ liệu";
