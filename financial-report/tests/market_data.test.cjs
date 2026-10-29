@@ -23,12 +23,32 @@ test('fast primary avoids duplicate mirror download',async()=>{
  await new Promise(resolve=>setTimeout(resolve,130));
  assert.equal(calls,1);
 });
-test('slow primary launches mirror hedge and returns the first valid snapshot',async()=>{
+test('slow primary keeps authoritative publisher rather than faster stale mirror',async()=>{
  const api=setup(async url=>{
   if(url.includes('raw.githubusercontent')){await new Promise(resolve=>setTimeout(resolve,250));return{ok:true,json:async()=>bundle(1,105)};}
   await new Promise(resolve=>setTimeout(resolve,10));return{ok:true,json:async()=>bundle(2,115)};
  });
- assert.equal((await api.get('quotes.json',{hedgeMs:30})).quotes.ACB.price,115);
+ assert.equal((await api.get('quotes.json',{hedgeMs:30})).quotes.ACB.price,105);
+});
+test('slow raw publisher timeout uses authenticated same-origin mirror',async()=>{
+ const api=setup(async url=>{
+  if(url.includes('raw.githubusercontent'))return await new Promise(()=>{});
+  return{ok:true,json:async()=>bundle(3,122)};
+ });
+ assert.equal((await api.get('quotes.json',{timeout:220,hedgeMs:5})).quotes.ACB.price,122);
+});
+test('complete atomic bundle uses only one source; mirror recovers raw mismatch',async()=>{
+ const t=new Date(Date.now()-60000).toISOString(),old=new Date(Date.now()-120000).toISOString();
+ const api=setup(async url=>{
+  const u=String(url),file=u.split('/').pop().split('?')[0],raw=u.includes('raw.githubusercontent');
+  const ts=raw&&file==='risk-monitor.json'?old:t;
+  return{ok:true,json:async()=>file==='quotes.json'
+   ?{checkedAt:ts,latestSourceTime:ts,quotes:{ACB:{price:100,sourceTime:ts}}}
+   :{checkedAt:ts,sourceTime:ts,status:'ok',symbols:{ACB:{}}}};
+ });
+ const atomic=await api.getAlignedBundle({timeout:250,retries:2});
+ assert.equal(atomic.sourceTime,t);
+ assert.equal(atomic.risk.sourceTime,t);
 });
 test('future quote cannot poison merges; valid quote repairs prior future value',()=>{const api=setup(()=>{}),now=new Date().toISOString(),future=new Date(Date.now()+86400000).toISOString();const target={ACB:{price:999,sourceTime:future}};api.mergeQuotes(target,{ACB:{price:100,sourceTime:now}});assert.equal(target.ACB.price,100);api.mergeQuotes(target,{ACB:{price:999,sourceTime:future}});assert.equal(target.ACB.price,100);api.mergeQuotes(target,{ACB:{price:90,sourceTime:new Date(Date.now()-86400000).toISOString()}});assert.equal(target.ACB.price,100);});
 test('atomic market bundle only commits one aligned source generation',async()=>{
