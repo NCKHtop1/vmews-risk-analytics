@@ -27,10 +27,16 @@ function moneyFlowText(current,previous){
  return detail+'; các chỉ báo dòng tiền chưa đồng thuận, chưa nên kết luận dòng tiền vào hoặc ra rõ'+tail;
 }
 class ChartController{
- constructor(base,onQuote){this.base=base;this.onQuote=onQuote;this.cache=new Map();this.params={...defaults};this.symbol='';this.tf=$('chart-interval')?.value||'1d';this.type='candles';this.bars=[];this.baseBars=[];this.values=[];this.series={};this.watch=[];this.generation=0;this.retries=0;this.stopped=false;this.buffer=[];this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown=new Map();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.insightItems=[];this.insightOpen=null;this.insightsVisible=false;this.focusOscillator=null;
+ constructor(base,onQuote){this.base=base;this.onQuote=onQuote;this.cache=new Map();this.params={...defaults};this.symbol='';this.tf=$('chart-interval')?.value||'1d';this.type='candles';this.bars=[];this.baseBars=[];this.values=[];this.series={};this.watch=[];this.generation=0;this.retries=0;this.stopped=false;this.buffer=[];this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown=new Map();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.insightItems=[];this.insightOpen=null;this.insightsVisible=false;this.focusOscillator=null;this.followingLatest=true;
  this.chart=L.createChart($('price-chart'),{autoSize:true,height:620,layout:{background:{type:'solid',color:'#ffffff'},textColor:'#65728b',fontFamily:'Arial',attributionLogo:false},grid:{vertLines:{color:'#f2f4f8'},horzLines:{color:'#edf0f6'}},rightPriceScale:{borderColor:'#e5eaf3'},timeScale:{borderColor:'#e5eaf3',timeVisible:false,rightOffset:5,lockVisibleTimeRangeOnResize:true},crosshair:{mode:L.CrosshairMode.Normal},localization:{locale:'vi-VN',timeFormatter:timeLabel}});
  this.chart.subscribeCrosshairMove(e=>{const b=e.seriesData.get(this.series.price);if(b)this.readout({...b,volume:e.seriesData.get(this.series.volume)?.value});else this.readout(this.bars.at(-1));});
- this.chart.timeScale().subscribeVisibleLogicalRangeChange?.(()=>raf(()=>{this.renderInsights();this.positionLatestCue();}));
+ this.chart.timeScale().subscribeVisibleLogicalRangeChange?.(visible=>{
+   // Once someone pans to history, a late ResizeObserver callback must not
+   // force the chart back to the newest candle.
+   if(this.bars.length&&visible&&visible.to<this.bars.length-1.25)
+    this.followingLatest=false;
+   raf(()=>{this.renderInsights();this.positionLatestCue();});
+  });
   // Reframe after authentication or resizes; preserve a deliberate historical pan.
   this.visibleChartWidth=0;
   if(typeof ResizeObserver!=='undefined'){
@@ -38,14 +44,14 @@ class ChartController{
     const width=Math.round(entries[0]?.contentRect?.width||0);
     if(width<220||Math.abs(width-this.visibleChartWidth)<45)return;
     this.visibleChartWidth=width;
-    if(!this.bars.length||$('chart-period')?.value!=='recent'){raf(()=>this.positionLatestCue());return;}
+    if(!this.bars.length||$('chart-period')?.value!=='recent'||!this.followingLatest){raf(()=>this.positionLatestCue());return;}
     const visible=this.chart.timeScale().getVisibleLogicalRange?.();
     if(visible&&visible.to<this.bars.length-1.25){raf(()=>this.positionLatestCue());return;}
     raf(()=>{
      // The user can pan while a resize animation is queued. Recheck at
      // execution time so a stale resize callback cannot snap to latest.
      const current=this.chart.timeScale().getVisibleLogicalRange?.();
-     if(current&&current.to<this.bars.length-1.25){
+     if(!this.followingLatest||(current&&current.to<this.bars.length-1.25)){
       this.positionLatestCue();return;
      }
      this.range();this.positionLatestCue();
@@ -64,7 +70,7 @@ class ChartController{
  $('chart-type').addEventListener('change',e=>{this.type=e.target.value;this.rebuild(true);});
  $('chart-period').addEventListener('change',e=>{const recent=e.target.value==='recent',months=Number(e.target.value);if(M.intraday(this.tf)&&!recent&&(!months||months>=12)){this.tf='1d';$('chart-interval').value='1d';this.load();return;}this.range();});
  $('chart-zoom-in').addEventListener('click',()=>this.zoom(.75));$('chart-zoom-out').addEventListener('click',()=>this.zoom(1.3));
- $('chart-fit').addEventListener('click',()=>{$('chart-period').value='0';this.chart.timeScale().fitContent();});
+ $('chart-fit').addEventListener('click',()=>{this.followingLatest=false;$('chart-period').value='0';this.chart.timeScale().fitContent();this.positionLatestCue();});
  $('chart-focus-latest')?.addEventListener('click',()=>{$('chart-period').value='recent';this.range();this.updateLatestCue();});
  const markerToggle=$('chart-marker-toggle');markerToggle?.addEventListener('click',()=>{this.insightsVisible=!this.insightsVisible;markerToggle.setAttribute('aria-pressed',String(this.insightsVisible));markerToggle.textContent=this.insightsVisible?'Mốc: bật':'Mốc: tắt';this.renderInsights();});
  $('chart-fullscreen').addEventListener('click',async()=>{const terminal=$('chart-terminal');if(terminal.classList.contains('chart-expanded')){terminal.classList.remove('chart-expanded');$('chart-fullscreen').textContent='Toàn màn hình';return;}try{if(document.fullscreenElement)await document.exitFullscreen();else await terminal.requestFullscreen();}catch{terminal.classList.add('chart-expanded');$('chart-fullscreen').textContent='Thoát toàn màn hình';}});
@@ -75,7 +81,7 @@ class ChartController{
  this.syncIndicatorSettings();
  $('chart-oscillator-focus')?.addEventListener('change',e=>{this.focusOscillator=e.target.value;this.rebuild(true);});
  }
- select(symbol,watch=[]){this.watch=[...new Set([symbol,...watch])].filter(s=>/^[A-Z]{3}$/.test(s));if(this.symbol!==symbol){this.symbol=symbol;this.insightItems=[];this.renderInsights();this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown.clear();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.renderSignals();this.load();}else this.subscribe();}
+ select(symbol,watch=[]){this.watch=[...new Set([symbol,...watch])].filter(s=>/^[A-Z]{3}$/.test(s));if(this.symbol!==symbol){this.symbol=symbol;this.followingLatest=true;this.insightItems=[];this.renderInsights();this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown.clear();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.renderSignals();this.load();}else this.subscribe();}
  async load(force=false){const generation=++this.generation;this.abort?.abort();this.abort=new AbortController();const controller=this.abort;this.loading=true;this.buffer=[];const symbol=this.symbol,baseTF=M.intraday(this.tf)?'1m':'1d',key=symbol+':'+baseTF,previousBars=this.baseBars.map(b=>({...b})),previousValues=this.values.map(v=>({...v}));
  $('chart-status').textContent='Đang tải lịch sử '+symbol+'…';if(!previousBars.length){this.bars=[];this.baseBars=[];this.values=[];this.rebuild(false);}this.subscribe();await this.configPromise;if(generation!==this.generation)return;
  try{let data=this.cache.get(key);if(force||!data||Date.now()-data.cachedAt>300000){const url=this.options?.historyBase?new URL(`history?symbol=${symbol}&interval=${baseTF}`,this.options.historyBase).href:this.base+(baseTF==='1m'?'intraday/':'history/')+symbol+'.json';let raw;if(window.FinMarketData&&!this.options?.historyBase){raw=await window.FinMarketData.get((baseTF==='1m'?'intraday/':'history/')+symbol+'.json',{signal:controller.signal});}else{const r=await fetch(url,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)]),cache:'no-cache'});if(!r.ok)throw Error('HTTP '+r.status);raw=await r.json();}if(raw.symbol!==symbol||raw.unit!=='VND'||!Array.isArray(raw.bars))throw Error('Invalid history');data={...raw,bars:M.cleanBars(raw.bars,baseTF==='1m'),cachedAt:Date.now()};if(!data.bars.length)throw Error('Empty');this.cache.set(key,data);if(this.cache.size>24)this.cache.delete(this.cache.keys().next().value);}
@@ -209,6 +215,7 @@ class ChartController{
   const labelTime=t=>typeof t==='number'?
    new Date(t*1000).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):String(t);
   if(requested==='recent'){
+   this.followingLatest=true;
    // Initial readability beats showing every candle compressed into <2px.
    // Keep the latest 35-76 observations with a small future right margin.
    const available=Number($('price-chart')?.clientWidth)||960;
@@ -223,6 +230,7 @@ class ChartController{
     labelTime(this.bars[from].time)+' → '+labelTime(last.time);
    raf(()=>{this.renderInsights();this.positionLatestCue();});return;
   }
+  this.followingLatest=false;
   if(!months){this.chart.timeScale().fitContent();
    $('chart-range-label').textContent=this.bars.length+' nến · '+labelTime(first.time)+
     ' → '+labelTime(last.time)+' · toàn bộ lịch sử có sẵn';
