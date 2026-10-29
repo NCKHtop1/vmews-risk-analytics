@@ -373,6 +373,42 @@ function toolbarCode() {
   return "<script>(function(){\n  function logout(){\n    fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'})\n      .finally(function(){window.location.replace('/login.html');});\n  }\n  function el(tag,klass,text){\n    var n=document.createElement(tag);\n    if(klass)n.className=klass;\n    if(text!==undefined)n.textContent=text;\n    return n;\n  }\n  function init(){\n    fetch('/api/auth/session',{credentials:'same-origin',cache:'no-store'})\n      .then(function(r){if(!r.ok)throw Error('SESSION_ERROR');return r.json();})\n      .then(function(result){\n        if(!result.authenticated||result.user.status!=='active'){\n          window.location.replace('/login.html');return;\n        }\n        var user=result.user, parent=document.querySelector('.intro');\n        if(!parent||document.getElementById('finquery-secure-account'))return;\n        var bar=el('div','finquery-login-toolbar');\n        bar.id='finquery-secure-account';\n        var label=el('div','finquery-account-details');\n        label.append(el('span','finquery-account-label','Tài khoản FinQuery'));\n        label.append(el('strong','finquery-account-email',user.email));\n        bar.append(label);\n        if(user.avatar){\n          var avatar=el('img','finquery-account-avatar');\n          avatar.src=user.avatar;avatar.alt='';avatar.referrerPolicy='no-referrer';\n          bar.prepend(avatar);\n        }\n        if(user.role==='owner'||user.role==='admin'){\n          var admin=el('a','finquery-admin-link','Quản trị hệ thống');\n          admin.href='/admin';\n          bar.append(admin);\n          var nav=document.querySelector('.header nav');\n          if(nav&&!nav.querySelector('.finquery-nav-admin')){\n            var navAdmin=el('a','finquery-nav-admin','Quản trị');\n            navAdmin.href='/admin';nav.append(navAdmin);\n          }\n        }\n        var out=el('button','finquery-logout','Đăng xuất');\n        out.type='button';out.addEventListener('click',logout);\n        bar.append(out);parent.append(bar);\n      })\n      .catch(function(){window.location.replace('/login.html');});\n  }\n  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);\n  else init();\n})();</script>";
 }
 
+// Manual ON observations supplement the existing verified crawl without replacing it.
+const canEditOn = user => Boolean(user && user.status === 'active' &&
+  String(user.email || '').toLowerCase() === OWNER && user.role === 'owner');
+function todayVN() {
+  return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+}
+function validOnDate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const d = new Date(value + 'T00:00:00Z');
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0,10) === value &&
+    value <= todayVN() && value >= '2000-01-01';
+}
+async function onObservations(req,res,user) {
+  if (!user || user.status !== 'active') return json(res,401,{error:'Authentication required'});
+  if (req.method === 'GET') {
+    const rows=await db().query(
+      'SELECT observation_date::text AS date,rate_percent::float8 AS value ' +
+      'FROM public.finquery_on_manual ORDER BY observation_date DESC LIMIT 500');
+    return json(res,200,{observations:rows.reverse(),canEdit:canEditOn(user)});
+  }
+  if (req.method !== 'POST') return json(res,405,{error:'Method not allowed'});
+  if (!canEditOn(user)) return json(res,403,{error:'Không có quyền nhập lãi suất ON.'});
+  if (!originAllowed(req)) return json(res,403,{error:'Invalid origin'});
+  const body=parseBody(req);
+  if (!validOnDate(body.date) || typeof body.value !== 'number' ||
+      !Number.isFinite(body.value) || body.value<0 || body.value>25 ||
+      Math.round(body.value*10000)!==body.value*10000) {
+    return json(res,400,{error:'Ngày hoặc lãi suất ON không hợp lệ (0–25%/năm, tối đa 4 số lẻ).'});
+  }
+  await db().query(
+    'INSERT INTO public.finquery_on_manual(observation_date,rate_percent,entered_by) VALUES($1,$2,$3) '+
+    'ON CONFLICT(observation_date) DO UPDATE SET rate_percent=EXCLUDED.rate_percent,entered_by=EXCLUDED.entered_by,updated_at=now()',
+    [body.date,body.value,user.id]);
+  await audit(user.email,'on_manual_upsert',body.date,{ratePercent:body.value});
+  return json(res,200,{ok:true,date:body.date,value:body.value});
+}
 async function gateway(req, res, route, user) {
   if (req.method !== 'GET' && req.method !== 'HEAD') return json(res,405,{error:'Method not allowed'});
   if (!user || user.status !== 'active') {
@@ -462,6 +498,7 @@ module.exports = async function handler(req,res) {
     if (route === 'api/admin/audit') return adminAudit(req,res,user);
     if (route === 'api/admin/user') return adminUpdate(req,res,user);
     if (route === 'api/user/workspace') return userWorkspace(req,res,user);
+    if (route === 'api/market/on-observations') return onObservations(req,res,user);
     if (route.startsWith('api/')) return json(res,404,{error:'Not found'});
     return gateway(req,res,route,user);
   } catch (err) {

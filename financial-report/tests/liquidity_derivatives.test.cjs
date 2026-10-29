@@ -58,6 +58,13 @@ test('interbank ON uses actual dated observations, not VBMA government repo',()=
  assert.match(out,/stockbiz\.vn/);
  assert.doesNotMatch(out,/vbma\.org\.vn/);
 });
+test('Owner-only manual ON extends crawled dates without creating duplicate days',()=>{
+ const {api,get}=makeEnv();
+ api.setData(fixture);
+ const result=get('money-on').innerHTML;
+ assert.doesNotMatch(result,/finquery-on-manual-form/);
+ assert.doesNotMatch(result,/Nguồn khác/);
+});
 test('HNX VN30 and VN100 derivatives keep OI and volume with monthly labels',()=>{
  const {api,get}=makeEnv();
  api.setData(fixture);
