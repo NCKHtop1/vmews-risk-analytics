@@ -638,9 +638,17 @@ async function renderSymbol(raw){const B=await loadBase();assertProduction(B);co
 window.__VMEWS_RENDER_SYMBOL__=renderSymbol;
 async function refreshCore(){
  if(document.hidden)return false;
- // SoluTION.AI public Pages remains a separate independently validated
- // full-HOSE product; never hot-swap its snapshot with FinQuery VN100.
- if(INDEPENDENT_CORE_PAGE)return false;
+ // SoluTION.AI public Pages is independent of the FinQuery VN100 publisher.
+ // Retain its original model freshness reload without swapping products.
+ if(INDEPENDENT_CORE_PAGE){
+  try{
+   const next=await fetchJsonBounded(CORE_ROOT+"/forecast-dashboard-v12.json?refresh="+Date.now(),Math.min(FETCH_TIMEOUT_MS,12000));
+   if(BASE&&next?.generatedAt!==BASE.dash.generatedAt&&String(next?.asOf||"")>=String(BASE.dash.asOf)){
+    location.reload();return true;
+   }
+  }catch{}
+  return false;
+ }
  try{
   const bundle=await loadVN100(true);
   if(!validVN100(bundle))return false;
