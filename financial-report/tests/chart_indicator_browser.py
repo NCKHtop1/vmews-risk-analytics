@@ -131,7 +131,10 @@ def run():
                     select.value='candles';select.dispatchEvent(new Event('change',{bubbles:true}));
                 """)
                 driver.execute_script("""
-                    const c=window.__qaChart;
+                    const c=window.__qaChart,period=document.getElementById('chart-period');
+                    // Switch out of follow-latest before navigating historical
+                    // candles, as a real user does when exploring the full range.
+                    period.value='0';period.dispatchEvent(new Event('change',{bubbles:true}));
                     c.chart.timeScale().setVisibleLogicalRange({from:12,to:37});
                     c.positionLatestCue();
                 """)
