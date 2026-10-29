@@ -1126,6 +1126,26 @@ body.strategy-lab-view .strategy-page{display:block}
 .money-on-tooltip strong small{font-size:10px;font-weight:650;color:#637b9c}
 @media(max-width:570px){.money-on-tooltip{padding:8px 10px;min-width:112px}
  .money-on-tooltip strong{font-size:15px}}
+
+
+/* Shared FinQuery SVG chart UX: inspected observations, no floating source labels. */
+svg[data-fq-inspect]{cursor:crosshair;touch-action:pan-y}
+svg[data-fq-inspect]:focus-visible{outline:2px solid #85a8df;outline-offset:2px;border-radius:6px}
+svg[data-fq-inspect] [data-fq-point]{pointer-events:none}
+svg[data-fq-inspect] .fq-chart-guide{stroke:#8ca9d2;stroke-width:1.2;stroke-dasharray:4 4;opacity:.85}
+svg[data-fq-inspect] .fq-chart-cursor{fill:#fff;stroke:#3565c7;stroke-width:2.5}
+.fq-chart-tooltip{position:fixed;z-index:2147480000;pointer-events:none;
+ max-width:min(240px,calc(100vw - 16px));min-width:112px;
+ padding:9px 12px;border:1px solid #d4e0ef;border-radius:10px;
+ background:#fff;color:#213d62;box-shadow:0 6px 22px rgba(30,56,89,.15);
+ font-family:inherit;line-height:1.35;font-variant-numeric:tabular-nums;
+ white-space:normal;overflow-wrap:anywhere;text-align:left}
+.fq-chart-tooltip[hidden],.fq-chart-tooltip-series[hidden]{display:none!important}
+.fq-chart-tooltip-series{font-size:11px;font-weight:740;color:#5576a6;margin-bottom:3px}
+.fq-chart-tooltip-label{font-size:11px;color:#71839b;margin-bottom:4px}
+.fq-chart-tooltip-value{display:block;font-size:15px;font-weight:790;line-height:1.25}
+@media(max-width:570px){.fq-chart-tooltip{padding:8px 10px;min-width:104px}.fq-chart-tooltip-value{font-size:14px}}
+@media(prefers-reduced-motion:reduce){svg[data-fq-inspect] .fq-chart-cursor{transition:none}}
 </style><style>.site-locked .risk-monitor-page{display:none!important}
 .header nav a.active{color:#243b7a;font-weight:700}
 .risk-monitor-page{max-width:1500px;margin:0 auto 34px;background:#fff;border:1px solid #e1e7ef;border-radius:18px;box-shadow:0 8px 32px rgba(27,45,78,.05);overflow:hidden}
@@ -2020,6 +2040,141 @@ function decorate(data){
  if(d.quarterly)d.quarterly=decorate(d.quarterly);return d;
 }root.FinancialMetrics={decorate};if(typeof module!=='undefined')module.exports=root.FinancialMetrics;
 })(typeof window==='undefined'?globalThis:window);
+</script><script>/* FinQuery unified SVG inspection: real observations only, independent of chart re-renders. */
+(function(root){'use strict';
+ if(typeof document==='undefined'||typeof document.addEventListener!=='function')return;
+ const SVG='http://www.w3.org/2000/svg',chartSelector='svg[data-fq-inspect]',pointSelector='[data-fq-point]';
+ let current=null,tooltip=null,guide=null,focusDot=null,stickyTouch=false,lastPointer=null,frame=0;
+ function findSvg(target){return typeof target?.closest==='function'?target.closest(chartSelector):null;}
+ function readPoint(el){
+  if(!el)return null;
+  const xraw=el.getAttribute('data-fq-x')??el.getAttribute('cx'),yraw=el.getAttribute('data-fq-y')??el.getAttribute('cy');
+  if(xraw===null||yraw===null)return null;
+  const x=Number(xraw),y=Number(yraw);
+  const value=el.getAttribute('data-fq-value'),label=el.getAttribute('data-fq-label');
+  if(!Number.isFinite(x)||!Number.isFinite(y)||!value||!label)return null;
+  return{el,x,y,value,label,unit:el.getAttribute('data-fq-unit')||'',series:el.getAttribute('data-fq-series')||''};
+ }
+ function points(svg){
+  return [...svg.querySelectorAll(pointSelector)].map(readPoint).filter(Boolean).sort((a,b)=>a.x-b.x||a.y-b.y);
+ }
+ function screen(svg,p,matrix){
+  if(!matrix)return null;
+  return{x:matrix.a*p.x+matrix.c*p.y+matrix.e,y:matrix.b*p.x+matrix.d*p.y+matrix.f};
+ }
+ function elements(){
+  if(tooltip)return;
+  tooltip=document.createElement('div');tooltip.className='fq-chart-tooltip';tooltip.setAttribute('role','tooltip');tooltip.hidden=true;
+  const heading=document.createElement('div');heading.className='fq-chart-tooltip-series';
+  const label=document.createElement('div');label.className='fq-chart-tooltip-label';
+  const value=document.createElement('strong');value.className='fq-chart-tooltip-value';
+  tooltip.append(heading,label,value);document.body.appendChild(tooltip);
+ }
+ function clear(){
+  if(current?.point?.el?.classList)current.point.el.classList.remove('fq-chart-point-active');
+  if(guide)guide.setAttribute('visibility','hidden');
+  if(focusDot)focusDot.setAttribute('visibility','hidden');
+  if(tooltip)tooltip.hidden=true;
+  current=null;stickyTouch=false;
+ }
+ function decorate(svg){
+  if(guide?.ownerSVGElement===svg&&focusDot?.ownerSVGElement===svg)return;
+  guide=document.createElementNS(SVG,'line');
+  guide.setAttribute('class','fq-chart-guide');guide.setAttribute('pointer-events','none');guide.setAttribute('visibility','hidden');
+  focusDot=document.createElementNS(SVG,'circle');
+  focusDot.setAttribute('class','fq-chart-cursor');focusDot.setAttribute('r','5.5');
+  focusDot.setAttribute('pointer-events','none');focusDot.setAttribute('visibility','hidden');
+  svg.append(guide,focusDot);
+ }
+ function select(svg,point,index,sticky=false){
+  if(!svg||!point||!svg.isConnected)return;
+  elements();
+  if(current?.point?.el&&current.point.el!==point.el)current.point.el.classList.remove('fq-chart-point-active');
+  if(current?.svg&&current.svg!==svg)clear();
+  decorate(svg);
+  const matrix=svg.getScreenCTM?.(),pos=screen(svg,point,matrix);
+  if(!pos)return;
+  const vb=svg.viewBox?.baseVal,h=vb?.height||200,rawTop=svg.getAttribute('data-fq-top'),rawBottom=svg.getAttribute('data-fq-bottom'),
+    ymin=rawTop===null?NaN:Number(rawTop),ymax=rawBottom===null?NaN:Number(rawBottom);
+  guide.setAttribute('x1',String(point.x));guide.setAttribute('x2',String(point.x));
+  guide.setAttribute('y1',String(Number.isFinite(ymin)?ymin:10));
+  guide.setAttribute('y2',String(Number.isFinite(ymax)?ymax:h-28));
+  guide.setAttribute('visibility','visible');
+  focusDot.setAttribute('cx',String(point.x));focusDot.setAttribute('cy',String(point.y));
+  focusDot.setAttribute('stroke',point.el.getAttribute('data-fq-color')||svg.getAttribute('data-fq-color')||'#3565c7');
+  focusDot.setAttribute('visibility','visible');
+  point.el.classList.add('fq-chart-point-active');
+  const children=tooltip.children;
+  children[0].textContent=point.series||'';
+  children[0].hidden=!point.series;
+  children[1].textContent=point.label;
+  children[2].textContent=point.value+(point.unit?' '+point.unit:'');
+  tooltip.hidden=false;
+  const r=tooltip.getBoundingClientRect(),w=window.innerWidth||document.documentElement.clientWidth,
+    vh=window.innerHeight||document.documentElement.clientHeight;
+  const left=Math.min(Math.max(8,pos.x+12),Math.max(8,w-r.width-8));
+  const above=pos.y-r.height-14,top=above>=8?above:Math.min(Math.max(8,pos.y+13),Math.max(8,vh-r.height-8));
+  tooltip.style.left=left+'px';tooltip.style.top=top+'px';
+  current={svg,point,index};stickyTouch=sticky;
+ }
+ function selectNearest(svg,x,y,sticky=false){
+  const list=points(svg),matrix=svg.getScreenCTM?.();
+  if(!list.length||!matrix)return;
+  let best=null,bestIndex=-1,minDx=Infinity,minDy=Infinity;
+  list.forEach((p,i)=>{
+   const v=screen(svg,p,matrix);
+   if(!v)return;
+   // First choose the closest observed period on X, then the closest series on Y.
+   const dx=Math.abs(v.x-x),dy=Math.abs(v.y-y);
+   if(dx<minDx-.35||(Math.abs(dx-minDx)<=.35&&dy<minDy)){
+    best=p;bestIndex=i;minDx=dx;minDy=dy;
+   }
+  });
+  select(svg,best,bestIndex,sticky);
+ }
+ document.addEventListener('pointermove',event=>{
+  if(event.pointerType==='touch')return;
+  const svg=findSvg(event.target);if(!svg){if(!stickyTouch)clear();return;}
+  lastPointer={svg,x:event.clientX,y:event.clientY};
+  if(frame)return;
+  if(typeof requestAnimationFrame==='function'){
+   frame=requestAnimationFrame(()=>{frame=0;const p=lastPointer;if(p?.svg?.isConnected)selectNearest(p.svg,p.x,p.y);});
+  }else selectNearest(svg,event.clientX,event.clientY);
+ },{passive:true});
+ document.addEventListener('pointerdown',event=>{
+  const svg=findSvg(event.target);
+  if(!svg){clear();return;}
+  if(event.pointerType==='touch'||event.pointerType==='pen')selectNearest(svg,event.clientX,event.clientY,true);
+ },{passive:true});
+ document.addEventListener('pointerout',event=>{
+  if(stickyTouch)return;
+  const svg=findSvg(event.target);
+  if(svg&&findSvg(event.relatedTarget)!==svg)clear();
+ },{passive:true});
+ document.addEventListener('focusin',event=>{
+  const svg=findSvg(event.target);if(!svg)return;
+  const list=points(svg);if(!list.length)return;
+  const selected=event.target.closest?.(pointSelector),idx=selected?list.findIndex(p=>p.el===selected):list.length-1;
+  select(svg,list[Math.max(0,idx)],Math.max(0,idx));
+ });
+ document.addEventListener('focusout',event=>{
+  if(current?.svg&&!current.svg.contains(event.relatedTarget))clear();
+ });
+ document.addEventListener('keydown',event=>{
+  const svg=findSvg(event.target);
+  if(!svg||!['ArrowRight','ArrowLeft','Home','End','Escape'].includes(event.key))return;
+  event.preventDefault();
+  if(event.key==='Escape'){clear();return;}
+  const list=points(svg);if(!list.length)return;
+  const old=current?.svg===svg?current.index:list.length-1;
+  const index=event.key==='Home'?0:event.key==='End'?list.length-1:
+   Math.max(0,Math.min(list.length-1,old+(event.key==='ArrowRight'?1:-1)));
+  select(svg,list[index],index);
+ });
+ document.addEventListener('scroll',clear,true);
+ window.addEventListener?.('resize',clear);
+ root.FinChartInspect={points,clear};
+})(window);
 </script><script>/* Read-only visual summaries of the same normalized statement rows used by Excel. */
 (function(root){'use strict';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -2093,15 +2248,39 @@ function geometry(series,width=560,height=190,padding={left:65,right:24,top:18,b
  const points=series.map(s=>({...s,x:x(s.period),y:s.value===null?null:y(s.value)}));let pen=false;const path=points.map(p=>{if(p.y===null){pen=false;return'';}const out=`${pen?'L':'M'}${p.x.toFixed(2)},${p.y.toFixed(2)}`;pen=true;return out;}).join(' ');
  return{points,path,zero:y(0),lo,hi,y,padding,width,height};
 }
-function sparkline(series){const g=geometry(series,96,32,{left:4,right:4,top:4,bottom:4});return`<svg class="sparkline" viewBox="0 0 96 32" aria-hidden="true"><path d="${g.path}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;}
-function cards(m){return m.metrics.map((k,i)=>{const context=k.value===null?'Chưa có dữ liệu':m.compare?(k.before===null?`Không có số liệu ${label(m.compare)}`:`so với ${label(m.compare)}`):label(m.latest);return`<article class="kpi-card kpi-${i}"><div class="kpi-label"><span>${esc(k.label)}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${k.icon}"/></svg></div><div class="kpi-value">${k.value===null?'—':nf.format(k.value)}<span>tỷ đồng</span></div><div class="kpi-bottom"><div>${k.delta===null?`<span class="kpi-context">${esc(context)}</span>`:`<span class="kpi-change ${k.delta<0?'down':'up'}">${k.delta>0?'+':''}${nf.format(k.delta)}%</span><span class="kpi-context">${esc(context)}</span>`}</div>${sparkline(k.series)}</div></article>`}).join('');}
+function sparkline(series,title='Chỉ tiêu'){
+ const g=geometry(series,96,32,{left:4,right:4,top:4,bottom:4});
+ const dots=g.points.filter(p=>Number.isFinite(p.value)&&Number.isFinite(p.y)).map((p,i)=>
+  '<circle data-fq-point="'+i+'" data-fq-x="'+p.x.toFixed(2)+'" data-fq-y="'+p.y.toFixed(2)+
+  '" data-fq-label="'+esc(label(p.period))+'" data-fq-series="'+esc(title)+
+  '" data-fq-value="'+esc(new Intl.NumberFormat('vi-VN',{maximumFractionDigits:4}).format(p.value))+
+  '" data-fq-unit="tỷ đồng" cx="'+p.x.toFixed(2)+'" cy="'+p.y.toFixed(2)+
+  '" r="1.5" fill="currentColor"/>').join('');
+ return '<svg class="sparkline" viewBox="0 0 96 32" data-fq-inspect="kpi" data-fq-top="2" data-fq-bottom="30" data-fq-color="#5264dc" tabindex="0" role="img" aria-label="'+
+  esc(title+' theo kỳ')+'"><path d="'+g.path+'" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'</svg>';
+}
+function cards(m){return m.metrics.map((k,i)=>{const context=k.value===null?'Chưa có dữ liệu':m.compare?(k.before===null?`Không có số liệu ${label(m.compare)}`:`so với ${label(m.compare)}`):label(m.latest);return`<article class="kpi-card kpi-${i}"><div class="kpi-label"><span>${esc(k.label)}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${k.icon}"/></svg></div><div class="kpi-value">${k.value===null?'—':nf.format(k.value)}<span>tỷ đồng</span></div><div class="kpi-bottom"><div>${k.delta===null?`<span class="kpi-context">${esc(context)}</span>`:`<span class="kpi-change ${k.delta<0?'down':'up'}">${k.delta>0?'+':''}${nf.format(k.delta)}%</span><span class="kpi-context">${esc(context)}</span>`}</div>${sparkline(k.series,k.label)}</div></article>`}).join('');}
 function axisNumber(v){return Math.abs(v)>=1e6?nf.format(v/1e6)+'tr':Math.abs(v)>=1000?nf.format(v/1000)+'k':nf.format(v);}
 function trend(metric){
  if(!metric||!metric.series.some(s=>s.value!==null))return'<div class="chart-empty">Chưa có dữ liệu cho chỉ tiêu này.</div>';
  const g=geometry(metric.series),ticks=Array.from({length:4},(_,i)=>g.lo+(g.hi-g.lo)*i/3),valid=g.points.filter(p=>p.value!==null);
- const axis=ticks.map(v=>`<g><line x1="65" x2="536" y1="${g.y(v)}" y2="${g.y(v)}" class="chart-gridline"/><text x="55" y="${g.y(v)+4}" text-anchor="end">${esc(axisNumber(v))}</text></g>`).join('');
- const points=g.points.map((p,i)=>`${i===0||i===g.points.length-1||g.points.length<=7?`<text x="${p.x}" y="178" text-anchor="${i===0?'start':i===g.points.length-1?'end':'middle'}">${esc(label(p.period))}</text>`:''}${p.value===null?'':`<g class="chart-point" tabindex="0" role="img" aria-label="${esc(label(p.period)+': '+precise.format(p.value)+' tỷ đồng')}" data-tooltip="${esc(label(p.period)+' · '+metric.label+': '+precise.format(p.value)+' tỷ đồng')}"><title>${esc(label(p.period)+': '+precise.format(p.value)+' tỷ đồng')}</title><circle cx="${p.x}" cy="${p.y}" r="12" class="point-hit"/><circle cx="${p.x}" cy="${p.y}" r="4" class="point-dot"/></g>`}`).join('');
- return`<svg class="trend-svg" viewBox="0 0 560 190" role="group" aria-label="${esc(metric.label)} theo kỳ, đơn vị tỷ đồng">${axis}<line x1="65" x2="536" y1="${g.zero}" y2="${g.zero}" class="zero-line"/><path d="${g.path}" class="trend-line"/>${points}</svg><div class="chart-readout" aria-live="polite">${esc(label(valid.at(-1).period))}<strong>${precise.format(valid.at(-1).value)} <span>tỷ đồng</span></strong></div>`;
+ const axis=ticks.map(v=>'<g><line x1="65" x2="536" y1="'+g.y(v)+'" y2="'+g.y(v)+'" class="chart-gridline"/><text x="55" y="'+(g.y(v)+4)+'" text-anchor="end">'+esc(axisNumber(v))+'</text></g>').join('');
+ const points=g.points.map((p,i)=>{
+  const tick=i===0||i===g.points.length-1||g.points.length<=7?
+   '<text x="'+p.x+'" y="178" text-anchor="'+(i===0?'start':i===g.points.length-1?'end':'middle')+'">'+esc(label(p.period))+'</text>':'';
+  if(p.value===null)return tick;
+  const shown=precise.format(p.value),full=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:4}).format(p.value);
+  return tick+'<g class="chart-point" tabindex="0" role="img" aria-label="'+esc(label(p.period)+': '+shown+' tỷ đồng')+
+   '" data-tooltip="'+esc(label(p.period)+' · '+metric.label+': '+shown+' tỷ đồng')+
+   '" data-fq-point="'+i+'" data-fq-x="'+p.x+'" data-fq-y="'+p.y+
+   '" data-fq-label="'+esc(label(p.period))+'" data-fq-series="'+esc(metric.label)+
+   '" data-fq-value="'+esc(full)+'" data-fq-unit="tỷ đồng">'+
+   '<circle cx="'+p.x+'" cy="'+p.y+'" r="12" class="point-hit"/>'+
+   '<circle cx="'+p.x+'" cy="'+p.y+'" r="4" class="point-dot"/></g>';
+ }).join('');
+ return'<svg class="trend-svg" data-fq-inspect="financial" data-fq-top="18" data-fq-bottom="155" data-fq-color="#5264dc" viewBox="0 0 560 190" role="group" tabindex="0" aria-label="'+esc(metric.label)+' theo kỳ, đơn vị tỷ đồng">'+axis+
+  '<line x1="65" x2="536" y1="'+g.zero+'" y2="'+g.zero+'" class="zero-line"/><path d="'+g.path+'" class="trend-line"/>'+points+'</svg>'+
+  '<div class="chart-readout" aria-live="polite">'+esc(label(valid.at(-1).period))+'<strong>'+precise.format(valid.at(-1).value)+' <span>tỷ đồng</span></strong></div>';
 }
 function capital(m){
  if(!m.capital)return'<div class="chart-empty">Chưa đủ dữ liệu cơ cấu nguồn vốn.</div>';
@@ -2759,8 +2938,15 @@ function renderCompareSvg(series){
  const grid=[];for(let i=0;i<5;i++){const v=max-(max-min)*i/4,yy=y(v);grid.push('<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="#e6ebf3" stroke-width="1"/><text x="'+(L-8)+'" y="'+(yy+4)+'" text-anchor="end" font-size="10" fill="#7c8798">'+v.toFixed(1)+'%</text>');}
  const zero=(min<=0&&max>=0)?'<line x1="'+L+'" y1="'+y(0)+'" x2="'+(W-R)+'" y2="'+y(0)+'" stroke="#aeb8c8" stroke-width="1.2" stroke-dasharray="4 4"/>':'';
  const paths=usable.map((s,i)=>'<path d="'+svgPath(s.points,dateIndex,x,y)+'" fill="none" stroke="'+(s.color||COMPARE_COLORS[i%COMPARE_COLORS.length])+'" stroke-width="'+(s.strong?3:2)+'" stroke-linejoin="round" stroke-linecap="round"/>').join('');
+ const precise=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:4});
+ const plotted=usable.map((series,j)=>series.points.map((p,i)=>{
+  const index=dateIndex.get(p.time);if(index==null||!Number.isFinite(p.value))return'';
+  const col=/^#[0-9a-fA-F]{6}$/.test(series.color||'')?series.color:COMPARE_COLORS[j%COMPARE_COLORS.length];
+  const when=/^\d{4}-\d\d-\d\d$/.test(String(p.time))?String(p.time).slice(8,10)+'/'+String(p.time).slice(5,7)+'/'+String(p.time).slice(0,4):String(p.time);
+  return'<circle data-fq-point="'+j+'-'+i+'" data-fq-x="'+x(index).toFixed(1)+'" data-fq-y="'+y(p.value).toFixed(1)+'" data-fq-label="'+esc(when)+'" data-fq-series="'+esc(series.label)+'" data-fq-value="'+esc((p.value>0?'+':'')+precise.format(p.value))+'" data-fq-unit="%" data-fq-color="'+col+'" cx="'+x(index).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="2.5" fill="transparent"/>';
+ }).join('')).join('');
  const first=dates[0]||'',last=dates.at(-1)||'';
- host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'+grid.join('')+zero+paths+'<text x="'+L+'" y="'+(H-10)+'" font-size="10" fill="#7c8798">'+esc(first)+'</text><text x="'+(W-R)+'" y="'+(H-10)+'" text-anchor="end" font-size="10" fill="#7c8798">'+esc(last)+'</text></svg>';
+ host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" data-fq-inspect="compare" data-fq-top="'+T+'" data-fq-bottom="'+(H-B)+'" tabindex="0" role="img" aria-label="Biểu đồ so sánh diễn biến cổ phiếu và ngành">'+grid.join('')+zero+paths+plotted+'<text x="'+L+'" y="'+(H-10)+'" font-size="10" fill="#7c8798">'+esc(first)+'</text><text x="'+(W-R)+'" y="'+(H-10)+'" text-anchor="end" font-size="10" fill="#7c8798">'+esc(last)+'</text></svg>';
 }
 function renderCompareLegend(series){
  const host=$('market-compare-legend');if(!host)return;host.innerHTML=series.map(s=>'<span><i style="background:'+esc(s.color)+'"></i><b>'+esc(s.label)+'</b><em>'+(s.points?.length?((s.points.at(-1).value>=0?'+':'')+fmt(s.points.at(-1).value)+'%'):'—')+'</em></span>').join('');
@@ -3822,11 +4008,12 @@ function renderTimeline(){
  const multipleDays=new Set(rows.map(r=>dayKey(r.sourceTime))).size>1;
  const step=Math.max(1,Math.ceil(rows.length/6));
  const labels=rows.map((r,i)=>{if(i%step!==0&&i!==rows.length-1)return'';return'<text x="'+x(i)+'" y="'+(H-10)+'" text-anchor="middle">'+esc(shortTime(r.sourceTime,multipleDays))+'</text>';}).join('');
- const dots=rows.map((r,i)=>{const lv=Number(r.score)>=85?'red':Number(r.score)>=70?'yellow':'green';return'<circle class="risk-line-dot risk-'+lv+'" cx="'+x(i)+'" cy="'+y(r.score)+'" r="'+(i===rows.length-1?5:3)+'"/>';}).join('');
+ const exact=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:4});
+ const dots=rows.map((r,i)=>{const lv=Number(r.score)>=85?'red':Number(r.score)>=70?'yellow':'green';return'<circle class="risk-line-dot risk-'+lv+'" data-fq-point="'+i+'" data-fq-x="'+x(i).toFixed(1)+'" data-fq-y="'+y(r.score).toFixed(1)+'" data-fq-label="'+esc(shortTime(r.sourceTime,multipleDays))+'" data-fq-series="Điểm rủi ro thị trường" data-fq-value="'+esc(exact.format(r.score))+'" data-fq-unit="/100" cx="'+x(i)+'" cy="'+y(r.score)+'" r="'+(i===rows.length-1?5:3)+'"/>';}).join('');
  const zones='<rect class="risk-zone risk-zone-red" x="'+L+'" y="'+y(100)+'" width="'+innerW+'" height="'+(y(85)-y(100))+'"/><rect class="risk-zone risk-zone-yellow" x="'+L+'" y="'+y(85)+'" width="'+innerW+'" height="'+(y(70)-y(85))+'"/><rect class="risk-zone risk-zone-green" x="'+L+'" y="'+y(70)+'" width="'+innerW+'" height="'+(y(0)-y(70))+'"/>';
  const current=rows[rows.length-1];
  const currentLabel='<text class="risk-current-label" x="'+Math.min(W-R-4,x(rows.length-1)+8)+'" y="'+Math.max(T+12,y(current.score)-9)+'">'+fmt(current.score,1)+'/100</text>';
- host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Diễn biến điểm rủi ro thị trường">'+zones+'<g class="risk-grid">'+grids+'</g><polyline class="risk-line" fill="none" points="'+pts+'"/>'+dots+currentLabel+'<g class="risk-axis-labels">'+labels+'</g></svg>';
+ host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" data-fq-inspect="risk" data-fq-top="'+T+'" data-fq-bottom="'+(H-B)+'" data-fq-color="#c4514a" tabindex="0" role="img" aria-label="Diễn biến điểm rủi ro thị trường">'+zones+'<g class="risk-grid">'+grids+'</g><polyline class="risk-line" fill="none" points="'+pts+'"/>'+dots+currentLabel+'<g class="risk-axis-labels">'+labels+'</g></svg>';
 }
 function renderSectorDetail(id){
  const host=$('risk-sector-detail'),x=(state.data?.sectors||[]).find(s=>s.id===id);if(!host||!x){if(host)host.hidden=true;return;}
@@ -4317,9 +4504,10 @@ function plot(data,opts={}){
  const shape=pts.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(p.y).toFixed(1)).join(' ');
  const horizontal=[0,Math.floor((pts.length-1)/2),pts.length-1].map((i,j)=>'<text x="'+x(i).toFixed(1)+'" y="'+(height-10)+'" fill="#7688a0" font-size="11" text-anchor="'+(j===0?'start':j===2?'end':'middle')+'">'+esc(pts[i].label)+'</text>').join('');
  const threshold=typeof opts.threshold==='number'?'<line x1="'+l+'" y1="'+y(opts.threshold).toFixed(1)+'" x2="'+(width-r)+'" y2="'+y(opts.threshold).toFixed(1)+'" stroke="#bb8443" stroke-dasharray="5 5"/><text x="'+(width-r-4)+'" y="'+(y(opts.threshold)-6).toFixed(1)+'" text-anchor="end" font-size="11" fill="#aa763c">'+esc(opts.threshold)+'</text>':'';
- const tips=pts.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.y).toFixed(1)+'" r="9" fill="transparent"><title>'+esc(p.label+': '+fmt(p.y)+' '+(opts.unit||''))+'</title></circle>').join('');
+ const exact=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:6});
+ const tips=pts.map((p,i)=>'<circle data-fq-point="'+i+'" data-fq-x="'+x(i).toFixed(1)+'" data-fq-y="'+y(p.y).toFixed(1)+'" data-fq-label="'+esc(p.label)+'" data-fq-series="'+esc(opts.title||'Biểu đồ')+'" data-fq-value="'+esc(exact.format(p.y))+'" data-fq-unit="'+esc(opts.unit||'')+'" cx="'+x(i).toFixed(1)+'" cy="'+y(p.y).toFixed(1)+'" r="3.2" fill="'+color+'"/>').join('');
  const last=pts.at(-1);
- return'<svg class="macro-trend-svg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="'+esc((opts.title||'Biểu đồ')+' · '+pts.length+' kỳ dữ liệu')+'">'+grid+threshold+'<path d="'+shape+'" fill="none" stroke="'+color+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+x(pts.length-1).toFixed(1)+'" cy="'+y(last.y).toFixed(1)+'" r="5" fill="'+color+'" stroke="white" stroke-width="2"/>'+tips+horizontal+'</svg>';
+ return'<svg class="macro-trend-svg" viewBox="0 0 '+width+' '+height+'" data-fq-inspect="line" data-fq-top="'+t+'" data-fq-bottom="'+(height-b)+'" data-fq-color="'+color+'" tabindex="0" role="img" aria-label="'+esc((opts.title||'Biểu đồ')+' · '+pts.length+' kỳ dữ liệu')+'">'+grid+threshold+'<path d="'+shape+'" fill="none" stroke="'+color+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+x(pts.length-1).toFixed(1)+'" cy="'+y(last.y).toFixed(1)+'" r="5" fill="'+color+'" stroke="white" stroke-width="2"/>'+tips+horizontal+'</svg>';
 }
 function renderMacro(data){
  const host=$('macro-overview');if(!host)return;
@@ -4660,7 +4848,7 @@ function renderChart(){
  $('macro-chart-title').textContent=ds.companySymbol?'Xu hướng · '+label:displayTitle(ds.title||'Dữ liệu vĩ mô & ESG');
  $('macro-chart-subtitle').textContent=(unit?unit+' · ':'')+(ds.companySymbol?pts.length+' năm có dữ liệu':label+(ds.allYears?'':''))+(ds.status==='retained'?'':'');
  if(pts.length<2){box.innerHTML='<div class="analysis-empty">Chưa đủ hai kỳ công bố có số liệu hợp lệ cho chỉ tiêu này.</div>';return;}
- const w=900,h=320,pad=42,min=Math.min(...pts.map(x=>x.y)),max=Math.max(...pts.map(x=>x.y)),span=max-min||1,xx=i=>pad+(w-2*pad)*(i/Math.max(1,pts.length-1)),yy=v=>h-pad-(h-2*pad)*((v-min)/span),path=pts.map((p,i)=>(i?'L':'M')+xx(i).toFixed(1)+' '+yy(p.y).toFixed(1)).join(' '),last=pts.at(-1);const ticks=[0,.25,.5,.75,1].map(t=>{const val=min+span*t,y=yy(val);return'<line x1="'+pad+'" y1="'+y+'" x2="'+(w-pad)+'" y2="'+y+'" stroke="#edf1f6"/><text x="4" y="'+(y+4)+'" font-size="10" fill="#7c889a">'+esc(fmt(val))+'</text>';}).join('');const labels=[0,Math.floor((pts.length-1)/2),pts.length-1].map(i=>'<text x="'+xx(i)+'" y="'+(h-10)+'" text-anchor="'+(i===0?'start':i===pts.length-1?'end':'middle')+'" font-size="10" fill="#7c889a">'+esc(String(pts[i].label).slice(0,18))+'</text>').join('');box.innerHTML='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+esc(ds.title+' '+state.metric)+'">'+ticks+'<path d="'+path+'" fill="none" stroke="#4d67c8" stroke-width="2"/><circle cx="'+xx(pts.length-1)+'" cy="'+yy(last.y)+'" r="4" fill="#4d67c8"/>'+labels+'</svg>';
+ const w=900,h=320,pad=42,min=Math.min(...pts.map(x=>x.y)),max=Math.max(...pts.map(x=>x.y)),span=max-min||1,xx=i=>pad+(w-2*pad)*(i/Math.max(1,pts.length-1)),yy=v=>h-pad-(h-2*pad)*((v-min)/span),path=pts.map((p,i)=>(i?'L':'M')+xx(i).toFixed(1)+' '+yy(p.y).toFixed(1)).join(' '),last=pts.at(-1);const ticks=[0,.25,.5,.75,1].map(t=>{const val=min+span*t,y=yy(val);return'<line x1="'+pad+'" y1="'+y+'" x2="'+(w-pad)+'" y2="'+y+'" stroke="#edf1f6"/><text x="4" y="'+(y+4)+'" font-size="10" fill="#7c889a">'+esc(fmt(val))+'</text>';}).join('');const labels=[0,Math.floor((pts.length-1)/2),pts.length-1].map(i=>'<text x="'+xx(i)+'" y="'+(h-10)+'" text-anchor="'+(i===0?'start':i===pts.length-1?'end':'middle')+'" font-size="10" fill="#7c889a">'+esc(String(pts[i].label).slice(0,18))+'</text>').join('');const precise=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:6});const pointDots=pts.map((p,i)=>'<circle data-fq-point="'+i+'" data-fq-x="'+xx(i).toFixed(1)+'" data-fq-y="'+yy(p.y).toFixed(1)+'" data-fq-label="'+esc(p.label)+'" data-fq-series="'+esc(label)+'" data-fq-value="'+esc(precise.format(p.y))+'" data-fq-unit="'+esc(unit)+'" cx="'+xx(i).toFixed(1)+'" cy="'+yy(p.y).toFixed(1)+'" r="3.3" fill="#4d67c8"/>').join('');box.innerHTML='<svg viewBox="0 0 '+w+' '+h+'" data-fq-inspect="line" data-fq-top="'+pad+'" data-fq-bottom="'+(h-pad)+'" data-fq-color="#4d67c8" role="img" tabindex="0" aria-label="'+esc(ds.title+' '+state.metric)+'">'+ticks+'<path d="'+path+'" fill="none" stroke="#4d67c8" stroke-width="2"/>'+pointDots+labels+'</svg>';
 }
 function renderTable(){
  const ds=state.data?.datasets?.[state.active];if(!ds)return;const head=$('macro-table-head'),body=$('macro-table-body'),wrap=body?.closest('.macro-table-wrap');
@@ -4903,12 +5091,13 @@ function tenorCurve(points,{title='',unit='',color='#2e74bb',width=600}={}){
  const budget=W<420?4:W<690?6:10,step=Math.max(1,Math.ceil((pts.length-1)/(budget-1)));
  const tickIndices=[...new Set([...pts.map((p,i)=>i).filter(i=>i%step===0),pts.length-1])];
  const labels=tickIndices.map(i=>'<text x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" data-tenor-label="'+esc(pts[i].tenor)+'" text-anchor="'+(i===0?'start':i===pts.length-1?'end':'middle')+'" font-size="10" fill="#71859c">'+esc(pts[i].tenor)+'</text>').join('');
- const circles=pts.map((p,i)=>'<circle data-tenor-point="'+esc(p.tenor)+'" cx="'+x(i).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="'+(i===pts.length-1?4.6:3.4)+'" fill="'+color+'" stroke="white" stroke-width="1"><title>'+esc(p.tenor+' · '+fmt(p.value,3)+' '+unit)+'</title></circle>').join('');
+ const precise=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:6});
+ const circles=pts.map((p,i)=>'<circle data-tenor-point="'+esc(p.tenor)+'" data-fq-point="'+i+'" data-fq-x="'+x(i).toFixed(1)+'" data-fq-y="'+y(p.value).toFixed(1)+'" data-fq-label="'+esc(p.tenor)+'" data-fq-series="'+esc(title||'Đường cong kỳ hạn')+'" data-fq-value="'+esc(precise.format(p.value))+'" data-fq-unit="'+esc(unit)+'" cx="'+x(i).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="'+(i===pts.length-1?4.6:3.4)+'" fill="'+color+'" stroke="white" stroke-width="1"/>').join('');
  let zero='';
  if(lo<0&&hi>0){
   const py=y(0);zero='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+py.toFixed(1)+'" y2="'+py.toFixed(1)+'" stroke="#9eb0c9" stroke-dasharray="4 3" stroke-width="1.2"/>';
  }
- return'<svg class="money-tenor-curve" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(title+' · '+pts.length+' kỳ hạn · '+unit)+'">'+grid+zero+
+ return'<svg class="money-tenor-curve" viewBox="0 0 '+W+' '+H+'" data-fq-inspect="tenor" data-fq-top="'+T+'" data-fq-bottom="'+(H-B)+'" data-fq-color="'+color+'" tabindex="0" role="img" aria-label="'+esc(title+' · '+pts.length+' kỳ hạn · '+unit)+'">'+grid+zero+
   '<path d="'+path+'" stroke="'+color+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'+circles+labels+'</svg>';
 }
 // Download exactly the verified curve shown on screen, never an unvalidated source file.
@@ -5163,8 +5352,9 @@ function miniHistory(rows){
  const y=v=>64-(v-(lo-pad))/(hi-lo+2*pad)*55;
  const x=i=>8+i/(data.length-1)*624;
  const path=data.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(p.price).toFixed(1)).join(' ');
- const dots=data.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.price).toFixed(1)+'" r="2.5" fill="#2966bb"><title>'+esc(datetimeVN(p.time)+' · '+fmt(p.price))+'</title></circle>').join('');
- return '<svg class="derivative-spark derivative-spark-wide" viewBox="0 0 640 80" role="img" aria-label="Diễn biến giá hợp đồng"><path d="'+path+'" fill="none" stroke="#2966bb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'</svg>';
+ const precise=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:4});
+ const dots=data.map((p,i)=>'<circle data-fq-point="'+i+'" data-fq-x="'+x(i).toFixed(1)+'" data-fq-y="'+y(p.price).toFixed(1)+'" data-fq-label="'+esc(datetimeVN(p.time))+'" data-fq-series="Giá hợp đồng" data-fq-value="'+esc(precise.format(p.price))+'" data-fq-unit="điểm" cx="'+x(i).toFixed(1)+'" cy="'+y(p.price).toFixed(1)+'" r="2.8" fill="#2966bb"/>').join('');
+ return '<svg class="derivative-spark derivative-spark-wide" viewBox="0 0 640 80" data-fq-inspect="intraday" data-fq-top="4" data-fq-bottom="70" data-fq-color="#2966bb" tabindex="0" role="img" aria-label="Diễn biến giá hợp đồng"><path d="'+path+'" fill="none" stroke="#2966bb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'</svg>';
 }
 function diff(c){return Number.isFinite(c.change)?c.change:c.price-c.reference;}
 function move(c){const change=diff(c),pct=(c.price/c.reference-1)*100;
