@@ -44,7 +44,7 @@ test('fixed-income charts read verified values from the published curves schema'
  assert.equal((cards.match(/class="money-tenor-curve"/g)||[]).length,1);
  assert.doesNotMatch(visible(cards),rejected);
  assert.doesNotMatch(visible(get('money-swap').innerHTML),rejected);
- assert.match(visible(cards),/Chưa có dữ liệu/);
+ assert.match(visible(cards),/Nguồn chưa cung cấp đường cong/);
  assert.match(cards,/href="https:\/\/vbma\.org\.vn\//,'Keep clickable, authentic source URL');
 });
 test('macro and Alpha copy no longer expose internal operations or lengthy explanations',()=>{
