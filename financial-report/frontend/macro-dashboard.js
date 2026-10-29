@@ -38,11 +38,9 @@ function series(ds,key,scale=1){
  .map(p=>({label:p.label,rank:p.date,y:p.raw/scale}));
 }
 function httpsUrl(raw){try{const u=new URL(String(raw||''));return u.protocol==='https:'?u.href:'';}catch{return'';}}
-function sourceLink(raw,label){
- const url=httpsUrl(raw);
- if(!url)return '';
- return '<a class="macro-source-quicklink" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" title="'+esc('Mở công bố: '+label)+'" aria-label="'+esc('Mở công bố: '+label)+'"><span aria-hidden="true">↗</span></a>';
-}
+// Source URLs stay in the verified data model; the public dashboard does not render them.
+function sourceLink(){return '';}
+
 function plot(data,opts={}){
  const pts=data.slice(-(opts.limit||24));
  if(pts.length<2)return'<div class="macro-no-chart">Chuỗi này chưa có hai kỳ công bố hợp lệ để vẽ xu hướng.</div>';
