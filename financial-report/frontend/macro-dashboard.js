@@ -57,9 +57,10 @@ function plot(data,opts={}){
  const shape=pts.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(p.y).toFixed(1)).join(' ');
  const horizontal=[0,Math.floor((pts.length-1)/2),pts.length-1].map((i,j)=>'<text x="'+x(i).toFixed(1)+'" y="'+(height-10)+'" fill="#7688a0" font-size="11" text-anchor="'+(j===0?'start':j===2?'end':'middle')+'">'+esc(pts[i].label)+'</text>').join('');
  const threshold=typeof opts.threshold==='number'?'<line x1="'+l+'" y1="'+y(opts.threshold).toFixed(1)+'" x2="'+(width-r)+'" y2="'+y(opts.threshold).toFixed(1)+'" stroke="#bb8443" stroke-dasharray="5 5"/><text x="'+(width-r-4)+'" y="'+(y(opts.threshold)-6).toFixed(1)+'" text-anchor="end" font-size="11" fill="#aa763c">'+esc(opts.threshold)+'</text>':'';
- const tips=pts.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.y).toFixed(1)+'" r="9" fill="transparent"><title>'+esc(p.label+': '+fmt(p.y)+' '+(opts.unit||''))+'</title></circle>').join('');
+ const exact=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:6});
+ const tips=pts.map((p,i)=>'<circle data-fq-point="'+i+'" data-fq-x="'+x(i).toFixed(1)+'" data-fq-y="'+y(p.y).toFixed(1)+'" data-fq-label="'+esc(p.label)+'" data-fq-series="'+esc(opts.title||'Biểu đồ')+'" data-fq-value="'+esc(exact.format(p.y))+'" data-fq-unit="'+esc(opts.unit||'')+'" cx="'+x(i).toFixed(1)+'" cy="'+y(p.y).toFixed(1)+'" r="3.2" fill="'+color+'"/>').join('');
  const last=pts.at(-1);
- return'<svg class="macro-trend-svg" viewBox="0 0 '+width+' '+height+'" role="img" aria-label="'+esc((opts.title||'Biểu đồ')+' · '+pts.length+' kỳ dữ liệu')+'">'+grid+threshold+'<path d="'+shape+'" fill="none" stroke="'+color+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+x(pts.length-1).toFixed(1)+'" cy="'+y(last.y).toFixed(1)+'" r="5" fill="'+color+'" stroke="white" stroke-width="2"/>'+tips+horizontal+'</svg>';
+ return'<svg class="macro-trend-svg" viewBox="0 0 '+width+' '+height+'" data-fq-inspect="line" data-fq-top="'+t+'" data-fq-bottom="'+(height-b)+'" data-fq-color="'+color+'" tabindex="0" role="img" aria-label="'+esc((opts.title||'Biểu đồ')+' · '+pts.length+' kỳ dữ liệu')+'">'+grid+threshold+'<path d="'+shape+'" fill="none" stroke="'+color+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="'+x(pts.length-1).toFixed(1)+'" cy="'+y(last.y).toFixed(1)+'" r="5" fill="'+color+'" stroke="white" stroke-width="2"/>'+tips+horizontal+'</svg>';
 }
 function renderMacro(data){
  const host=$('macro-overview');if(!host)return;

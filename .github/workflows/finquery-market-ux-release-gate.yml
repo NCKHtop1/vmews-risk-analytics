@@ -6,6 +6,16 @@ on:
       - 'financial-report/frontend/ownership-intelligence.js'
       - 'financial-report/frontend/alpha-radar.js'
       - 'financial-report/frontend/chart-engine.js'
+      - 'financial-report/frontend/chart-inspect.js'
+      - 'financial-report/frontend/dashboard.js'
+      - 'financial-report/frontend/macro-dashboard.js'
+      - 'financial-report/frontend/macro.js'
+      - 'financial-report/frontend/liquidity-derivatives.js'
+      - 'financial-report/frontend/risk-monitor.js'
+      - 'financial-report/frontend/market.js'
+      - 'financial-report/scripts/build_cdn.py'
+      - 'financial-report/tests/chart_inspect_contract.test.cjs'
+      - 'financial-report/tests/chart_inspect_browser.py'
       - 'financial-report/frontend/derivatives-market.js'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.css'
@@ -25,6 +35,16 @@ on:
       - 'financial-report/frontend/ownership-intelligence.js'
       - 'financial-report/frontend/alpha-radar.js'
       - 'financial-report/frontend/chart-engine.js'
+      - 'financial-report/frontend/chart-inspect.js'
+      - 'financial-report/frontend/dashboard.js'
+      - 'financial-report/frontend/macro-dashboard.js'
+      - 'financial-report/frontend/macro.js'
+      - 'financial-report/frontend/liquidity-derivatives.js'
+      - 'financial-report/frontend/risk-monitor.js'
+      - 'financial-report/frontend/market.js'
+      - 'financial-report/scripts/build_cdn.py'
+      - 'financial-report/tests/chart_inspect_contract.test.cjs'
+      - 'financial-report/tests/chart_inspect_browser.py'
       - 'financial-report/frontend/derivatives-market.js'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.css'
@@ -68,6 +88,8 @@ jobs:
           node --test financial-report/tests/source_free_ui.test.cjs
           node --test financial-report/tests/derivatives_market.test.cjs
           node --test financial-report/tests/liquidity_derivatives.test.cjs
+          node --test financial-report/tests/chart_inspect_contract.test.cjs
+          node --test financial-report/tests/macro_dashboard.test.cjs
           python -m unittest discover -s financial-report/scripts -p test_vbma_curve_reader.py -v
           python -m unittest discover -s financial-report/scripts -p test_scan_private_alpha.py -v
       - name: Production bundle gate
@@ -99,3 +121,4 @@ jobs:
         run: |
           python financial-report/tests/chart_indicator_browser.py
           python financial-report/tests/liquidity_hover_browser.py
+          python financial-report/tests/chart_inspect_browser.py

@@ -121,8 +121,15 @@ function renderCompareSvg(series){
  const grid=[];for(let i=0;i<5;i++){const v=max-(max-min)*i/4,yy=y(v);grid.push('<line x1="'+L+'" y1="'+yy+'" x2="'+(W-R)+'" y2="'+yy+'" stroke="#e6ebf3" stroke-width="1"/><text x="'+(L-8)+'" y="'+(yy+4)+'" text-anchor="end" font-size="10" fill="#7c8798">'+v.toFixed(1)+'%</text>');}
  const zero=(min<=0&&max>=0)?'<line x1="'+L+'" y1="'+y(0)+'" x2="'+(W-R)+'" y2="'+y(0)+'" stroke="#aeb8c8" stroke-width="1.2" stroke-dasharray="4 4"/>':'';
  const paths=usable.map((s,i)=>'<path d="'+svgPath(s.points,dateIndex,x,y)+'" fill="none" stroke="'+(s.color||COMPARE_COLORS[i%COMPARE_COLORS.length])+'" stroke-width="'+(s.strong?3:2)+'" stroke-linejoin="round" stroke-linecap="round"/>').join('');
+ const precise=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:4});
+ const plotted=usable.map((series,j)=>series.points.map((p,i)=>{
+  const index=dateIndex.get(p.time);if(index==null||!Number.isFinite(p.value))return'';
+  const col=/^#[0-9a-fA-F]{6}$/.test(series.color||'')?series.color:COMPARE_COLORS[j%COMPARE_COLORS.length];
+  const when=/^\d{4}-\d\d-\d\d$/.test(String(p.time))?String(p.time).slice(8,10)+'/'+String(p.time).slice(5,7)+'/'+String(p.time).slice(0,4):String(p.time);
+  return'<circle data-fq-point="'+j+'-'+i+'" data-fq-x="'+x(index).toFixed(1)+'" data-fq-y="'+y(p.value).toFixed(1)+'" data-fq-label="'+esc(when)+'" data-fq-series="'+esc(series.label)+'" data-fq-value="'+esc((p.value>0?'+':'')+precise.format(p.value))+'" data-fq-unit="%" data-fq-color="'+col+'" cx="'+x(index).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="2.5" fill="transparent"/>';
+ }).join('')).join('');
  const first=dates[0]||'',last=dates.at(-1)||'';
- host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'+grid.join('')+zero+paths+'<text x="'+L+'" y="'+(H-10)+'" font-size="10" fill="#7c8798">'+esc(first)+'</text><text x="'+(W-R)+'" y="'+(H-10)+'" text-anchor="end" font-size="10" fill="#7c8798">'+esc(last)+'</text></svg>';
+ host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" data-fq-inspect="compare" data-fq-top="'+T+'" data-fq-bottom="'+(H-B)+'" tabindex="0" role="img" aria-label="Biểu đồ so sánh diễn biến cổ phiếu và ngành">'+grid.join('')+zero+paths+plotted+'<text x="'+L+'" y="'+(H-10)+'" font-size="10" fill="#7c8798">'+esc(first)+'</text><text x="'+(W-R)+'" y="'+(H-10)+'" text-anchor="end" font-size="10" fill="#7c8798">'+esc(last)+'</text></svg>';
 }
 function renderCompareLegend(series){
  const host=$('market-compare-legend');if(!host)return;host.innerHTML=series.map(s=>'<span><i style="background:'+esc(s.color)+'"></i><b>'+esc(s.label)+'</b><em>'+(s.points?.length?((s.points.at(-1).value>=0?'+':'')+fmt(s.points.at(-1).value)+'%'):'—')+'</em></span>').join('');
