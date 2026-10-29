@@ -1317,6 +1317,13 @@ class MarketTests(unittest.TestCase):
         self.assertIn('remaining=$((INTERVAL_SECONDS - elapsed))',session)
         self.assertIn('if [ "$remaining" -gt 0 ]; then sleep "$remaining"; else sleep 1; fi',session)
         self.assertIn('maybe_dispatch_vn100_forecast',session)
+        self.assertIn("derived_budget_minutes=10 if max_age<=20 else max_age",session)
+        self.assertIn("age(stamp)>derived_budget_minutes",session)
+        self.assertIn("age(status.get('checkedAt'))>derived_budget_minutes",session)
+        self.assertIn("age(drivers.get('generatedAt'))>derived_budget_minutes",session)
+        self.assertIn("if age(quotes.get('checkedAt'))>10:",session)
+        self.assertIn("sourceTime is not aligned with quotes",session)
+
         self.assertIn('[ "$now_min" -ge 535 ]',session)
         self.assertIn('Pre-warm ready; waiting',session)
         self.assertIn('validate_snapshot',session)
