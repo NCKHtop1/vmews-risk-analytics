@@ -82,7 +82,7 @@ async function getAlignedBundle({signal,timeout=12000,retries=2}={}){
   }
  }
  // Let the UI retain its last-known-good commit; never invent synchronized data.
- throw lastError||Error('No valid market snapshot');
+ throw Error('No valid market snapshot: '+String(lastError?.message||lastError||'unknown'));
 }
 function commitBundle(bundle){
  if(!bundle?.sourceTime)return committedBundle;
