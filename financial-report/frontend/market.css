@@ -848,3 +848,5 @@ body.strategy-lab-view .strategy-page{display:block}
  #macro-source-status{max-width:220px;font-size:10px;overflow-wrap:anywhere}
  .macro-esg-disclosure{padding:12px}
 }
+
+.macro-esg-coverage{font-size:12px;line-height:1.6;color:#506c8c;margin:7px 0 0;max-width:960px}
