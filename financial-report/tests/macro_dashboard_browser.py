@@ -74,7 +74,7 @@ def build_fixture(directory: Path):
                                         {"Year": 2023, "AG.LND.FRST.ZS": 47.44}]},
         }
     }
-    esg = {"companies": {"MBB": {"canonicalMetrics": [
+    esg = {"status":"ok","checkedAt":"2026-10-23T01:58:17+00:00","companies": {"MBB": {"canonicalMetrics": [
         {"metricId": "green_credit", "label": "Dư nợ tín dụng xanh", "year": 2025,
          "value": 68501, "unit": "billion VND", "pillar": "E", "sourceUrl": "https://example.com/mbb.pdf"}
     ]}}}
@@ -127,6 +127,9 @@ def run():
                                "source":"https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv",
                                "points":[]}
                 })
+                WebDriverWait(driver,12).until(lambda d:d.execute_script(
+                    "return document.getElementById('macro-company-chart')?.textContent.includes('Năm 2025')"
+                ))
                 report = driver.execute_script("""
                     const ids=['macro','macro-overview','macro-country-chart','macro-company-chart'];
                     const cards=[...document.querySelectorAll('.macro-viz-card')];
@@ -143,7 +146,7 @@ def run():
                       onRateChart:document.querySelectorAll('#money-on svg').length,
                       futuresCards:document.querySelectorAll('#money-futures .money-future-contract').length,
                       onValue:document.getElementById('money-on')?.textContent.includes('4,31'),
-                      swapNoFake:document.getElementById('money-swap')?.textContent.includes('Chưa có dữ liệu') || document.querySelector('#money-swap .money-tenor-curve') !== null,
+                      swapNoFake:/Chưa xác minh|Chưa có dữ liệu/.test(document.getElementById('money-swap')?.textContent||'') || document.querySelector('#money-swap .money-tenor-curve') !== null,
                       moneyWithin:[...document.querySelectorAll('.money-dashboard-grid .macro-viz-card, .money-future-contract')].every(el=>{
                         const r=el.getBoundingClientRect();return r.left>=-2&&r.right<=viewport+2;}),
 

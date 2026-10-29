@@ -8,6 +8,10 @@ on:
       - 'financial-report/frontend/workspace-tabs.js'
       - 'financial-report/frontend/ownership-intelligence.js'
       - 'financial-report/frontend/chart-engine.js'
+      - 'financial-report/tests/chart_indicator_browser.py'
+      - 'financial-report/tests/test_esg_registry.py'
+      - 'financial-report/scripts/refresh_esg.py'
+      - 'financial-report/config/esg_sources.json'
       - 'financial-report/tests/workspace_tabs.test.cjs'
       - 'financial-report/tests/ownership_intelligence.test.cjs'
       - 'financial-report/frontend/macro.js'
@@ -33,6 +37,10 @@ on:
       - 'financial-report/frontend/workspace-tabs.js'
       - 'financial-report/frontend/ownership-intelligence.js'
       - 'financial-report/frontend/chart-engine.js'
+      - 'financial-report/tests/chart_indicator_browser.py'
+      - 'financial-report/tests/test_esg_registry.py'
+      - 'financial-report/scripts/refresh_esg.py'
+      - 'financial-report/config/esg_sources.json'
       - 'financial-report/tests/workspace_tabs.test.cjs'
       - 'financial-report/tests/ownership_intelligence.test.cjs'
       - 'financial-report/frontend/macro.js'
@@ -84,6 +92,7 @@ jobs:
           node --test financial-report/tests/workspace_tabs.test.cjs
           node --test financial-report/tests/ownership_intelligence.test.cjs
           python -m unittest discover -s financial-report/scripts -p test_refresh_derivative_quotes.py -v
+          python -m unittest discover -s financial-report/tests -p test_esg_registry.py -v
           node --test financial-report/tests/data_hub.test.cjs
       - name: Build and validate same-origin single HTML bundle
         run: |
@@ -108,7 +117,7 @@ jobs:
           PY
   mobile-desktop-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -120,3 +129,4 @@ jobs:
         run: |
           pip install --disable-pip-version-check -q selenium==4.36.0
           python financial-report/tests/macro_dashboard_browser.py
+          python financial-report/tests/chart_indicator_browser.py

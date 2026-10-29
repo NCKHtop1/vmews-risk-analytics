@@ -73,7 +73,7 @@ test('HNX VN30 and VN100 derivatives keep OI and volume with monthly labels',()=
 test('unverified swap is empty, never fabricated; verified points show a curve',()=>{
  const {api,get}=makeEnv();
  api.setData(fixture);
- assert.match(get('money-swap').innerHTML,/Chưa có dữ liệu/);
+ assert.match(get('money-swap').innerHTML,/Chưa xác minh được/);
  assert.doesNotMatch(get('money-swap').innerHTML,/money-swap-chart|money-swap-point/);
  const other=JSON.parse(JSON.stringify(fixture));
  other.vbmaSwap.status='verified';
@@ -90,7 +90,7 @@ test('unverified ON or missing observations cannot masquerade as valid chart',()
  const other=JSON.parse(JSON.stringify(fixture));
  other.interbank.status='unavailable';
  api.setData(other);
- assert.match(get('money-on').innerHTML,/Chưa có dữ liệu/);
+ assert.match(get('money-on').innerHTML,/Chưa nhận được quan sát ON/);
  assert.doesNotMatch(get('money-on').innerHTML,/<svg/);
 });
 test('URL sanitation and SVG injection gates',()=>{

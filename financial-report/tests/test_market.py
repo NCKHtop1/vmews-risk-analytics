@@ -2422,10 +2422,12 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn('tradingview-widget-slot',html)
         self.assertIn('Biểu đồ FinQuery',html)
         self.assertIn('<option value="1d" selected>Ngày</option>',html)
-        self.assertIn('<option value="0" selected>Tất cả</option>',html)
+        self.assertIn('<option value="recent" selected>Gần nhất · dễ theo dõi</option>',html)
+        self.assertIn('<option value="0">Tất cả</option>',html)
+        self.assertIn('id="chart-focus-latest"',html)
         self.assertIn("nativeTitle.textContent='Biểu đồ FinQuery · '+state.symbol",market)
         self.assertIn("this.tf=$('chart-interval')?.value||'1d'",chart)
-        self.assertIn("if(M.intraday(this.tf)&&(!months||months>=12))",chart)
+        self.assertIn("if(M.intraday(this.tf)&&!recent&&(!months||months>=12))",chart)
 
     def test_local_analysis_has_natural_language_and_concept_understanding(self):
         js=(ROOT/'frontend/research-ai.js').read_text()
