@@ -9,6 +9,9 @@ on:
       - 'financial-report/frontend/derivatives-market.js'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.css'
+      - 'financial-report/frontend/liquidity-derivatives.js'
+      - 'financial-report/tests/liquidity_derivatives.test.cjs'
+      - 'financial-report/tests/liquidity_hover_browser.py'
       - 'financial-report/tests/chart_indicator_browser.py'
       - 'financial-report/tests/workspace_tabs.test.cjs'
       - 'financial-report/tests/ownership_intelligence.test.cjs'
@@ -25,6 +28,9 @@ on:
       - 'financial-report/frontend/derivatives-market.js'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/market.css'
+      - 'financial-report/frontend/liquidity-derivatives.js'
+      - 'financial-report/tests/liquidity_derivatives.test.cjs'
+      - 'financial-report/tests/liquidity_hover_browser.py'
       - 'financial-report/tests/chart_indicator_browser.py'
       - '.github/workflows/finquery-market-ux-release-gate.yml'
 permissions:
@@ -90,4 +96,6 @@ jobs:
       - name: Install Selenium
         run: pip install --disable-pip-version-check -q selenium==4.36.0
       - name: Stress 19 indicator toggles in real Chrome at four widths
-        run: python financial-report/tests/chart_indicator_browser.py
+        run: |
+          python financial-report/tests/chart_indicator_browser.py
+          python financial-report/tests/liquidity_hover_browser.py
