@@ -638,6 +638,9 @@ async function renderSymbol(raw){const B=await loadBase();assertProduction(B);co
 window.__VMEWS_RENDER_SYMBOL__=renderSymbol;
 async function refreshCore(){
  if(document.hidden)return false;
+ // SoluTION.AI public Pages remains a separate independently validated
+ // full-HOSE product; never hot-swap its snapshot with FinQuery VN100.
+ if(INDEPENDENT_CORE_PAGE)return false;
  try{
   const bundle=await loadVN100(true);
   if(!validVN100(bundle))return false;
