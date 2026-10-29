@@ -46,9 +46,9 @@ async function loadVN100(force=false){
     VN100_BUNDLE_PROMISE=(async()=>{
       const revision=Math.floor(Date.now()/30000);
       const targets=[
-        [VN100_PRODUCT_URL,11000],
-        [VN100_MIRROR_ROOT+"finquery-vn100-product.json",9000],
-        [VN100_FULL_URL,16000],
+        [VN100_PRODUCT_URL,Math.min(FETCH_TIMEOUT_MS,11000)],
+        [VN100_MIRROR_ROOT+"finquery-vn100-product.json",Math.min(FETCH_TIMEOUT_MS,9000)],
+        [VN100_FULL_URL,Math.min(FETCH_TIMEOUT_MS,16000)],
       ];
       for(const[url,timeout]of targets){
         try{
@@ -153,16 +153,31 @@ function vn100Base(bundle){
 }
 async function loadLeaderBase(){
  if(LEADER_BASE_PROMISE)return LEADER_BASE_PROMISE;
- LEADER_BASE_PROMISE=loadBase().then(B=>({dash:B.dash,gates:B.gates,model:B.model}))
-   .catch(error=>{LEADER_BASE_PROMISE=null;throw error});
+ LEADER_BASE_PROMISE=(INDEPENDENT_CORE_PAGE?
+   Promise.all([json("forecast-dashboard-v12.json"),json("phase-gates-v12.json")]).then(([dash,gates])=>({
+     dash,gates,model:{promotion:dash.promotion}
+   })):
+   loadBase().then(B=>({dash:B.dash,gates:B.gates,model:B.model}))
+ ).catch(error=>{LEADER_BASE_PROMISE=null;throw error});
  return LEADER_BASE_PROMISE;
 }
 async function loadBase(){
  if(BASE)return BASE;
  if(BASE_PROMISE)return BASE_PROMISE;
  BASE_PROMISE=(async()=>{
+   if(INDEPENDENT_CORE_PAGE){
+     const[dash,legacyModel,audit,gates,market]=await Promise.all([
+       json("forecast-dashboard-v12.json"),json("forecast-model-v12.json"),
+       json("data-audit-v12.json"),json("phase-gates-v12.json"),
+       json("forecast-market-v13.json").catch(()=>null)
+     ]);
+     const model=market?.model||legacyModel;
+     const back=market?.backtest||await json("forecast-backtest-v12.json");
+     BASE={dash,model,back,audit,gates,market,legacyModel,source:"INDEPENDENT"};
+     return BASE;
+   }
    const bundle=await loadVN100();
-   if(!bundle)throw Error("Dữ liệu VN100 đang gián đoạn. Đang giữ bản đã xác minh; chọn Thử tải lại để kết nối nguồn.");
+   if(!bundle)throw Error("Dữ liệu VN100 đang gián đoạn. Hãy thử tải lại khi nguồn xác minh đã sẵn sàng.");
    BASE=vn100Base(bundle);
    return BASE;
  })().catch(error=>{BASE_PROMISE=null;throw error});
@@ -573,7 +588,7 @@ function renderSummary(B,sym,z){
 function quickButtons(B){const box=$("#quick");box.replaceChildren();for(const s of ["FPT","VCB","HPG","MBB","FRT","PNJ","VNM","SSI"]){if(!B.dash.symbols?.[s])continue;const b=document.createElement("button");b.textContent=s;b.onclick=()=>{$("#symbol").value=s;renderSymbol(s)};box.append(b)}}
 function rerender(B,sym,z){const freshness=window.__VMEWS_FRESHNESS__?.inspect(z);const view={...applySessionView(sym,z),staleForecast:freshness?.stale===true,freshnessExpected:freshness?.expected},primary=primaryHorizon(B,view);last={B,sym,z,view};renderSummary(B,sym,view);renderForecastCards(B,view);renderDrivers(view,primary);draw(sym,view,B.dash.charts?.[sym]||[]);renderNews(view);renderRumors(view);renderSource(B,sym);renderBacktest(B,sym,btH||primary);window.dispatchEvent(new CustomEvent("vmews:symbol-changed",{detail:{symbol:sym,snapshot:view}}))}
 function applyCommunity(B,payload){
-  if(!payload||!B||!payload.generatedAt)return false;
+  if(!payload||!B||!payload.generatedAt||(B.source!=="VN100"&&payload.asOf!==B.dash.asOf))return false;
   const scenariosEligible=payload.asOf===B.dash.asOf;
   const timestamp=Date.parse(payload.generatedAt),previous=Date.parse(window.__VMEWS_COMMUNITY_LIVE__?.generatedAt||"");
   if(!Number.isFinite(timestamp)||(Number.isFinite(previous)&&timestamp<=previous)||timestamp>Date.now()+300000)return false;
