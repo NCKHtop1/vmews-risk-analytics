@@ -552,13 +552,13 @@ function renderNews(z){
   if(href){e.href=href;e.target="_blank";e.rel="noopener"}
   const event=x.event||"DOANH NGHIỆP";
   const label=x.label==="POS"?"TÍCH CỰC":x.label==="NEG"?"TIÊU CỰC":"TIN MỚI";
-  e.innerHTML=`<b>${esc(x.title)}</b><small>${esc(x.publisher||"Nguồn công khai")} · ${esc(x.publishedAt||x.availableDate||"")}</small><div class="chips"><span class="chip">${esc(event)}</span><span class="chip">${esc(label)}</span></div>`;
+  e.innerHTML=`<b>${esc(x.title)}</b><small>${esc(x.publishedAt||x.availableDate||"")}</small><div class="chips"><span class="chip">${esc(event)}</span><span class="chip">${esc(label)}</span></div>`;
   box.append(e);
  }
  if(!records.length)box.innerHTML=LIVE_COMPANY_NEWS?'<div class="empty">Chưa có tin doanh nghiệp mới phù hợp mã đang xem.</div>':'<div class="empty">Đang kết nối nguồn tin doanh nghiệp…</div>';
  if(LIVE_COMPANY_NEWS){
   const status=document.createElement("small");status.className="newsUpdatedAt";
-  status.textContent="Nguồn tin cập nhật: "+new Date(LIVE_COMPANY_NEWS.checkedAt).toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh"});
+  status.textContent= "Tin cập nhật: "+new Date(LIVE_COMPANY_NEWS.checkedAt).toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh"});
   box.append(status);
  }
 }
@@ -567,7 +567,7 @@ function renderRumors(z){
   box.replaceChildren();
   const claims=z?.evidence?.rumorClaims||[],watchlist=z?.evidence?.communityWatchlist||[],audit=z?.evidence?.rumorAudit||{},source=audit.source||{};
   if(!claims.length&&!watchlist.length){
-    box.innerHTML=`<div class="rumorQuiet"><span class="rumorQuietOrbit" aria-hidden="true"><i></i></span><strong>Chưa có tín hiệu mới.</strong><small>${source.articles>0?"FireAnt · 24HMoney · nguồn công bố":"Đang cập nhật nguồn công khai."}</small></div>`;
+    box.innerHTML=`<div class="rumorQuiet"><span class="rumorQuietOrbit" aria-hidden="true"><i></i></span><strong>Chưa có tín hiệu mới.</strong><small>${source.articles>0?"Đã ghi nhận tin liên quan":"Đang cập nhật tin tức."}</small></div>`;
     return;
   }
   const stateLabel={CONFIRMED:"ĐÃ XÁC NHẬN",DENIED:"ĐÃ BÁC BỎ",CORROBORATED:"ĐÃ ĐỐI CHIẾU",UNVERIFIED:"ĐANG XÁC MINH",PENDING:"ĐANG ĐỐI CHIẾU"};
@@ -589,7 +589,7 @@ function renderRumors(z){
     shown.add(title.toLocaleLowerCase("vi"));
     const item=document.createElement("article"),quality=Math.max(0,Math.min(100,Number(signal.qualityScore)||0));
     item.className="newsItem rumorItem rumorStatePENDING";
-    item.innerHTML=`<div class="rumorTopline"><span class="rumorBadge">${stateLabel.PENDING}</span><span class="rumorQuality">${quality}<i>/100</i></span></div><b>${esc(title)}</b><small>${esc(signal.publisher||"")} · ${esc(String(signal.publishedAt||"").replace("T"," ").slice(0,16))}</small><div class="chips"><span class="chip">1 nguồn</span>${signal.fireant?'<span class="chip rumorFireant">FireAnt</span>':""}${signal.money24h?'<span class="chip rumor24h">24HMoney</span>':""}</div>`;
+    item.innerHTML=`<div class="rumorTopline"><span class="rumorBadge">${stateLabel.PENDING}</span><span class="rumorQuality">${quality}<i>/100</i></span></div><b>${esc(title)}</b><small>${esc(String(signal.publishedAt||"").replace("T"," ").slice(0,16))}</small><div class="chips">${signal.fireant?'':""}${signal.money24h?'<span class="chip rumor24h">24HMoney</span>':""}</div>`;
     box.append(item);
   }
 }
