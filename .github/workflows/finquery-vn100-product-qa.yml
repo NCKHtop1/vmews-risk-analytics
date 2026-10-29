@@ -7,6 +7,8 @@ on:
       - 'scripts/test_finquery_vn100_product.py'
       - 'scripts/test_finquery_vn100_frontend.cjs'
       - 'forecast-final.html'
+      - 'forecast-portfolio-v14.css'
+      - 'financial-report/scripts/live_session_publisher.sh'
       - 'forecast-final-v12.js'
       - 'forecast-polish-v12.js'
       - 'forecast-live-leaders-v14.js'
@@ -20,6 +22,8 @@ on:
       - 'scripts/test_finquery_vn100_product.py'
       - 'scripts/test_finquery_vn100_frontend.cjs'
       - 'forecast-final.html'
+      - 'forecast-portfolio-v14.css'
+      - 'financial-report/scripts/live_session_publisher.sh'
       - 'forecast-final-v12.js'
       - 'forecast-polish-v12.js'
       - 'forecast-live-leaders-v14.js'
@@ -47,6 +51,7 @@ jobs:
           node --check forecast-final-v12.js
           node --check forecast-polish-v12.js
           node --check forecast-live-leaders-v14.js
+          bash -n financial-report/scripts/live_session_publisher.sh
           node --test scripts/test_finquery_vn100_frontend.cjs
       - name: Test numerical 100 x 5 forecast and historical fallback
         run: |
