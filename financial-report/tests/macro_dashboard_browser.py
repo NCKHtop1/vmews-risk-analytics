@@ -74,7 +74,7 @@ def build_fixture(directory: Path):
                                         {"Year": 2023, "AG.LND.FRST.ZS": 47.44}]},
         }
     }
-    esg = {"companies": {"MBB": {"canonicalMetrics": [
+    esg = {"status":"ok","checkedAt":"2026-10-23T01:58:17+00:00","companies": {"MBB": {"canonicalMetrics": [
         {"metricId": "green_credit", "label": "Dư nợ tín dụng xanh", "year": 2025,
          "value": 68501, "unit": "billion VND", "pillar": "E", "sourceUrl": "https://example.com/mbb.pdf"}
     ]}}}
@@ -143,7 +143,7 @@ def run():
                       onRateChart:document.querySelectorAll('#money-on svg').length,
                       futuresCards:document.querySelectorAll('#money-futures .money-future-contract').length,
                       onValue:document.getElementById('money-on')?.textContent.includes('4,31'),
-                      swapNoFake:document.getElementById('money-swap')?.textContent.includes('Chưa có dữ liệu') || document.querySelector('#money-swap .money-tenor-curve') !== null,
+                      swapNoFake:document.getElementById('money-swap')?.textContent.includes('Chưa xác minh được') || document.querySelector('#money-swap .money-tenor-curve') !== null,
                       moneyWithin:[...document.querySelectorAll('.money-dashboard-grid .macro-viz-card, .money-future-contract')].every(el=>{
                         const r=el.getBoundingClientRect();return r.left>=-2&&r.right<=viewport+2;}),
 
