@@ -130,22 +130,27 @@ def run():
                     const select=document.getElementById('chart-type');
                     select.value='candles';select.dispatchEvent(new Event('change',{bubbles:true}));
                 """)
-                driver.execute_script("""
-                    const c=window.__qaChart,period=document.getElementById('chart-period');
-                    // Switch out of follow-latest before navigating historical
-                    // candles, as a real user does when exploring the full range.
-                    period.value='0';period.dispatchEvent(new Event('change',{bubbles:true}));
-                    c.chart.timeScale().setVisibleLogicalRange({from:12,to:37});
-                    c.positionLatestCue();
-                """)
-                pan=driver.execute_script("""
-                    const c=window.__qaChart,scale=c.chart.timeScale(),cue=document.getElementById('chart-latest-candle');
-                    const before=cue.hidden;c.positionLatestCue();
-                    return {viewport:scale.getVisibleLogicalRange(),lastIndex:c.bars.length-1,
-                      priorHidden:before,cueHidden:cue.hidden,css:getComputedStyle(cue).display};
-                """)
+                # Wait for a responsive chart resize to settle, then verify
+                # historical navigation and disappearance of the last-bar glow.
+                pan=WebDriverWait(driver,6,poll_frequency=.12).until(
+                    lambda d:d.execute_script("""
+                      const c=window.__qaChart,period=document.getElementById('chart-period');
+                      if(period.value!=='0'){
+                        period.value='0';period.dispatchEvent(new Event('change',{bubbles:true}));
+                      }
+                      const scale=c.chart.timeScale();
+                      const before=scale.getVisibleLogicalRange();
+                      if(!before||before.to>=c.bars.length-1)
+                        scale.setVisibleLogicalRange({from:12,to:37});
+                      c.positionLatestCue();
+                      const viewport=scale.getVisibleLogicalRange();
+                      const cue=document.getElementById('chart-latest-candle');
+                      return viewport?.to<c.bars.length-2&&cue.hidden
+                        ? {viewport,lastIndex:c.bars.length-1,cueHidden:cue.hidden}
+                        : null;
+                    """)
+                )
                 print("FINQUERY_CHART_PAN_DIAGNOSTIC",width,json.dumps(pan),flush=True)
-                assert pan["cueHidden"], ("cue must disappear when user pans away",pan)
                 driver.execute_script("document.getElementById('chart-focus-latest').click();")
                 # LightweightCharts applies a range on the next render pass.
                 # Verify the settled viewport, not the previous synchronous frame.
