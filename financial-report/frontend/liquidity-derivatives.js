@@ -7,7 +7,7 @@ const esc=t=>String(t??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'
 const dateVN=iso=>/^\d{4}-\d\d-\d\d$/.test(String(iso||''))?iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4):'—';
 const monthVN=iso=>/^\d{4}-(0[1-9]|1[0-2])$/.test(String(iso||''))?iso.slice(5,7)+'/'+iso.slice(0,4):'—';
 const safeURL=(url,hostname)=>{try{let u=new URL(url);return u.protocol==='https:'&&u.hostname===hostname?u.href:'';}catch{return'';}};
-const state={payload:null,derivativeMode:'openInterest',loading:false};
+const state={payload:null,derivativeMode:'openInterest',loading:false,manual:[],canEditOn:false};
 const target=$('macro-liquidity-overview');
 if(!target)return;
 function miniLine(points,{unit='',title='',color='#2e74bb',width=640}={}){
@@ -78,12 +78,15 @@ function verifiedBondSpread(curve){
 }
 function renderON(p){
  const host=$('money-on');if(!host)return;
- const on=p.interbank||{},points=(Array.isArray(on.observations)?on.observations:[]).filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)&&typeof x.value==='number'&&Number.isFinite(x.value)&&x.value>=0&&x.value<50).sort((a,b)=>a.date.localeCompare(b.date));
+ const on=p.interbank||{},crawled=(Array.isArray(on.observations)?on.observations:[]).filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)&&typeof x.value==='number'&&Number.isFinite(x.value)&&x.value>=0&&x.value<=25);
+ const byDate=new Map(crawled.map(x=>[x.date,x]));
+ for(const x of state.manual)if(/^\d{4}-\d\d-\d\d$/.test(x.date)&&Number.isFinite(x.value)&&x.value>=0&&x.value<=25)byDate.set(x.date,{date:x.date,value:x.value});
+ const points=[...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date));
  const last=points.at(-1),prev=points.at(-2);
  const origin=safeURL(on.source,'stockbiz.vn');
  const cross=safeURL(on.crossCheck,'dulieukinhte.com');
  const verified=['secondary_source_crosschecked','official_source'].includes(on.status);
- if(!last||!verified){host.innerHTML=cardHeader('Lãi suất qua đêm','—','%/năm','VND')+
+ if(!last||(!verified&&!state.manual.length)){host.innerHTML=cardHeader('Lãi suất qua đêm','—','%/năm','VND')+
   '<p class="money-source-pending">Chưa nhận được quan sát ON đã đối chiếu đủ nguồn. Không lấy giá tạm tính thay lãi suất liên ngân hàng.</p>';return;}
  const difference=prev?last.value-prev.value:null;
  const lag=(Date.now()-Date.parse(last.date+'T00:00:00+07:00'))/86400000;
@@ -93,9 +96,7 @@ function renderON(p){
   ' · nguồn liên ngân hàng chưa xác minh được kỳ mới; không xem là lãi suất hiện tại.</p>':'')+
  '<p class="money-card-caption">'+(difference===null?'':((difference>=0?'+':'')+fmt(difference)+' điểm % so với '+dateVN(prev.date)))+'</p>'+
  '<div class="money-chart">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe',width:Math.max(250,host.clientWidth-36)})+'</div>'+
- '<div class="macro-viz-source"><span>Nguồn tham khảo</span>'+
- (origin?'<a href="'+esc(origin)+'" target="_blank" rel="noopener noreferrer">Nguồn ↗</a>':'')+
- (cross?'<a href="'+esc(cross)+'" target="_blank" rel="noopener noreferrer">Nguồn khác ↗</a>':'')+'</div>';
+ (state.canEditOn?'<form id="finquery-on-manual-form" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:end"><label>Ngày<br><input name="date" type="date" required></label><label>ON (%/năm)<br><input name="value" type="number" min="0" max="25" step="0.0001" required placeholder="3.95"></label><button type="submit">Lưu ON</button><span id="finquery-on-entry-status" role="status"></span></form>':'');
 }
 function renderFutures(p){
  const root=$('money-futures');if(!root)return;
@@ -165,6 +166,29 @@ function render(){
   ' · kiểm tra '+(p.lastCheckedAt?new Date(p.lastCheckedAt).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):'chưa xác định');
  renderON(p);renderFutures(p);renderSwap(p);renderBondCurves(p);
 }
+async function loadManualON(){
+ try{
+  const r=await fetch('/api/market/on-observations',{credentials:'same-origin',cache:'no-store'});
+  if(!r.ok)return;
+  const d=await r.json();
+  state.canEditOn=d.canEdit===true;
+  state.manual=Array.isArray(d.observations)?d.observations:[];
+  if(state.payload)renderON(state.payload);
+ }catch(e){console.warn('ON manual observations unavailable');}
+}
+document.addEventListener('submit',async function(event){
+ const form=event.target;if(form?.id!=='finquery-on-manual-form')return;
+ event.preventDefault();if(!state.canEditOn)return;
+ const note=$('finquery-on-entry-status');
+ const date=form.elements.date.value,value=Number(form.elements.value.value);
+ if(!date||!Number.isFinite(value)||value<0||value>25){if(note)note.textContent='Kiểm tra ngày và lãi suất.';return;}
+ try{
+  const r=await fetch('/api/market/on-observations',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({date,value})});
+  if(!r.ok)throw Error((await r.json()).error||'Lưu không thành công');
+  await loadManualON();
+  const fresh=$('finquery-on-entry-status');if(fresh)fresh.textContent='Đã cập nhật biểu đồ.';
+ }catch(e){if(note)note.textContent=e.message||'Không lưu được';}
+});
 async function load(){
  if(state.loading)return;state.loading=true;
  const btn=$('money-refresh');if(btn)btn.disabled=true;
@@ -219,5 +243,5 @@ if(onHost&&typeof ResizeObserver==='function'){
  new ResizeObserver(entries=>{const width=Math.round(entries[0]?.contentRect?.width||0);if(width&&Math.abs(width-prior)>12){prior=width;if(state.payload)renderON(state.payload);}}).observe(onHost);
 }
 window.FinLiquidityDerivatives={refresh:load,_test:{fmt,miniLine,tenorCurve,monthBar,dateVN,monthVN,safeURL,verifiedBondSpread},setData:payload=>{state.payload=payload;render();}};
-load();
+load();loadManualON();
 })();
