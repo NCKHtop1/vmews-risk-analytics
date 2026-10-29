@@ -107,11 +107,12 @@ function renderTimeline(){
  const multipleDays=new Set(rows.map(r=>dayKey(r.sourceTime))).size>1;
  const step=Math.max(1,Math.ceil(rows.length/6));
  const labels=rows.map((r,i)=>{if(i%step!==0&&i!==rows.length-1)return'';return'<text x="'+x(i)+'" y="'+(H-10)+'" text-anchor="middle">'+esc(shortTime(r.sourceTime,multipleDays))+'</text>';}).join('');
- const dots=rows.map((r,i)=>{const lv=Number(r.score)>=85?'red':Number(r.score)>=70?'yellow':'green';return'<circle class="risk-line-dot risk-'+lv+'" cx="'+x(i)+'" cy="'+y(r.score)+'" r="'+(i===rows.length-1?5:3)+'"/>';}).join('');
+ const exact=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:4});
+ const dots=rows.map((r,i)=>{const lv=Number(r.score)>=85?'red':Number(r.score)>=70?'yellow':'green';return'<circle class="risk-line-dot risk-'+lv+'" data-fq-point="'+i+'" data-fq-x="'+x(i).toFixed(1)+'" data-fq-y="'+y(r.score).toFixed(1)+'" data-fq-label="'+esc(shortTime(r.sourceTime,multipleDays))+'" data-fq-series="Điểm rủi ro thị trường" data-fq-value="'+esc(exact.format(r.score))+'" data-fq-unit="/100" cx="'+x(i)+'" cy="'+y(r.score)+'" r="'+(i===rows.length-1?5:3)+'"/>';}).join('');
  const zones='<rect class="risk-zone risk-zone-red" x="'+L+'" y="'+y(100)+'" width="'+innerW+'" height="'+(y(85)-y(100))+'"/><rect class="risk-zone risk-zone-yellow" x="'+L+'" y="'+y(85)+'" width="'+innerW+'" height="'+(y(70)-y(85))+'"/><rect class="risk-zone risk-zone-green" x="'+L+'" y="'+y(70)+'" width="'+innerW+'" height="'+(y(0)-y(70))+'"/>';
  const current=rows[rows.length-1];
  const currentLabel='<text class="risk-current-label" x="'+Math.min(W-R-4,x(rows.length-1)+8)+'" y="'+Math.max(T+12,y(current.score)-9)+'">'+fmt(current.score,1)+'/100</text>';
- host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Diễn biến điểm rủi ro thị trường">'+zones+'<g class="risk-grid">'+grids+'</g><polyline class="risk-line" fill="none" points="'+pts+'"/>'+dots+currentLabel+'<g class="risk-axis-labels">'+labels+'</g></svg>';
+ host.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" data-fq-inspect="risk" data-fq-top="'+T+'" data-fq-bottom="'+(H-B)+'" data-fq-color="#c4514a" tabindex="0" role="img" aria-label="Diễn biến điểm rủi ro thị trường">'+zones+'<g class="risk-grid">'+grids+'</g><polyline class="risk-line" fill="none" points="'+pts+'"/>'+dots+currentLabel+'<g class="risk-axis-labels">'+labels+'</g></svg>';
 }
 function renderSectorDetail(id){
  const host=$('risk-sector-detail'),x=(state.data?.sectors||[]).find(s=>s.id===id);if(!host||!x){if(host)host.hidden=true;return;}
