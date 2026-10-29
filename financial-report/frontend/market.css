@@ -1090,3 +1090,23 @@ body.strategy-lab-view .strategy-page{display:block}
 .money-on-tooltip strong small{font-size:10px;font-weight:650;color:#637b9c}
 @media(max-width:570px){.money-on-tooltip{padding:8px 10px;min-width:112px}
  .money-on-tooltip strong{font-size:15px}}
+
+
+/* Shared FinQuery SVG chart UX: inspected observations, no floating source labels. */
+svg[data-fq-inspect]{cursor:crosshair;touch-action:pan-y}
+svg[data-fq-inspect]:focus-visible{outline:2px solid #85a8df;outline-offset:2px;border-radius:6px}
+svg[data-fq-inspect] [data-fq-point]{pointer-events:none}
+svg[data-fq-inspect] .fq-chart-guide{stroke:#8ca9d2;stroke-width:1.2;stroke-dasharray:4 4;opacity:.85}
+svg[data-fq-inspect] .fq-chart-cursor{fill:#fff;stroke:#3565c7;stroke-width:2.5}
+.fq-chart-tooltip{position:fixed;z-index:2147480000;pointer-events:none;
+ max-width:min(240px,calc(100vw - 16px));min-width:112px;
+ padding:9px 12px;border:1px solid #d4e0ef;border-radius:10px;
+ background:#fff;color:#213d62;box-shadow:0 6px 22px rgba(30,56,89,.15);
+ font-family:inherit;line-height:1.35;font-variant-numeric:tabular-nums;
+ white-space:normal;overflow-wrap:anywhere;text-align:left}
+.fq-chart-tooltip[hidden],.fq-chart-tooltip-series[hidden]{display:none!important}
+.fq-chart-tooltip-series{font-size:11px;font-weight:740;color:#5576a6;margin-bottom:3px}
+.fq-chart-tooltip-label{font-size:11px;color:#71839b;margin-bottom:4px}
+.fq-chart-tooltip-value{display:block;font-size:15px;font-weight:790;line-height:1.25}
+@media(max-width:570px){.fq-chart-tooltip{padding:8px 10px;min-width:104px}.fq-chart-tooltip-value{font-size:14px}}
+@media(prefers-reduced-motion:reduce){svg[data-fq-inspect] .fq-chart-cursor{transition:none}}
