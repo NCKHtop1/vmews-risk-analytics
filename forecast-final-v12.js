@@ -638,6 +638,8 @@ async function refreshCore(){
   return true;
  }catch(error){console.warn("VN100 refresh failed, keeping previously verified snapshot",error);return false}
 }
+window.__VMEWS_REFRESH_CORE__=refreshCore;
+window.__VMEWS_REFRESH_COMPANY_NEWS__=refreshCompanyNews;
 async function init(){
   const q=(new URLSearchParams(location.search).get("symbol")||"FPT").toUpperCase();
   // News remains live even while the numerical forecast source is unavailable.
