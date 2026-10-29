@@ -1310,7 +1310,13 @@ class MarketTests(unittest.TestCase):
         self.assertIn('live_session_publisher.sh',price)
         self.assertIn("MARKET_REQUIRE_TODAY=1",session)
         self.assertIn('MARKET_MAX_QUOTE_AGE_MINUTES',session)
-        self.assertIn('sleep "$INTERVAL_SECONDS"',session)
+        # Price refresh targets five minutes from the START of each batch.
+        # Sleeping a whole five minutes AFTER a costly publish silently makes
+        # an intended five-minute feed a seven-to-ten-minute feed.
+        self.assertIn('iteration_started="$(date +%s)"',session)
+        self.assertIn('remaining=$((INTERVAL_SECONDS - elapsed))',session)
+        self.assertIn('if [ "$remaining" -gt 0 ]; then sleep "$remaining"; else sleep 1; fi',session)
+        self.assertIn('maybe_dispatch_vn100_forecast',session)
         self.assertIn('[ "$now_min" -ge 535 ]',session)
         self.assertIn('Pre-warm ready; waiting',session)
         self.assertIn('validate_snapshot',session)

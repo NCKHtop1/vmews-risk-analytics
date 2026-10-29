@@ -48,10 +48,22 @@ jobs:
               # after a bounded grace window; do not call stale market bars live.
               vn=now.astimezone(VN_TZ)
               grace=vn.hour==15 and vn.minute<55
+              minute=vn.hour*60+vn.minute
+              market_window=vn.weekday()<5 and 9*60<=minute<=15*60+5
+              # Detect a missed 30-minute intraday forecast in the following
+              # 15-minute watchdog cycle instead of tolerating 85m of silence.
+              budget=45 if market_window else 85
               valid=status.get('status')=='PASS' and status.get('symbols')==100 and status.get('horizons')==500
-              fresh=valid and -5<=age<=85 and (status.get('asOf')>=completed or grace)
+              date_aligned=status.get('asOf')>=completed or grace
+              # Once the morning has settled, a snapshot with only EOD bars
+              # is not the required live-session forecast, even if generated now.
+              session_aligned=(not market_window or minute<9*60+15 or
+                  (status.get('forecastSessionDate')==vn.date().isoformat()
+                   and status.get('inputMode')=='INTRADAY'
+                   and int(status.get('activeQuotes') or 0)>0))
+              fresh=valid and -5<=age<=budget and date_aligned and session_aligned
               stale=not fresh
-              reason=f"age={age:.1f}m verified={valid} asOf={status.get('asOf')} expectedEOD={completed} fresh={fresh}"
+              reason=f"age={age:.1f}m budget={budget}m verified={valid} live={session_aligned} asOf={status.get('asOf')} expectedEOD={completed} fresh={fresh}"
           except Exception as exc:
               reason=type(exc).__name__+': '+str(exc)[:180]
           print('VN100 publisher check:',reason)

@@ -11,7 +11,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from finquery_vn100_product import make_product
-from finquery_vn100_timeseries import build, load_market
+from finquery_vn100_timeseries import build, load_market, quote_anchor
 from vn_exchange_calendar import VN_TZ
 
 
@@ -66,6 +66,64 @@ class PublisherTests(unittest.TestCase):
         self.assertEqual(self.full["status"], "PASS")
         self.assertEqual(self.full["universe"]["activeQuotes"], 0)
         self.assertEqual(self.full["universe"]["quoteStatus"], "EOD_FALLBACK")
+
+    def test_current_session_prices_reanchor_every_horizon_not_just_eod(self):
+        now = datetime(2026, 10, 15, 10, 10, tzinfo=VN_TZ)
+        stamp = datetime(2026, 10, 15, 10, 5, tzinfo=VN_TZ).isoformat()
+        prices = {}
+        for symbol, row in self.full["dashboard"]["symbols"].items():
+            prices[symbol] = {
+                "price": row["close"] + 500,
+                "sourceTime": stamp, "status": "ok", "unit": "VND",
+            }
+        (self.market / "quotes.json").write_text(
+            json.dumps({"checkedAt": now.isoformat(), "quotes": prices, "coverage": 100}),
+            encoding="utf-8",
+        )
+        try:
+            live = build(self.core, self.market, now)
+            self.assertEqual(live["universe"]["activeQuotes"], 100)
+            self.assertEqual(live["universe"]["quoteStatus"], "LIVE_VERIFIED")
+            self.assertEqual(live["universe"]["inputMode"], "INTRADAY")
+            fpt = live["dashboard"]["symbols"]["S000"]
+            before = self.full["dashboard"]["symbols"]["S000"]
+            self.assertEqual(fpt["forecastAnchorClose"], before["close"] + 500)
+            self.assertEqual(fpt["forecastAnchorBasis"], "INTRADAY_QUOTE")
+            self.assertEqual(fpt["forecastAnchorAt"], stamp)
+            self.assertEqual(fpt["forecastCalculatedAt"], now.isoformat())
+            self.assertEqual(fpt["date"], "2026-10-14")  # EOD remains history
+            self.assertEqual(fpt["forecastSessionDate"], "2026-10-15")
+            self.assertEqual(fpt["horizons"]["1"]["targetDate"], "2026-10-16")
+            self.assertTrue(any(
+                fpt["horizons"][h]["expectedPrice"] != before["horizons"][h]["expectedPrice"]
+                for h in ("1", "2", "3", "4", "5")
+            ))
+            self.assertEqual(live["backtest"]["cases"]["1"], self.full["backtest"]["cases"]["1"])
+        finally:
+            (self.market / "quotes.json").unlink(missing_ok=True)
+
+    def test_stale_intraday_source_cannot_pass_as_new_price(self):
+        now = datetime(2026, 10, 15, 10, 10, tzinfo=VN_TZ)
+        stale = {"quotes": {"S000": {
+            "price": 12000, "sourceTime": datetime(2026, 10, 15, 9, 35, tzinfo=VN_TZ).isoformat(),
+            "status": "ok", "unit": "VND"
+        }}, "checkedAt": now.isoformat()}
+        self.assertEqual(quote_anchor(stale, "S000", now), (None, None))
+        stale["quotes"]["S000"]["status"] = "retained"
+        stale["quotes"]["S000"]["sourceTime"] = now.isoformat()
+        self.assertEqual(quote_anchor(stale, "S000", now), (None, None))
+
+    def test_lunch_uses_morning_print_but_afternoon_requires_fresh_quote(self):
+        stamp = datetime(2026, 10, 15, 11, 30, tzinfo=VN_TZ).isoformat()
+        q = {"quotes": {"S000": {"price": 12000, "sourceTime": stamp, "status": "ok"}}}
+        self.assertEqual(
+            quote_anchor(q, "S000", datetime(2026, 10, 15, 12, 20, tzinfo=VN_TZ)),
+            (12000.0, stamp)
+        )
+        self.assertEqual(
+            quote_anchor(q, "S000", datetime(2026, 10, 15, 13, 20, tzinfo=VN_TZ)),
+            (None, None)
+        )
 
     def test_compact_product_retains_chart_backtest_and_all_horizons(self):
         p = make_product(self.full, max_cases=4)

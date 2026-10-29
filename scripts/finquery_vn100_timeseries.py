@@ -182,9 +182,19 @@ def estimate(origin_price: float, drift: float, volatility: float, horizon: int)
 
 
 def quote_anchor(quotes: dict, symbol: str, now: datetime) -> tuple[float | None, str | None]:
+    """Use a real current-session price, never the collector heartbeat as T0.
+
+    In continuous trading a quote must be recent. During the HOSE lunch
+    break the last morning print remains valid but is explicitly labelled
+    as a morning-session observation rather than a new trade.
+    """
     row = (quotes.get("quotes") or {}).get(symbol) or {}
+    if row.get("status") in {"retained", "stale", "error", "unavailable"}:
+        return None, None
+    if row.get("unit") not in (None, "", "VND"):
+        return None, None
     value = finite(row.get("price"))
-    source_time = row.get("sourceTime") or quotes.get("latestSourceTime")
+    source_time = row.get("sourceTime")  # never fall back to checkedAt
     if value is None or not source_time:
         return None, None
     try:
@@ -194,11 +204,23 @@ def quote_anchor(quotes: dict, symbol: str, now: datetime) -> tuple[float | None
         updated = updated.astimezone(VN_TZ)
     except (ValueError, TypeError):
         return None, None
-    if updated > now or updated.date() != now.date():
-        return None, None
     if not is_trading_day(now.date(), require_certified=True):
         return None, None
-    if now.hour < 9 or (now - updated).total_seconds() > 95 * 60:
+    minutes = now.hour * 60 + now.minute
+    age = (now - updated).total_seconds() / 60
+    if updated.date() != now.date() or age < -5:
+        return None, None
+    if 9 * 60 <= minutes <= 11 * 60 + 40:
+        max_age = 18
+    elif 11 * 60 + 40 < minutes < 13 * 60 + 5:
+        max_age = 105  # verified morning close, while the market is paused
+        if updated.hour >= 12:
+            return None, None
+    elif 13 * 60 + 5 <= minutes <= 15 * 60 + 5:
+        max_age = 18 if minutes < 14 * 60 + 55 else 30
+    else:
+        return None, None
+    if age > max_age:
         return None, None
     return value, updated.isoformat()
 
@@ -314,6 +336,8 @@ def build(core_path: Path, market_dir: Path, now: datetime | None = None, previo
             quote_count += 1
         anchor_price = current_quote if current_quote is not None else latest_close
         anchor_date = now.date().isoformat() if current_quote is not None else origin
+        basis = "INTRADAY_QUOTE" if current_quote is not None else "VERIFIED_EOD"
+        price_age_min = round((now - datetime.fromisoformat(quote_time)).total_seconds() / 60, 2) if quote_time else None
         next_dates = next_trading_dates(anchor_date, 5)
         info = state[symbol]
         sample = per_symbol[symbol][-80:]
@@ -375,7 +399,12 @@ def build(core_path: Path, market_dir: Path, now: datetime | None = None, previo
             "close": latest_close,
             "coreClose": latest_close,
             "forecastAnchorClose": anchor_price,
-            "forecastAnchorAt": quote_time,
+            "forecastAnchorAt": quote_time or (origin + "T15:00:00+07:00"),
+            "forecastAnchorBasis": basis,
+            "forecastAnchorAgeMinutes": price_age_min,
+            "forecastCalculatedAt": now.isoformat(),
+            "forecastSessionDate": anchor_date,
+            "forecastHistoricalAsOf": completed,
             "liveQuoteAt": quote_time,
             "dailyVolatility": hist_vol,
             "lastSessionReturn": latest_close / bars[-2]["close"] - 1.0,
@@ -425,11 +454,17 @@ def build(core_path: Path, market_dir: Path, now: datetime | None = None, previo
         "generatedAt": now.isoformat(),
         "asOf": completed,
         "universe": {"expected": 100, "available": len(symbols), "freshHistory": recent_bars, "activeQuotes": quote_count,
-                     "quoteStatus": "LIVE_VERIFIED" if quote_count >= 90 else "EOD_FALLBACK",
-                     "fallbackQuotes": len(symbols) - quote_count if active_today else 0},
+                     "quoteStatus": ("LIVE_VERIFIED" if quote_count >= 90 else "PARTIAL_LIVE" if quote_count else "EOD_FALLBACK") if active_today else "CLOSED_EOD",
+                     "fallbackQuotes": len(symbols) - quote_count if active_today else 0,
+                     "forecastRunEveryMinutes": 30, "marketQuoteDisplayEveryMinutes": 5,
+                     "inputMode": "INTRADAY" if active_today else "EOD",
+                     "forecastUpdatedAt": now.isoformat(),
+                     "latestVerifiedQuoteAt": max((row["forecastAnchorAt"] for row in symbols.values() if row["forecastAnchorBasis"] == "INTRADAY_QUOTE"), default=None)},
         "dashboard": {
             "asOf": completed,
             "generatedAt": now.isoformat(),
+            "forecastUpdatedAt": now.isoformat(),
+            "forecastSessionDate": now.date().isoformat() if active_today else completed,
             "symbols": symbols,
             "charts": charts,
             "promotion": model["promotion"],

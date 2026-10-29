@@ -92,6 +92,103 @@ def main():
         assert loaded["snapshot"].upper() != "ĐANG TẢI", "snapshot date still loading"
         assert loaded["decision"] and "đang tải" not in loaded["decision"].lower(), "decision still spinning"
         errors.append({"initial": loaded})
+        # Real-browser integration: the 5-minute market polling endpoint must
+        # repaint the actual price/card/chart, not merely mutate a JS cache.
+        # Only synthesize the quote inside this isolated browser test; never
+        # publish synthetic financial observations or alter the EOD model.
+        driver.set_script_timeout(25)
+        repaint = driver.execute_async_script("""
+        const done=arguments[arguments.length-1];
+        (async()=>{
+          const base=await window.__VMEWS_LOAD_BASE__();
+          if(base?.source!=="VN100")return {skipped:true,source:base?.source};
+          const originalFetch=window.fetch;
+          const obj=window.__VMEWS_FRESHNESS__;
+          const originalMode=obj.quoteMode,originalExpected=obj.expectedQuoteSession;
+          try{
+            const initial=document.getElementById('close').textContent.trim();
+            const verified=Number(base.dash?.symbols?.FPT?.close||0);
+            const syntheticPrice=Math.round((verified+1500)/100)*100;
+            const now=new Date(),stamp=now.toISOString();
+            const today=new Intl.DateTimeFormat('en-CA',{
+              timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'
+            }).format(now);
+            obj.quoteMode=()=> 'LIVE';obj.expectedQuoteSession=()=> today;
+            window.fetch=(resource,opts)=>{
+              const url=String(resource?.url||resource||'');
+              if(url.includes('/market/quotes.json')){
+                const payload={status:'ok',coverage:100,expected:100,
+                  checkedAt:stamp,latestSourceTime:stamp,
+                  quotes:{FPT:{symbol:'FPT',price:syntheticPrice,
+                    sourceTime:stamp,status:'ok',unit:'VND',source:'E2E-MOCK'}}};
+                return Promise.resolve({ok:true,status:200,json:async()=>payload});
+              }
+              return originalFetch(resource,opts);
+            };
+            const updated=await window.__VMEWS_REFRESH_LIVE_QUOTES__(true);
+            const shown=document.getElementById('close').textContent.trim();
+            const provenance=document.getElementById('quoteAsOf').textContent;
+            const modelAt=document.getElementById('forecastUpdatedAt').textContent;
+            return {updated,initial,shown,expected:syntheticPrice.toLocaleString('vi-VN'),
+              provenance,modelAt};
+          }finally{
+            window.fetch=originalFetch;obj.quoteMode=originalMode;
+            obj.expectedQuoteSession=originalExpected;
+          }
+        })().then(done).catch(e=>done({error:String(e?.stack||e)}));
+        """)
+        assert repaint.get("skipped") or (
+            repaint.get("updated") is True
+            and repaint.get("shown")==repaint.get("expected")
+            and repaint.get("shown")!=repaint.get("initial")
+            and "Giá nguồn:" in repaint.get("provenance","")
+            and "Forecast tính" in repaint.get("modelAt","")
+        ), "The verified 5m quote did not repaint the visible VN100 stock price: "+str(repaint)
+        errors.append({"fiveMinuteQuoteRepaint": repaint})
+        # A 30m heartbeat must replace the T+ forecast itself, not only the
+        # latest market quote. This mock is browser-local and never published.
+        model_refresh = driver.execute_async_script("""
+        const done=arguments[arguments.length-1];
+        (async()=>{
+          const B=await window.__VMEWS_LOAD_BASE__();
+          if(B?.source!=="VN100")return {skipped:true,source:B?.source};
+          const fetch0=window.fetch;
+          const stamp=new Date(Date.now()+2500).toISOString();
+          const originalPrice=B.dash.symbols.FPT.horizons['1'].expectedPrice;
+          const candidate=JSON.parse(JSON.stringify({
+            status:'PASS',version:'FINQUERY-VN100-TS-1',generatedAt:stamp,
+            asOf:B.dash.asOf,universe:{expected:100,available:100},
+            dashboard:B.dash,model:B.model,backtest:B.back,gates:B.gates
+          }));
+          candidate.dashboard.generatedAt=stamp;
+          candidate.dashboard.forecastUpdatedAt=stamp;
+          candidate.dashboard.symbols.FPT.forecastCalculatedAt=stamp;
+          candidate.dashboard.symbols.FPT.horizons['1'].expectedPrice=originalPrice+100;
+          const heartbeat={status:'PASS',generatedAt:stamp,
+            symbols:100,horizons:500,asOf:B.dash.asOf};
+          try{
+            window.fetch=(resource,opts)=>{
+              const url=String(resource?.url||resource||'');
+              if(url.includes('finquery-vn100-status.json'))
+                return Promise.resolve({ok:true,status:200,json:async()=>heartbeat});
+              if(url.includes('finquery-vn100-product.json'))
+                return Promise.resolve({ok:true,status:200,json:async()=>candidate});
+              return fetch0(resource,opts);
+            };
+            const accepted=await window.__VMEWS_REFRESH_CORE__();
+            const after=await window.__VMEWS_LOAD_BASE__();
+            const priceAfter=after.dash.symbols.FPT.horizons['1'].expectedPrice;
+            return{accepted,originalPrice,priceAfter,
+              modelAt:document.getElementById('forecastUpdatedAt')?.textContent||''};
+          }finally{window.fetch=fetch0}
+        })().then(done).catch(e=>done({error:String(e?.stack||e)}));
+        """)
+        assert model_refresh.get("skipped") or (
+            model_refresh.get("accepted") is True
+            and model_refresh.get("priceAfter")==model_refresh.get("originalPrice",0)+100
+            and "Forecast tính" in model_refresh.get("modelAt","")
+        ), "30m numerical publication did not replace T+ forecasts on the visible page: "+str(model_refresh)
+        errors.append({"thirtyMinuteModelRefresh": model_refresh})
         for symbol in DISPUTED:
             result = render_symbol(driver,symbol)
             errors.append({"symbol":symbol,"status":result["status"][:180]})

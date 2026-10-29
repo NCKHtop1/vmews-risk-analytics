@@ -29,6 +29,10 @@ const VN100_DATA_ROOT="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-ana
 const VN100_MIRROR_ROOT="https://cdn.jsdelivr.net/gh/NCKHtop1/vmews-risk-analytics@finquery-vn100-data/data/";
 const VN100_PRODUCT_URL=VN100_DATA_ROOT+"finquery-vn100-product.json";
 const VN100_FULL_URL=VN100_DATA_ROOT+"finquery-vn100-forecast.json";
+const VN100_STATUS_URL=VN100_DATA_ROOT+"finquery-vn100-status.json";
+const VN100_STATUS_MIRROR=VN100_MIRROR_ROOT+"finquery-vn100-status.json";
+const FORECAST_POLL_MS=120000,MARKET_QUOTE_POLL_MS=300000;
+let FORECAST_REFRESHING=null,FORECAST_LAST_DEEP_CHECK=0;
 let VN100_BUNDLE_PROMISE=null;
 function validVN100(data){
   if(data?.status!=="PASS"||data?.gates?.status!=="PASS"||data?.universe?.available!==100)return false;
@@ -74,8 +78,8 @@ function vnDateKey(value){
 }
 function liveQuotePayloadUsable(payload,now=new Date()){
   if(!payload?.quotes||typeof payload.quotes!=="object")return false;
-  const stamp=new Date(payload.sourceTime||payload.generatedAt||payload.latestSourceTime||payload.checkedAt||"");
-  if(Number.isNaN(+stamp)||+stamp>Date.now()+5*60_000)return false;
+  const stamp=new Date(payload.latestSourceTime||payload.sourceTime||payload.generatedAt||payload.checkedAt||"");
+  if(Number.isNaN(+stamp)||+stamp>+now+5*60_000)return false;
   const expected=window.__VMEWS_FRESHNESS__?.expectedQuoteSession?.(now)||vnDateKey(now);
   const mode=window.__VMEWS_FRESHNESS__?.quoteMode?.(now)||"";
   const age=+now-+stamp;
@@ -103,12 +107,30 @@ async function refreshLiveQuotes(force=false){
         try{
           const payload=await fetchJsonBounded(url+"?refresh="+revision,5000);
           if(!liveQuotePayloadUsable(payload))continue;
+          // Never roll back the displayed quote to an older verified source.
+          const prior=Date.parse(LIVE_QUOTES?.latestSourceTime||LIVE_QUOTES?.sourceTime||"");
+          const latest=Date.parse(payload.latestSourceTime||payload.sourceTime||"");
+          if(Number.isFinite(prior)&&(!Number.isFinite(latest)||latest<=prior)){
+            if(last?.B?.dash?.symbols?.[last.sym])
+              rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);
+            return false;
+          }
           LIVE_QUOTES=payload;
           window.__VMEWS_LIVE_QUOTES__=payload;
+          // The old page updated its global quote cache but did not rerender
+          // the detail chart/cards after later 5-minute market publications.
+          if(last?.B?.dash?.symbols?.[last.sym]){
+            rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);
+            if(last.B.source==="VN100")renderVN100Status(last.B,last.sym,last.view);
+          }
           window.dispatchEvent(new CustomEvent("vmews:live-quotes-updated",{detail:{quotes:payload,scope:"finquery-market"}}));
           return true;
         }catch{continue}
       }
+      // A 5-minute refresh can discover that a previously good quote has
+      // expired. Re-evaluate its timestamp instead of freezing an old label.
+      if(last?.B?.dash?.symbols?.[last.sym])
+        rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);
       return false;
     }finally{LIVE_QUOTES_REFRESHING=null}
   })();
@@ -229,9 +251,18 @@ window.__VMEWS_ISSUER_HEADLINE_MATCHES__=issuerHeadlineMatches;
 function sessionQuote(symbol,session=window.__VMEWS_SESSION__){
   const expected=window.__VMEWS_FRESHNESS__?.expectedQuoteSession?.();
   const live=(LIVE_QUOTES||window.__VMEWS_LIVE_QUOTES__)?.quotes?.[symbol];
-  if(live&&finite(live.price)){
-    const stamp=live.updateAt||live.observedAt||live.sourceTime||LIVE_QUOTES?.sourceTime||LIVE_QUOTES?.generatedAt||window.__VMEWS_LIVE_QUOTES__?.sourceTime||window.__VMEWS_LIVE_QUOTES__?.generatedAt;
-    if(!expected||vnDateKey(stamp)===expected)return{symbol,liveClose:+live.price,change:finite(live.changePct)?+live.changePct/100:null,updateAt:stamp,quoteCurrent:true,freshForCutoff:true,updateMode:"finquery_market_publisher",source:live.source||"FinQuery Market"};
+  if(live&&finite(live.price)&&!["retained","stale","error","unavailable"].includes(live.status)){
+    const stamp=live.sourceTime||live.updateAt||live.observedAt||"";
+    const now=new Date(),ts=Date.parse(stamp),age=now-ts;
+    const mode=window.__VMEWS_FRESHNESS__?.quoteMode?.(now)||"";
+    const maxAge=mode==="LIVE"?10*60000:mode==="LUNCH"?105*60000:mode==="POST_CLOSE"?120*60000:mode==="CLOSED"?0:10*60000;
+    // Valid source time AND current exchange session, not just HTTP 200.
+    if(Number.isFinite(ts)&&age>=-300000&&age<=maxAge&&
+       (!expected||vnDateKey(stamp)===expected)){
+      return{symbol,liveClose:+live.price,change:finite(live.changePct)?+live.changePct/100:null,
+        updateAt:stamp,quoteCurrent:true,freshForCutoff:true,
+        updateMode:"finquery_market_publisher",source:live.source||"FinQuery Market"};
+    }
   }
   if(expected&&String(session?.coverage?.expectedQuoteDate||"")!==expected)return null;
   return(session?.symbols||[]).find(item=>item.symbol===symbol&&item.quoteCurrent&&item.freshForCutoff!==false&&finite(item.liveClose))||null
@@ -650,7 +681,37 @@ function renderSummary(B,sym,z){
   setText("#scenarioCaveat",`${z.staleForecast?`Forecast đang dùng là snapshot niêm phong phiên ${z.date||B.dash.asOf||"trước"}; ${z.quoteUnavailable?"chưa có giá live; biểu đồ chỉ hiển thị lịch sử đã kiểm định.":"giá hiện tại lấy từ kênh giá FinQuery."} `:""}${finite(ratio)?`Biên độ mô hình bám ${pct(ratio,0)} mức biến động ngoài mẫu. `:""}${validatedDirection(qp)?"Xác suất tăng được ước lượng từ dữ liệu kiểm định; vùng giá vẫn có thể bị vượt.":signValidated?`Dự báo đúng chiều ${pct(signRate,1)} trong mẫu lịch sử; hai kịch bản vẫn có thể xảy ra.`:"Chưa đủ dữ liệu để hiển thị xác suất tăng; hai kịch bản thể hiện biên độ có thể xảy ra."}${livePosition}${liveScenario}${rank}`);setText("#risk",({GREEN:"THẤP",YELLOW:"THEO DÕI",WATCH:"THEO DÕI",RED:"CAO"})[z.riskStatus]||"—");setText("#chartTitle",z.quoteUnavailable?`${sym} · lịch sử đến ${z.date||B.dash.asOf||"—"} · không có giá live`:z.staleForecast?`${sym} · ${price(z.close)} · các mục tiêu niêm phong còn hiệu lực`:z.verifiedEod?`${sym} · EOD ${z.date||B.dash.asOf||"—"} · ${price(z.close)} → T+1…T+5`:`${sym} · ${price(z.close)} → T+1…T+5`);const scope=B.source==="VN100"?"VN100":"HOSE";setText("#modelBadge",z.quoteUnavailable?`${scope} · CORE ${B.dash.asOf||z.date||"—"} · KHÔNG CÓ GIÁ LIVE · LỊCH SỬ ĐÃ KIỂM ĐỊNH`:z.staleForecast?`${scope} · CORE ${B.dash.asOf||z.date||"—"} · GIÁ FINQUERY · FORECAST NIÊM PHONG`:`${scope} · ${B.dash.asOf||z.date||"—"} · DỰ BÁO T+${primary}${z.liveSession?` · ${z.liveSession.session||"PHIÊN"}`:""}`)
 }
 function quickButtons(B){const box=$("#quick");box.replaceChildren();for(const s of ["FPT","VCB","HPG","MBB","FRT","PNJ","VNM","SSI"]){if(!B.dash.symbols?.[s])continue;const b=document.createElement("button");b.textContent=s;b.onclick=()=>{$("#symbol").value=s;renderSymbol(s)};box.append(b)}}
-function rerender(B,sym,z){const freshness=window.__VMEWS_FRESHNESS__?.inspect(z);const view={...applySessionView(sym,z),staleForecast:freshness?.stale===true,freshnessExpected:freshness?.expected},primary=primaryHorizon(B,view);last={B,sym,z,view};renderSummary(B,sym,view);renderForecastCards(B,view);renderDrivers(view,primary);draw(sym,view,B.dash.charts?.[sym]||[]);renderNews(view);renderRumors(view);renderSource(B,sym);renderBacktest(B,sym,btH||primary);window.dispatchEvent(new CustomEvent("vmews:symbol-changed",{detail:{symbol:sym,snapshot:view}}))}
+function vnModelTime(value){
+ const t=Date.parse(value||"");
+ return Number.isFinite(t)?new Intl.DateTimeFormat("vi-VN",{
+  timeZone:"Asia/Ho_Chi_Minh",day:"2-digit",month:"2-digit",year:"numeric",
+  hour:"2-digit",minute:"2-digit",hour12:false
+ }).format(new Date(t)):"chưa có mốc";
+}
+function renderVN100Status(B,sym,view){
+ if(B?.source!=="VN100")return;
+ const snapshot=B.dash?.symbols?.[sym]||{},updatedAt=snapshot.forecastCalculatedAt||B.publishedAt,
+  basis=(snapshot.forecastAnchorBasis==="INTRADAY_QUOTE"||
+    (!snapshot.forecastAnchorBasis&&snapshot.forecastAnchorAt&&
+     vnDateKey(snapshot.forecastAnchorAt)>String(snapshot.date||B.dash.asOf||"")))?"giá phiên":"giá EOD",
+  anchorAt=snapshot.forecastAnchorAt||null,
+  marketAt=view?.liveSession?.updateAt||null,
+  marketText=marketAt?"Giá thị trường "+vnModelTime(marketAt):"Giá tham chiếu EOD "+(snapshot.date||B.dash.asOf||"—");
+ const age=(Date.now()-Date.parse(updatedAt||""))/60000;
+ const delayed=Number.isFinite(age)&&age>55&&
+    ["LIVE","LUNCH"].includes(window.__VMEWS_FRESHNESS__?.quoteMode?.())?" · chậm cập nhật":"";
+ setText("#forecastUpdatedAt",
+  "Forecast tính "+vnModelTime(updatedAt)+" · T0 "+basis+" "+
+  (anchorAt?vnModelTime(anchorAt):"—")+
+  " · nền lịch sử EOD "+(snapshot.date||B.dash.asOf||"—")+delayed);
+ setText("#status",sym+" · "+marketText+" · Dự báo "+vnModelTime(updatedAt)+delayed);
+ setText("#modelBadge","VN100 · FORECAST 30 PHÚT · GIÁ 5 PHÚT · EOD NỀN "+
+   (snapshot.date||B.dash.asOf||"—"));
+ const priceLabel=document.querySelector("#quoteAsOf");
+ if(priceLabel&&!priceLabel.textContent.includes("kiểm tra mỗi 5 phút"))
+   priceLabel.textContent+=" · kiểm tra mỗi 5 phút";
+}
+function rerender(B,sym,z){const freshness=window.__VMEWS_FRESHNESS__?.inspect(z);const view={...applySessionView(sym,z),staleForecast:freshness?.stale===true,freshnessExpected:freshness?.expected},primary=primaryHorizon(B,view);last={B,sym,z,view};renderSummary(B,sym,view);renderForecastCards(B,view);renderDrivers(view,primary);draw(sym,view,B.dash.charts?.[sym]||[]);renderNews(view);renderRumors(view);renderSource(B,sym);renderBacktest(B,sym,btH||primary);renderVN100Status(B,sym,view);window.dispatchEvent(new CustomEvent("vmews:symbol-changed",{detail:{symbol:sym,snapshot:view}}))}
 function applyCommunity(B,payload){
   if(!payload||!B||!payload.generatedAt||(B.source!=="VN100"&&payload.asOf!==B.dash.asOf))return false;
   const scenariosEligible=payload.asOf===B.dash.asOf;
@@ -698,37 +759,69 @@ async function refreshCommunity(B){
   }catch{return false}
 }
 window.__VMEWS_APPLY_COMMUNITY_LIVE__=applyCommunity;
-async function renderSymbol(raw){const B=await loadBase();assertProduction(B);const sym=String(raw||"").trim().toUpperCase(),z=B.dash.symbols?.[sym];if(!z)throw Error(`${sym}: chưa có đủ dữ liệu để phân tích.`);$("#symbol").value=sym;setText("#sparkSymbol",sym);rerender(B,sym,z);const view=last?.view||z;setText("#status",`${sym} · dữ liệu ${z.date||B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}${z.dataFreshness==="STALE_EOD"?" · cần cập nhật":""}`);const url=new URL(location.href);url.searchParams.set("symbol",sym);history.replaceState(null,"",url.href)}
+async function renderSymbol(raw){const B=await loadBase();assertProduction(B);const sym=String(raw||"").trim().toUpperCase(),z=B.dash.symbols?.[sym];if(!z)throw Error(`${sym}: chưa có đủ dữ liệu để phân tích.`);$("#symbol").value=sym;setText("#sparkSymbol",sym);rerender(B,sym,z);const view=last?.view||z;if(B.source==="VN100")renderVN100Status(B,sym,view);else setText("#status",`${sym} · dữ liệu ${z.date||B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}${z.dataFreshness==="STALE_EOD"?" · cần cập nhật":""}`);const url=new URL(location.href);url.searchParams.set("symbol",sym);history.replaceState(null,"",url.href)}
 window.__VMEWS_RENDER_SYMBOL__=renderSymbol;
+async function refreshVN100Heartbeat(){
+ const revision=Math.floor(Date.now()/60000);
+ for(const url of [VN100_STATUS_URL,VN100_STATUS_MIRROR]){
+  try{
+   const payload=await fetchJsonBounded(url+"?refresh="+revision,4500);
+   const time=Date.parse(payload?.generatedAt||"");
+   if(payload?.status!=="PASS"||payload?.symbols!==100||payload?.horizons!==500||
+      !Number.isFinite(time)||time>Date.now()+300000)continue;
+   return payload;
+  }catch{}
+ }
+ return null;
+}
 async function refreshCore(){
  if(document.hidden)return false;
- // SoluTION.AI public Pages is independent of the FinQuery VN100 publisher.
- // Retain its original model freshness reload without swapping products.
- if(INDEPENDENT_CORE_PAGE){
+ if(FORECAST_REFRESHING)return FORECAST_REFRESHING;
+ FORECAST_REFRESHING=(async()=>{
+  // SoluTION.AI is an independent product: preserve its old source contract.
+  if(INDEPENDENT_CORE_PAGE){
+   try{
+    const next=await fetchJsonBounded(CORE_ROOT+"/forecast-dashboard-v12.json?refresh="+Date.now(),
+      Math.min(FETCH_TIMEOUT_MS,12000));
+    if(BASE&&next?.generatedAt!==BASE.dash.generatedAt&&
+       String(next?.asOf||"")>=String(BASE.dash.asOf)){
+      location.reload();return true;
+    }
+   }catch{}
+   return false;
+  }
   try{
-   const next=await fetchJsonBounded(CORE_ROOT+"/forecast-dashboard-v12.json?refresh="+Date.now(),Math.min(FETCH_TIMEOUT_MS,12000));
-   if(BASE&&next?.generatedAt!==BASE.dash.generatedAt&&String(next?.asOf||"")>=String(BASE.dash.asOf)){
-    location.reload();return true;
-   }
-  }catch{}
-  return false;
- }
- try{
-  const bundle=await loadVN100(true);
-  if(!validVN100(bundle))return false;
-  const current=BASE?.publishedAt||BASE?.dash?.generatedAt||"";
-  if(Date.parse(bundle.generatedAt)<=Date.parse(current)||bundle.asOf<(BASE?.dash?.asOf||""))return false;
-  const selected=last?.sym||$("#symbol")?.value||"FPT";
-  BASE=vn100Base(bundle);BASE_PROMISE=Promise.resolve(BASE);LEADER_BASE_PROMISE=null;
-  quickButtons(BASE);
-  await renderSymbol(selected);
-  window.dispatchEvent(new CustomEvent("vmews:forecast-updated",{detail:{
+   // First poll only the tiny publication heartbeat (~0.5KB), not the 3MB
+   // model file. Fetch the full package only after a new 30m model arrived.
+   const heartbeat=await refreshVN100Heartbeat();
+   const current=Date.parse(BASE?.publishedAt||BASE?.dash?.generatedAt||"");
+   const next=Date.parse(heartbeat?.generatedAt||"");
+   const due=Number.isFinite(next)&&(!Number.isFinite(current)||next>current);
+   const deepFallback=!heartbeat&&Date.now()-FORECAST_LAST_DEEP_CHECK>=15*60000;
+   if(!due&&!deepFallback)return false;
+   FORECAST_LAST_DEEP_CHECK=Date.now();
+   const bundle=await loadVN100(true);
+   if(!validVN100(bundle))return false;
+   if(heartbeat&&Date.parse(bundle.generatedAt)<next)return false; // CDN propagation race
+   if(Number.isFinite(current)&&Date.parse(bundle.generatedAt)<=current)return false;
+   if(BASE&&bundle.asOf<BASE.dash.asOf)return false;
+   const selected=last?.sym||$("#symbol")?.value||"FPT";
+   BASE=vn100Base(bundle);BASE_PROMISE=Promise.resolve(BASE);LEADER_BASE_PROMISE=null;
+   quickButtons(BASE);
+   await renderSymbol(selected);
+   window.dispatchEvent(new CustomEvent("vmews:forecast-updated",{detail:{
     asOf:bundle.asOf,generatedAt:bundle.generatedAt,coverage:bundle.universe
-  }}));
-  return true;
- }catch(error){console.warn("VN100 refresh failed, keeping previously verified snapshot",error);return false}
+   }}));
+   return true;
+  }catch(error){
+   console.warn("VN100 heartbeat/model refresh failed, keeping verified snapshot",error);
+   return false;
+  }
+ })().finally(()=>{FORECAST_REFRESHING=null});
+ return FORECAST_REFRESHING;
 }
 window.__VMEWS_REFRESH_CORE__=refreshCore;
+window.__VMEWS_REFRESH_VN100_HEARTBEAT__=refreshVN100Heartbeat;
 window.__VMEWS_REFRESH_COMPANY_NEWS__=refreshCompanyNews;
 let forecastBootstrapped=false;
 async function startForecastProduct(B,q,priceFetch){
@@ -741,8 +834,11 @@ async function startForecastProduct(B,q,priceFetch){
    rerender(last.B,last.sym,last.B.dash.symbols[q]);
  }).catch(()=>{});
  bindChartHover();
- window.setInterval(()=>void refreshCore(),300000);
- window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);
+ // Numerical estimates: 30m backend; 2m lightweight heartbeat to detect
+ // a freshly published model without pulling a 3MB bundle unnecessarily.
+ window.setInterval(()=>void refreshCore(),FORECAST_POLL_MS);
+ // Market quote endpoint is produced every five minutes independently.
+ window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},MARKET_QUOTE_POLL_MS);
  document.addEventListener("visibilitychange",()=>{
   void refreshCore();if(!document.hidden)void refreshLiveQuotes(true);
  });
