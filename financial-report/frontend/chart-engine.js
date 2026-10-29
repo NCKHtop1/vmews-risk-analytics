@@ -181,6 +181,7 @@ class ChartController{
  renderInsights(){const layer=$('chart-insight-markers');if(!layer)return;if(!this.insightsVisible){layer.innerHTML='';return;}if(!this.bars.length||!this.insightItems.length||!this.series.price){layer.innerHTML='';return;}const grouped=new Map(),buttons=[],height=layer.clientHeight||420;for(const item of this.insightItems){const time=this.snapInsightTime(item.date);if(time==null)continue;const x=this.chart.timeScale().timeToCoordinate(time);if(!Number.isFinite(x)||x<-20||x>(layer.clientWidth||9999)+20)continue;const bar=this.bars.find(b=>String(b.time)===String(time))||this.bars.find(b=>this.barDate(b.time)===this.barDate(time));if(!bar)continue;const key=String(time)+':'+String(item.kind||'event'),stack=grouped.get(key)||0;grouped.set(key,stack+1);const isResearch=item.kind==='research',anchorPrice=isResearch?Number(bar.high):Number(bar.low),anchorY=this.series.price.priceToCoordinate?.(anchorPrice);if(!Number.isFinite(anchorY))continue;const rawTop=isResearch?anchorY-34-stack*30:anchorY+10+stack*30,top=Math.max(8,Math.min(height-32,rawTop));const stemTop=isResearch?top+26:anchorY,stemBottom=isResearch?anchorY:top;buttons.push('<span class="chart-insight-stem '+(isResearch?'research':'event')+'" style="left:'+x.toFixed(1)+'px;top:'+Math.min(stemTop,stemBottom).toFixed(1)+'px;height:'+Math.max(6,Math.abs(stemBottom-stemTop)).toFixed(1)+'px"></span><button type="button" class="chart-insight-marker '+html(item.kind||'event')+' '+html(item.tone||'')+'" data-insight-id="'+html(item.id)+'" style="left:'+x.toFixed(1)+'px;top:'+top.toFixed(1)+'px" title="'+html(item.title||'')+'" aria-label="'+html(item.title||item.label||'Sự kiện')+'"><span>'+html(item.label||'•')+'</span></button>');}layer.innerHTML=buttons.join('');}
  range(){
   if(!this.bars.length)return;
+  const rangeLabel=$('chart-range-label');if(rangeLabel)rangeLabel.hidden=false;
   const requested=String($('chart-period')?.value||'recent'),months=Number(requested);
   const first=this.bars[0],last=this.bars.at(-1);
   const labelTime=t=>typeof t==='number'?
@@ -189,7 +190,9 @@ class ChartController{
    // Initial readability beats showing every candle compressed into <2px.
    // Keep the latest 35-76 observations with a small future right margin.
    const available=Number($('price-chart')?.clientWidth)||960;
-   const budget=Math.max(28,Math.min(76,Math.round((available-80)/12)));
+   // Default 18-48 visible bars: wide enough for context, large enough to
+   // read candle bodies without manually zooming on desktop or phone.
+   const budget=Math.max(18,Math.min(48,Math.round((available-100)/18)));
    const count=Math.min(this.bars.length,
     this.tf==='1mo'?Math.min(budget,36):this.tf==='1w'?Math.min(budget,48):budget);
    const from=Math.max(0,this.bars.length-count),to=this.bars.length+2.5;
@@ -224,11 +227,22 @@ class ChartController{
   }
  }
  updateLatestCue(){
-  const last=this.bars.at(-1),node=$('chart-latest-candle');
+  const last=this.bars.at(-1),previous=this.bars.at(-2),node=$('chart-latest-candle');
+  // Only animate a genuinely recent intraday candle. A completed EOD
+  // candle must never masquerade as a newly traded observation.
+  const stamp=last&&typeof last.time==='number'?last.time*1000:NaN;
+  const age=Date.now()-stamp;
+  const live=M.intraday(this.tf)&&Number.isFinite(age)&&age>=-60000&&age<=12*60000;
+  const delta=last&&previous&&Number.isFinite(previous.close)?last.close-previous.close:NaN;
+  const direction=Number.isFinite(delta)?(delta>0?'▲ ':delta<0?'▼ ':'= ')+' '+fmt(Math.abs(delta)):'';
   if(node){
    node.hidden=!last;
-   if(last)node.textContent='NẾN GẦN NHẤT · '+this.symbol+' · '+
-    timeLabel(last.time)+' · C '+fmt(last.close);
+   node.classList?.toggle('is-live',!!live);
+   if(last){
+    node.textContent=(live?'NẾN MỚI · ':'NẾN GẦN NHẤT · ')+this.symbol+' · '+
+     timeLabel(last.time)+' · C '+fmt(last.close)+(direction?' · '+direction:'');
+    node.setAttribute('aria-label',live?'Nến thị trường vừa cập nhật':'Nến cuối trong dữ liệu đã tải');
+   }
   }
   if(!last||!this.series.price)return;
   const color=last.close>=last.open?'#0b9074':'#d24e54';
@@ -236,12 +250,12 @@ class ChartController{
    this.latestPriceLine.applyOptions({price:last.close,color});
   }else if(typeof this.series.price.createPriceLine==='function'){
    this.latestPriceLine=this.series.price.createPriceLine({
-    price:last.close,color,lineWidth:1,lineStyle:2,axisLabelVisible:true,title:'MỚI NHẤT'
+    price:last.close,color,lineWidth:2,lineStyle:2,axisLabelVisible:true,title:'NẾN CUỐI'
    });
   }
   if(typeof L.createSeriesMarkers==='function'){
    const marker=[{time:last.time,position:'aboveBar',color,
-     shape:'circle',text:'MỚI NHẤT',size:1}];
+     shape:'circle',text:live?'VỪA CẬP NHẬT':'NẾN CUỐI',size:live?2:1}];
    try{
     if(this.latestMarkers?.setMarkers)this.latestMarkers.setMarkers(marker);
     else this.latestMarkers=L.createSeriesMarkers(this.series.price,marker);
@@ -255,10 +269,17 @@ class ChartController{
  socket.onmessage=e=>{if(socket!==this.socket)return;clearTimeout(this.staleTimer);this.staleTimer=setTimeout(()=>this.status('Chưa nhận thông điệp mới trong 90 giây · Kiểm tra trạng thái nguồn/phiên'),90000);try{const m=JSON.parse(e.data);if(m.type==='ping'){socket.send(JSON.stringify({type:'pong'}));return;}if(m.type==='status'){this.status(String(m.message||'Đang chờ dữ liệu').slice(0,160));return;}if(m.type==='quote'&&this.watch.includes(m.symbol)&&Number.isFinite(m.price)&&m.price>0&&Number.isFinite(Date.parse(m.sourceTime))){this.onQuote(m);return;}if(m.type==='candle'){if(this.loading){if(this.buffer.length<2000)this.buffer.push(m);}else this.candle(m);}}catch{this.status('Bỏ qua thông điệp thị trường không hợp lệ.');}};
  socket.onclose=()=>{if(this.stopped)return;this.status('Mất kết nối · Giữ dữ liệu cuối, đang kết nối lại');this.retry=setTimeout(()=>this.connect(),Math.min(30000,1000*2**Math.min(this.retries++,5))+Math.random()*500);};socket.onerror=()=>socket.close();
  }
- candle(m){const baseTF=M.intraday(this.tf)?'1m':'1d';if(m.symbol!==this.symbol||m.interval!==baseTF||m.unit!=='VND')return;const next=M.cleanBars([m.bar],baseTF==='1m')[0];if(!next||(typeof next.time==='number'&&next.time>Date.now()/1000+60))return;const last=this.baseBars.at(-1);if(last&&next.time<last.time)return;if(last&&next.time===last.time)this.baseBars[this.baseBars.length-1]=next;else this.baseBars.push(next);
+ candle(m){const baseTF=M.intraday(this.tf)?'1m':'1d';if(m.symbol!==this.symbol||m.interval!==baseTF||m.unit!=='VND')return;const next=M.cleanBars([m.bar],baseTF==='1m')[0];if(!next||(typeof next.time==='number'&&next.time>Date.now()/1000+60))return;const last=this.baseBars.at(-1);if(last&&next.time<last.time)return;
+ const previousVisible=this.chart.timeScale().getVisibleLogicalRange?.();
+ const followedLatest=!previousVisible||previousVisible.to>=this.bars.length-1.5;
+ if(last&&next.time===last.time)this.baseBars[this.baseBars.length-1]=next;else this.baseBars.push(next);
  // Reaggregate only the current bucket, preserving every earlier rendered candle.
  const t=M.bucket(next.time,this.tf),tail=[];for(let i=this.baseBars.length-1;i>=0&&M.bucket(this.baseBars[i].time,this.tf)===t;i--)tail.unshift(this.baseBars[i]);const b=M.aggregate(tail,this.tf)[0];if(this.bars.at(-1)?.time===b.time)this.bars[this.bars.length-1]=b;else this.bars.push(b);
  const i=this.bars.length-1,v=M.point(this.bars,i,this.params,this.values[i-1]);this.values[i]=v;this.series.price.update(this.priceData(b));this.series.volume?.update(this.volumeData(b));for(const [key,s]of Object.entries(this.series))if(!['price','volume'].includes(key)&&Number.isFinite(v[key]))s.update({time:b.time,value:v[key],...(key==='hist'?{color:v.hist>=0?'#08998188':'#f2364588'}:{})});
+ if(followedLatest&&$('chart-period')?.value==='recent'){
+  // Follow incoming candles, but never override a deliberate historical pan.
+  this.range();
+ }
  this.updateLatestCue();this.readout(b);this.evaluateSignals(true);this.renderInsights();this.cache.delete(this.symbol+':'+baseTF);this.status(`WebSocket · Nến ${timeLabel(next.time)} · Nhận lúc ${new Date().toLocaleTimeString('vi-VN')}`);
  }
  close(){this.stopped=true;clearTimeout(this.retry);clearTimeout(this.staleTimer);this.abort?.abort();this.socket?.close();}
