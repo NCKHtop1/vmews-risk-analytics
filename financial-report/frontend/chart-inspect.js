@@ -6,14 +6,15 @@
  function findSvg(target){return typeof target?.closest==='function'?target.closest(chartSelector):null;}
  function readPoint(el){
   if(!el)return null;
-  const x=Number(el.getAttribute('data-fq-x')??el.getAttribute('cx'));
-  const y=Number(el.getAttribute('data-fq-y')??el.getAttribute('cy'));
+  const xraw=el.getAttribute('data-fq-x')??el.getAttribute('cx'),yraw=el.getAttribute('data-fq-y')??el.getAttribute('cy');
+  if(xraw===null||yraw===null)return null;
+  const x=Number(xraw),y=Number(yraw);
   const value=el.getAttribute('data-fq-value'),label=el.getAttribute('data-fq-label');
   if(!Number.isFinite(x)||!Number.isFinite(y)||!value||!label)return null;
   return{el,x,y,value,label,unit:el.getAttribute('data-fq-unit')||'',series:el.getAttribute('data-fq-series')||''};
  }
  function points(svg){
-  return [...svg.querySelectorAll(pointSelector)].map(readPoint).filter(Boolean);
+  return [...svg.querySelectorAll(pointSelector)].map(readPoint).filter(Boolean).sort((a,b)=>a.x-b.x||a.y-b.y);
  }
  function screen(svg,p,matrix){
   if(!matrix)return null;
@@ -51,8 +52,8 @@
   decorate(svg);
   const matrix=svg.getScreenCTM?.(),pos=screen(svg,point,matrix);
   if(!pos)return;
-  const vb=svg.viewBox?.baseVal,h=vb?.height||200,ymin=Number(svg.getAttribute('data-fq-top')),
-    ymax=Number(svg.getAttribute('data-fq-bottom'));
+  const vb=svg.viewBox?.baseVal,h=vb?.height||200,rawTop=svg.getAttribute('data-fq-top'),rawBottom=svg.getAttribute('data-fq-bottom'),
+    ymin=rawTop===null?NaN:Number(rawTop),ymax=rawBottom===null?NaN:Number(rawBottom);
   guide.setAttribute('x1',String(point.x));guide.setAttribute('x2',String(point.x));
   guide.setAttribute('y1',String(Number.isFinite(ymin)?ymin:10));
   guide.setAttribute('y2',String(Number.isFinite(ymax)?ymax:h-28));
@@ -77,13 +78,15 @@
  function selectNearest(svg,x,y,sticky=false){
   const list=points(svg),matrix=svg.getScreenCTM?.();
   if(!list.length||!matrix)return;
-  let best=null,bestIndex=-1,bestScore=Infinity;
+  let best=null,bestIndex=-1,minDx=Infinity,minDy=Infinity;
   list.forEach((p,i)=>{
    const v=screen(svg,p,matrix);
    if(!v)return;
-   // Prioritize the same date / time, then choose the nearest plotted series.
-   const score=Math.abs(v.x-x)+Math.abs(v.y-y)*.48;
-   if(score<bestScore){best=p;bestScore=score;bestIndex=i;}
+   // First choose the closest observed period on X, then the closest series on Y.
+   const dx=Math.abs(v.x-x),dy=Math.abs(v.y-y);
+   if(dx<minDx-.35||(Math.abs(dx-minDx)<=.35&&dy<minDy)){
+    best=p;bestIndex=i;minDx=dx;minDy=dy;
+   }
   });
   select(svg,best,bestIndex,sticky);
  }
