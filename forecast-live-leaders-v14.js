@@ -276,7 +276,8 @@
     const primaryFilter = $('[data-filter="all"]');
     const deck = $("#signalDeck");
     const stale = window.__VMEWS_FRESHNESS__?.inspect({date:state.base?.dash?.asOf}).stale;
-    if (command) command.textContent = stale ? `${isVN100Product()?"VN100":"HOSE"} · ĐANG CẬP NHẬT` : defensive ? `${isVN100Product()?"VN100":"HOSE"} · TRẠNG THÁI PHÒNG THỦ` : `${isVN100Product()?"VN100":"HOSE"} · T+${horizon}`;
+    if (command) command.textContent = stale ? "HOSE · ĐANG CẬP NHẬT" : defensive ? "HOSE · TRẠNG THÁI PHÒNG THỦ" : `HOSE · T+${horizon}`;
+    if(isVN100Product()&&command)command.textContent=command.textContent.replace("HOSE","VN100");
     if (summary) summary.textContent = stale ? "Chờ dữ liệu phiên hoàn tất mới nhất; tạm ẩn xếp hạng từ bộ dự báo cũ." : state.session?.forecastAlignment?.rankingEligible === false
       ? "Giá thị trường mới đã được xác thực; bảng xếp hạng giữ nguyên forecast EOD và chờ lõi mô hình cập nhật."
       : defensive
