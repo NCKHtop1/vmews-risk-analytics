@@ -135,9 +135,13 @@ def run():
                     c.chart.timeScale().setVisibleLogicalRange({from:12,to:37});
                     c.positionLatestCue();
                 """)
-                assert driver.execute_script(
-                    "return document.getElementById('chart-latest-candle').hidden"
-                ), "cue must disappear when user pans away from latest candle"
+                pan=driver.execute_script("""
+                    const c=window.__qaChart,scale=c.chart.timeScale(),cue=document.getElementById('chart-latest-candle');
+                    return {viewport:scale.getVisibleLogicalRange(),lastIndex:c.bars.length-1,
+                      cueHidden:cue.hidden,css:getComputedStyle(cue).display};
+                """)
+                print("FINQUERY_CHART_PAN_DIAGNOSTIC",width,json.dumps(pan),flush=True)
+                assert pan["cueHidden"], ("cue must disappear when user pans away",pan)
                 driver.execute_script("document.getElementById('chart-focus-latest').click();")
                 centered=driver.execute_script("""
                     return window.__qaChart.chart.timeScale().getVisibleLogicalRange();
