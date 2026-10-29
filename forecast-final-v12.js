@@ -701,23 +701,76 @@ async function refreshCore(){
 }
 window.__VMEWS_REFRESH_CORE__=refreshCore;
 window.__VMEWS_REFRESH_COMPANY_NEWS__=refreshCompanyNews;
+let forecastBootstrapped=false;
+async function startForecastProduct(B,q,priceFetch){
+ assertProduction(B);
+ quickButtons(B);
+ await renderSymbol(q);
+ if(forecastBootstrapped)return true;
+ void priceFetch.then(()=>{
+  if(last?.B&&last.sym===q&&LIVE_QUOTES?.quotes?.[q])
+   rerender(last.B,last.sym,last.B.dash.symbols[q]);
+ }).catch(()=>{});
+ bindChartHover();
+ window.setInterval(()=>void refreshCore(),300000);
+ window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);
+ document.addEventListener("visibilitychange",()=>{
+  void refreshCore();if(!document.hidden)void refreshLiveQuotes(true);
+ });
+ window.addEventListener("focus",()=>void refreshLiveQuotes(true));
+ void refreshCommunity(BASE);
+ window.setInterval(()=>{if(!document.hidden&&BASE)void refreshCommunity(BASE)},180000);
+ $("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);
+ $("#symbol").addEventListener("keydown",e=>{
+  if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError);
+ });
+ window.addEventListener("resize",()=>{
+  if(last)draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[]);
+ });
+ forecastBootstrapped=true;
+ return true;
+}
 async function init(){
-  const q=(new URLSearchParams(location.search).get("symbol")||"FPT").toUpperCase();
-  // News remains live even while the numerical forecast source is unavailable.
-  void refreshCompanyNews();
-  window.setInterval(()=>{if(!document.hidden)void refreshCompanyNews()},180000);
-  void refreshDataContext();
-  window.setInterval(()=>{if(!document.hidden)void refreshDataContext()},300000);
-  const priceFetch=refreshLiveQuotes(true).then(ready=>{
-    if(!ready||BASE)return;
-    const observed=LIVE_QUOTES?.quotes?.[q];
-    if(observed&&finite(observed.price)&&+observed.price>0){
-      setText("#close",price(observed.price));
-      setText("#status",q+" · giá thực tế "+price(observed.price)+" · Forecast Core đang được tải và kiểm định độc lập.");
-    }
-  });
-  const hint=setTimeout(()=>{if(!BASE)setText("#status",q+" · đang tải dữ liệu VN100; các nguồn dự phòng sẽ được kiểm tra nếu tải chậm.");},5000);
-  try{const B=await loadBase();assertProduction(B);quickButtons(B);await renderSymbol(q);void priceFetch.then(()=>{if(last?.B&&last.sym===q&&LIVE_QUOTES?.quotes?.[q])rerender(last.B,last.sym,last.B.dash.symbols[q]);}).catch(()=>{});bindChartHover();window.setInterval(()=>void refreshCore(),300000);window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);document.addEventListener("visibilitychange",()=>{void refreshCore();if(!document.hidden)void refreshLiveQuotes(true)});window.addEventListener("focus",()=>void refreshLiveQuotes(true));void refreshCommunity(BASE);window.setInterval(()=>{if(!document.hidden&&BASE)void refreshCommunity(BASE)},180000);$("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);$("#symbol").addEventListener("keydown",e=>{if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError)});window.addEventListener("resize",()=>{if(last)draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[])})}catch(e){showError(e)}finally{clearTimeout(hint)}}
+ const q=(new URLSearchParams(location.search).get("symbol")||"FPT").toUpperCase();
+ // These feeds must run independently of numerical forecast availability.
+ void refreshCompanyNews();
+ window.setInterval(()=>{if(!document.hidden)void refreshCompanyNews()},180000);
+ void refreshDataContext();
+ window.setInterval(()=>{if(!document.hidden)void refreshDataContext()},300000);
+ const priceFetch=refreshLiveQuotes(true).then(ready=>{
+  if(!ready||BASE)return;
+  const observed=LIVE_QUOTES?.quotes?.[q];
+  if(observed&&finite(observed.price)&&+observed.price>0){
+   setText("#close",price(observed.price));
+   setText("#status",q+" · giá thực tế "+price(observed.price)+" · Dự báo đang được tải.");
+  }
+ });
+ const hint=setTimeout(()=>{
+  if(!BASE)setText("#status",q+" · đang kết nối dự báo VN100; kiểm tra nguồn dự phòng nếu cần.");
+ },5000);
+ try{
+  const B=await loadBase();
+  await startForecastProduct(B,q,priceFetch);
+ }catch(error){
+  showError(error);
+  // Do not leave users stuck on a red spinner or demand browser reload for
+  // transient GitHub/Pages outages. Keep retrying without blocking live news.
+  let attempt=0;
+  const recover=async()=>{
+   if(forecastBootstrapped)return;
+   if(!document.hidden){
+    try{
+     const B=await loadBase();
+     await startForecastProduct(B,q,priceFetch);
+     return;
+    }catch(e){console.warn("VN100 automatic recovery pending",String(e?.message||e))}
+   }
+   attempt++;
+   window.setTimeout(recover,Math.min(120000,30000+attempt*15000));
+  };
+  window.setTimeout(recover,30000);
+ }finally{clearTimeout(hint)}
+}
 function showError(e){console.error(e);setText("#status",String(e?.message||e));setText("#modelBadge","HOSE · FORECAST CORE TẠM GIÁN ĐOẠN");const dateNode=$("#snapshotDate");if(dateNode&&dateNode.textContent.trim()==="ĐANG TẢI")dateNode.textContent="TẠM GIÁN ĐOẠN";const status=$("#status");if(status){const retry=document.createElement("button");retry.type="button";retry.textContent="Thử tải lại";retry.onclick=()=>location.reload();status.append(" ",retry);}const d=$("#decision");if(d){d.textContent="DỰ BÁO TẠM KHÓA";d.className="decision warning"}setText("#summary",String(e?.message||e))}
 window.addEventListener?.("vmews:session-updated",()=>{if(last?.B&&last?.sym){rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);const view=last.view;setText("#status",`${last.sym} · dữ liệu ${last.z.date||last.B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}`)}});
 window.addEventListener?.("vmews:live-quotes-updated",()=>{if(last?.B&&last?.sym){rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);const view=last.view;setText("#status",`${last.sym} · forecast ${last.z.date||last.B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"LIVE"} ${price(view.close)}`:""}`)}});
