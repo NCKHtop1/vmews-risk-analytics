@@ -572,15 +572,11 @@ function renderSource(B,sym){
   const companyManifest=LIVE_FINANCIAL_MANIFEST?.companies?.find(item=>item.symbol===sym);
   const latestQuarter=companyManifest?.quarters?.at(-1)||companyManifest?.years?.at(-1)||null;
   const fundamentalValue=companyManifest?(latestQuarter||"Có BCTC"):(financial.available?(financial.incomePeriod||financial.period||"BCTC gần nhất"):"Đang đồng bộ");
-  const fundamentalDetail=companyManifest?("BCTC có kỳ đến "+(latestQuarter||"—")+" · nguồn "+LIVE_FINANCIAL_MANIFEST.updatedAt.slice(0,10)):(financialBits.join(" · ")||"Đang đối chiếu báo cáo doanh nghiệp");
+  const fundamentalDetail=companyManifest?("BCTC có kỳ đến "+(latestQuarter||"—")+" · nguồn "+LIVE_FINANCIAL_MANIFEST.updatedAt.slice(0,10)):"Đang đối chiếu báo cáo doanh nghiệp";
   const communitySource=rumorAudit.source?.publishers?.join(" · ")||"Nguồn cộng đồng";
   const priceDetail=window.__VMEWS_FRESHNESS__?.inspect(z).stale?"Cần cập nhật phiên mới":z.priceSourceAgreement?.status==="PASS"?"Đã đối chiếu nguồn giá":z.dataFreshness==="CURRENT"?"Dữ liệu cùng phiên":"Cần làm mới dữ liệu";
   const fundValue=fund.available?`${fund.fundCount||0} quỹ`:"Mở dữ liệu quỹ";
   const fundDetail=fund.available&&finite(fund.weightedNavMomentum20)?`NAV 20P ${+fund.weightedNavMomentum20>=0?"+":""}${pct(fund.weightedNavMomentum20,1)}`:"Danh mục · tỷ trọng · NAV · biến động";
-  const financialValue=financial.available?(financial.incomePeriod||financial.period||"BCTC gần nhất"):"Mở BCTC";
-  const financialBits=[];
-  if(financial.available&&finite(financial.profitQoQ))financialBits.push(`LN QoQ ${+financial.profitQoQ>=0?"+":""}${pct(financial.profitQoQ,1)}`);
-  if(financial.available&&finite(financial.revenueQoQ))financialBits.push(`DT QoQ ${+financial.revenueQoQ>=0?"+":""}${pct(financial.revenueQoQ,1)}`);
   const rows=[
     ["Giá thị trường",z.date||"—",priceDetail],
     ["Tin doanh nghiệp",`${LIVE_COMPANY_NEWS?liveNewsCount:(+signal.acceptedEvents||0)} bài`,LIVE_COMPANY_NEWS?`Cập nhật ${new Date(LIVE_COMPANY_NEWS.checkedAt).toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh"})}`:`${signal.newsSymbols??"—"} mã cổ phiếu`],
