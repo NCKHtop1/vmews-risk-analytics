@@ -80,7 +80,7 @@ test('HNX VN30 and VN100 derivatives keep OI and volume with monthly labels',()=
 test('unverified swap is empty, never fabricated; verified points show a curve',()=>{
  const {api,get}=makeEnv();
  api.setData(fixture);
- assert.match(get('money-swap').innerHTML,/Chưa xác minh được/);
+ assert.match(get('money-swap').innerHTML,/Chưa có dữ liệu hợp lệ/);
  assert.doesNotMatch(get('money-swap').innerHTML,/money-swap-chart|money-swap-point/);
  const other=JSON.parse(JSON.stringify(fixture));
  other.vbmaSwap.status='verified';
@@ -123,7 +123,7 @@ test('ON timeline adapts date labels and VBMA references use compact export icon
  api.setData(swap);
  const html=get('money-swap').innerHTML;
  assert.match(html,/money-vbma-download/);
- assert.match(html,/aria-label="Tải dữ liệu nguồn/);
+ assert.match(html,/aria-label="Tải CSV Hoán đổi USD\/VND/);
  assert.doesNotMatch(html,/>VBMA FX Swap ↗</);
 });
 
@@ -149,14 +149,14 @@ test('government bond 10Y minus 2Y spread uses only validated dated yield observ
   asOf:'2026-10-23',source:'https://vbma.org.vn/csv/markets/charts/vi/government_bond_yield.csv',
   points:[{tenor:'2Y',value:3.5},{tenor:'10Y',value:4.1}]}}};
  api.setData(base);
- assert.match(get('money-vbma-curves').innerHTML,/Chênh lệch lợi suất 10Y – 2Y/);
+ assert.match(get('money-vbma-curves').innerHTML,/Chênh lệch 10Y – 2Y/);
  assert.match(get('money-vbma-curves').innerHTML,/<strong>\+60<\/strong><span>điểm cơ bản<\/span>/);
  const future=JSON.parse(JSON.stringify(base));future.vbmaCurves.gov_bond.asOf='2099-10-23';
  api.setData(future);
- assert.doesNotMatch(get('money-vbma-curves').innerHTML,/Chênh lệch lợi suất 10Y – 2Y/);
+ assert.doesNotMatch(get('money-vbma-curves').innerHTML,/Chênh lệch 10Y – 2Y/);
  const no2y=JSON.parse(JSON.stringify(base));no2y.vbmaCurves.gov_bond.points=[{tenor:'5Y',value:4.2},{tenor:'10Y',value:4.5}];
  api.setData(no2y);
- assert.doesNotMatch(get('money-vbma-curves').innerHTML,/Chênh lệch lợi suất 10Y – 2Y/);
+ assert.doesNotMatch(get('money-vbma-curves').innerHTML,/Chênh lệch 10Y – 2Y/);
 });
 
 test('production-shaped fixed-income view keeps sovereign curve and compacts unavailable references',()=>{
@@ -171,8 +171,25 @@ test('production-shaped fixed-income view keeps sovereign curve and compacts una
  const shown=get('money-vbma-curves').innerHTML;
  assert.equal((shown.match(/money-tenor-curve/g)||[]).length,1);
  assert.match(shown,/Lợi suất trái phiếu Chính phủ/);
- assert.match(shown,/Nguồn đang theo dõi · 2 chỉ tiêu/);
- assert.match(shown,/Trái phiếu và chứng chỉ tiền gửi/);
- assert.match(shown,/Lãi suất tham chiếu ngắn hạn/);
+ assert.doesNotMatch(shown,/Nguồn đang theo dõi|Trái phiếu và chứng chỉ tiền gửi|Lãi suất tham chiếu ngắn hạn/);
+ assert.equal((shown.match(/data-download-curve=/g)||[]).length,1);
+ assert.match(shown,/data-download-curve="gov_bond"/);
+ assert.match(shown,/class="money-main-num money-asof"/);
+ assert.match(shown,/Tải CSV Lợi suất trái phiếu Chính phủ/);
  assert.doesNotMatch(shown,/Chưa có dữ liệu\.<\/div><\/article>/);
+});
+
+test('curve source status never replaces an actual chart or creates duplicate buttons',()=>{
+ const {api,get}=makeEnv();
+ const data={...fixture,vbmaCurves:{
+  gov_bond:{status:'verified',licenseStatus:'source_attributed',unit:'%/năm',asOf:'2026-10-28',
+   points:[{tenor:'2Y',value:4.02},{tenor:'10Y',value:4.47}]},
+  fi_bond:{status:'unavailable',points:[]},
+  short_benchmark:{status:'unavailable',points:[]}
+ }};
+ api.setData(data);
+ const html=get('money-vbma-curves').innerHTML;
+ assert.match(html,/money-tenor-curve/);
+ assert.equal((html.match(/data-download-curve=/g)||[]).length,1);
+ assert.doesNotMatch(html,/money-source-summary|money-source-separator|Nguồn đang theo dõi/);
 });
