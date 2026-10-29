@@ -886,6 +886,46 @@ body.strategy-lab-view .strategy-page{display:block}
 }
 
 .macro-esg-coverage{font-size:12px;line-height:1.6;color:#506c8c;margin:7px 0 0;max-width:960px}
+
+/* Macro/ESG: data-quality notes should not suppress verified independent charts. */
+.macro-quality-inline{
+ padding:7px 10px;margin:9px 0 5px;border-radius:8px;
+ color:#795720;background:#fff8eb;border:1px solid #f0ddbb;
+ font-size:11px;line-height:1.55;
+}
+.macro-single-observation{display:flex;flex-direction:column;gap:6px;align-items:flex-start;
+ min-height:130px;justify-content:center;padding:22px;border:1px solid #d9e5f4;
+ border-radius:13px;background:#f7fbff}
+.macro-single-observation strong{font-size:clamp(24px,2.3vw,34px);font-weight:800;
+ color:#205b86;font-variant-numeric:tabular-nums}
+.macro-single-observation span{color:#466986;font-size:12px;font-weight:700}
+.macro-single-observation small{color:#667c96;font-size:11px;line-height:1.6}
+/* A glanceable chart is more important than displaying 100 compressed bars. */
+.chart-canvas-wrap{isolation:isolate}
+.chart-latest-candle{
+ max-width:min(86%,420px);
+ background:rgba(248,255,251,.97);
+ border-color:#a7d8c6;
+ box-shadow:0 6px 22px rgba(10,96,83,.15),0 0 0 1px rgba(13,150,117,.1);
+ color:#104d3e;font-size:12px;
+}
+.chart-latest-candle.is-live{
+ background:#edfff6;border-color:#4cb895;border-left-color:#00845c;
+ box-shadow:0 0 0 4px rgba(24,163,114,.12),0 5px 28px rgba(9,124,92,.18);
+ animation:finquery-latest-soft-pulse 2.8s ease-in-out infinite;
+}
+@keyframes finquery-latest-soft-pulse{
+ 0%,100%{box-shadow:0 0 0 3px rgba(24,163,114,.12),0 5px 24px rgba(9,124,92,.16)}
+ 50%{box-shadow:0 0 0 8px rgba(24,163,114,.035),0 6px 29px rgba(9,124,92,.23)}
+}
+#chart-range-label:not([hidden]){display:block!important;font-size:12px;color:#355a79;
+ font-weight:670;padding:7px 0;line-height:1.5}
+@media(prefers-reduced-motion:reduce){
+ .chart-latest-candle.is-live{animation:none}
+}
+@media(max-width:560px){
+ .chart-latest-candle{max-width:88%;font-size:10px}
+}
 </style><style>.site-locked .risk-monitor-page{display:none!important}
 .header nav a.active{color:#243b7a;font-weight:700}
 .risk-monitor-page{max-width:1500px;margin:0 auto 34px;background:#fff;border:1px solid #e1e7ef;border-radius:18px;box-shadow:0 8px 32px rgba(27,45,78,.05);overflow:hidden}
@@ -1948,6 +1988,7 @@ class ChartController{
  renderInsights(){const layer=$('chart-insight-markers');if(!layer)return;if(!this.insightsVisible){layer.innerHTML='';return;}if(!this.bars.length||!this.insightItems.length||!this.series.price){layer.innerHTML='';return;}const grouped=new Map(),buttons=[],height=layer.clientHeight||420;for(const item of this.insightItems){const time=this.snapInsightTime(item.date);if(time==null)continue;const x=this.chart.timeScale().timeToCoordinate(time);if(!Number.isFinite(x)||x<-20||x>(layer.clientWidth||9999)+20)continue;const bar=this.bars.find(b=>String(b.time)===String(time))||this.bars.find(b=>this.barDate(b.time)===this.barDate(time));if(!bar)continue;const key=String(time)+':'+String(item.kind||'event'),stack=grouped.get(key)||0;grouped.set(key,stack+1);const isResearch=item.kind==='research',anchorPrice=isResearch?Number(bar.high):Number(bar.low),anchorY=this.series.price.priceToCoordinate?.(anchorPrice);if(!Number.isFinite(anchorY))continue;const rawTop=isResearch?anchorY-34-stack*30:anchorY+10+stack*30,top=Math.max(8,Math.min(height-32,rawTop));const stemTop=isResearch?top+26:anchorY,stemBottom=isResearch?anchorY:top;buttons.push('<span class="chart-insight-stem '+(isResearch?'research':'event')+'" style="left:'+x.toFixed(1)+'px;top:'+Math.min(stemTop,stemBottom).toFixed(1)+'px;height:'+Math.max(6,Math.abs(stemBottom-stemTop)).toFixed(1)+'px"></span><button type="button" class="chart-insight-marker '+html(item.kind||'event')+' '+html(item.tone||'')+'" data-insight-id="'+html(item.id)+'" style="left:'+x.toFixed(1)+'px;top:'+top.toFixed(1)+'px" title="'+html(item.title||'')+'" aria-label="'+html(item.title||item.label||'Sự kiện')+'"><span>'+html(item.label||'•')+'</span></button>');}layer.innerHTML=buttons.join('');}
  range(){
   if(!this.bars.length)return;
+  const rangeLabel=$('chart-range-label');if(rangeLabel)rangeLabel.hidden=false;
   const requested=String($('chart-period')?.value||'recent'),months=Number(requested);
   const first=this.bars[0],last=this.bars.at(-1);
   const labelTime=t=>typeof t==='number'?
@@ -1956,7 +1997,9 @@ class ChartController{
    // Initial readability beats showing every candle compressed into <2px.
    // Keep the latest 35-76 observations with a small future right margin.
    const available=Number($('price-chart')?.clientWidth)||960;
-   const budget=Math.max(28,Math.min(76,Math.round((available-80)/12)));
+   // Default 18-48 visible bars: wide enough for context, large enough to
+   // read candle bodies without manually zooming on desktop or phone.
+   const budget=Math.max(18,Math.min(48,Math.round((available-100)/18)));
    const count=Math.min(this.bars.length,
     this.tf==='1mo'?Math.min(budget,36):this.tf==='1w'?Math.min(budget,48):budget);
    const from=Math.max(0,this.bars.length-count),to=this.bars.length+2.5;
@@ -1991,11 +2034,22 @@ class ChartController{
   }
  }
  updateLatestCue(){
-  const last=this.bars.at(-1),node=$('chart-latest-candle');
+  const last=this.bars.at(-1),previous=this.bars.at(-2),node=$('chart-latest-candle');
+  // Only animate a genuinely recent intraday candle. A completed EOD
+  // candle must never masquerade as a newly traded observation.
+  const stamp=last&&typeof last.time==='number'?last.time*1000:NaN;
+  const age=Date.now()-stamp;
+  const live=M.intraday(this.tf)&&Number.isFinite(age)&&age>=-60000&&age<=12*60000;
+  const delta=last&&previous&&Number.isFinite(previous.close)?last.close-previous.close:NaN;
+  const direction=Number.isFinite(delta)?(delta>0?'▲ ':delta<0?'▼ ':'= ')+' '+fmt(Math.abs(delta)):'';
   if(node){
    node.hidden=!last;
-   if(last)node.textContent='NẾN GẦN NHẤT · '+this.symbol+' · '+
-    timeLabel(last.time)+' · C '+fmt(last.close);
+   node.classList?.toggle('is-live',!!live);
+   if(last){
+    node.textContent=(live?'NẾN MỚI · ':'NẾN GẦN NHẤT · ')+this.symbol+' · '+
+     timeLabel(last.time)+' · C '+fmt(last.close)+(direction?' · '+direction:'');
+    node.setAttribute?.('aria-label',live?'Nến thị trường vừa cập nhật':'Nến cuối trong dữ liệu đã tải');
+   }
   }
   if(!last||!this.series.price)return;
   const color=last.close>=last.open?'#0b9074':'#d24e54';
@@ -2003,12 +2057,12 @@ class ChartController{
    this.latestPriceLine.applyOptions({price:last.close,color});
   }else if(typeof this.series.price.createPriceLine==='function'){
    this.latestPriceLine=this.series.price.createPriceLine({
-    price:last.close,color,lineWidth:1,lineStyle:2,axisLabelVisible:true,title:'MỚI NHẤT'
+    price:last.close,color,lineWidth:2,lineStyle:2,axisLabelVisible:true,title:'NẾN CUỐI'
    });
   }
   if(typeof L.createSeriesMarkers==='function'){
    const marker=[{time:last.time,position:'aboveBar',color,
-     shape:'circle',text:'MỚI NHẤT',size:1}];
+     shape:'circle',text:live?'VỪA CẬP NHẬT':'NẾN CUỐI',size:live?2:1}];
    try{
     if(this.latestMarkers?.setMarkers)this.latestMarkers.setMarkers(marker);
     else this.latestMarkers=L.createSeriesMarkers(this.series.price,marker);
@@ -2022,10 +2076,17 @@ class ChartController{
  socket.onmessage=e=>{if(socket!==this.socket)return;clearTimeout(this.staleTimer);this.staleTimer=setTimeout(()=>this.status('Chưa nhận thông điệp mới trong 90 giây · Kiểm tra trạng thái nguồn/phiên'),90000);try{const m=JSON.parse(e.data);if(m.type==='ping'){socket.send(JSON.stringify({type:'pong'}));return;}if(m.type==='status'){this.status(String(m.message||'Đang chờ dữ liệu').slice(0,160));return;}if(m.type==='quote'&&this.watch.includes(m.symbol)&&Number.isFinite(m.price)&&m.price>0&&Number.isFinite(Date.parse(m.sourceTime))){this.onQuote(m);return;}if(m.type==='candle'){if(this.loading){if(this.buffer.length<2000)this.buffer.push(m);}else this.candle(m);}}catch{this.status('Bỏ qua thông điệp thị trường không hợp lệ.');}};
  socket.onclose=()=>{if(this.stopped)return;this.status('Mất kết nối · Giữ dữ liệu cuối, đang kết nối lại');this.retry=setTimeout(()=>this.connect(),Math.min(30000,1000*2**Math.min(this.retries++,5))+Math.random()*500);};socket.onerror=()=>socket.close();
  }
- candle(m){const baseTF=M.intraday(this.tf)?'1m':'1d';if(m.symbol!==this.symbol||m.interval!==baseTF||m.unit!=='VND')return;const next=M.cleanBars([m.bar],baseTF==='1m')[0];if(!next||(typeof next.time==='number'&&next.time>Date.now()/1000+60))return;const last=this.baseBars.at(-1);if(last&&next.time<last.time)return;if(last&&next.time===last.time)this.baseBars[this.baseBars.length-1]=next;else this.baseBars.push(next);
+ candle(m){const baseTF=M.intraday(this.tf)?'1m':'1d';if(m.symbol!==this.symbol||m.interval!==baseTF||m.unit!=='VND')return;const next=M.cleanBars([m.bar],baseTF==='1m')[0];if(!next||(typeof next.time==='number'&&next.time>Date.now()/1000+60))return;const last=this.baseBars.at(-1);if(last&&next.time<last.time)return;
+ const previousVisible=this.chart.timeScale().getVisibleLogicalRange?.();
+ const followedLatest=!previousVisible||previousVisible.to>=this.bars.length-1.5;
+ if(last&&next.time===last.time)this.baseBars[this.baseBars.length-1]=next;else this.baseBars.push(next);
  // Reaggregate only the current bucket, preserving every earlier rendered candle.
  const t=M.bucket(next.time,this.tf),tail=[];for(let i=this.baseBars.length-1;i>=0&&M.bucket(this.baseBars[i].time,this.tf)===t;i--)tail.unshift(this.baseBars[i]);const b=M.aggregate(tail,this.tf)[0];if(this.bars.at(-1)?.time===b.time)this.bars[this.bars.length-1]=b;else this.bars.push(b);
  const i=this.bars.length-1,v=M.point(this.bars,i,this.params,this.values[i-1]);this.values[i]=v;this.series.price.update(this.priceData(b));this.series.volume?.update(this.volumeData(b));for(const [key,s]of Object.entries(this.series))if(!['price','volume'].includes(key)&&Number.isFinite(v[key]))s.update({time:b.time,value:v[key],...(key==='hist'?{color:v.hist>=0?'#08998188':'#f2364588'}:{})});
+ if(followedLatest&&$('chart-period')?.value==='recent'){
+  // Follow incoming candles, but never override a deliberate historical pan.
+  this.range();
+ }
  this.updateLatestCue();this.readout(b);this.evaluateSignals(true);this.renderInsights();this.cache.delete(this.symbol+':'+baseTF);this.status(`WebSocket · Nến ${timeLabel(next.time)} · Nhận lúc ${new Date().toLocaleTimeString('vi-VN')}`);
  }
  close(){this.stopped=true;clearTimeout(this.retry);clearTimeout(this.staleTimer);this.abort?.abort();this.socket?.close();}
@@ -3662,6 +3723,7 @@ const fmt=n=>typeof n==='number'&&Number.isFinite(n)?nf.format(n):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const FEATURES=[
  {id:'pmi',key:'PMI',title:'PMI sản xuất',unit:'điểm',scale:1,threshold:50,color:'#3565d5',info:'Mốc 50 phân biệt mở rộng và thu hẹp'},
+ {id:'gdp_growth',key:'Tốc độ tăng trưởng GDP thực tế',title:'Tăng trưởng GDP thực tế',unit:'% YoY',scale:1,color:'#20795d',info:'Tổng GDP theo quý, không gộp các ngành có điểm ngoại lệ'},
  {id:'money_supply',key:'M2 (tỷ VND)',title:'Cung tiền M2',unit:'nghìn tỷ đồng',scale:1000,color:'#009d87',info:'Số dư M2 công bố theo tháng'},
  {id:'credit_sector',key:'Tổng dư nợ',title:'Dư nợ tín dụng',unit:'nghìn tỷ đồng',scale:1000,color:'#7561c0',info:'Số dư theo thống kê tín dụng'},
  {id:'fdi',key:'FDI giải ngân (lũy kế năm) (tỷ USD)',title:'FDI giải ngân',unit:'tỷ USD',scale:1,color:'#c88932',info:'Lũy kế năm, bắt đầu lại từ tháng 1'}
@@ -3685,7 +3747,10 @@ function series(ds,key,scale=1){
  if(!ds||!Array.isArray(ds.rows)||!(scale>0))return[];
  const first=(ds.columns||[])[0]||'Date';
  return ds.rows.map(r=>({label:String(r?.[first]??''),date:rank(r?.[first]),raw:r?.[key]}))
- .filter(p=>p.date!==null&&typeof p.raw==='number'&&Number.isFinite(p.raw))
+ .filter(p=>p.date!==null&&typeof p.raw==='number'&&Number.isFinite(p.raw) &&
+ // A quality warning in another GDP sector must not blank the verified
+ // aggregate; values beyond ±20% remain quarantined, never interpolated.
+ (!(ds?.title||'').toLowerCase().includes('gdp')||p.raw>=-20&&p.raw<=20))
  .sort((a,b)=>a.date-b.date)
  .map(p=>({label:p.label,rank:p.date,y:p.raw/scale}));
 }
@@ -3720,10 +3785,12 @@ function renderMacro(data){
   host.innerHTML='<article class="macro-viz-card macro-state-full" role="status"><h4>Đang kiểm tra nguồn vĩ mô</h4><p>Dữ liệu vĩ mô chưa kết nối được đến bản phát hành đã xác minh. Thử Cập nhật nguồn; ESG doanh nghiệp vẫn hoạt động độc lập nếu có dữ liệu.</p></article>';
   return;
  }
- host.innerHTML=FEATURES.map(c=>{
+ host.innerHTML=FEATURES.filter(c=>data?.datasets?.[c.id]).map(c=>{
   const ds=data?.datasets?.[c.id],src=sources.find(s=>s.id===c.id);
-  const qualityBlocked=ds?.qualityStatus==='warning'||src?.qualityStatus==='warning';
-  const allowed=!!ds&&!qualityBlocked&&['ok','cached','retained'].includes(ds.status)&&
+  const qualityNotice=ds?.qualityStatus==='warning'||src?.qualityStatus==='warning';
+  // Quality is assessed per metric rather than suppressing every time-series
+  // when only a separate GDP sector contains a suspicious observation.
+  const allowed=!!ds&&['ok','cached','retained'].includes(ds.status)&&
     (!src||['ok','cached','retained','error'].includes(src.status));
   const pts=allowed?series(ds,c.key,c.scale):[];
   const last=pts.at(-1),earlier=pts.at(-2);
@@ -3733,17 +3800,21 @@ function renderMacro(data){
   const head='<div class="macro-viz-head"><div><span class="macro-viz-kicker">KINH TẾ VIỆT NAM</span><h4>'+esc(c.title)+'</h4></div>'+(last?'<span class="macro-viz-period">'+esc(last.label)+'</span>':'')+'</div>';
   const link=sourceLink(src?.url,'Nguồn');
   if(pts.length<2){
-    const issue=qualityBlocked?'Chuỗi đang được đối chiếu chất lượng; chưa hiển thị để tránh diễn giải sai.':
+    const issue=qualityNotice?'Cần đối chiếu chỉ tiêu này trong báo cáo gốc; các chuỗi khác vẫn hiển thị độc lập.':
       ds?.status==='retained'?'Nguồn mới tạm gián đoạn; chưa có đủ quan sát đã kiểm chứng trong bản lưu.':
       'Nguồn hiện chưa công bố đủ hai kỳ số liệu hợp lệ để vẽ xu hướng.';
-    return'<article class="macro-viz-card">'+head+'<div class="macro-source-notice" role="status">'+issue+'</div><div class="macro-viz-source">'+link+'</div></article>';
+    return'<article class="macro-viz-card">'+head+
+      (last?'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">Mốc công bố '+esc(last.label)+' · chưa đủ hai kỳ để vẽ đường.</p>':
+      '<div class="macro-source-notice" role="status">'+issue+'</div>')+
+      '<div class="macro-viz-source">'+link+'</div></article>';
   }
   let context='';
   if(c.id==='pmi')context=last.y>=50?'Trên mốc 50 · sản xuất đang mở rộng':'Dưới mốc 50 · sản xuất đang thu hẹp';
   else if(c.id==='fdi')context='';
   else context='So với '+esc(earlier.label)+': '+(last.y>=earlier.y?'+':'')+esc(fmt(last.y-earlier.y))+' '+esc(c.unit);
   const retained=ds?.status==='retained'||src?.status==='retained'||src?.status==='error';
-  return'<article class="macro-viz-card">'+head+(retained?'<div class="macro-source-notice">Dữ liệu kỳ gần nhất đã kiểm chứng · nguồn cập nhật mới đang gián đoạn</div>':'')+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'</div></article>';
+  return'<article class="macro-viz-card">'+head+(retained?'<div class="macro-source-notice">Dữ liệu kỳ gần nhất đã kiểm chứng · nguồn cập nhật mới đang gián đoạn</div>':'')+
+    (qualityNotice?'<div class="macro-quality-inline">Nguồn có cảnh báo ở một số chỉ tiêu; chuỗi hợp lệ vẫn được hiển thị, không điền số thiếu.</div>':'')+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'</div></article>';
  }).join('');
  const checkDate=new Date(data?.checkedAt);
  const freshness=$('macro-data-freshness');
@@ -3779,7 +3850,18 @@ function renderCountry(data){
 function corporateRows(esg,symbol){
  const company=esg?.companies?.[symbol];
  const approved=Array.isArray(company?.canonicalMetrics)?company.canonicalMetrics:[];
- return approved.filter(m=>m&&m.metricId&&typeof m.value==='number'&&Number.isFinite(m.value)&&Number.isInteger(Number(m.year))&&m.year>=2000&&m.year<=2100&&httpsUrl(m.sourceUrl));
+ return approved.filter(m=>{
+  if(!m||!m.metricId||typeof m.value!=='number'||!Number.isFinite(m.value)||
+     !Number.isInteger(Number(m.year))||m.year<2000||m.year>2100||!httpsUrl(m.sourceUrl))return false;
+  // Reject obviously mis-scaled VND rows (e.g. raw "2000 tỷ VND" parsed
+  // as 0.000002 billion VND). Do not silently transform uncertain disclosures.
+  if(m.unit==='billion VND'&&m.value>0&&m.value<.001){
+    const raw=Number(String(m.rawValue||'').replace(/[^0-9.,]/g,'').replace(/\./g,'').replace(',','.'));
+    if(Number.isFinite(raw)&&raw>=1)return false;
+  }
+  if(m.metricId.endsWith('_pct')&&(m.value<0||m.value>100))return false;
+  return true;
+ });
 }
 function renderCorporate(esg,symbol){
  const body=$('macro-company-chart'),foot=$('macro-company-source'),select=$('macro-company-metric'),title=$('macro-company-symbol');
@@ -3787,6 +3869,7 @@ function renderCorporate(esg,symbol){
  const key=String(symbol||'').toUpperCase(),company=esg?.companies?.[key];
  if(title)title.textContent='DOANH NGHIỆP · '+(key||'CHƯA CHỌN');
  const rows=corporateRows(esg,key),groups=new Map();
+ const rejected=Math.max(0,(company?.canonicalMetrics?.length||0)-rows.length);
  for(const m of rows){
   if(!groups.has(m.metricId))groups.set(m.metricId,[]);
   const list=groups.get(m.metricId);
@@ -3804,8 +3887,8 @@ function renderCorporate(esg,symbol){
   const title=company?.name||key||'Doanh nghiệp';
   const message=!esg?'Nguồn công bố ESG đang gián đoạn. Chưa thể kết luận doanh nghiệp không công bố thông tin.':
    !company?'Chưa tra cứu được hồ sơ ESG cho mã này trong danh mục VN100.':
-   found?'Đã tìm được '+found+' tài liệu công bố, '+processed+' tài liệu đã xử lý. Chưa trích xuất được KPI định lượng đủ nguồn và kỳ báo cáo để vẽ biểu đồ.':
-   'Chưa tìm được báo cáo ESG đủ điều kiện từ các nguồn đang theo dõi. Điều này không đồng nghĩa doanh nghiệp không có hoạt động ESG.';
+   found?'Đã ghi nhận '+found+' hồ sơ công bố ('+processed+' hồ sơ xử lý). Đang đối chiếu số định lượng và năm báo cáo; dữ liệu chưa xác minh không được đưa vào biểu đồ.':
+   'Đang theo dõi nguồn công bố chính thức và danh mục báo cáo của doanh nghiệp. Chưa có hồ sơ đủ điều kiện trong lần thu thập này; không suy ra doanh nghiệp không có hoạt động ESG.';
   const links=candidates.map(d=>sourceLink(d.url,
    (d.type==='annual_report'?'Báo cáo thường niên':d.type==='sustainability_report'?'Báo cáo phát triển bền vững':'Tài liệu công bố')+
    (d.year?' '+d.year:'')
@@ -3813,8 +3896,9 @@ function renderCorporate(esg,symbol){
   const index=key&&/^[A-Z]{3}$/.test(key)?
    sourceLink('https://24hmoney.vn/stock/'+key.toLowerCase()+'/report','Danh mục công bố của '+key):'';
   body.innerHTML='<div class="macro-esg-disclosure" role="status"><strong>'+esc(title)+'</strong><p>'+message+'</p>'+
-    (links?'<div class="macro-disclosure-links">'+links+'</div>':'')+
+    (links?'<div class="macro-disclosure-links"><strong>Hồ sơ hiện có</strong> · '+links+'</div>':'')+
     (external.length?'<small>Đã có '+external.length+' đánh giá từ nguồn ngoài; không quy đổi thành điểm ESG tổng hợp.</small>':'')+
+    (rejected?'<small>'+rejected+' dòng KPI nghi sai đơn vị hoặc vượt giới hạn đã bị giữ lại để đối chiếu.</small>':'')+
     '<small>KPI chưa kiểm chứng được giữ trống; không nội suy số liệu hoặc xếp hạng giả.</small></div>';
   foot.innerHTML=found?sourceLink(candidates[0]?.url,'Mở tài liệu nguồn'):index;
   return;
@@ -3858,7 +3942,7 @@ function renderEsg(data,esg,symbol){
   const withDocs=companies.filter(c=>(c.documents||[]).some(d=>httpsUrl(d.url))).length;
   const last=esg?.checkedAt?new Date(esg.checkedAt):null;
   const lastCheck=last&&Number.isFinite(+last)?last.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):'chưa rõ';
-  coverage.textContent=esg?'Theo dõi '+companies.length+' doanh nghiệp · '+withKpi+' có KPI ESG định lượng đã kiểm chứng · '+withDocs+' có hồ sơ công bố · kiểm tra nguồn '+lastCheck+'.':'Chưa kết nối được nguồn ESG doanh nghiệp; chỉ tiêu quốc gia được tải độc lập.';
+  coverage.textContent=esg?'Độ phủ VN100: '+companies.length+' doanh nghiệp · '+withDocs+' có tài liệu ESG · '+withKpi+' có KPI chuẩn hóa · '+Math.max(0,companies.length-withKpi)+' đang rà soát nguồn/KPI · kiểm tra '+lastCheck+'.':'Dữ liệu ESG doanh nghiệp đang kết nối; ESG quốc gia hoạt động độc lập.';
  }
  renderCountry(data);
  renderCorporate(esg,symbol);
@@ -3929,7 +4013,10 @@ function normalizeDataset(ds){
 function currentSymbol(){return String(new URL(location.href).searchParams.get('symbol')||$('ticker')?.value||'').trim().toUpperCase();}
 function corporateDataset(esg,symbol){
  const company=esg?.companies?.[symbol];if(!company)return null;
- const years={},labels={},units={},pillars={},metricRows=(Array.isArray(company.canonicalMetrics)?company.canonicalMetrics:[])||[];
+ const years={},labels={},units={},pillars={};
+ // Use the same quality gate in the macro Explorer and the main ESG card.
+ const metricRows=window.FinMacroDashboard?.corporateRows?.(esg,symbol)||
+   (Array.isArray(company.canonicalMetrics)?company.canonicalMetrics:[]);
  for(const row of metricRows){
   const year=Number(row.year),value=row.value;if(!Number.isFinite(year)||typeof value!=='number'||!Number.isFinite(value)||!row.metricId||!row.sourceUrl)continue;
   years[year]??={Year:year};years[year][row.metricId]=value;labels[row.metricId]=row.label||row.metricId;if(row.unit)units[row.metricId]=row.unit;if(row.pillar)pillars[row.metricId]=row.pillar;
@@ -3948,8 +4035,8 @@ function metricUnit(ds,key){return ds?.metricUnits?.[key]||ds?.units?.[key]||'';
 function metricOptions(){
  const ds=state.data?.datasets?.[state.active],select=$('macro-metric');
  if(!ds||!select)return;
- const metrics=(ds.numericColumns||[]).slice().sort((a,b)=>
-  chartPoints(ds,b).length-chartPoints(ds,a).length);
+ const metrics=(ds.numericColumns||[]).filter(k=>chartPoints(ds,k).length>0)
+  .sort((a,b)=>chartPoints(ds,b).length-chartPoints(ds,a).length);
  select.innerHTML=metrics.length?metrics.map(x=>'<option value="'+esc(x)+'">'+
    esc(metricLabel(ds,x))+(x!==metricLabel(ds,x)?' · '+esc(x):'')+'</option>').join(''):
   '<option value="">Chưa có KPI định lượng</option>';
@@ -3971,14 +4058,37 @@ function renderKpis(){
    esc([point?.year,metricUnit(ds,k)].filter(Boolean).join(' · '))+'</small></div>';
  }).join('');
 }
-function chartPoints(ds,metric){const label=firstColumn(ds),points=(ds.rows||[]).map((r,i)=>({x:i,label:r[label]??String(i+1),y:r[metric]})).filter(x=>typeof x.y==='number'&&Number.isFinite(x.y));return ds.allYears?points:points.slice(-48);}
+function chartPoints(ds,metric){
+ const label=firstColumn(ds),points=(ds.rows||[])
+  .map((r,i)=>({x:i,label:r[label]??String(i+1),y:r[metric]}))
+  .filter(p=>typeof p.y==='number'&&Number.isFinite(p.y) &&
+   // GDP sector outliers are documented by the feed. Keep only plausible
+   // rows from each chosen metric; do not hide the whole GDP dataset.
+   (ds?.id!=='gdp_growth'||p.y>=-20&&p.y<=20));
+ return ds.allYears?points:points.slice(-48);
+}
 function renderChart(){
  const ds=state.data?.datasets?.[state.active],box=$('macro-chart'),card=box?.closest('.macro-chart-card');
- if(!ds||!state.metric){if(card)card.hidden=!!ds?.companySymbol;box.innerHTML=ds?.companySymbol?'':'<div class="analysis-empty">Chưa kết nối được chuỗi có thể phân tích. Kiểm tra trạng thái nguồn phía trên.</div>';return;}
- if(ds.qualityStatus==='warning'){if(card)card.hidden=false;
-  box.innerHTML='<div class="macro-source-notice">Chuỗi có cảnh báo chất lượng từ nguồn công bố; biểu đồ tạm khóa để tránh diễn giải sai số liệu.</div>';return;}
+ if(!ds||!state.metric){
+   if(card)card.hidden=false;
+   const company=ds?.companySymbol&&state.esg?.companies?.[ds.companySymbol];
+   const documented=company?.coverage?.documents||company?.documents?.length||0;
+   box.innerHTML=ds?.companySymbol?
+    '<div class="macro-source-notice">Đang đối chiếu KPI ESG của '+esc(ds.companySymbol)+'. Đã ghi nhận '+
+     documented+' báo cáo nguồn; chỉ số định lượng chưa xác minh không được tự điền. Chọn tài liệu nguồn phía trên để đối chiếu.</div>':
+    '<div class="macro-source-notice">Nguồn vĩ mô đang được kiểm tra. Chọn một chỉ tiêu có số kỳ công bố hợp lệ.</div>';
+   return;
+ }
  const pts=chartPoints(ds,state.metric),unit=metricUnit(ds,state.metric),label=metricLabel(ds,state.metric);
- if(ds.companySymbol&&pts.length<2){if(card)card.hidden=true;box.innerHTML='';return;}
+ if(ds.companySymbol&&pts.length===1){
+  if(card)card.hidden=false;
+  $('macro-chart-title').textContent='KPI ESG · '+label;
+  $('macro-chart-subtitle').textContent='1 năm có dữ liệu kiểm chứng · không nội suy';
+  box.innerHTML='<div class="macro-single-observation"><strong>'+esc(fmt(pts[0].y))+
+    '</strong><span>'+esc(unit)+' · Năm '+esc(pts[0].label)+
+    '</span><small>Chưa có năm thứ hai để tính biến động. Giá trị lấy từ công bố nguồn.</small></div>';
+  return;
+ }
  if(card)card.hidden=false;
  $('macro-chart-title').textContent=ds.companySymbol?'Xu hướng · '+label:displayTitle(ds.title||'Dữ liệu vĩ mô & ESG');
  $('macro-chart-subtitle').textContent=(unit?unit+' · ':'')+(ds.companySymbol?pts.length+' năm có dữ liệu':label+(ds.allYears?'':''))+(ds.status==='retained'?'':'');
@@ -4008,7 +4118,8 @@ function renderAssessments(){
  if(!company){box.hidden=true;box.innerHTML='';return;}
  // Raw PDF matches are NOT validated ESG values. Only canonical rows may
  // appear in KPI charts, summaries, or external-source comparison.
- const metrics=(Array.isArray(company.canonicalMetrics)?company.canonicalMetrics:[])
+ const metrics=(window.FinMacroDashboard?.corporateRows?.(state.esg,ds.companySymbol)||
+  (Array.isArray(company.canonicalMetrics)?company.canonicalMetrics:[]))
   .filter(x=>typeof x.value==='number'&&Number.isFinite(x.value)&&x.sourceUrl);
  const metricSources=metrics.filter(x=>x.metricId===state.metric).sort((a,b)=>(b.year||0)-(a.year||0));
  const ratings=(company.externalAssessments||[]).slice().sort((a,b)=>(b.year||0)-(a.year||0)).slice(0,8);
@@ -4034,10 +4145,12 @@ function updateSourceStatus(){
  const vn=date=>{const d=new Date(date||'');return Number.isNaN(+d)?'chưa xác định':
   d.toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',
     hour:'2-digit',minute:'2-digit',hour12:false});};
- const macro=state.rawMacro?'Vĩ mô '+vn(state.rawMacro.checkedAt):
+ const macro=state.rawMacro?'Vĩ mô '+vn(state.rawMacro.checkedAt)+
+  ((state.rawMacro.sources||[]).some(src=>src.qualityStatus==='warning')?' · có chuỗi cần đối chiếu':''):
   'Vĩ mô chưa kết nối';
  const esg=state.esg?'ESG '+vn(state.esg.checkedAt)+
-  ' · '+Object.values(state.esg.companies||{}).filter(c=>c.canonicalMetrics?.length).length+'/100 mã có KPI':
+  ' · '+Object.keys(state.esg.companies||{}).filter(symbol=>
+    window.FinMacroDashboard?.corporateRows?.(state.esg,symbol)?.length).length+'/100 mã có KPI kiểm chứng':
   'ESG chưa kết nối';
  const retained=[state.sourceStatus.macro,state.sourceStatus.esg].includes('retained');
  el.textContent=macro+' · '+esg+(retained?' · đang giữ bản trước':'');
@@ -4046,7 +4159,11 @@ function updateSourceStatus(){
 function render(){
  if(!state.data)return;
  const sets=state.data.datasets||{};
- if(!sets[state.active])state.active=sets.pmi?'pmi':Object.keys(sets)[0]||'';
+ if(!sets[state.active]){
+  const companyTab=state.symbol&&'company_esg_'+state.symbol;
+  state.active=String(state.active||'').startsWith('company_esg_')&&sets[companyTab]?
+    companyTab:sets.pmi?'pmi':Object.keys(sets)[0]||'';
+ }
  renderDashboard();renderExplore();updateSourceStatus();
 }
 async function load(){
