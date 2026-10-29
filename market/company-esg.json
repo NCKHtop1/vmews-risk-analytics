@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-10-29T07:12:02.593628+00:00",
+  "checkedAt": "2026-10-29T07:47:42.465421+00:00",
   "extractorVersion": 2,
-  "sourceRegistryVersion": 14,
+  "sourceRegistryVersion": 15,
   "status": "ok",
   "methodology": {
     "compositeScore": false,
@@ -14,7 +14,7 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-10-29T07:08:56.836607+00:00",
+      "checkedAt": "2026-10-29T07:46:51.371846+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -494,7 +494,7 @@
     "ANV": {
       "symbol": "ANV",
       "name": "Công ty Cổ phần Nam Việt",
-      "checkedAt": "2026-10-29T07:08:56.836694+00:00",
+      "checkedAt": "2026-10-29T07:46:51.371950+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -525,7 +525,7 @@
     "BAF": {
       "symbol": "BAF",
       "name": "Công ty Cổ phần Nông nghiệp BAF Việt Nam",
-      "checkedAt": "2026-10-29T07:08:56.836700+00:00",
+      "checkedAt": "2026-10-29T07:46:51.371957+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -543,7 +543,7 @@
     "BCM": {
       "symbol": "BCM",
       "name": "Tập đoàn Đầu tư và Phát triển Công nghiệp Becamex - CTCP",
-      "checkedAt": "2026-10-29T07:08:56.837044+00:00",
+      "checkedAt": "2026-10-29T07:46:51.372401+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -745,7 +745,7 @@
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-10-29T07:08:56.837594+00:00",
+      "checkedAt": "2026-10-29T07:46:51.372984+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -937,7 +937,7 @@
     "BMP": {
       "symbol": "BMP",
       "name": "Công ty Cổ phần Nhựa Bình Minh",
-      "checkedAt": "2026-10-29T07:08:56.837866+00:00",
+      "checkedAt": "2026-10-29T07:46:51.373353+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1091,7 +1091,7 @@
     "BSI": {
       "symbol": "BSI",
       "name": "Công ty Cổ phần Chứng khoán BIDV",
-      "checkedAt": "2026-10-29T07:08:56.837871+00:00",
+      "checkedAt": "2026-10-29T07:46:51.373359+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1109,7 +1109,7 @@
     "BSR": {
       "symbol": "BSR",
       "name": "Công ty Cổ phần - Tổng Công ty Lọc Hoá dầu Việt Nam",
-      "checkedAt": "2026-10-29T07:08:56.837875+00:00",
+      "checkedAt": "2026-10-29T07:46:51.373363+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1127,7 +1127,7 @@
     "BVH": {
       "symbol": "BVH",
       "name": "Tập đoàn Bảo Việt",
-      "checkedAt": "2026-10-29T07:08:56.838175+00:00",
+      "checkedAt": "2026-10-29T07:46:51.373770+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1182,7 +1182,7 @@
     "BWE": {
       "symbol": "BWE",
       "name": "Công ty Cổ phần - Tổng công ty Nước - Môi trường Bình Dương",
-      "checkedAt": "2026-10-29T07:08:56.838179+00:00",
+      "checkedAt": "2026-10-29T07:46:51.373776+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1200,7 +1200,7 @@
     "CII": {
       "symbol": "CII",
       "name": "Công ty Cổ phần Đầu tư Hạ tầng Kỹ thuật Thành phố Hồ Chí Minh",
-      "checkedAt": "2026-10-29T07:08:56.838182+00:00",
+      "checkedAt": "2026-10-29T07:46:51.373780+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1218,7 +1218,7 @@
     "CMG": {
       "symbol": "CMG",
       "name": "Công ty Cổ phần Tập đoàn Công nghệ CMC",
-      "checkedAt": "2026-10-29T07:08:56.838713+00:00",
+      "checkedAt": "2026-10-29T07:46:51.374541+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1287,7 +1287,7 @@
     "CTD": {
       "symbol": "CTD",
       "name": "Công ty Cổ phần Xây dựng Coteccons",
-      "checkedAt": "2026-10-29T07:08:56.841411+00:00",
+      "checkedAt": "2026-10-29T07:46:51.379939+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2195,7 +2195,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-10-29T07:08:56.841880+00:00",
+      "checkedAt": "2026-10-29T07:46:51.380591+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -2238,7 +2238,7 @@
         {
           "id": "5d5bdad6bb1dc0347c18",
           "url": "https://investor.vietinbank.vn/vi/annualreports.aspx",
-          "title": "Báo cáo thường niên Báo cáo thường niên",
+          "title": "Báo cáo thường niên",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2024",
           "year": null,
           "type": "sustainability_report",
@@ -2250,7 +2250,7 @@
         {
           "id": "4c3dd503763f24fd5927",
           "url": "https://investor.vietinbank.vn/vi/sustainabledevelopmentreports.aspx",
-          "title": "Báo cáo phát triển bền vững",
+          "title": "Báo cáo phát triển bền vững Báo cáo phát triển bền vững",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2024",
           "year": null,
           "type": "sustainability_report",
@@ -2646,7 +2646,7 @@
     "CTR": {
       "symbol": "CTR",
       "name": "Tổng Công ty Cổ phần Công trình Viettel",
-      "checkedAt": "2026-10-29T07:08:56.842163+00:00",
+      "checkedAt": "2026-10-29T07:46:51.381082+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2859,7 +2859,7 @@
     "CTS": {
       "symbol": "CTS",
       "name": "Công ty Cổ phần Chứng khoán Vietinbank",
-      "checkedAt": "2026-10-29T07:08:56.842168+00:00",
+      "checkedAt": "2026-10-29T07:46:51.381088+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2877,7 +2877,7 @@
     "DBC": {
       "symbol": "DBC",
       "name": "Công ty Cổ phần Tập đoàn Dabaco Việt Nam",
-      "checkedAt": "2026-10-29T07:08:56.842171+00:00",
+      "checkedAt": "2026-10-29T07:46:51.381092+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2895,7 +2895,7 @@
     "DCM": {
       "symbol": "DCM",
       "name": "Công ty Cổ phần - Tổng Công ty Phân bón Dầu Khí Cà Mau",
-      "checkedAt": "2026-10-29T07:08:56.842174+00:00",
+      "checkedAt": "2026-10-29T07:46:51.381095+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2913,7 +2913,7 @@
     "DGW": {
       "symbol": "DGW",
       "name": "Công ty Cổ phần Thế Giới Số",
-      "checkedAt": "2026-10-29T07:08:56.842177+00:00",
+      "checkedAt": "2026-10-29T07:46:51.381099+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2931,7 +2931,7 @@
     "DIG": {
       "symbol": "DIG",
       "name": "Tổng Công ty Cổ phần Đầu tư Phát triển Xây dựng",
-      "checkedAt": "2026-10-29T07:08:56.842181+00:00",
+      "checkedAt": "2026-10-29T07:46:51.381102+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2949,7 +2949,7 @@
     "DPM": {
       "symbol": "DPM",
       "name": "Tổng Công ty Phân bón và Hóa chất Dầu khí - Công ty Cổ phần",
-      "checkedAt": "2026-10-29T07:08:56.842371+00:00",
+      "checkedAt": "2026-10-29T07:46:51.381553+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2992,7 +2992,7 @@
     "DSE": {
       "symbol": "DSE",
       "name": "Công ty Cổ phần Chứng khoán DNSE",
-      "checkedAt": "2026-10-29T07:08:56.842374+00:00",
+      "checkedAt": "2026-10-29T07:46:51.381558+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3010,7 +3010,7 @@
     "DXG": {
       "symbol": "DXG",
       "name": "Công ty Cổ phần Bluemarq Group",
-      "checkedAt": "2026-10-29T07:08:56.842377+00:00",
+      "checkedAt": "2026-10-29T07:46:51.381563+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3028,7 +3028,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-10-29T07:08:56.842831+00:00",
+      "checkedAt": "2026-10-29T07:46:51.382168+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -3211,7 +3211,7 @@
     "EVF": {
       "symbol": "EVF",
       "name": "Công ty Tài chính Tổng hợp Cổ phần Điện Lực",
-      "checkedAt": "2026-10-29T07:08:56.842835+00:00",
+      "checkedAt": "2026-10-29T07:46:51.382173+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3229,7 +3229,7 @@
     "FPT": {
       "symbol": "FPT",
       "name": "FPT Corporation",
-      "checkedAt": "2026-10-29T07:08:56.843431+00:00",
+      "checkedAt": "2026-10-29T07:46:51.383559+00:00",
       "entityType": "company",
       "sourcePolicy": "curated-issuer+disclosure-index",
       "documents": [
@@ -3239,7 +3239,23 @@
           "title": "Báo cáo ESG",
           "sourcePage": "https://bctn2025.fpt.com/bao-cao-esg/moi-truong-lam-viec-dang-cap-hanh-phuc/",
           "year": 2026,
-          "type": "esg_web_content"
+          "type": "esg_web_content",
+          "contentType": "pdf",
+          "contentHash": "6565eaa6175a2520d2983480e6e7587ff1cb028bd2b6dc3ca57fb700455e852e",
+          "processedAt": "2026-10-29T07:47:29.481641+00:00",
+          "textLength": 218919
+        },
+        {
+          "id": "70ec4c901e7771cc9e47",
+          "url": "https://bctn2025.fpt.com/bao-cao-esg/thong-diep-dinh-huong-esg/",
+          "title": "Thông điệp và định hướng ESG",
+          "sourcePage": "https://bctn2025.fpt.com/",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "94971ce6260c89954129bbccc9f15dc49d3fa6c44008e83ad8507e69b55830ab",
+          "processedAt": "2026-10-29T07:47:24.257824+00:00",
+          "textLength": 13619
         },
         {
           "id": "c352c9859b6163eec232",
@@ -3318,7 +3334,7 @@
           "url": "https://fpt.com/api/media/fpt_annual_report_2024_63d63bc4cd.pdf",
           "title": "fpt_annual_report_2024_63d63bc4cd.pdf",
           "sourcePage": "https://fpt.com/en/ir/report",
-          "year": 2024,
+          "year": null,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "e1066c6296a4307929915585b1dadf9a3f1962eccc5813fb8e977f7a9112bff2",
@@ -3330,7 +3346,7 @@
           "url": "https://fpt.com/api/media/annual_report_fpt_2023_en_4287f2041d.pdf",
           "title": "annual_report_fpt_2023_en_4287f2041d.pdf",
           "sourcePage": "https://fpt.com/en/ir/report",
-          "year": 2023,
+          "year": null,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "01bc9c98a938ad5b7e144f7ba973cdadb9e67c5a07fc5ce8f68d1621e47c18b9",
@@ -3343,14 +3359,18 @@
           "title": "Báo cáo ESG",
           "sourcePage": "https://bctn2025.fpt.com/bao-cao-esg/song-hanh-vi-su-phat-trien-cong-dong/",
           "year": null,
-          "type": "esg_web_content"
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "0027c4e5ca39cf3564c80e18d24d3a6b89b5a56f1fc175f300d12aecb5b31c60",
+          "processedAt": "2026-10-29T07:47:25.553871+00:00",
+          "textLength": 204
         },
         {
           "id": "60bfb038c084f1672162",
           "url": "https://fpt.com/api/media/2017_annual_report_resize_59838ba3c0.pdf",
           "title": "2017_annual_report_resize_59838ba3c0.pdf",
           "sourcePage": "https://fpt.com/en/ir/report",
-          "year": 2017,
+          "year": null,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "b814f28ac4dd74afb91b861a8ac38b3ed51eaad67b5e74e40b16a23bf38daccb",
@@ -3493,6 +3513,51 @@
           "sourceType": "annual_report",
           "snippet": "r complete at least one online course on MOOC (Massive Open Online Courses). Metrics 2017 +/- YoY Training budget VND 77.9 billion 102.9% Participations 268,864 participants 20.4% Training hours 1,787,369 hours 76.7% Training costs per staff member VND 2.6 million 67.7% Participations per staff members 9 participations/person 0% Training hours per staff member 55.7 hours/person 35.9% Number of certificates issued to FPT staff members6,834 certificate",
           "confidence": "high"
+        },
+        {
+          "value": 37.7,
+          "rawValue": "37,7",
+          "unit": "%",
+          "qualityScore": 105.67,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://bctn2025.fpt.com/bao-cao-esg/thong-diep-dinh-huong-esg/",
+          "sourceTitle": "Thông điệp và định hướng ESG",
+          "sourceType": "annual_report",
+          "snippet": "việc bình đẳng, tôn trọng cá nhân, không phân biệt đối xử. - Duy trì tỷ lệ nữ giới trong quy mô nhân sự trên 35%; - Duy trì và tăng cường sự đa dạng, công bằng và hòa hợp. - Tỷ lệ nhân sự nữ chiếm 37,7% tổng nhân sự; - Tích cực mở rộng tuyển dụng CBNV người nước ngoài. Tổng số CBNV người nước ngoài là 4.124 người từ 82 quốc tịch, tăng 18,2% so với năm 2024. Hoạt động vì môi trường xanh Hoạt động vì môi trường xanh Vấn đề trọng yếu Cam kết Mục tiê",
+          "confidence": "high"
+        },
+        {
+          "value": 7100000.0,
+          "rawValue": "7,1 triệu",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://bctn2025.fpt.com/bao-cao-esg/thong-diep-dinh-huong-esg/",
+          "sourceTitle": "Thông điệp và định hướng ESG",
+          "sourceType": "annual_report",
+          "snippet": "hóa lộ trình học cho CBNV; - Đầu tư sử dụng các nền tảng toàn cầu đáp ứng nhu cầu học tập chuyên nghiệp, đa dạng của CBNV như: Coursera, Udemy, Udacity; - Ghi nhận trên 7,1 triệu giờ đào tạo, đạt 151 giờ học trung bình/năm/CBNV; - 1,1 triệu giờ học nâng cao kiến thức kỹ năng AI. Bình đẳng và đa dạng Duy trì môi trường làm việc bình đẳng, tôn trọng cá nhân, không phân biệt đối xử. - Duy trì tỷ lệ nữ giới trong quy mô nhân sự trên 35%; - Duy trì và",
+          "confidence": "high"
+        },
+        {
+          "value": 72.8,
+          "rawValue": "72,8",
+          "unit": "billion VND",
+          "qualityScore": 89.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://bctn2025.fpt.com/bao-cao-esg/thong-diep-dinh-huong-esg/",
+          "sourceTitle": "Thông điệp và định hướng ESG",
+          "sourceType": "annual_report",
+          "snippet": "rợ tạo điều kiện học tập tốt hơn cho các hoàn cảnh yếu thế tại các khu vực kinh tế khó khăn, vùng núi, vùng sâu, vùng xa. Tiếp tục duy trì quỹ dành cho các hoạt động phát triển vì cộng đồng tập trung chủ yếu vào các hoạt động giáo dục. - Sử dụng 72,8 tỷ đồng cho các hoạt động trách nhiệm xã hội; - Trường Hy Vọng nhận giải thưởng Hành động vì cộng đồng ở hạng mục Dự án kịp thời; - 26 điểm trường thiệt hại nặng được tái thiết kịp thời sau lũ. Copy",
+          "confidence": "medium"
         }
       ],
       "externalAssessments": [],
@@ -3545,20 +3610,37 @@
           "confidence": "high",
           "canonicalizedFromRawValue": "25,6",
           "repaired": true
+        },
+        {
+          "value": 35.0,
+          "rawValue": "35",
+          "unit": "%",
+          "qualityScore": 116,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://bctn2025.fpt.com/bao-cao-esg/thong-diep-dinh-huong-esg/",
+          "sourceTitle": "Thông điệp và định hướng ESG",
+          "sourceType": "annual_report",
+          "snippet": "việc bình đẳng, tôn trọng cá nhân, không phân biệt đối xử. - Duy trì tỷ lệ nữ giới trong quy mô nhân sự trên 35%; - Duy trì và tăng cường sự đa dạng, công bằng và hòa hợp. - Tỷ lệ nhân sự nữ chiếm 37,7% tổng nhân sự; - Tích cực mở rộng tuyển dụng CBNV người nước ngoài. Tổng số CBNV người nước ngoài là 4.124 người từ 82 quốc tịch, tăng 18,2% so với năm 2024. Hoạt động vì môi trường xanh Hoạt động vì môi trường xanh Vấn đề trọng yếu Cam kết Mục tiê",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "37,7",
+          "repaired": true
         }
       ],
       "coverage": {
-        "documents": 11,
-        "processedDocuments": 9,
-        "metrics": 9,
-        "canonicalMetrics": 3,
+        "documents": 12,
+        "processedDocuments": 12,
+        "metrics": 12,
+        "canonicalMetrics": 4,
         "externalAssessments": 0
       }
     },
     "FRT": {
       "symbol": "FRT",
       "name": "Công ty Cổ phần Bán lẻ Kỹ thuật số FPT",
-      "checkedAt": "2026-10-29T07:08:56.843721+00:00",
+      "checkedAt": "2026-10-29T07:46:51.383955+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3650,7 +3732,7 @@
     "FTS": {
       "symbol": "FTS",
       "name": "Công ty Cổ phần Chứng khoán FPT",
-      "checkedAt": "2026-10-29T07:08:56.843725+00:00",
+      "checkedAt": "2026-10-29T07:46:51.383960+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3668,7 +3750,7 @@
     "GAS": {
       "symbol": "GAS",
       "name": "PV GAS",
-      "checkedAt": "2026-10-29T07:08:56.843814+00:00",
+      "checkedAt": "2026-10-29T07:46:51.384175+00:00",
       "entityType": "company",
       "sourcePolicy": "curated-issuer+disclosure-index",
       "documents": [
@@ -3699,7 +3781,7 @@
     "GEE": {
       "symbol": "GEE",
       "name": "Công ty Cổ phần Điện lực Gelex",
-      "checkedAt": "2026-10-29T07:08:56.843817+00:00",
+      "checkedAt": "2026-10-29T07:46:51.384179+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3717,7 +3799,7 @@
     "GEX": {
       "symbol": "GEX",
       "name": "Công ty Cổ phần Tập đoàn Gelex",
-      "checkedAt": "2026-10-29T07:08:56.843820+00:00",
+      "checkedAt": "2026-10-29T07:46:51.384183+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3735,7 +3817,7 @@
     "GMD": {
       "symbol": "GMD",
       "name": "Công ty Cổ phần Tập đoàn Gemadept",
-      "checkedAt": "2026-10-29T07:08:56.843823+00:00",
+      "checkedAt": "2026-10-29T07:46:51.384186+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3753,7 +3835,7 @@
     "GVR": {
       "symbol": "GVR",
       "name": "Tập đoàn Công nghiệp Cao su Việt Nam - Công ty Cổ phần",
-      "checkedAt": "2026-10-29T07:08:56.844028+00:00",
+      "checkedAt": "2026-10-29T07:46:51.384583+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3812,7 +3894,7 @@
     "HAG": {
       "symbol": "HAG",
       "name": "Công ty Cổ phần Hoàng Anh Gia Lai",
-      "checkedAt": "2026-10-29T07:08:56.844489+00:00",
+      "checkedAt": "2026-10-29T07:46:51.385441+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3879,7 +3961,7 @@
     "HCM": {
       "symbol": "HCM",
       "name": "Công ty Cổ phần Chứng khoán Thành phố Hồ Chí Minh",
-      "checkedAt": "2026-10-29T07:08:56.844493+00:00",
+      "checkedAt": "2026-10-29T07:46:51.385446+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3897,7 +3979,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-10-29T07:08:56.845366+00:00",
+      "checkedAt": "2026-10-29T07:46:51.386672+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -4052,7 +4134,7 @@
     "HDG": {
       "symbol": "HDG",
       "name": "Công ty Cổ phần Tập đoàn Hà Đô",
-      "checkedAt": "2026-10-29T07:08:56.845507+00:00",
+      "checkedAt": "2026-10-29T07:46:51.386868+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4095,7 +4177,7 @@
     "HHV": {
       "symbol": "HHV",
       "name": "Công ty Cổ phần Đầu tư Hạ tầng Giao thông Đèo Cả",
-      "checkedAt": "2026-10-29T07:08:56.845510+00:00",
+      "checkedAt": "2026-10-29T07:46:51.386872+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4113,7 +4195,7 @@
     "HPG": {
       "symbol": "HPG",
       "name": "Hoa Phat Group",
-      "checkedAt": "2026-10-29T07:08:56.846427+00:00",
+      "checkedAt": "2026-10-29T07:46:51.389451+00:00",
       "entityType": "company",
       "sourcePolicy": "curated-issuer+disclosure-index",
       "documents": [
@@ -4122,7 +4204,7 @@
           "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
           "title": "Download",
           "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-phat-trien-ben-vung",
-          "year": 2025,
+          "year": 2026,
           "type": "sustainability_report",
           "contentType": "pdf",
           "contentHash": "5532e21d5100b4385f4f2baae3ec13824db2857d38c5a3c2a7e965006ef798dc",
@@ -4134,7 +4216,7 @@
           "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/05/bao-cao-thuong-nien-nam-2025.pdf",
           "title": "Download",
           "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
-          "year": 2025,
+          "year": 2026,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "acee6a44ad7f3396ea6b0fcb3c3e3876218af531de9526020b600440a02ff8e3",
@@ -4170,7 +4252,7 @@
           "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2025/04/bao-cao-thuong-nien-hpg-2024.pdf",
           "title": "Download",
           "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
-          "year": 2024,
+          "year": 2025,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "d083f483fb26e88669dc8aa705832581f1f5e77d73cd14b97897cedce2b99874",
@@ -4182,7 +4264,7 @@
           "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2025/03/bao-cao-thuong-nien-2023.pdf",
           "title": "Download",
           "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
-          "year": 2023,
+          "year": 2025,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "bbbcca12f915127a68bc86fbfede938a01fae41bbb2635e92ef007122bf60ebd",
@@ -4194,7 +4276,7 @@
           "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2023/03/bao-cao-thuong-nien-2022.pdf",
           "title": "Download",
           "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
-          "year": 2022,
+          "year": 2023,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "5cbadec24bb74e6f50e497e7df70e488f8af7c20129daa04d3d8e157c86639d2",
@@ -4246,7 +4328,7 @@
           "url": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-phat-trien-ben-vung",
           "title": "Phát triển bền vững",
           "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-phat-trien-ben-vung",
-          "year": 2025,
+          "year": null,
           "type": "sustainability_report",
           "contentType": "html",
           "contentHash": "c81caf0deef6112fa3340a67c311ceac09b1693382943267a5f3c1adfed6c977",
@@ -4258,7 +4340,7 @@
           "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/uploads/HPG_BCTN_2018_V3.3.pdf",
           "title": "Download",
           "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
-          "year": 2018,
+          "year": null,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "d8f5991adc0158a60b9cdd8469461153454a78377f395d0af4d2f5750afff1c9",
@@ -4270,7 +4352,7 @@
           "url": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
           "title": "Báo cáo thường niên",
           "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-phat-trien-ben-vung",
-          "year": 2026,
+          "year": null,
           "type": "annual_report",
           "contentType": "html",
           "contentHash": "803ba6f9a5919da366415cd22f01b905106edb225143661b7b0ca3a81d9faf1d",
@@ -4287,7 +4369,7 @@
           "metricId": "women_workforce_pct",
           "pillar": "S",
           "label": "Tỷ lệ nữ trong lực lượng lao động",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
           "sourceTitle": "Download",
           "sourceType": "sustainability_report",
@@ -4302,7 +4384,7 @@
           "metricId": "training_hours",
           "pillar": "S",
           "label": "Tổng giờ đào tạo",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
           "sourceTitle": "Download",
           "sourceType": "sustainability_report",
@@ -4317,7 +4399,7 @@
           "metricId": "training_hours_per_employee",
           "pillar": "S",
           "label": "Giờ đào tạo bình quân/nhân viên",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
           "sourceTitle": "Download",
           "sourceType": "sustainability_report",
@@ -4332,7 +4414,7 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
           "sourceTitle": "Download",
           "sourceType": "sustainability_report",
@@ -4347,7 +4429,7 @@
           "metricId": "board_independence_pct",
           "pillar": "G",
           "label": "Tỷ lệ thành viên HĐQT độc lập",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
           "sourceTitle": "Download",
           "sourceType": "sustainability_report",
@@ -4437,7 +4519,7 @@
           "metricId": "training_hours",
           "pillar": "S",
           "label": "Tổng giờ đào tạo",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/05/bao-cao-thuong-nien-nam-2025.pdf",
           "sourceTitle": "Download",
           "sourceType": "annual_report",
@@ -4452,7 +4534,7 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/05/bao-cao-thuong-nien-nam-2025.pdf",
           "sourceTitle": "Download",
           "sourceType": "annual_report",
@@ -4497,7 +4579,7 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2024,
+          "year": 2025,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2025/04/bao-cao-thuong-nien-hpg-2024.pdf",
           "sourceTitle": "Download",
           "sourceType": "annual_report",
@@ -4512,7 +4594,7 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2023,
+          "year": 2025,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2025/03/bao-cao-thuong-nien-2023.pdf",
           "sourceTitle": "Download",
           "sourceType": "annual_report",
@@ -4527,7 +4609,7 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2022,
+          "year": 2023,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2023/03/bao-cao-thuong-nien-2022.pdf",
           "sourceTitle": "Download",
           "sourceType": "annual_report",
@@ -4545,30 +4627,13 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2022,
+          "year": 2023,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2023/03/bao-cao-thuong-nien-2022.pdf",
           "sourceTitle": "Download",
           "sourceType": "annual_report",
           "snippet": "ắn kết hài hòa hoạt động sản xuất kinh doanh và trách nhiệm của doanh nghiệp với xã hội. Trong năm qua, Hòa Phát tập trung hỗ trợ vào 4 nhóm chính: Y tế - Giáo dục - Giao thông và Cộng đồng, với tổng kinh phí khoảng 15 tỷ đồng. NHỊP ĐẬP YÊU THƯƠNG - TÀI TRỢ PHẪU THUẬT CHO TRẺ EM NGHÈO MẮC BỆNH TIM BẨM SINH Xuất phát từ mong muốn mang lại cho cho trẻ em Việt Nam một trái tim khỏe mạnh, chương trình “Nhịp đập yêu thương” của Hòa Phát chính thức đư",
           "confidence": "high",
           "canonicalizedFromRawValue": "15",
-          "repaired": true
-        },
-        {
-          "value": 30.0,
-          "rawValue": "30",
-          "unit": "billion VND",
-          "qualityScore": 116,
-          "metricId": "csr_spend",
-          "pillar": "S",
-          "label": "Chi cho cộng đồng/CSR",
-          "year": 2023,
-          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2025/03/bao-cao-thuong-nien-2023.pdf",
-          "sourceTitle": "Download",
-          "sourceType": "annual_report",
-          "snippet": "t động của mình với lợi ích Xã hội, Tập đoàn Hòa Phát triển khai nhiều chương trình hỗ trợ những hoàn cảnh kém may mắn, tập trung vào 4 nhóm chính: Y tế - Giáo dục – Giao thông và Cộng đồng. Năm 2023, Tập đoàn Hòa Phát đã dành hơn 30 tỷ đồng cho các hoạt động an sinh Xã hội như xây nhà tình nghĩa; kiên cố hóa công trình công ích, trường học; học bổng cho học sinh sinh viên, tặng quà cho người nghèo, tài trợ phẫu thuật cho trẻ em mắc bệnh tim bẩm",
-          "confidence": "high",
-          "canonicalizedFromRawValue": "30",
           "repaired": true
         },
         {
@@ -4580,6 +4645,40 @@
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
           "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf",
+          "sourceTitle": "hpg-bao-cao-ptbv-2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "NGƯỜI 71 BÁO CÁO PHÁT TRIỂN BỀN VỮNG 2025 PHÁT TRIỂN CỘNG ĐỒNG6.4 KẾT QUẢ THỰC HIỆN NĂM 2025 Trong năm 2025, Tập đoàn Hòa Phát đã dành hơn 120 tỷ đồng cho các hoạt động phát triển cộng đồng và phúc lợi xã hội, hỗ trợ các nhóm đối tượng dễ bị tổn thương tại 26 tỉnh, thành phố trên cả nước. Các chương trình đã góp phần mang lại những cải thiện rõ rệt về an sinh xã hội, tăng khả năng tiếp cận y tế, giáo dục, nhà ở, phục hồi sau thiên tai, và tăng c",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "120",
+          "repaired": true
+        },
+        {
+          "value": 38.52,
+          "rawValue": "38,52",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf",
+          "sourceTitle": "hpg-bao-cao-ptbv-2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "kiểm kê khí nhà kính theo tiêu chuẩn ISO 14064-1:2018 cho toàn Tập đoàn và được BSI thẩm định số liệu. Tái chế, tái sử dụng chất thải rắn nhóm thép và nông nghiệp đạt trên 99% Số giờ đào tạo trung bình cho mỗi nhân viên là 38,52 giờ mỗi năm 22% thành viên Hội đồng Quản trị là thành viên độc lập. Điểm nổi bật về phát triển bền vững năm 2025 Giải thưởng và vinh danh năm 2025 Thành viên của các Hiệp hội ngành nghề Hoạt động kinh doanh tại Tập đoàn PHẦN 3 TỔNG",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "38,52",
+          "repaired": true
+        },
+        {
+          "value": 120.0,
+          "rawValue": "120",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2026,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
           "sourceTitle": "Download",
           "sourceType": "sustainability_report",
@@ -4596,7 +4695,7 @@
           "metricId": "training_hours_per_employee",
           "pillar": "S",
           "label": "Giờ đào tạo bình quân/nhân viên",
-          "year": 2025,
+          "year": 2026,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
           "sourceTitle": "Download",
           "sourceType": "sustainability_report",
@@ -4610,14 +4709,14 @@
         "documents": 15,
         "processedDocuments": 10,
         "metrics": 17,
-        "canonicalMetrics": 4,
+        "canonicalMetrics": 5,
         "externalAssessments": 0
       }
     },
     "HSG": {
       "symbol": "HSG",
       "name": "Công ty Cổ phần Tập đoàn Hoa Sen",
-      "checkedAt": "2026-10-29T07:08:56.846431+00:00",
+      "checkedAt": "2026-10-29T07:46:51.389460+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4635,7 +4734,7 @@
     "HT1": {
       "symbol": "HT1",
       "name": "Công ty Cổ phần Xi măng VICEM Hà Tiên",
-      "checkedAt": "2026-10-29T07:08:56.846434+00:00",
+      "checkedAt": "2026-10-29T07:46:51.389465+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4653,7 +4752,7 @@
     "KBC": {
       "symbol": "KBC",
       "name": "Tổng Công ty Phát triển Đô thị Kinh Bắc - CTCP",
-      "checkedAt": "2026-10-29T07:08:56.846607+00:00",
+      "checkedAt": "2026-10-29T07:46:51.389713+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4696,7 +4795,7 @@
     "KDC": {
       "symbol": "KDC",
       "name": "Công ty Cổ phần Tập đoàn KIDO",
-      "checkedAt": "2026-10-29T07:08:56.846751+00:00",
+      "checkedAt": "2026-10-29T07:46:51.389912+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4755,7 +4854,7 @@
     "KDH": {
       "symbol": "KDH",
       "name": "Công ty Cổ phần Đầu tư và Kinh doanh nhà Khang Điền",
-      "checkedAt": "2026-10-29T07:08:56.846754+00:00",
+      "checkedAt": "2026-10-29T07:46:51.389917+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4773,7 +4872,7 @@
     "KOS": {
       "symbol": "KOS",
       "name": "Công ty Cổ phần KOSY",
-      "checkedAt": "2026-10-29T07:08:56.846913+00:00",
+      "checkedAt": "2026-10-29T07:46:51.390122+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4816,7 +4915,7 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-10-29T07:08:56.847401+00:00",
+      "checkedAt": "2026-10-29T07:46:51.390812+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -4952,7 +5051,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-10-29T07:08:56.847740+00:00",
+      "checkedAt": "2026-10-29T07:46:51.391273+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -5168,7 +5267,7 @@
     "MCH": {
       "symbol": "MCH",
       "name": "Công ty Cổ phần Hàng Tiêu Dùng MaSan",
-      "checkedAt": "2026-10-29T07:08:56.848101+00:00",
+      "checkedAt": "2026-10-29T07:46:51.391750+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -5225,7 +5324,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-10-29T07:08:56.850065+00:00",
+      "checkedAt": "2026-10-29T07:46:51.394521+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -5761,7 +5860,7 @@
     "MSN": {
       "symbol": "MSN",
       "name": "Công ty Cổ phần Tập đoàn Masan",
-      "checkedAt": "2026-10-29T07:08:56.850069+00:00",
+      "checkedAt": "2026-10-29T07:46:51.394529+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -5779,7 +5878,7 @@
     "MWG": {
       "symbol": "MWG",
       "name": "Mobile World Investment Corporation",
-      "checkedAt": "2026-10-29T07:08:56.850169+00:00",
+      "checkedAt": "2026-10-29T07:46:51.394782+00:00",
       "entityType": "company",
       "sourcePolicy": "curated-issuer+disclosure-index",
       "documents": [
@@ -5810,7 +5909,7 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-10-29T07:08:56.852516+00:00",
+      "checkedAt": "2026-10-29T07:46:51.397975+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -5825,30 +5924,6 @@
           "contentHash": "4e78f3c7c80077464e0bc4b849129de80c17ec7e5bd39e767bb2bb2dd427394c",
           "processedAt": "2026-10-07T20:17:40.557894+00:00",
           "textLength": 10431
-        },
-        {
-          "id": "3513a04144dc75ee4ff0",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
-          "title": "Báo cáo thường niên tiếng Anh năm 2025",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
-          "processedAt": "2026-09-29T03:25:01.084606+00:00",
-          "textLength": 337
-        },
-        {
-          "id": "358356aafec4c64c0e15",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
-          "title": "Báo cáo thường niên năm 2025",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
-          "processedAt": "2026-09-29T03:25:01.578252+00:00",
-          "textLength": 336
         },
         {
           "id": "9905202effdd869504d3",
@@ -5885,6 +5960,30 @@
           "contentHash": "c18446c089d79f987638290bb1a088705fad4710a91b42407cc39616483ab448",
           "processedAt": "2026-09-29T03:24:41.470566+00:00",
           "textLength": 245573
+        },
+        {
+          "id": "3513a04144dc75ee4ff0",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
+          "title": "20260318---nab-2025-annual-report.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
+          "processedAt": "2026-09-29T03:25:01.084606+00:00",
+          "textLength": 337
+        },
+        {
+          "id": "358356aafec4c64c0e15",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
+          "title": "20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
+          "processedAt": "2026-09-29T03:25:01.578252+00:00",
+          "textLength": 336
         },
         {
           "id": "2290a0dd8e19254302c4",
@@ -5935,18 +6034,6 @@
           "textLength": 87023
         },
         {
-          "id": "9a75823f7a984b02ebf5",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
-          "title": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2024,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "da4b2b93920239f8a45454e5e39ed38367a881d63e434668b5bbce38ee713756",
-          "processedAt": "2026-09-29T03:24:53.506586+00:00",
-          "textLength": 190892
-        },
-        {
           "id": "fa5f1a67142c3668d602",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/esg/20260127_esg-namabank-2024_vn_view.pdf",
           "title": "Báo cáo phát triển bền vững năm 2024",
@@ -5971,6 +6058,18 @@
           "textLength": 213889
         },
         {
+          "id": "9a75823f7a984b02ebf5",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "title": "20260119_esg-namabank-2024-en.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2024,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "da4b2b93920239f8a45454e5e39ed38367a881d63e434668b5bbce38ee713756",
+          "processedAt": "2026-09-29T03:24:53.506586+00:00",
+          "textLength": 190892
+        },
+        {
           "id": "672efd9d89b939b0cb7a",
           "url": "https://www.namabank.com.vn/Data/Sites/1/userfiles/25/bctn_2023/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-2023.pdf",
           "title": "Báo cáo thường niên năm 2023",
@@ -5983,6 +6082,18 @@
           "textLength": 1251
         },
         {
+          "id": "0c9ce9572663228d1389",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
+          "title": "Báo cáo phát triển bền vững năm 2023 tiếng Anh",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "bc88397feb5aa8ae307420639fdc5e40ffb935c261d4ddadb396cdc04385762d",
+          "processedAt": "2026-09-29T03:40:21.817994+00:00",
+          "textLength": 251546
+        },
+        {
           "id": "33e5a56cd74d6d5f8f61",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
           "title": "Báo cáo phát triển bền vững năm 2023",
@@ -5993,18 +6104,6 @@
           "contentHash": "b8d2e349ddccc88a6ab62a318e1cea8438a0689c6d1666d5c54a22052dae7efd",
           "processedAt": "2026-09-29T03:25:05.799971+00:00",
           "textLength": 262818
-        },
-        {
-          "id": "0c9ce9572663228d1389",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
-          "title": "20250804_ESG NAMABANK 2023 EN.pdf",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2023,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "bc88397feb5aa8ae307420639fdc5e40ffb935c261d4ddadb396cdc04385762d",
-          "processedAt": "2026-09-29T03:40:21.817994+00:00",
-          "textLength": 251546
         },
         {
           "id": "656e569b13a9f118e6e9",
@@ -6021,7 +6120,7 @@
         {
           "id": "bf618c3dc088db37aaf4",
           "url": "https://www.namabank.com.vn/Data/Sites/1/userfiles/25/bctn-2021/bao-cao-thuong-nien-2021.pdf",
-          "title": "bao-cao-thuong-nien-2021.pdf",
+          "title": "Báo cáo thường niên năm 2021",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2021,
           "type": "annual_report",
@@ -6057,10 +6156,10 @@
         {
           "id": "f2f7d0b1b48ff8c4045f",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-tai-chinh/2018/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
-          "title": "Báo cáo thường niên năm 2018",
+          "title": "b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2018,
-          "type": "annual_report",
+          "type": "esg_other",
           "contentType": "pdf",
           "contentHash": "31d93ca29fbb4ee20b3ec3336e01e3e33a91c5f68994a8f713082035b8a5db38",
           "processedAt": "2026-10-28T19:59:02.472279+00:00",
@@ -6814,7 +6913,7 @@
     "NKG": {
       "symbol": "NKG",
       "name": "Công ty Cổ phần Thép Nam Kim",
-      "checkedAt": "2026-10-29T07:08:56.852521+00:00",
+      "checkedAt": "2026-10-29T07:46:51.397983+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6832,7 +6931,7 @@
     "NLG": {
       "symbol": "NLG",
       "name": "Công ty Cổ phần Đầu tư Nam Long",
-      "checkedAt": "2026-10-29T07:08:56.852524+00:00",
+      "checkedAt": "2026-10-29T07:46:51.397988+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6850,7 +6949,7 @@
     "NT2": {
       "symbol": "NT2",
       "name": "Công ty Cổ phần Điện lực Dầu khí Nhơn Trạch 2",
-      "checkedAt": "2026-10-29T07:08:56.852799+00:00",
+      "checkedAt": "2026-10-29T07:46:51.398366+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6893,7 +6992,7 @@
     "NVL": {
       "symbol": "NVL",
       "name": "Công ty Cổ phần Tập đoàn Đầu tư Địa ốc No Va",
-      "checkedAt": "2026-10-29T07:08:56.852879+00:00",
+      "checkedAt": "2026-10-29T07:46:51.398371+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6911,7 +7010,7 @@
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-10-29T07:08:56.855232+00:00",
+      "checkedAt": "2026-10-29T07:46:51.400598+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -7878,7 +7977,7 @@
     "PAN": {
       "symbol": "PAN",
       "name": "Công ty Cổ phần Tập đoàn PAN",
-      "checkedAt": "2026-10-29T07:08:56.855238+00:00",
+      "checkedAt": "2026-10-29T07:46:51.400606+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7896,7 +7995,7 @@
     "PC1": {
       "symbol": "PC1",
       "name": "Công ty Cổ phần Tập đoàn PC1",
-      "checkedAt": "2026-10-29T07:08:56.855241+00:00",
+      "checkedAt": "2026-10-29T07:46:51.400610+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7914,7 +8013,7 @@
     "PDR": {
       "symbol": "PDR",
       "name": "Công ty Cổ phần Phát triển Bất động sản Phát Đạt",
-      "checkedAt": "2026-10-29T07:08:56.855243+00:00",
+      "checkedAt": "2026-10-29T07:46:51.400614+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7932,7 +8031,7 @@
     "PHR": {
       "symbol": "PHR",
       "name": "Công ty Cổ phần Cao su Phước Hòa",
-      "checkedAt": "2026-10-29T07:08:56.855246+00:00",
+      "checkedAt": "2026-10-29T07:46:51.400618+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7950,7 +8049,7 @@
     "PLX": {
       "symbol": "PLX",
       "name": "Tập đoàn Xăng dầu Việt Nam",
-      "checkedAt": "2026-10-29T07:08:56.855991+00:00",
+      "checkedAt": "2026-10-29T07:46:51.401644+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8123,7 +8222,7 @@
     "PNJ": {
       "symbol": "PNJ",
       "name": "Công ty Cổ phần Vàng bạc Đá quý Phú Nhuận",
-      "checkedAt": "2026-10-29T07:08:56.855994+00:00",
+      "checkedAt": "2026-10-29T07:46:51.401651+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8141,7 +8240,7 @@
     "POW": {
       "symbol": "POW",
       "name": "Tổng Công ty Điện lực Dầu khí Việt Nam - CTCP",
-      "checkedAt": "2026-10-29T07:08:56.856244+00:00",
+      "checkedAt": "2026-10-29T07:46:51.401992+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8184,7 +8283,7 @@
     "PVD": {
       "symbol": "PVD",
       "name": "Tổng Công ty Cổ phần Khoan và Dịch vụ khoan Dầu khí",
-      "checkedAt": "2026-10-29T07:08:56.856248+00:00",
+      "checkedAt": "2026-10-29T07:46:51.401996+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8202,7 +8301,7 @@
     "PVT": {
       "symbol": "PVT",
       "name": "Tổng Công ty Cổ phần Vận tải Dầu khí",
-      "checkedAt": "2026-10-29T07:08:56.856251+00:00",
+      "checkedAt": "2026-10-29T07:46:51.402000+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8220,7 +8319,7 @@
     "REE": {
       "symbol": "REE",
       "name": "Công ty Cổ phần Cơ điện Lạnh",
-      "checkedAt": "2026-10-29T07:08:56.856254+00:00",
+      "checkedAt": "2026-10-29T07:46:51.402003+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8238,7 +8337,7 @@
     "SAB": {
       "symbol": "SAB",
       "name": "Tổng Công ty Cổ phần Bia - Rượu - Nước Giải khát Sài Gòn",
-      "checkedAt": "2026-10-29T07:08:56.856813+00:00",
+      "checkedAt": "2026-10-29T07:46:51.402774+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8305,7 +8404,7 @@
     "SBT": {
       "symbol": "SBT",
       "name": "Công ty Cổ phần Thành Thành Công - Biên Hòa",
-      "checkedAt": "2026-10-29T07:08:56.856816+00:00",
+      "checkedAt": "2026-10-29T07:46:51.402779+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8323,7 +8422,7 @@
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-10-29T07:08:56.857696+00:00",
+      "checkedAt": "2026-10-29T07:46:51.403992+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -9104,7 +9203,7 @@
     "SIP": {
       "symbol": "SIP",
       "name": "Công ty Cổ phần Đầu tư Sài Gòn VRG",
-      "checkedAt": "2026-10-29T07:08:56.857963+00:00",
+      "checkedAt": "2026-10-29T07:46:51.404352+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9147,7 +9246,7 @@
     "SJS": {
       "symbol": "SJS",
       "name": "Công ty Cổ phần SJ Group",
-      "checkedAt": "2026-10-29T07:08:56.858426+00:00",
+      "checkedAt": "2026-10-29T07:46:51.404988+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9202,7 +9301,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-10-29T07:08:56.859726+00:00",
+      "checkedAt": "2026-10-29T07:46:51.406784+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -9305,7 +9404,7 @@
         {
           "id": "63a3abaf8b52f1a85e00",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2024",
-          "title": "Sustainability Report 2024 05/09/2025 Read more",
+          "title": "Sustainability Report 2024 05/09/2025",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -9317,7 +9416,7 @@
         {
           "id": "8fd342db37c26fd52c8f",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2024",
-          "title": "SeABank's Annual Report 2024 08/04/2025",
+          "title": "SeABank's Annual Report 2024 08/04/2025 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -9999,7 +10098,7 @@
     "SSI": {
       "symbol": "SSI",
       "name": "Công ty Cổ phần Chứng khoán SSI",
-      "checkedAt": "2026-10-29T07:08:56.859730+00:00",
+      "checkedAt": "2026-10-29T07:46:51.406790+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -10017,7 +10116,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-10-29T07:08:56.860602+00:00",
+      "checkedAt": "2026-10-29T07:46:51.408010+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -10188,7 +10287,7 @@
     "TAL": {
       "symbol": "TAL",
       "name": "Công Ty Cổ Phần Đầu Tư Bất Động Sản Taseco",
-      "checkedAt": "2026-10-29T07:08:56.860606+00:00",
+      "checkedAt": "2026-10-29T07:46:51.408016+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -10206,7 +10305,7 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-10-29T07:08:56.861718+00:00",
+      "checkedAt": "2026-10-29T07:46:51.409593+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -10304,18 +10403,6 @@
           "textLength": 375765
         },
         {
-          "id": "5f8da544b07832ede0e2",
-          "url": "https://techcombank.com/en/about-us/sustainability",
-          "title": "Sustainability",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html",
-          "contentHash": "ae790f6c9896f699947f410e5cf6dd17965f5b268dda5f3230d6e0e81304b473",
-          "processedAt": "2026-09-29T01:34:42.514584+00:00",
-          "textLength": 5751
-        },
-        {
           "id": "92a4cc6c630bcb4bdbd4",
           "url": "https://techcombank.com/en/about-us/sustainability/strategy",
           "title": "Our Strategy",
@@ -10362,6 +10449,18 @@
           "contentHash": "0d5395ce2ffe929d46fcbe9f027664b21dc9f77d509b70f1295633f5a89fee9a",
           "processedAt": "2026-09-29T01:34:42.084517+00:00",
           "textLength": 2991
+        },
+        {
+          "id": "5f8da544b07832ede0e2",
+          "url": "https://techcombank.com/en/about-us/sustainability",
+          "title": "English",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "ae790f6c9896f699947f410e5cf6dd17965f5b268dda5f3230d6e0e81304b473",
+          "processedAt": "2026-09-29T01:34:42.514584+00:00",
+          "textLength": 5751
         },
         {
           "id": "716c7d37cb29fec64cba",
@@ -10736,7 +10835,7 @@
     "TCH": {
       "symbol": "TCH",
       "name": "Công ty Cổ phần Đầu tư Dịch vụ Tài chính Hoàng Huy",
-      "checkedAt": "2026-10-29T07:08:56.861722+00:00",
+      "checkedAt": "2026-10-29T07:46:51.409600+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -10754,7 +10853,7 @@
     "TCX": {
       "symbol": "TCX",
       "name": "Công ty Cổ phần Chứng khoán Kỹ Thương",
-      "checkedAt": "2026-10-29T07:08:56.861725+00:00",
+      "checkedAt": "2026-10-29T07:46:51.409604+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -10772,7 +10871,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-10-29T07:08:56.862734+00:00",
+      "checkedAt": "2026-10-29T07:46:51.411004+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -11025,7 +11124,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-10-29T07:08:56.863415+00:00",
+      "checkedAt": "2026-10-29T07:46:51.411944+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -11510,6 +11609,24 @@
           "confidence": "high"
         },
         {
+          "value": 2000.0,
+          "rawValue": "2000",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "sustainable_finance",
+          "pillar": "E",
+          "label": "Tài chính bền vững",
+          "year": 2025,
+          "sourceUrl": "https://www.vietcombank.com.vn/-/media/Project/VCB-Sites/VCB/Nha-Dau-tu/Bao-cao-PTBV/VN_VCB_ESG-Report-2025.pdf",
+          "sourceTitle": "VN_VCB_ESG-Report-2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "chọn dự án, quản lý giải ngân nguồn tiền từ phát hành, các chế độ về quản trị và báo cáo của Vietcombank. Sự kiện này khẳng định vai trò tiên phong của Vietcombank trong lĩnh vực tài chính bền vững cũng như hỗ trợ các dự án thân thiện với môi trường. 92 Doanh số huy động tiền gửi xanh năm 2025 đạt khoảng tỷ VND 2000 Vietcombank phát hành thành công tỷ VND tỷ đồng T rái phiếu Bền vững Kết quả thực hiện Kết quả thực hiệnCHƯƠNG 3 CHƯƠNG 3 56 57 E2 – Giảm p",
+          "confidence": "medium",
+          "canonicalizedFromRawValue": "2000",
+          "repaired": true,
+          "repairEvidence": "printed billion VND unit preceding exact value"
+        },
+        {
           "value": 48.96,
           "rawValue": "48,96",
           "unit": "hours",
@@ -11548,14 +11665,14 @@
         "documents": 4,
         "processedDocuments": 4,
         "metrics": 21,
-        "canonicalMetrics": 7,
+        "canonicalMetrics": 8,
         "externalAssessments": 3
       }
     },
     "VCG": {
       "symbol": "VCG",
       "name": "Tổng Công ty Cổ phần Xuất nhập khẩu và Xây dựng Việt Nam",
-      "checkedAt": "2026-10-29T07:08:56.863419+00:00",
+      "checkedAt": "2026-10-29T07:46:51.411951+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11573,7 +11690,7 @@
     "VCI": {
       "symbol": "VCI",
       "name": "Công ty Cổ phần Chứng khoán Vietcap",
-      "checkedAt": "2026-10-29T07:08:56.863423+00:00",
+      "checkedAt": "2026-10-29T07:46:51.411955+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11591,7 +11708,7 @@
     "VCK": {
       "symbol": "VCK",
       "name": "Công ty Cổ phần Chứng Khoán VPS",
-      "checkedAt": "2026-10-29T07:08:56.863426+00:00",
+      "checkedAt": "2026-10-29T07:46:51.411959+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11609,7 +11726,7 @@
     "VGC": {
       "symbol": "VGC",
       "name": "Tổng Công ty Viglacera - Công ty Cổ phần",
-      "checkedAt": "2026-10-29T07:08:56.863741+00:00",
+      "checkedAt": "2026-10-29T07:46:51.412410+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11652,7 +11769,7 @@
     "VHC": {
       "symbol": "VHC",
       "name": "Công ty Cổ phần Vĩnh Hoàn",
-      "checkedAt": "2026-10-29T07:08:56.863882+00:00",
+      "checkedAt": "2026-10-29T07:46:51.412608+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11695,7 +11812,7 @@
     "VHM": {
       "symbol": "VHM",
       "name": "Công ty Cổ phần Vinhomes",
-      "checkedAt": "2026-10-29T07:08:56.863886+00:00",
+      "checkedAt": "2026-10-29T07:46:51.412613+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11713,7 +11830,7 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-10-29T07:08:56.864818+00:00",
+      "checkedAt": "2026-10-29T07:46:51.413921+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -11826,26 +11943,1458 @@
     },
     "VIC": {
       "symbol": "VIC",
-      "name": "Tập đoàn Vingroup - Công ty CP",
-      "checkedAt": "2026-10-29T07:08:56.864822+00:00",
+      "name": "Vingroup",
+      "checkedAt": "2026-10-29T07:46:51.414873+00:00",
       "entityType": "company",
-      "sourcePolicy": "disclosure-index",
-      "documents": [],
-      "metrics": [],
+      "sourcePolicy": "curated-issuer+disclosure-index",
+      "documents": [
+        {
+          "id": "e3299c38edb2f1b60814",
+          "url": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2025/ENG%20Vingroup%20AR25.pdf",
+          "title": "ENG%20Vingroup%20AR25.pdf",
+          "sourcePage": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2025/ENG%20Vingroup%20AR25.pdf",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "d3b0a4748da7e3e15226903801cda9a467a2d1f0c1bddd1d5e6f15d18b298a07",
+          "processedAt": "2026-10-29T07:47:26.211745+00:00",
+          "textLength": 575440
+        },
+        {
+          "id": "91e6802f75d7f6b04775",
+          "url": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "title": "Báo cáo Phát triển Bền vững 2025",
+          "sourcePage": "https://vingroup.net/phat-trien-ben-vung",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "fab4fb2d73fb6c54bd24d9a50657939da101a5563687b4777ab6d3ab60cc08ec",
+          "processedAt": "2026-10-29T07:47:14.618717+00:00",
+          "textLength": 573672
+        },
+        {
+          "id": "a6de5a715dffd08b0c71",
+          "url": "https://vingroup.net/en/investor-relations/annual-report",
+          "title": "Annual report",
+          "sourcePage": "https://vingroup.net/en/investor-relations/",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "fdf6ba5d87bccd3fe6f6ad6c268f36aebe49a1426e2a1b84404fc66c955f217d",
+          "processedAt": "2026-10-29T07:47:14.825071+00:00",
+          "textLength": 630
+        },
+        {
+          "id": "4736bb15a00080238681",
+          "url": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2025/ENG%20Vingroup%20AR25_Chap%201-6.pdf",
+          "title": "2025 Vingroup Annual Report",
+          "sourcePage": "https://vingroup.net/en/investor-relations/",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "ebacd9a1b25a0a13844750fd71835cd883bd61e8657bce76204402d44468284c",
+          "processedAt": "2026-10-29T07:47:31.384684+00:00",
+          "textLength": 575934
+        },
+        {
+          "id": "a5d5dce707e4f624703f",
+          "url": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "title": "2025 Sustainability Report",
+          "sourcePage": "https://vingroup.net/en/development",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "c07de1f16921bd557d50e6934b4a422345da79fee6fb2b2f4ba6c09a301d3c0d",
+          "processedAt": "2026-10-29T07:47:15.422134+00:00",
+          "textLength": 520800
+        },
+        {
+          "id": "8762992bbe975a0e13c5",
+          "url": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20VN%20-%20final.pdf",
+          "title": "Báo cáo Phát triển Bền vững 2024",
+          "sourcePage": "https://vingroup.net/phat-trien-ben-vung",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "90639de7fac2e1798b7e132bb2137bbfd74eae8cecc65b7b5654d4677fe23c2d",
+          "processedAt": "2026-10-29T07:47:07.588933+00:00",
+          "textLength": 296388
+        },
+        {
+          "id": "548ec79ea9427f469247",
+          "url": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "title": "2024 Sustainability Report",
+          "sourcePage": "https://vingroup.net/en/development",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "f1c1825ea5c73475783a54f67829867094e98e3c70c5780babe86af804f2f395",
+          "processedAt": "2026-10-29T07:47:13.855976+00:00",
+          "textLength": 300988
+        },
+        {
+          "id": "294558e369ab87b4da24",
+          "url": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_Vn.pdf",
+          "title": "Báo cáo Phát triển Bền vững 2023",
+          "sourcePage": "https://vingroup.net/phat-trien-ben-vung",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "2ef79ebd4a1104aa2e8fcb55d0a80f0f5a41dad3eab41f40c08dac9b929fa79d",
+          "processedAt": "2026-10-29T07:47:23.432121+00:00",
+          "textLength": 285421
+        },
+        {
+          "id": "572aacd46fb6c9d60ca8",
+          "url": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_En.pdf",
+          "title": "2023 Sustainability Report",
+          "sourcePage": "https://vingroup.net/en/development",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "8604dc6dd034ed796be471835d10b4217ce6f76d2c7778c12e477b7b47cc8eaf",
+          "processedAt": "2026-10-29T07:47:25.170750+00:00",
+          "textLength": 281271
+        },
+        {
+          "id": "a791a1da2bfe58a729dd",
+          "url": "https://vingroup.net/en/development",
+          "title": "Sustainable Development",
+          "sourcePage": "https://vingroup.net/en/investor-relations/",
+          "year": 2023,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "37b6742d7a2ddd85895825bc3945eb5e22dfa84ef2d0e625f0d78aef0e411ea9",
+          "processedAt": "2026-10-29T07:47:29.775490+00:00",
+          "textLength": 2516
+        },
+        {
+          "id": "383aac9e6197721e14a4",
+          "url": "https://vingroup.net/phat-trien-ben-vung",
+          "title": "Phát triển bền vững",
+          "sourcePage": "https://vingroup.net/quan-he-co-dong/bao-cao-thuong-nien",
+          "year": 2022,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "e1f09faf202337ef991c9668ee198e550f8093321a7b7093a1470b0bfb221af0",
+          "processedAt": "2026-10-29T07:47:29.662330+00:00",
+          "textLength": 2104
+        },
+        {
+          "id": "822a3202f5eb1d9606ac",
+          "url": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_VN.pdf",
+          "title": "Báo cáo Phát triển Bền vững 2022",
+          "sourcePage": "https://vingroup.net/phat-trien-ben-vung",
+          "year": 2022,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "13b018b696966d89495e43aa82564445b3b2a147d6e5dee4c2ea5312c65d9d33",
+          "processedAt": "2026-10-29T07:47:39.391594+00:00",
+          "textLength": 256158
+        },
+        {
+          "id": "11d3c7faea308589f00c",
+          "url": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_EN%20new.pdf",
+          "title": "2022 Sustainability Report",
+          "sourcePage": "https://vingroup.net/en/development",
+          "year": 2022,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "80b63f474472ba44ca969600bedfdcb60a48e7dea470454a1e594f8939bd25d5",
+          "processedAt": "2026-10-29T07:47:42.315473+00:00",
+          "textLength": 254573
+        },
+        {
+          "id": "8366e3b5c029ad29c3a7",
+          "url": "https://ircdn.vingroup.net/storage/Uploads/0_Quan%20he%20co%20dong/0_Vingroup_2021/Sep/2021.09%20-%20Vingroup%20Sustainable%20Finance%20Framework.pdf",
+          "title": "(click for more information)",
+          "sourcePage": "https://vingroup.net/en/development",
+          "year": 2021,
+          "type": "sustainable_finance_assessment"
+        },
+        {
+          "id": "51d6edbb28ceb1d48779",
+          "url": "https://ircdn.vingroup.net/storage/Uploads/0_Quan%20he%20co%20dong/0_Vingroup_2021/Sep/2021.09%20-%20Vingroup%20Sustainable%20Finance%20Framework%20Second-Party%20Opinion.pdf",
+          "title": "(click for more information)",
+          "sourcePage": "https://vingroup.net/en/development",
+          "year": 2021,
+          "type": "sustainable_finance_assessment"
+        }
+      ],
+      "metrics": [
+        {
+          "value": 218876.0,
+          "rawValue": "218.876",
+          "unit": "tCO2e",
+          "qualityScore": 106.0,
+          "metricId": "scope1",
+          "pillar": "E",
+          "label": "Phát thải Scope 1",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20VN%20-%20final.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "ho các phương tiện, thiết bị, máy phát điện dự phòng…; hao hụt các khí nhà kính từ hệ thống làm lạnh; phát thải từ xử lý nước thải… Năm 2024, Tập đoàn phát thải 218.876 tCO2e theo Phạm vi 1 từ các hoạt động sử dụng xăng, dầu diesel, LPG, xử lý nước thải và từ sự hao hụt môi chất lạnh từ các hệ thống làm mát. Phát thải Phạm vi 2 là khí nhà kính phát thải từ quá trình sản xuất điện, nhiệt và các dạng năng lượng khác mà doanh nghiệp đã mua về sử dụ",
+          "confidence": "high"
+        },
+        {
+          "value": 787615.0,
+          "rawValue": "787.615",
+          "unit": "tCO2e",
+          "qualityScore": 102.33,
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20VN%20-%20final.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "10% 18,4% 71,6% 2024 Chủ đề E1.1 – Đo lường và giám sát phát thải khí nhà kính Chủ đề E1 – Khả năng phục hồi khí hậu Năm 2024, tổng lượng khí nhà kính phát thải theo Phạm vi 1 và Phạm vi 2 của Vingroup là 787.615 tCO2e, trong đó, phát thải theo Phạm vi 1 chiếm 27,8% và phát thải theo Phạm vi 2 chiếm 72,2%. Xét theo 03 trụ cột kinh tế của Tập đoàn, nhóm Thương mại Dịch vụ có tỷ trọng phát thải lớn nhất, chiếm 71,6%, nhóm Công nghệ - Công nghiệp",
+          "confidence": "high"
+        },
+        {
+          "value": 1938144.77,
+          "rawValue": "1.938.144,77",
+          "unit": "tCO2e",
+          "qualityScore": 96.67,
+          "metricId": "scope3",
+          "pillar": "E",
+          "label": "Phát thải Scope 3",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20VN%20-%20final.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "n hành; • Hạng mục 3: Đi công tác; • Hạng mục 3: Đi lại của nhân viên; • Hạng mục 4: Tài sản thuê thượng nguồn; • Hạng mục 5: Sử dụng sản phẩm đã bán. Lượng phát thải khí nhà kính phạm vi 3 của Nhà máy VinFast Hải Phòng là 1.938.144,77 tCO2e, chiếm 94% tổng lượng phát thải khí nhà kính (gồm cả 3 phạm vi) của Nhà máy. Xét riêng trong phạm vi 3, nguồn phát thải lớn nhất đến từ giai đoạn sử dụng sản phẩm (xe điện) đã bán trong việc sạc xe điện và r",
+          "confidence": "medium"
+        },
+        {
+          "value": 824989.0,
+          "rawValue": "824.989",
+          "unit": "m3",
+          "qualityScore": 98.0,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20VN%20-%20final.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "ộ. Vinschool tận dụng nước thải sau hệ thống lọc RO để rửa sàn, tưới cây. Trong năm 2024, tổng lượng nước thải được Vingroup tái sử dụng là 824.989 m3, chiếm 3,9% trong tổng lượng nước tiêu thụ. Tại Vingroup, có 03 nguồn nước thải chính phát sinh từ hoạt động sản xuất kinh doanh, bao gồm: Các nguồn nước thải được xử lý đạt quy chuẩn theo yêu cầu tại Giấy phép môi trường/ Giấy phép xả thải cho từng công ty, cơ sở. Công nghệ - Công nghiệp Thương mại D",
+          "confidence": "medium"
+        },
+        {
+          "value": 53.0,
+          "rawValue": "53",
+          "unit": "%",
+          "qualityScore": 104.33,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20VN%20-%20final.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "2024), Vingroup luôn duy trì sự đa dạng về trình độ học vấn, độ tuổi, giới tính, thâm niên… Đáng chú ý, tỷ lệ CBNV nữ chiếm 37,3% trong cơ cấu lao động. Còn trong Bộ máy quản trị, tỷ lệ nữ chiếm tới 53%. Vingroup ủng hộ bình đẳng giới và trao quyền cho phụ nữ như là nguyên tắc cối lõi của sự phát triển bền vững. Điều này phù hợp với văn hóa và định hướng kinh doanh của Tập đoàn, nhằm hướng tới sự phát triển đa dạng và toàn diện. Ngày 17/4/2024,",
+          "confidence": "high"
+        },
+        {
+          "value": 256038.0,
+          "rawValue": "256.038",
+          "unit": "hours",
+          "qualityScore": 115.67,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20VN%20-%20final.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "ó nền tảng chắc chắn để thực hành chuẩn nghề nghiệp hiệu quả hơn nữa. Năm 2024, Vinschool đã tổ chức 614 khóa đào tạo với gần 256.038 giờ, 76.750 lượt CBNV tham gia, trung bình 41 giờ đào tạo/CBNV. 256.038 giờ Năm 2024, Vinschool đã tổ chức 614 khoá đào tạo Chủ đề S1 – Phát triển nguồn nhân lực Xã hội bền vững Phụ lục Báo cáo phát triển bền vững Vingroup 2024 107 Tổng quan Thông tin chung Quản trị bền vững Môi trường bền vững VinUni Culture E-lear",
+          "confidence": "high"
+        },
+        {
+          "value": 404.0,
+          "rawValue": "404",
+          "unit": "hours",
+          "qualityScore": 108.0,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20VN%20-%20final.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2024",
+          "sourceType": "sustainability_report",
+          "snippet": "ngừa và giảm thiểu các tác động về an toàn và sức khỏe nghề nghiệp có liên quan trực tiếp đến các mối quan hệ kinh doanh Chương 5 110-111 GRI 404: Giáo dục và Đào tạo GRI 404-1 Số giờ đào tạo trung bình mỗi năm cho mỗi nhân viên Chương 5 100-108 GRI 404-2 Các chương trình nâng cao kỹ năng cho nhân viên và chương trình hỗ trợ chuyển tiếp Chương 5 100-108 GRI Mô tả Chương Trang GRI 404-3 Tỷ lệ phần trăm nhân viên được đánh giá định kỳ hiệu quả công việc và phá",
+          "confidence": "high"
+        },
+        {
+          "value": 668014.0,
+          "rawValue": "668,014",
+          "unit": "tCO2e",
+          "qualityScore": 107.67,
+          "metricId": "scope1",
+          "pillar": "E",
+          "label": "Phát thải Scope 1",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "sourceTitle": "2024 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "24 Sustainability Report 71 Environmental Sustainability Scope 1 Scope 2 Total 668,014 tCO2e Industrials - Technology Social Enterprises Real Estate & Services Total 668,014 tCO2e Scope 1 Scope 2 Total 787,615 tCO2e Industrials - Technology Social Enterprises Real Estate & Services Total 787,615 tCO2e 9.8% 90.2% 2023 27.8% 72.2% 2024 10% 21.4% 68.6% 2023 10% 18.4% 71.6% 2024 Topic E1.1 – GHG Measurement & Monitoring Topic E1 – Climate Resilien",
+          "confidence": "high"
+        },
+        {
+          "value": 668014.0,
+          "rawValue": "668,014",
+          "unit": "tCO2e",
+          "qualityScore": 105.67,
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "sourceTitle": "2024 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "y of Vingroup JSC. Overview General Information Sustainable Gorvernace Social Sustainability Appendix Vingroup’s 2024 Sustainability Report 71 Environmental Sustainability Scope 1 Scope 2 Total 668,014 tCO2e Industrials - Technology Social Enterprises Real Estate & Services Total 668,014 tCO2e Scope 1 Scope 2 Total 787,615 tCO2e Industrials - Technology Social Enterprises Real Estate & Services Total 787,615 tCO2e 9.8% 90.2% 2023 27.8% 72.2% 2",
+          "confidence": "high"
+        },
+        {
+          "value": 1938144.77,
+          "rawValue": "1,938,144.77",
+          "unit": "tCO2e",
+          "qualityScore": 89.33,
+          "metricId": "scope3",
+          "pillar": "E",
+          "label": "Phát thải Scope 3",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "sourceTitle": "2024 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "tegory 4: Waste generated in operations; • Category 3: Business travel; • Category 3: Employee commuting; • Category 4: Upstream leased assets; • Category 5: Use of sold products. Scope 3 GHG emissions of VinFast Hai Phong Factory amounted to 1,938,144.77 tCO2e, accounting for 94% of the factory’s total GHG emissions (including all 3 scopes). Within Scope 3, the largest source of emissions came from the use stage of sold products (electric veh",
+          "confidence": "medium"
+        },
+        {
+          "value": 1938144.77,
+          "rawValue": "1,938,144.77",
+          "unit": "tCO2e",
+          "qualityScore": 94.0,
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "sourceTitle": "2024 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": ": Waste generated in operations; • Category 3: Business travel; • Category 3: Employee commuting; • Category 4: Upstream leased assets; • Category 5: Use of sold products. Scope 3 GHG emissions of VinFast Hai Phong Factory amounted to 1,938,144.77 tCO2e, accounting for 94% of the factory’s total GHG emissions (including all 3 scopes). Within Scope 3, the largest source of emissions came from the use stage of sold products (electric vehicles) in char",
+          "confidence": "medium"
+        },
+        {
+          "value": 824989.0,
+          "rawValue": "824,989",
+          "unit": "m3",
+          "qualityScore": 107.67,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "sourceTitle": "2024 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "to 2023 of the total waste generated was recycled 33.3% Water consumption decreased by nearly 7.2% compared to 2023 of treated wastewater were reused, accounting for 3.9% of total water consumption 824,989m3 More than 6.6 thousand tCO2e offset by solar power usage at Vinpearl, Vinhomes and VinUni VinFast saved over 2.7million kWh (equivalent to reducing approximately 1.8 thousand tCO2e) through energy efficiency initiatives VinBus contributed to directl",
+          "confidence": "high"
+        },
+        {
+          "value": 37.3,
+          "rawValue": "37.3",
+          "unit": "%",
+          "qualityScore": 103.67,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "sourceTitle": "2024 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "eral Information Sustainable Gorvernace Environmental Sustainability Sustainability Highlights Social Sustainability The average employee salary increased by 3.6% compared to 2023 Female employees account for 37.3% of the workforce VinHMS established Career Consultation Team (CCT), and VinCSS launched “Humans of VinCSS” series to enhance employee engagement Vinhomes sponsored 31 scientific research projects The VinIF Innovation Foundation granted nearl",
+          "confidence": "high"
+        },
+        {
+          "value": 256038.0,
+          "rawValue": "256,038",
+          "unit": "hours",
+          "qualityScore": 114.33,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "sourceTitle": "2024 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "e effectively practicing professional standards. In 2024, Vinschool organized 614 training courses with nearly 256,038 hours, with 76,750 employees participating, an average of 41 training hours/employee. 256,038 hours In 2024, Vinschool organized 614 training courses Overview General Information Sustainable Gorvernace Environmental Sustainability Appendix Vingroup’s 2024 Sustainability Report 107 Social Sustainability VinUni Culture E-learning - E.X",
+          "confidence": "high"
+        },
+        {
+          "value": 549150.0,
+          "rawValue": "549,150",
+          "unit": "hours",
+          "qualityScore": 112.33,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "sourceTitle": "2024 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "ty Appendix Vingroup’s 2024 Sustainability Report 104 Social Sustainability Topic S1 – Human Capital Development In 2024, Vinpearl dedicated 549,150 training hours, averaging 41.2 training hours per employee. Hundreds of high-potential staff were provided with structured learning pathways, and dozens of outstanding trainees were promoted following development programs. All leaders became internal trainers, sharing their knowledge and experience through 700 traini",
+          "confidence": "high"
+        },
+        {
+          "value": 151371.22,
+          "rawValue": "151.371,22",
+          "unit": "tCO2e",
+          "qualityScore": 104.33,
+          "metricId": "scope1",
+          "pillar": "E",
+          "label": "Phát thải Scope 1",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "2 tăng 70.072,06 tCO₂e do điện hóa, mở rộng quy mô cơ sở vật chất của Tập đoàn và tổ hợp sản xuất VinFast, mức tăng này được bù đắp đáng kể bởi mức giảm 151.371,22 tCO₂e phát thải Phạm vi 1. Sự đánh đổi này cho thấy quá trình chuyển từ động cơ đốt trong và nhiên liệu hóa thạch tại chỗ sang điện lưới và điện mặt trời tại chỗ đã giúp tránh phát thải ròng 81.299,16 tCO₂e. Mặc dù Tập đoàn vẫn nhận thức rõ cường độ phát thải của lưới điện quốc gia, v",
+          "confidence": "high"
+        },
+        {
+          "value": 70072.06,
+          "rawValue": "70.072,06",
+          "unit": "tCO2e",
+          "qualityScore": 106.0,
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "hạch tại chỗ (Phạm vi 1), nhu cầu năng lượng chuyển sang điện lưới (Phạm vi 2). Tuy nhiên, sự chuyển dịch này vẫn mang lại lợi ích môi trường đáng kể về tổng thể. Mặc dù phát thải Phạm vi 2 tăng 70.072,06 tCO₂e do điện hóa, mở rộng quy mô cơ sở vật chất của Tập đoàn và tổ hợp sản xuất VinFast, mức tăng này được bù đắp đáng kể bởi mức giảm 151.371,22 tCO₂e phát thải Phạm vi 1. Sự đánh đổi này cho thấy quá trình chuyển từ động cơ đốt trong và nhiê",
+          "confidence": "high"
+        },
+        {
+          "value": 787615.21,
+          "rawValue": "787.615,21",
+          "unit": "tCO2e",
+          "qualityScore": 105.0,
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "5 Phân tích hiệu quả hoạt động Năm 2025, Vingroup đạt dấu mốc quan trọng trong hành trình hướng tới trung hòa carbon, với tổng lượng phát thải KNK từ hoạt động vận hành giảm 9,3%. Tổng phát thải giảm từ 787.615,21 tCO₂e năm 2024 xuống 706.316,05 tCO₂e năm 2025, tương đương mức giảm tuyệt đối 81.299,16 tCO₂e. Kết quả này đặc biệt đáng ghi nhận trong bối cảnh hoạt động kinh doanh tiếp tục mở rộng, cho thấy Tập đoàn đã tách biệt thành công tăng trưởng k",
+          "confidence": "high"
+        },
+        {
+          "value": 968972.0,
+          "rawValue": "968.972",
+          "unit": "kWh",
+          "qualityScore": 68.33,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "se Cần Giờ đã khởi động công tác chuẩn bị để đạt Chứng nhận Xanh BREEAM Communities và ISO 37122:2019 (Đô thị thông minh). • N âng cao hiệu quả vận hành : Vinhomes giảm 1,4% lượng điện tiêu thụ tại các khu đô thị hiện hữu, tiết kiệm hơn 4,7 triệu kWh. Đồng thời, các hệ thống điện mặt trời trong danh mục tạo ra 968.972 kWh điện, giúp tránh phát thải 764 tCO₂e. VINHOMES (VHM) Chỉ số và kết quả thực hiện về môi trường Các sáng kiến trọng tâm năm 2025 C",
+          "confidence": "medium"
+        },
+        {
+          "value": 22068451.0,
+          "rawValue": "22.068.451",
+          "unit": "m3",
+          "qualityScore": 106.33,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "tâm chiến lược về tính tuần hoàn có khả năng chống chịu, cân bằng hiệu quả giữa việc mở rộng hoạt động nhanh chóng và nâng cao hiệu quả tài nguyên. Trong năm tài chính, tổng lượng nước tiêu thụ đạt 22.068.451 m³, tăng 8,9% so với năm trước. Mức tăng tiêu thụ này trực tiếp xuất phát từ việc mở rộng quy mô hoạt động công nghiệp của Tập đoàn, đặc biệt trong lĩnh vực sản xuất ô tô và nghỉ dưỡng. Tuy nhiên, quá trình mở rộng không được thực hiện bằng việ",
+          "confidence": "high"
+        },
+        {
+          "value": 51.0,
+          "rawValue": "51",
+          "unit": "%",
+          "qualityScore": 107.67,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "pearl tiếp tục giám sát tỷ lệ nữ ở cấp lãnh đạo T4 trở lên, với mục tiêu tối thiểu 30%. Năm 2025, Vinpearl báo cáo 56 lãnh đạo nữ và 54 lãnh đạo nam từ cấp T4 trở lên, tương đương tỷ lệ nữ 51% tại cấp này. Vinmec duy trì mục tiêu nữ giới chiếm trên 30% đội ngũ lãnh đạo cấp cao; tại ngày 31 tháng 12 năm 2025, nữ giới chiếm 30,3% nhóm lãnh đạo gồm Ban Lãnh đạo Công ty, Ban Giám đốc bệnh viện và các trung tâm xuất sắc. Vinmec cũng báo cáo 100% nhâ",
+          "confidence": "high"
+        },
+        {
+          "value": 743396.0,
+          "rawValue": "743.396",
+          "unit": "hours",
+          "qualityScore": 110.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "vực cốt lõi - văn hóa doanh nghiệp, kỹ năng mềm, phát triển lãnh đạo, cùng đào tạo chuyên môn và kỹ thuật. VinFast tổ chức 8.953 khóa đào tạo trong năm 2025, với tổng cộng 743.396 giờ đào tạo và 469.671 lượt CBNV tham dự; thời lượng đào tạo bình quân đạt 24,06 giờ trên mỗi lượt tham dự. Khung đào tạo bao gồm các chương trình tiêu biểu như “Tự hào VinFast”, các mô-đun kỹ năng mềm, phát triển lãnh đạo dựa trên năng lực và đào tạo kỹ thuật, sản xuất",
+          "confidence": "high"
+        },
+        {
+          "value": 404.0,
+          "rawValue": "404",
+          "unit": "hours",
+          "qualityScore": 108.0,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "nh tật liên quan đến công việc Mục 6.2.2 Tỷ lệ bệnh tật tổng hợp được lên kế hoạch công bố cho năm 2026 (giám sát vệ sinh lao động; tỷ lệ vượt ngưỡng theo từng địa điểm). 404-1 Số giờ đào tạo trung bình mỗi năm cho một nhân viên Mục 6.2.1 Công bố ở cấp độ đơn vị thành viên. Mức trung bình hợp nhất toàn Tập đoàn được lên kế hoạch công bố cho năm 2026. 404-2 Các chương trình nâng cao kỹ năng cho nhân viên và chương trình hỗ trợ chuyển đổi Mục 6.2.1 Chương trìn",
+          "confidence": "high"
+        },
+        {
+          "value": 2500.0,
+          "rawValue": "2.500",
+          "unit": "billion VND",
+          "qualityScore": 107.67,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "Việt Nam gồm 104.253 CBNV và lực lượng lao động toàn cầu khoảng 200.000 người là kênh đóng góp kinh tế trực tiếp trọng yếu thứ hai cho cộng đồng nơi Vingroup hoạt động. Quỹ hỗ trợ cộng đồng 2.500 tỷ đồng trong năm 2025 (Báo cáo Thường niên Vingroup 2025, Chương 5, trang 192). Các chương trình trọng điểm trong năm bao gồm chiến dịch “Tết Ấm cho Người nghèo” và chương trình phối hợp với Trung tâm Quốc gia Giáo dục Đặc biệt về sách giáo khoa chữ nổ",
+          "confidence": "high"
+        },
+        {
+          "value": 40.0,
+          "rawValue": "40",
+          "unit": "%",
+          "qualityScore": 104.0,
+          "metricId": "female_board_pct",
+          "pillar": "G",
+          "label": "Tỷ lệ nữ trong HĐQT/Ban quản lý",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "i Phòng, 14.376 nhân sự mới được đào tạo về DEI thông qua chương trình đào tạo tích hợp “Nhận thức ESG”. Mục tiêu ESG năm 2026 của VinFast bao gồm duy trì tối thiểu 40% thành viên nữ trong Hội đồng Quản trị trong suốt năm tài chính 2026. Vinhomes duy trì mục tiêu tăng tuyển dụng đa dạng - bao gồm phụ nữ, người khuyết tật và người thuộc các nhóm chưa được đại diện đầy đủ - lên tối thiểu 30% số nhân sự tuyển mới hằng năm, đồng thời duy trì tối thiểu 30% thành viên",
+          "confidence": "high"
+        },
+        {
+          "value": 37.5,
+          "rawValue": "37,5",
+          "unit": "%",
+          "qualityScore": 106.67,
+          "metricId": "board_independence_pct",
+          "pillar": "G",
+          "label": "Tỷ lệ thành viên HĐQT độc lập",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "ành viên Ban Giám đốc 4 Thành viên BKS 3 Tổng số (ông Nguyễn Việt Quang chỉ được tính một lần do đồng thời giữ vị trí tại HĐQT và Ban Giám đốc) 14 Trong đó Tỷ lệ nữ 8 (57%) HĐQT – Thành viên độc lập 3 (37,5%) Số quốc tịch 4 Số chuyên ngành 9 Tách biệt chức danh Chủ tịch HĐQT/ Tổng Giám đốc Có - do hai cá nhân khác nhau đảm nhiệm Số cuộc họp HĐQT trong năm 2025 49 (bao gồm các đợt lấy ý kiến bằng văn bản) Số nghị quyết ban hành trong năm 2025 49 Tỷ lệ tha",
+          "confidence": "high"
+        },
+        {
+          "value": 151371.22,
+          "rawValue": "151,371.22",
+          "unit": "tCO2e",
+          "qualityScore": 106.67,
+          "metricId": "scope1",
+          "pillar": "E",
+          "label": "Phát thải Scope 1",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "O₂e due to electrification and the expansion of the Group's physical footprint and the VinFast manufacturing complex, this was heavily offset by a reduction of 151,371.22 tCO₂e in Scope 1 emissions. This trade-off demonstrates that the transition from internal combustion and on-site fossil fuels to grid-based and onsite solar electricity resulted in a net avoidance of 81,299.16 tCO₂e. While the Group remains mindful of the carbon intensity of",
+          "confidence": "high"
+        },
+        {
+          "value": 3121.0,
+          "rawValue": "3,121",
+          "unit": "tCO2e",
+          "qualityScore": 106.67,
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "electricity consumption and associated GHG emissions. In practice, Vinhomes reduced electricity consumption by 1.45%, resulting in emissions reductions of more than 3,121 tCO₂e of Scope 2. • T his overperformance was partly due to the scope of Vinhomes’ committed target, which covered GHG reductions from existing urban area operations and excluded emissions arising from new operations in 2025. VINHOMES • V inpearl significantly exceeded its GH",
+          "confidence": "high"
+        },
+        {
+          "value": 144815.0,
+          "rawValue": "144,815",
+          "unit": "tCO2e",
+          "qualityScore": 106.67,
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "s 2025 Sustainability Report 146 • A dvanced Fuel Optimization : By optimizing vessel running schedules, reducing idle loads, and switching to electric equipment, Vinpearl reduced total emissions by 144,815 tCO2e (a 42% decrease YoY). • R enewable Energy and Refrigerant Transition: Solar power usage increased 1.6 times compared to 2024 (generating 9.6 million kWh). Vinpearl also replaced air conditioning refrigerants with low Global Warming Potential",
+          "confidence": "high"
+        },
+        {
+          "value": 327062962.0,
+          "rawValue": "327,062,962",
+          "unit": "kWh",
+          "qualityScore": 102.67,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "subsidiaries was mixed. Vinhomes maintained renewable energy consumption at 3.5 TJ, while non-renewable energy increased slightly from 1,217.8 TJ to 1,240.0 TJ. However, its grid electricity consumption decreased from 327,062,962 kWh to 322,328,007 kWh, indicating improved electricity efficiency in existing urban operations. Vinmec saw non-renewable energy consumption rise from 213.8 TJ to 248.0 TJ, mainly due to higher electricity demand in healthcare opera",
+          "confidence": "high"
+        },
+        {
+          "value": 67028.0,
+          "rawValue": "67,028",
+          "unit": "m3",
+          "qualityScore": 107.33,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "ume accounted for the majority of its waste profile, reflecting the material intensity of automotive and industrial manufacturing operations. VinFast also reported 1,544,144 m³ of water consumption, 67,028 m³ of wastewater reuse, and 832,516 m³ of wastewater discharge in 2025. VinFast’s sustainability disclosures also note waste segregation and recycling partnerships, increased use of recyclable packaging materials in logistics and spare parts managemen",
+          "confidence": "high"
+        },
+        {
+          "value": 31.1,
+          "rawValue": "31.1",
+          "unit": "%",
+          "qualityScore": 105.33,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "y pillar at year-end 2025 is shown in the table below. Workforce composition and growth in 2025 Workforce Demographic category Number Percentage % of total workforce GRI reference Female employees 32,415 31.1% 2-7 Male employees 71,838 68.9% 2-7 Under 30 years 39,186 37.6% 405-1 30–50 years 59,953 57.5% 405-1 Over 50 years 5,114 4.9% 405-1 Table 6.9. Workforce composition by gender and age (2025), Group-consolidated. Metrics and TargetsVingroup’s 2025",
+          "confidence": "high"
+        },
+        {
+          "value": 24.06,
+          "rawValue": "24.06",
+          "unit": "hours",
+          "qualityScore": 115.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "adership development, and professional and technical training. VinFast delivered 8,953 training courses in 2025, with 743,396 total training hours and 469,671 attendances; average training hours reached 24.06 hours per employee. The training framework included flagship programs such as \"Proud of VinFast\", soft skills modules, competency-based leadership development, and technical and manufacturing training delivered through both internal and external",
+          "confidence": "high"
+        },
+        {
+          "value": 12.0,
+          "rawValue": "12",
+          "unit": "hours",
+          "qualityScore": 110.0,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "ining for operational teams. VinBus delivered training programs tailored to electric public-transport and school- bus services, with 4,495 learner attendances and approximately 12 training hours per employee. VinSmart Future implemented more than 55 online and offline training Training and development programs in 2025, with 7,098 training hours and an average training-evaluation score of 4.41 out of 5; programs included onboarding, information security, VinSmart",
+          "confidence": "high"
+        },
+        {
+          "value": 2.5e-06,
+          "rawValue": "2,500",
+          "unit": "billion VND",
+          "qualityScore": 68,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "aste by 40.86 TONS ANNUALLY2.4 MILLION PLASTIC BOTTLES eliminating approximately About this reportVingroup’s 2025 Sustainability Report 14 Sustainability highlights in 2025 Social Community investment, healthcare access, inclusive education, workforce development, employee wellbeing, science and technology for social progress, and contribution to local communities. FOCUS AREAS The Kind Heart Foundation provided to support communities in 2025 2,500VND BILLI",
+          "confidence": "medium"
+        },
+        {
+          "value": 37.5,
+          "rawValue": "37.5",
+          "unit": "%",
+          "qualityScore": 106.67,
+          "metricId": "board_independence_pct",
+          "pillar": "G",
+          "label": "Tỷ lệ thành viên HĐQT độc lập",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "ment members 4 Supervisory Board members 3 Total (counting Mr. Nguyen Viet Quang once across both Board and Management positions) 14 In which Female representation 8 (57%) Board - Independent directors 3 (37.5%) Nationalities represented 4 Professional disciplines represented 9 Chairman / CEO separation Yes - separate individuals Board meetings held in 2025 49 (incl. written-opinion rounds) Resolutions issued in 2025 49 Attendance rate 100% GovernanceVingro",
+          "confidence": "high"
+        },
+        {
+          "value": 67112.0,
+          "rawValue": "67.112",
+          "unit": "tCO2e",
+          "qualityScore": 106.0,
+          "metricId": "scope1",
+          "pillar": "E",
+          "label": "Phát thải Scope 1",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_Vn.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2023",
+          "sourceType": "sustainability_report",
+          "snippet": "ụ cho các phương tiện, thiết bị, máy phát điện dự phòng…; rò rỉ các khí nhà kính từ hệ thống làm lạnh; phát thải từ xử lý nước thải… Năm 2023, Tập đoàn phát thải 67.112 tCO2e theo Phạm vi 1 từ các hoạt động sử dụng xăng, dầu diesel, LPG, xử lý nước thải và từ sự rò rỉ môi chất lạnh. Phát thải Phạm vi 2 là khí nhà kính phát thải từ quá trình sản xuất điện, nhiệt và các dạng năng lượng khác mà doanh nghiệp đã mua về sử dụng. Tại Vingroup, chúng tô",
+          "confidence": "high"
+        },
+        {
+          "value": 919231.0,
+          "rawValue": "919.231",
+          "unit": "tCO2e",
+          "qualityScore": 102.33,
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_Vn.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2023",
+          "sourceType": "sustainability_report",
+          "snippet": "ện dưới đây: Bảng 17. Phát thải khí nhà kính Phạm vi 1 và Phạm vi 2 Phát thải khí nhà kính gián tiếp khác (Phạm vi 3) Năm 2023, tổng lượng khí nhà kính phát thải theo Phạm vi 1 và Phạm vi 2 của Vingroup là 919.231 tCO2e, giảm 42% so với năm 2022. Trong đó, phát thải theo Phạm vi 1 chiếm 7% và phát thải theo Phạm vi 2 chiếm 93%. Ghi chú: (*) Từ năm 2023, VinES được sáp nhập vào VinFast nên các số liệu của VinFast trong năm 2022, 2023 được tính ba",
+          "confidence": "high"
+        },
+        {
+          "value": 919231.0,
+          "rawValue": "919.231",
+          "unit": "tCO2e",
+          "qualityScore": 78.0,
+          "metricId": "scope3",
+          "pillar": "E",
+          "label": "Phát thải Scope 3",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_Vn.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2023",
+          "sourceType": "sustainability_report",
+          "snippet": "t quả kiểm kê khí nhà kính Phạm vi 1 và Phạm vi 2 của Tập đoàn như thể hiện dưới đây: Bảng 17. Phát thải khí nhà kính Phạm vi 1 và Phạm vi 2 Phát thải khí nhà kính gián tiếp khác (Phạm vi 3) Năm 2023, tổng lượng khí nhà kính phát thải theo Phạm vi 1 và Phạm vi 2 của Vingroup là 919.231 tCO2e, giảm 42% so với năm 2022. Trong đó, phát thải theo Phạm vi 1 chiếm 7% và phát thải theo Phạm vi 2 chiếm 93%. Ghi chú: (*) Từ năm 2023, VinES được sáp nhập",
+          "confidence": "medium"
+        },
+        {
+          "value": 24515585.0,
+          "rawValue": "24.515.585",
+          "unit": "m3",
+          "qualityScore": 103.67,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_Vn.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2023",
+          "sourceType": "sustainability_report",
+          "snippet": "ợc triển khai, lượng chất thải được tái chế chiếm 18,4% tổng lượng chất thải phát sinh. Các công ty thành viên cũng tích cực triển khai các biện pháp sử dụng nước tiết kiệm, lượng nước tiêu thụ năm 2023 là 24.515.585 m3 , giảm gần 9,8% so với năm 2022. Bên cạnh đó, VinFast, Vinpearl và Vinhomes cũng tái sử dụng một phần nước thải sau xử lý phục vụ cho hoạt động tưới cây xanh, thảm cỏ và vệ sinh đường nội bộ. Các hoạt động cứu hộ, bảo tồn và chăm sóc",
+          "confidence": "high"
+        },
+        {
+          "value": 0.4,
+          "rawValue": "0,4",
+          "unit": "%",
+          "qualityScore": 107.33,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_Vn.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2023",
+          "sourceType": "sustainability_report",
+          "snippet": "– Đa dạng, bình đẳng và hòa nhập Xét về độ tuổi, cơ cấu năm 2023 như sau: từ 18-30 tuổi chiếm 38%, từ 31-40 chiếm 42%, từ 41-50 chiếm 15%, từ 51-60 chiếm 4% và trên 60 chiếm 0,4%. Tỷ lệ nữ giới – nam giới của Tập đoàn năm 2023 không thay đổi so với năm 2022, nữ giới chiếm 38%, nam giới chiếm 62%. Trong Bộ máy quản trị, tỷ lệ nữ giới lại chiếm đa số, 56% (xem chi tiết tại Chủ đề G1.1). 4,3% 3,2% 36,0% 13,9% Trình /dslash/uni1ED9 khác Cao /dslash",
+          "confidence": "high"
+        },
+        {
+          "value": 48900.0,
+          "rawValue": "48,9 nghìn",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_Vn.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2023",
+          "sourceType": "sustainability_report",
+          "snippet": "Ở lĩnh vực Vận chuyển hành khách công cộng, VinBus đã khuyến khích CBNV tham gia chương trình thi đua trong ngành, tạo cơ hội học hỏi, cọ sát chuyên môn và có tổng cộng 48,9 nghìn giờ đào tạo nội bộ với 9.251 lượt CBNV tham gia, trung bình 51 giờ đào tạo/CBNV. Các hoạt động đào tạo tại VinBus được tập trung chủ yếu đối với CBNV khối vận hành, gồm đào tạo cán bộ mới, tái đào tạo các chương trình thường niên, và tổ chức thi quy định quy chế. Cụ thể,",
+          "confidence": "high"
+        },
+        {
+          "value": 18.0,
+          "rawValue": "18.",
+          "unit": "hours",
+          "qualityScore": 109.0,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_Vn.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2023",
+          "sourceType": "sustainability_report",
+          "snippet": "20.0 40.0 60.0 80.0 100.0 120.0 24.4 37.2 58.1 11.8 9.3 43.6 0 500 1000 1500 2000 2021 2022 2023 2500 502 248 345 743 2030 38 Hình 17. Số lượng khoá đào tạo ở Vinfast Hình 18. Số giờ đào tạo trung bình ở Vinfast Tổng quan Quản trị bền vữngThông tin chung Môi trường bền vững Xã hội bền vững Phụ lục VINGROUP BÁO CÁO PHÁT TRIỂN BỀN VỮNG 2023 101 S1 – Phát triển nguồn nhân lực VinBigdata là một điểm sáng trong khối các công ty công nghệ chú trọng đến công tác p",
+          "confidence": "high"
+        },
+        {
+          "value": 87000.0,
+          "rawValue": "87",
+          "unit": "billion VND",
+          "qualityScore": 98.67,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_Vn.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2023",
+          "sourceType": "sustainability_report",
+          "snippet": "cho hạng mục Công nghệ xe và giải pháp di chuyển tiên tiến của CES 2024. ViGPT do VinBigdata phát triển – “ChatGPT phiên bản Việt” đầu tiên dành cho người dùng cuối với phiên bản cộng đồng và phiên bản doanh nghiệp. 87 nghìn tỷ đồng doanh số chủ yếu từ cụm dự án Vinhomes Ocean Park 2, 3 của Vinhomes 9.800 căn bất động sản tầng thấp từ cụm dự án Vinhomes Ocean Park 2, 3 được bàn giao đúng 99,7 nghìn tỷ đồng doanh số chưa ghi nhận Doanh thu thuần",
+          "confidence": "medium"
+        },
+        {
+          "value": 67112.0,
+          "rawValue": "67,112",
+          "unit": "tCO2e",
+          "qualityScore": 100.33,
+          "metricId": "scope1",
+          "pillar": "E",
+          "label": "Phát thải Scope 1",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_En.pdf",
+          "sourceTitle": "2023 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "for vehicles, equipment, and backup generators; refrigerant leakage from cooling systems; emissions from wastewater treatment facilities, among others. In 2023, the Group’s total Scope 1 emissions amounted to 67,112 tCO2e, attributed to gasoline, diesel, and LPG consumption, wastewater treatment operations, and refrigerant leakage. Scope 2 emissions cover indirect GHG emissions associated with purchased electricity, heat, and other forms of e",
+          "confidence": "high"
+        },
+        {
+          "value": 852120.0,
+          "rawValue": "852,120",
+          "unit": "tCO2e",
+          "qualityScore": 85.33,
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_En.pdf",
+          "sourceTitle": "2023 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "2023, Vingroup’s purchased electricity consumption from the national grid resulted in emissions of 852,120 tCO2e. Direct greenhouse gas emissions (Scope 1) Indirect GHG Emissions (Scope 2) E1 - Climate Resilience 72 Overview Sustainable GovernanceGeneral Information Environmental Sustainability Social Sustainability Appendix VINGROUP 2023 SUSTAINABILITY REPORT Scope 3 emissions encompass all other indirect emissions throughout our value chain",
+          "confidence": "medium"
+        },
+        {
+          "value": 852120.0,
+          "rawValue": "852,120",
+          "unit": "tCO2e",
+          "qualityScore": 105.0,
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_En.pdf",
+          "sourceTitle": "2023 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "purchased electricity, heat, and other forms of energy. In 2023, Vingroup’s purchased electricity consumption from the national grid resulted in emissions of 852,120 tCO2e. Direct greenhouse gas emissions (Scope 1) Indirect GHG Emissions (Scope 2) E1 - Climate Resilience 72 Overview Sustainable GovernanceGeneral Information Environmental Sustainability Social Sustainability Appendix VINGROUP 2023 SUSTAINABILITY REPORT Scope 3 emissions encompass all other indi",
+          "confidence": "high"
+        },
+        {
+          "value": 606000.0,
+          "rawValue": "606,000",
+          "unit": "kWh",
+          "qualityScore": 79.33,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_En.pdf",
+          "sourceTitle": "2023 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "3,000m² solar panel system installed on the adjacent lake surface generates up to 606,000 kWh of green energy annually, achieving potential savings of up to 17.4% in total annual energy consumption. The floating parking facility on Hai Au Street in Vinhomes Ocean Park features 2,200m² of solar panels, generating approximately 531,000 kWh annually. In 2023, solar power generation at Vinhomes Ocean Park saw a 15% decrease compared to 2022, attributed to r",
+          "confidence": "medium"
+        },
+        {
+          "value": 24515585.0,
+          "rawValue": "24,515,585",
+          "unit": "m3",
+          "qualityScore": 106.33,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_En.pdf",
+          "sourceTitle": "2023 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "ly companies. Additionally, in Vinhomes urban areas, reservoirs/lakes are constructed to collect rainwater for landscape irrigation and internal road cleaning. In 2023, Vingroup’s water consumption was 24,515,585 m3, decreasing nearly 9.8% compared to 2022. Pillar B, with P&Ls in real estate and services (real estate, hospitality and tourism, retail) operating nationwide, accounts for a substantial 96.5% of the group’s total water consumption. Water con",
+          "confidence": "high"
+        },
+        {
+          "value": 3810.0,
+          "rawValue": "3,810",
+          "unit": "hours",
+          "qualityScore": 112.67,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_En.pdf",
+          "sourceTitle": "2023 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "skills, adaptability, and application of the most advanced technology to their current products. In 2023, VinBrain hosted 25 training courses – totaling 3,810 hours, averaging 2.1 training hours per employee. VinBrain also encourages new ideas from employees by organizing regular innovation contests (Hackathons) or establishing a department/division-specific set of KPIs. VinCSS, VinHMS, VinITIS also regularly implement training courses on self-develo",
+          "confidence": "high"
+        },
+        {
+          "value": 3810.0,
+          "rawValue": "3,810",
+          "unit": "hours",
+          "qualityScore": 112.67,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_En.pdf",
+          "sourceTitle": "2023 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "skills, adaptability, and application of the most advanced technology to their current products. In 2023, VinBrain hosted 25 training courses – totaling 3,810 hours, averaging 2.1 training hours per employee. VinBrain also encourages new ideas from employees by organizing regular innovation contests (Hackathons) or establishing a department/division-specific set of KPIs. VinCSS, VinHMS, VinITIS also regularly implement training courses on self-development, cultur",
+          "confidence": "high"
+        },
+        {
+          "value": 24916068.0,
+          "rawValue": "24,916,068",
+          "unit": "kWh",
+          "qualityScore": 107.67,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2025/ENG%20Vingroup%20AR25.pdf",
+          "sourceTitle": "ENG%20Vingroup%20AR25.pdf",
+          "sourceType": "annual_report",
+          "snippet": "a 9% decrease compared to 2024 81 THOUSAND TONS OF CO2 Solar power systems at VinFast, Vinpearl, Vinhomes and VinUni generated equivalent to reducing 19,674 tons of CO2 from grid electricity consumption 24,916,068kWh 100% of waste were classified, of which 145 THOUSAND TONS were recycled, equivalent to 26% of total waste generated 900 THOUSAND M³ OF WASTEWATER Reused more than equivalent to 4.3% of total water consumption Completed the digitization of 100% o",
+          "confidence": "high"
+        },
+        {
+          "value": 871171.0,
+          "rawValue": "871,171",
+          "unit": "m3",
+          "qualityScore": 93.33,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2025/ENG%20Vingroup%20AR25.pdf",
+          "sourceTitle": "ENG%20Vingroup%20AR25.pdf",
+          "sourceType": "annual_report",
+          "snippet": "ent positions • 100% of employees received DEI training. Clean water and Sanitaiton Kind Heart Foundation and Vinmec • Reused 871,171 m³ of wastewater, equivalent to 4.2% of total water consumption. • 100% of water used met standards for production and domestic use. Affordable and Clean power Vingroup Total solar power generation across all P&Ls reached 24.9 million kWh, equivalent to reducing 19,674 tons of CO 2e compared with the no- installation scen",
+          "confidence": "medium"
+        },
+        {
+          "value": 24916068.0,
+          "rawValue": "24,916,068",
+          "unit": "kWh",
+          "qualityScore": 107.67,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2025/ENG%20Vingroup%20AR25_Chap%201-6.pdf",
+          "sourceTitle": "2025 Vingroup Annual Report",
+          "sourceType": "annual_report",
+          "snippet": "a 9% decrease compared to 2024 81 THOUSAND TONS OF CO2 Solar power systems at VinFast, Vinpearl, Vinhomes and VinUni generated equivalent to reducing 19,674 tons of CO2 from grid electricity consumption 24,916,068kWh 100% of waste were classified, of which 145 THOUSAND TONS were recycled, equivalent to 26% of total waste generated 900 THOUSAND M³ OF WASTEWATER Reused more than equivalent to 4.3% of total water consumption Completed the digitization of 100% o",
+          "confidence": "high"
+        },
+        {
+          "value": 871171.0,
+          "rawValue": "871,171",
+          "unit": "m3",
+          "qualityScore": 93.33,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2025/ENG%20Vingroup%20AR25_Chap%201-6.pdf",
+          "sourceTitle": "2025 Vingroup Annual Report",
+          "sourceType": "annual_report",
+          "snippet": "nt positions. • 100% of employees received DEI training. Clean water and Sanitaiton Kind Heart Foundation and Vinmec • Reused 871,171 m³ of wastewater, equivalent to 4.2% of total water consumption. • 100% of water used met standards for production and domestic use. Affordable and Clean power Vingroup Total solar power generation across all P&Ls reached 24.9 million kWh, equivalent to reducing 19,674 tons of CO 2e compared with the no- installation scen",
+          "confidence": "medium"
+        },
+        {
+          "value": 606.0,
+          "rawValue": "606",
+          "unit": "kWh",
+          "qualityScore": 97.33,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2022,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_VN.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2022",
+          "sourceType": "sustainability_report",
+          "snippet": "u. Mạng lưới điện của tòa tháp được trang bị hệ thống tấm quang điện rộng 3.000 m2 nổi trên mặt hồ liền kề, cung cấp năng lượng xanh lên tới 606 kWh/năm, tương đương gần 20% lượng điện tiêu thụ của TechnoPark Tower trong năm 2022. TechnoPark Tower là một trong số ít tòa nhà văn phòng tại Châu Á được thiết kế và vận hành theo tiêu chuẩn LEED Platinum – cấp độ cao nhất trong hệ thống tiêu chuẩn công trình xanh của Hoa Kỳ 73 Chương 3 Môi trường Vingrou",
+          "confidence": "medium"
+        },
+        {
+          "value": 20.4,
+          "rawValue": "20,4",
+          "unit": "%",
+          "qualityScore": 102.33,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2022,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_VN.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2022",
+          "sourceType": "sustainability_report",
+          "snippet": "quốc tế (IFC), Việt Nam có tỷ lệ phụ nữ tham gia hội đồng quản trị của các công ty niêm yết công khai cao nhất khu vực ASEAN với 15,4% (xếp sau Thái Lan với 20,4%). Tại Vingroup, tỷ lệ nữ giới trong bộ máy trung ương Tập đoàn là 60%, cao hơn tỷ lệ trung bình của Việt Nam nêu trên. Chúng tôi tự hào là một trong những công ty tiên phong thúc đẩy sự tham gia của phụ nữ vào các vị trí lãnh đạo tại Việt Nam, góp phần thu hẹp khoảng cách giới ở cấp",
+          "confidence": "high"
+        },
+        {
+          "value": 1500000.0,
+          "rawValue": "1,5 triệu",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2022,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_VN.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2022",
+          "sourceType": "sustainability_report",
+          "snippet": "n tỷ đồng Hơn Những cam kết và thành tựu phát triển bền vững nổi bật năm 2022 Vingroup Báo cáo Phát triển bền vững 2022 12Chương 1 Tổng quan Trao quyền cho nhân viên Hơn 1,5 triệu giờ đào tạo được cung cấp cho nhân viên ở mọi cấp độ nhân viên quay lại sau kỳ nghỉ thai sản Vingroup lọt vào danh sách Nơi làm việc tốt nhất trong 4 ngành: Kỹ thuật, Du lịch, Giáo dục và Bất động sảnđược trao đổi trong Chương trình “Go Green” của Vinhomes triển khai, đư",
+          "confidence": "high"
+        },
+        {
+          "value": 390443.0,
+          "rawValue": "390.443",
+          "unit": "hours",
+          "qualityScore": 115.33,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2022,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_VN.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2022",
+          "sourceType": "sustainability_report",
+          "snippet": "1. Nội dung đào tạo liên quan đến các kỹ năng công việc, nhân quyền và ứng dụng của nhân viên vào lĩnh vực an ninh. Năm 2022, tổng số giờ đào tạo của VinFast là 390.443 giờ với số giờ đào tạo trung bình mỗi nhân viên là 56,1 giờ (so với tổng số 183.919 giờ và trung bình 30,9 giờ đào tạo mỗi nhân viên vào năm 2021), mức tăng lần lượt là 112% và 81% so với năm 2021. Trong năm 2022, tổng số nhân viên tham gia đào tạo giảm 78% so với năm 2021 do chúng tôi chỉ tổ",
+          "confidence": "high"
+        },
+        {
+          "value": 90.0,
+          "rawValue": "90",
+          "unit": "billion VND",
+          "qualityScore": 87.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2022,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_VN.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2022",
+          "sourceType": "sustainability_report",
+          "snippet": "h sử Sứ mệnh của VINIF là tài trợ cho hoạt động nghiên cứu khoa học và đào tạo liên quan đến khoa học dữ liệu, từ đó hỗ trợ các giải pháp công nghệ mang lại lợi ích thiết thực cho cộng đồng. Ngày 25 tháng 10 năm 2022, chúng tôi đã công bố tài trợ gần 90 tỷ đồng cho 19 dự án Khoa học Công nghệ và 05 dự án Văn hóa - Lịch sử có giá trị thiết thực, có tiềm năng đóng góp cho sự phát triển bền vững của đất nước. Bên cạnh hỗ trợ tài chính, VINIF sẽ đồn",
+          "confidence": "medium"
+        },
+        {
+          "value": 131000.0,
+          "rawValue": "131,000",
+          "unit": "kWh",
+          "qualityScore": 105.33,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2022,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_EN%20new.pdf",
+          "sourceTitle": "2022 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "month. • Optimize the technology line operation in the painting shop by reduce the electricity consumption and the LPG con - sumption to dryer, estimated saving 131,000 kWh/month. Energy consumption 2019 2020 2021 2022 Manufacturing Activities Electricity (million kWh) 74.8 56.8 59.0 143.9 Variation -24% -21% +93% Trading activities Electricity (million kWh) 1.2 2.3 Variation +81% Vinfast also cooperates with reputable entities to conduct energy audits i",
+          "confidence": "high"
+        },
+        {
+          "value": 38000.0,
+          "rawValue": "38,000",
+          "unit": "m3",
+          "qualityScore": 68,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2022,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_EN%20new.pdf",
+          "sourceTitle": "2022 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "The company also uses rainwater to reduce water consumption from other sources. For detailed figures on Vinpearl water stewardship, please refer to Appendix 4, Table 26. Vinpearl Water Consumption Efficiency in 2021 and 2022 Also in the Pillar B, in the Real Estate sector, Vinhomes Ocean Park has a wastewater treatment plant with a capacity of 38,000 m3 / day-night, helping to treat the wastewater of the whole urban area before discharging it into the",
+          "confidence": "medium"
+        },
+        {
+          "value": 55515.0,
+          "rawValue": "55,515",
+          "unit": "hours",
+          "qualityScore": 117.67,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2022,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_EN%20new.pdf",
+          "sourceTitle": "2022 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "loyees 31.4 hours/employee for 45,452 employees 02 hours/employee for 175 employees 46 hours/employee for 946 employees 59 hours/employee 95,390 72,552 7,971 55,515 training hours training hours training hours training hours Vingroup’s 2022 Sustainability Report 93 Chapter 4 Social Healthcare sector In 2022, more than 5,000 in person and online classes were conducted, totaling more than 95,000 training hours. This roughly equates to an average of 31.",
+          "confidence": "high"
+        },
+        {
+          "value": 56.1,
+          "rawValue": "56.1",
+          "unit": "hours",
+          "qualityScore": 116.67,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2022,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_EN%20new.pdf",
+          "sourceTitle": "2022 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "of training related to job-related skills, human rights and employee applications to security. In 2022, total training hours of VinFast was 390,443 hours with an average number of training hours per employee of 56.1 hours, (against a tally of 183,919 hours and 30.9 average training hours per employee respectively in 2021) with an increased respectively of 112% and 81% compared to 2021. In 2022, the total number of employees who attended training decreased by 78%",
+          "confidence": "high"
+        }
+      ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 90.0,
+          "rawValue": "90",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2022,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_VN.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2022",
+          "sourceType": "sustainability_report",
+          "snippet": "h sử Sứ mệnh của VINIF là tài trợ cho hoạt động nghiên cứu khoa học và đào tạo liên quan đến khoa học dữ liệu, từ đó hỗ trợ các giải pháp công nghệ mang lại lợi ích thiết thực cho cộng đồng. Ngày 25 tháng 10 năm 2022, chúng tôi đã công bố tài trợ gần 90 tỷ đồng cho 19 dự án Khoa học Công nghệ và 05 dự án Văn hóa - Lịch sử có giá trị thiết thực, có tiềm năng đóng góp cho sự phát triển bền vững của đất nước. Bên cạnh hỗ trợ tài chính, VINIF sẽ đồn",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "90",
+          "repaired": true
+        },
+        {
+          "value": 131000.0,
+          "rawValue": "131,000",
+          "unit": "kWh",
+          "qualityScore": 105.33,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2022,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_EN%20new.pdf",
+          "sourceTitle": "2022 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "month. • Optimize the technology line operation in the painting shop by reduce the electricity consumption and the LPG con - sumption to dryer, estimated saving 131,000 kWh/month. Energy consumption 2019 2020 2021 2022 Manufacturing Activities Electricity (million kWh) 74.8 56.8 59.0 143.9 Variation -24% -21% +93% Trading activities Electricity (million kWh) 1.2 2.3 Variation +81% Vinfast also cooperates with reputable entities to conduct energy audits i",
+          "confidence": "high"
+        },
+        {
+          "value": 56.1,
+          "rawValue": "56,1",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2022,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/24016_ESG_Bao%20cao%20phat%20trien%20ben%20vung%20VGR%202022_VN.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2022",
+          "sourceType": "sustainability_report",
+          "snippet": "1. Nội dung đào tạo liên quan đến các kỹ năng công việc, nhân quyền và ứng dụng của nhân viên vào lĩnh vực an ninh. Năm 2022, tổng số giờ đào tạo của VinFast là 390.443 giờ với số giờ đào tạo trung bình mỗi nhân viên là 56,1 giờ (so với tổng số 183.919 giờ và trung bình 30,9 giờ đào tạo mỗi nhân viên vào năm 2021), mức tăng lần lượt là 112% và 81% so với năm 2021. Trong năm 2022, tổng số nhân viên tham gia đào tạo giảm 78% so với năm 2021 do chúng tôi chỉ tổ",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "390.443",
+          "repaired": true
+        },
+        {
+          "value": 67112.0,
+          "rawValue": "67.112",
+          "unit": "tCO2e",
+          "qualityScore": 106.0,
+          "metricId": "scope1",
+          "pillar": "E",
+          "label": "Phát thải Scope 1",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_Vn.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2023",
+          "sourceType": "sustainability_report",
+          "snippet": "ụ cho các phương tiện, thiết bị, máy phát điện dự phòng…; rò rỉ các khí nhà kính từ hệ thống làm lạnh; phát thải từ xử lý nước thải… Năm 2023, Tập đoàn phát thải 67.112 tCO2e theo Phạm vi 1 từ các hoạt động sử dụng xăng, dầu diesel, LPG, xử lý nước thải và từ sự rò rỉ môi chất lạnh. Phát thải Phạm vi 2 là khí nhà kính phát thải từ quá trình sản xuất điện, nhiệt và các dạng năng lượng khác mà doanh nghiệp đã mua về sử dụng. Tại Vingroup, chúng tô",
+          "confidence": "high"
+        },
+        {
+          "value": 919231.0,
+          "rawValue": "919.231",
+          "unit": "tCO2e",
+          "qualityScore": 102.33,
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_Vn.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2023",
+          "sourceType": "sustainability_report",
+          "snippet": "ện dưới đây: Bảng 17. Phát thải khí nhà kính Phạm vi 1 và Phạm vi 2 Phát thải khí nhà kính gián tiếp khác (Phạm vi 3) Năm 2023, tổng lượng khí nhà kính phát thải theo Phạm vi 1 và Phạm vi 2 của Vingroup là 919.231 tCO2e, giảm 42% so với năm 2022. Trong đó, phát thải theo Phạm vi 1 chiếm 7% và phát thải theo Phạm vi 2 chiếm 93%. Ghi chú: (*) Từ năm 2023, VinES được sáp nhập vào VinFast nên các số liệu của VinFast trong năm 2022, 2023 được tính ba",
+          "confidence": "high"
+        },
+        {
+          "value": 24515585.0,
+          "rawValue": "24,515,585",
+          "unit": "m3",
+          "qualityScore": 106.33,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2023,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/2023%20VGR%20Sustainability%20Report_En.pdf",
+          "sourceTitle": "2023 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "ly companies. Additionally, in Vinhomes urban areas, reservoirs/lakes are constructed to collect rainwater for landscape irrigation and internal road cleaning. In 2023, Vingroup’s water consumption was 24,515,585 m3, decreasing nearly 9.8% compared to 2022. Pillar B, with P&Ls in real estate and services (real estate, hospitality and tourism, retail) operating nationwide, accounts for a substantial 96.5% of the group’s total water consumption. Water con",
+          "confidence": "high"
+        },
+        {
+          "value": 668014.0,
+          "rawValue": "668,014",
+          "unit": "tCO2e",
+          "qualityScore": 107.67,
+          "metricId": "scope1",
+          "pillar": "E",
+          "label": "Phát thải Scope 1",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "sourceTitle": "2024 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "24 Sustainability Report 71 Environmental Sustainability Scope 1 Scope 2 Total 668,014 tCO2e Industrials - Technology Social Enterprises Real Estate & Services Total 668,014 tCO2e Scope 1 Scope 2 Total 787,615 tCO2e Industrials - Technology Social Enterprises Real Estate & Services Total 787,615 tCO2e 9.8% 90.2% 2023 27.8% 72.2% 2024 10% 21.4% 68.6% 2023 10% 18.4% 71.6% 2024 Topic E1.1 – GHG Measurement & Monitoring Topic E1 – Climate Resilien",
+          "confidence": "high"
+        },
+        {
+          "value": 668014.0,
+          "rawValue": "668,014",
+          "unit": "tCO2e",
+          "qualityScore": 105.67,
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "sourceTitle": "2024 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "y of Vingroup JSC. Overview General Information Sustainable Gorvernace Social Sustainability Appendix Vingroup’s 2024 Sustainability Report 71 Environmental Sustainability Scope 1 Scope 2 Total 668,014 tCO2e Industrials - Technology Social Enterprises Real Estate & Services Total 668,014 tCO2e Scope 1 Scope 2 Total 787,615 tCO2e Industrials - Technology Social Enterprises Real Estate & Services Total 787,615 tCO2e 9.8% 90.2% 2023 27.8% 72.2% 2",
+          "confidence": "high"
+        },
+        {
+          "value": 824989.0,
+          "rawValue": "824,989",
+          "unit": "m3",
+          "qualityScore": 107.67,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "sourceTitle": "2024 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "to 2023 of the total waste generated was recycled 33.3% Water consumption decreased by nearly 7.2% compared to 2023 of treated wastewater were reused, accounting for 3.9% of total water consumption 824,989m3 More than 6.6 thousand tCO2e offset by solar power usage at Vinpearl, Vinhomes and VinUni VinFast saved over 2.7million kWh (equivalent to reducing approximately 1.8 thousand tCO2e) through energy efficiency initiatives VinBus contributed to directl",
+          "confidence": "high"
+        },
+        {
+          "value": 37.3,
+          "rawValue": "37.3",
+          "unit": "%",
+          "qualityScore": 116,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2024,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/PTBV/2024%20VGR%20Sustainability%20Report%20EN%20-%20final.pdf",
+          "sourceTitle": "2024 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "eral Information Sustainable Gorvernace Environmental Sustainability Sustainability Highlights Social Sustainability The average employee salary increased by 3.6% compared to 2023 Female employees account for 37.3% of the workforce VinHMS established Career Consultation Team (CCT), and VinCSS launched “Humans of VinCSS” series to enhance employee engagement Vinhomes sponsored 31 scientific research projects The VinIF Innovation Foundation granted nearl",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "37.3",
+          "repaired": true
+        },
+        {
+          "value": 37.5,
+          "rawValue": "37.5",
+          "unit": "%",
+          "qualityScore": 106.67,
+          "metricId": "board_independence_pct",
+          "pillar": "G",
+          "label": "Tỷ lệ thành viên HĐQT độc lập",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "ment members 4 Supervisory Board members 3 Total (counting Mr. Nguyen Viet Quang once across both Board and Management positions) 14 In which Female representation 8 (57%) Board - Independent directors 3 (37.5%) Nationalities represented 4 Professional disciplines represented 9 Chairman / CEO separation Yes - separate individuals Board meetings held in 2025 49 (incl. written-opinion rounds) Resolutions issued in 2025 49 Attendance rate 100% GovernanceVingro",
+          "confidence": "high"
+        },
+        {
+          "value": 2500.0,
+          "rawValue": "2.500",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "Việt Nam gồm 104.253 CBNV và lực lượng lao động toàn cầu khoảng 200.000 người là kênh đóng góp kinh tế trực tiếp trọng yếu thứ hai cho cộng đồng nơi Vingroup hoạt động. Quỹ hỗ trợ cộng đồng 2.500 tỷ đồng trong năm 2025 (Báo cáo Thường niên Vingroup 2025, Chương 5, trang 192). Các chương trình trọng điểm trong năm bao gồm chiến dịch “Tết Ấm cho Người nghèo” và chương trình phối hợp với Trung tâm Quốc gia Giáo dục Đặc biệt về sách giáo khoa chữ nổ",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "2.500",
+          "repaired": true
+        },
+        {
+          "value": 24916068.0,
+          "rawValue": "24,916,068",
+          "unit": "kWh",
+          "qualityScore": 107.67,
+          "metricId": "electricity",
+          "pillar": "E",
+          "label": "Điện tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2025/ENG%20Vingroup%20AR25.pdf",
+          "sourceTitle": "ENG%20Vingroup%20AR25.pdf",
+          "sourceType": "annual_report",
+          "snippet": "a 9% decrease compared to 2024 81 THOUSAND TONS OF CO2 Solar power systems at VinFast, Vinpearl, Vinhomes and VinUni generated equivalent to reducing 19,674 tons of CO2 from grid electricity consumption 24,916,068kWh 100% of waste were classified, of which 145 THOUSAND TONS were recycled, equivalent to 26% of total waste generated 900 THOUSAND M³ OF WASTEWATER Reused more than equivalent to 4.3% of total water consumption Completed the digitization of 100% o",
+          "confidence": "high"
+        },
+        {
+          "value": 144815.0,
+          "rawValue": "144,815",
+          "unit": "tCO2e",
+          "qualityScore": 106.67,
+          "metricId": "ghg_total",
+          "pillar": "E",
+          "label": "Tổng phát thải KNK",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "s 2025 Sustainability Report 146 • A dvanced Fuel Optimization : By optimizing vessel running schedules, reducing idle loads, and switching to electric equipment, Vinpearl reduced total emissions by 144,815 tCO2e (a 42% decrease YoY). • R enewable Energy and Refrigerant Transition: Solar power usage increased 1.6 times compared to 2024 (generating 9.6 million kWh). Vinpearl also replaced air conditioning refrigerants with low Global Warming Potential",
+          "confidence": "high"
+        },
+        {
+          "value": 151371.22,
+          "rawValue": "151,371.22",
+          "unit": "tCO2e",
+          "qualityScore": 106.67,
+          "metricId": "scope1",
+          "pillar": "E",
+          "label": "Phát thải Scope 1",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "O₂e due to electrification and the expansion of the Group's physical footprint and the VinFast manufacturing complex, this was heavily offset by a reduction of 151,371.22 tCO₂e in Scope 1 emissions. This trade-off demonstrates that the transition from internal combustion and on-site fossil fuels to grid-based and onsite solar electricity resulted in a net avoidance of 81,299.16 tCO₂e. While the Group remains mindful of the carbon intensity of",
+          "confidence": "high"
+        },
+        {
+          "value": 3121.0,
+          "rawValue": "3,121",
+          "unit": "tCO2e",
+          "qualityScore": 106.67,
+          "metricId": "scope2",
+          "pillar": "E",
+          "label": "Phát thải Scope 2",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "electricity consumption and associated GHG emissions. In practice, Vinhomes reduced electricity consumption by 1.45%, resulting in emissions reductions of more than 3,121 tCO₂e of Scope 2. • T his overperformance was partly due to the scope of Vinhomes’ committed target, which covered GHG reductions from existing urban area operations and excluded emissions arising from new operations in 2025. VINHOMES • V inpearl significantly exceeded its GH",
+          "confidence": "high"
+        },
+        {
+          "value": 24.06,
+          "rawValue": "24.06",
+          "unit": "hours",
+          "qualityScore": 115.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "adership development, and professional and technical training. VinFast delivered 8,953 training courses in 2025, with 743,396 total training hours and 469,671 attendances; average training hours reached 24.06 hours per employee. The training framework included flagship programs such as \"Proud of VinFast\", soft skills modules, competency-based leadership development, and technical and manufacturing training delivered through both internal and external",
+          "confidence": "high"
+        },
+        {
+          "value": 22068451.0,
+          "rawValue": "22.068.451",
+          "unit": "m3",
+          "qualityScore": 116,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_C1-7_260731_VIE.pdf",
+          "sourceTitle": "Báo cáo Phát triển Bền vững 2025",
+          "sourceType": "sustainability_report",
+          "snippet": "tâm chiến lược về tính tuần hoàn có khả năng chống chịu, cân bằng hiệu quả giữa việc mở rộng hoạt động nhanh chóng và nâng cao hiệu quả tài nguyên. Trong năm tài chính, tổng lượng nước tiêu thụ đạt 22.068.451 m³, tăng 8,9% so với năm trước. Mức tăng tiêu thụ này trực tiếp xuất phát từ việc mở rộng quy mô hoạt động công nghiệp của Tập đoàn, đặc biệt trong lĩnh vực sản xuất ô tô và nghỉ dưỡng. Tuy nhiên, quá trình mở rộng không được thực hiện bằng việ",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "22.068.451",
+          "repaired": true
+        },
+        {
+          "value": 4.9,
+          "rawValue": "4.9",
+          "unit": "%",
+          "qualityScore": 116,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/Phat%20trien%20ben%20vung/Vingroup_ESG%20Report%202025_260803_15MB.pdf",
+          "sourceTitle": "2025 Sustainability Report",
+          "sourceType": "sustainability_report",
+          "snippet": "y pillar at year-end 2025 is shown in the table below. Workforce composition and growth in 2025 Workforce Demographic category Number Percentage % of total workforce GRI reference Female employees 32,415 31.1% 2-7 Male employees 71,838 68.9% 2-7 Under 30 years 39,186 37.6% 405-1 30–50 years 59,953 57.5% 405-1 Over 50 years 5,114 4.9% 405-1 Table 6.9. Workforce composition by gender and age (2025), Group-consolidated. Metrics and TargetsVingroup’s 2025",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "31.1",
+          "repaired": true
+        }
+      ],
       "coverage": {
-        "documents": 0,
-        "processedDocuments": 0,
-        "metrics": 0,
-        "canonicalMetrics": 0,
+        "documents": 15,
+        "processedDocuments": 13,
+        "metrics": 64,
+        "canonicalMetrics": 19,
         "externalAssessments": 0
       }
     },
     "VIX": {
       "symbol": "VIX",
       "name": "Công ty Cổ phần Chứng khoán VIX",
-      "checkedAt": "2026-10-29T07:08:56.864825+00:00",
+      "checkedAt": "2026-10-29T07:46:51.414879+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11863,7 +13412,7 @@
     "VJC": {
       "symbol": "VJC",
       "name": "Công ty Cổ phần Hàng không Vietjet",
-      "checkedAt": "2026-10-29T07:08:56.865076+00:00",
+      "checkedAt": "2026-10-29T07:46:51.415224+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11906,7 +13455,7 @@
     "VND": {
       "symbol": "VND",
       "name": "Công ty Cổ phần Chứng khoán VNDIRECT",
-      "checkedAt": "2026-10-29T07:08:56.865330+00:00",
+      "checkedAt": "2026-10-29T07:46:51.415589+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11949,7 +13498,7 @@
     "VNM": {
       "symbol": "VNM",
       "name": "Vinamilk",
-      "checkedAt": "2026-10-29T07:08:56.866930+00:00",
+      "checkedAt": "2026-10-29T07:46:51.419377+00:00",
       "entityType": "company",
       "sourcePolicy": "curated-issuer+disclosure-index",
       "documents": [
@@ -11971,7 +13520,11 @@
           "title": "Sustainable Development Report 2025 21/04/2026",
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
           "year": 2025,
-          "type": "esg_web_content"
+          "type": "sustainability_report",
+          "failedAttempts": 1,
+          "lastError": "HTTP Error 403: Forbidden",
+          "lastAttemptAt": "2026-10-29T07:46:55.908515+00:00",
+          "retryAfter": "2026-10-30T07:46:55.908531+00:00"
         },
         {
           "id": "9175fe66891921d98474",
@@ -12027,7 +13580,11 @@
           "title": "Sustainable Development Report 2024 08/04/2025",
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
           "year": 2024,
-          "type": "esg_web_content"
+          "type": "esg_web_content",
+          "failedAttempts": 1,
+          "lastError": "HTTP Error 403: Forbidden",
+          "lastAttemptAt": "2026-10-29T07:47:24.390512+00:00",
+          "retryAfter": "2026-10-30T07:47:24.390529+00:00"
         },
         {
           "id": "6d715d4ec9a7b00ae3a4",
@@ -12035,23 +13592,27 @@
           "title": "Sustainable Development Report 2023 25/11/2024",
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
           "year": 2023,
-          "type": "esg_web_content"
+          "type": "esg_web_content",
+          "failedAttempts": 1,
+          "lastError": "HTTP Error 403: Forbidden",
+          "lastAttemptAt": "2026-10-29T07:47:24.502423+00:00",
+          "retryAfter": "2026-10-30T07:47:24.502440+00:00"
         },
         {
           "id": "1c24997cae458f711465",
           "url": "https://d8um25gjecm9v.cloudfront.net/cms/1683632005_a8367043262056cdfbcdd116e02df5302f165403da2790ab1cb6d2c01c017a3e_eb25462496.pdf",
           "title": "Sustainable Development Report 2022 01/05/2023",
-          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2022,
-          "type": "sustainability_report"
+          "type": "esg_other"
         },
         {
           "id": "16fddf9bd8fa722e9ea7",
           "url": "https://d8um25gjecm9v.cloudfront.net/cms/1656491134_41ae55e12ed75bb850882ef4ed011f4daca3a27544f0298e20a6ec764b5208a8_f027637ffd.pdf",
           "title": "Sustainable Development Report 2021 29/06/2022",
-          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2021,
-          "type": "sustainability_report"
+          "type": "esg_other"
         },
         {
           "id": "9716df53301fd6a8eacb",
@@ -12059,15 +13620,19 @@
           "title": "Annual Report 2021 20/04/2022",
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
           "year": 2021,
-          "type": "annual_report"
+          "type": "annual_report",
+          "failedAttempts": 1,
+          "lastError": "HTTP Error 403: Forbidden",
+          "lastAttemptAt": "2026-10-29T07:47:32.480518+00:00",
+          "retryAfter": "2026-10-30T07:47:32.480538+00:00"
         },
         {
           "id": "7ade7cfe131a3537e217",
           "url": "https://d8um25gjecm9v.cloudfront.net/cms/1618816520_d81a593920bb76205f92770d36e54f2a14d7f124f481609fac1a85a0ddf1469a_8ccaedb48a.pdf",
           "title": "Sustainable Development Report 2020 19/04/2021",
-          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2020,
-          "type": "sustainability_report"
+          "type": "esg_other"
         },
         {
           "id": "e2416f843ad5707457b4",
@@ -12075,15 +13640,19 @@
           "title": "Annual Report 2020 02/04/2021",
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
           "year": 2020,
-          "type": "annual_report"
+          "type": "annual_report",
+          "failedAttempts": 1,
+          "lastError": "HTTP Error 403: Forbidden",
+          "lastAttemptAt": "2026-10-29T07:47:32.480549+00:00",
+          "retryAfter": "2026-10-30T07:47:32.480553+00:00"
         },
         {
           "id": "5362d83b7694d99d933c",
           "url": "https://d8um25gjecm9v.cloudfront.net/cms/1620207740_efeb3c478d0d7f272ab76bdfe2864f6cdbb1cd51d3739ce9e378f8978e337cca_e06293a342.pdf",
           "title": "Sustainable Development Report 2019 05/05/2020",
-          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2019,
-          "type": "sustainability_report"
+          "type": "esg_other"
         },
         {
           "id": "75bebeb40f3cb03e0bc6",
@@ -12097,9 +13666,9 @@
           "id": "8526e7620c1e65e59bf2",
           "url": "https://d8um25gjecm9v.cloudfront.net/cms/1555043744_c9bbd26b3ab88182c259011def719526d227eb55ea83143ed04fba61ec314474_35ca10c4fb.pdf",
           "title": "Sustainable Development Report 2018 12/04/2019",
-          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2018,
-          "type": "sustainability_report"
+          "type": "esg_other"
         },
         {
           "id": "928e24b00d190d3af03a",
@@ -12113,9 +13682,9 @@
           "id": "c869d0f8e61bfbc4cb2a",
           "url": "https://d8um25gjecm9v.cloudfront.net/cms/1680152612_554166be56badab60777b6e08015b116d35ca47d8bcca0e36efdf39f6d4ec16e_f6b730018e.pdf",
           "title": "Sustainable Development Report 2017 30/03/2018",
-          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2017,
-          "type": "sustainability_report"
+          "type": "esg_other"
         },
         {
           "id": "ad5b21a15164c86e43b2",
@@ -12129,9 +13698,9 @@
           "id": "68a09d484c951f48fd39",
           "url": "https://d8um25gjecm9v.cloudfront.net/cms/1680152281_c07086e3cf1777b8b7e2861a01f9a49416561bf595aaf739136c92dc17d97d0d_8043240ebc.pdf",
           "title": "Sustainable Development Report 2016 30/03/2017",
-          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2016,
-          "type": "sustainability_report"
+          "type": "esg_other"
         },
         {
           "id": "5c2d1921019dbf194116",
@@ -12145,9 +13714,9 @@
           "id": "6cf4b3a7700dc98c2da0",
           "url": "https://d8um25gjecm9v.cloudfront.net/cms/1680151960_ea36908a68c682c968cd77451dee321461caa02f0ef122d46a4d12c03c00bcd2_bcb1663f4f.pdf",
           "title": "Sustainable Development Report 2015 30/03/2016",
-          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2015,
-          "type": "sustainability_report"
+          "type": "esg_other"
         },
         {
           "id": "a625aca4425cda218666",
@@ -12161,9 +13730,9 @@
           "id": "e084367e3806f6d5f1e7",
           "url": "https://d8um25gjecm9v.cloudfront.net/cms/1430732750_5c41e87967dbbdca965a5259940b86b1e38c958b17a649c98582621a4c7a897f_b4787a72d7.pdf",
           "title": "Sustainable Development Report 2014 04/05/2015",
-          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2014,
-          "type": "sustainability_report"
+          "type": "esg_other"
         },
         {
           "id": "10deeb7330e242596d5d",
@@ -12185,7 +13754,7 @@
           "id": "11e5b393f18e068a381d",
           "url": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
           "title": "Sustainability",
-          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2012,
           "type": "esg_web_content",
           "contentType": "html"
@@ -12242,9 +13811,13 @@
           "id": "df2ba7f0c1da2ab4977a",
           "url": "https://d8um25gjecm9v.cloudfront.net/cms/Vinamilk_Quy_che_hoat_dong_san_giao_dich_TMDT_vinamilk_com_vn_Cap_nhat_03_09_2025_88a7d62ae9.pdf",
           "title": "Operating Regulations",
-          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
           "year": null,
-          "type": "annual_report"
+          "type": "esg_web_content",
+          "failedAttempts": 1,
+          "lastError": "HTTP Error 403: Forbidden",
+          "lastAttemptAt": "2026-10-29T07:47:24.693874+00:00",
+          "retryAfter": "2026-10-30T07:47:24.693892+00:00"
         }
       ],
       "metrics": [],
@@ -12261,7 +13834,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-10-29T07:08:56.867200+00:00",
+      "checkedAt": "2026-10-29T07:46:51.419761+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -12544,7 +14117,7 @@
     "VPI": {
       "symbol": "VPI",
       "name": "Công ty Cổ phần Phát triển Bất động sản Văn Phú",
-      "checkedAt": "2026-10-29T07:08:56.867205+00:00",
+      "checkedAt": "2026-10-29T07:46:51.419767+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -12562,7 +14135,7 @@
     "VPL": {
       "symbol": "VPL",
       "name": "Công ty Cổ phần Vinpearl",
-      "checkedAt": "2026-10-29T07:08:56.867487+00:00",
+      "checkedAt": "2026-10-29T07:46:51.420151+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -12759,7 +14332,7 @@
     "VPX": {
       "symbol": "VPX",
       "name": "Công ty Cổ phần Chứng khoán VPBank",
-      "checkedAt": "2026-10-29T07:08:56.867491+00:00",
+      "checkedAt": "2026-10-29T07:46:51.420156+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -12777,7 +14350,7 @@
     "VRE": {
       "symbol": "VRE",
       "name": "Công ty Cổ phần Vincom Retail",
-      "checkedAt": "2026-10-29T07:08:56.867750+00:00",
+      "checkedAt": "2026-10-29T07:46:51.420536+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -12881,7 +14454,7 @@
     "VSC": {
       "symbol": "VSC",
       "name": "Công ty Cổ phần Container Việt Nam",
-      "checkedAt": "2026-10-29T07:08:56.867753+00:00",
+      "checkedAt": "2026-10-29T07:46:51.420541+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -12899,7 +14472,7 @@
     "VTP": {
       "symbol": "VTP",
       "name": "Tổng Công ty Cổ phần Bưu chính Viettel",
-      "checkedAt": "2026-10-29T07:08:56.867756+00:00",
+      "checkedAt": "2026-10-29T07:46:51.420545+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -12960,13 +14533,17 @@
     },
     {
       "id": "abbe2ce24605a50fc5f0",
-      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
       "title": "Above-Board_Final.pdf",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2024,
-      "type": "susba",
+      "year": 2023,
+      "type": "sustainability_report",
       "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
+      "externalKind": "bank_assessment",
+      "contentType": "pdf",
+      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
+      "processedAt": "2026-10-29T07:47:32.036423+00:00",
+      "textLength": 61879
     },
     {
       "id": "c3ae1e1e5c89eec1b45b",
@@ -12984,13 +14561,17 @@
     },
     {
       "id": "c3ae1e1e5c89eec1b45b",
-      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
       "title": "2023 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2023,
-      "type": "susba",
+      "type": "climate_disclosure",
       "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
+      "externalKind": "bank_assessment",
+      "contentType": "pdf",
+      "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
+      "processedAt": "2026-10-29T07:47:36.257501+00:00",
+      "textLength": 98218
     },
     {
       "id": "abbe2ce24605a50fc5f0",
@@ -13007,9 +14588,9 @@
       "textLength": 61879
     },
     {
-      "id": "c6d164862c0327932c55",
-      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2017-compressed.pdf",
-      "title": "report-2017-compressed.pdf",
+      "id": "952a7cf2c85642395465",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2020.pdf",
+      "title": "report-2020.pdf",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2022,
       "type": "esg_other",
@@ -13147,6 +14728,16 @@
       "contentHash": "70eb5195f4e8faeea609ac94531b2547740cfee1be547c7280d046ba35706e11",
       "processedAt": "2026-10-28T19:59:43.687979+00:00",
       "textLength": 167687
+    },
+    {
+      "id": "c6d164862c0327932c55",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2017-compressed.pdf",
+      "title": "2017 Full Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2017,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
     },
     {
       "id": "c6d164862c0327932c55",
@@ -13809,7 +15400,7 @@
     {
       "id": "55e5ff5caff997330a73",
       "url": "https://www.wwf.sg/susba/assessments/",
-      "title": "Assessment page",
+      "title": "Assessments",
       "sourcePage": "https://www.wwf.sg/susba/about/",
       "year": null,
       "type": "susba",
@@ -13986,8 +15577,8 @@
     },
     {
       "url": "https://bidv.com.vn/wps/wcm/connect/fefc0922-870d-4585-9762-0b572c91106f/B%C3%A1o%2Bc%C3%A1o%2BPTBV%2BBIDV%2B2025_F.pdf?CACHEID=ROOTWORKSPACE-fefc0922-870d-4585-9762-0b572c91106f-pTY4MLM&MOD=AJPERES",
-      "status": "ok",
-      "documents": 1,
+      "status": "error",
+      "error": "The read operation timed out",
       "symbol": "BID"
     },
     {
@@ -14053,7 +15644,7 @@
     {
       "url": "https://24hmoney.vn/stock/ctd/report",
       "status": "ok",
-      "documents": 0,
+      "documents": 16,
       "symbol": "CTD"
     },
     {
@@ -14089,7 +15680,7 @@
     {
       "url": "https://24hmoney.vn/stock/ctr/report",
       "status": "ok",
-      "documents": 1,
+      "documents": 2,
       "symbol": "CTR"
     },
     {
@@ -14125,7 +15716,7 @@
     {
       "url": "https://24hmoney.vn/stock/dpm/report",
       "status": "ok",
-      "documents": 1,
+      "documents": 2,
       "symbol": "DPM"
     },
     {
@@ -14173,7 +15764,7 @@
     {
       "url": "https://bctn2025.fpt.com/",
       "status": "ok",
-      "documents": 8,
+      "documents": 5,
       "symbol": "FPT"
     },
     {
@@ -14227,13 +15818,13 @@
     {
       "url": "https://24hmoney.vn/stock/gvr/report",
       "status": "ok",
-      "documents": 1,
+      "documents": 2,
       "symbol": "GVR"
     },
     {
       "url": "https://24hmoney.vn/stock/hag/report",
       "status": "ok",
-      "documents": 2,
+      "documents": 4,
       "symbol": "HAG"
     },
     {
@@ -14502,8 +16093,8 @@
     },
     {
       "url": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-      "status": "ok",
-      "documents": 18,
+      "status": "error",
+      "error": "The read operation timed out",
       "symbol": "OCB"
     },
     {
@@ -14843,6 +16434,30 @@
       "symbol": "VIB"
     },
     {
+      "url": "https://vingroup.net/phat-trien-ben-vung",
+      "status": "ok",
+      "documents": 5,
+      "symbol": "VIC"
+    },
+    {
+      "url": "https://vingroup.net/quan-he-co-dong/bao-cao-thuong-nien",
+      "status": "ok",
+      "documents": 5,
+      "symbol": "VIC"
+    },
+    {
+      "url": "https://vingroup.net/en/investor-relations/",
+      "status": "ok",
+      "documents": 9,
+      "symbol": "VIC"
+    },
+    {
+      "url": "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2025/ENG%20Vingroup%20AR25.pdf",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "VIC"
+    },
+    {
       "url": "https://24hmoney.vn/stock/vic/report",
       "status": "ok",
       "documents": 0,
@@ -14870,6 +16485,18 @@
       "url": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
       "status": "ok",
       "documents": 32,
+      "symbol": "VNM"
+    },
+    {
+      "url": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
+      "status": "ok",
+      "documents": 14,
+      "symbol": "VNM"
+    },
+    {
+      "url": "https://d8um25gjecm9v.cloudfront.net/cms/VNMSR_EN_3ed5d9bc55.pdf",
+      "status": "error",
+      "error": "HTTP Error 403: Forbidden",
       "symbol": "VNM"
     },
     {
@@ -14989,13 +16616,13 @@
   ],
   "run": {
     "mode": "recent",
-    "documentsProcessed": 23,
-    "backlogBeforeRun": 81,
-    "activeBacklogBeforeRun": 32,
-    "backlogRemaining": 9,
-    "eligibleBacklog": 71,
-    "recentBacklog": 32,
-    "historicalBacklog": 33,
+    "documentsProcessed": 18,
+    "backlogBeforeRun": 75,
+    "activeBacklogBeforeRun": 18,
+    "backlogRemaining": 0,
+    "eligibleBacklog": 64,
+    "recentBacklog": 18,
+    "historicalBacklog": 40,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 24,
     "documentWorkers": 4
