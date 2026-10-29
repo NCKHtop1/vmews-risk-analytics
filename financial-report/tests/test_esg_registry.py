@@ -40,7 +40,8 @@ class EsgRegistryTests(unittest.TestCase):
         registry = esg.build_company_registry(json.loads(
             (ROOT / "config" / "esg_sources.json").read_text(encoding="utf-8")))
         generic = registry["VIC"]
-        self.assertEqual(generic["sourcePolicy"], "disclosure-index")
+        self.assertIn("curated-issuer", generic["sourcePolicy"])
+        self.assertIn("https://vingroup.net/phat-trien-ben-vung", generic["seed_urls"])
         self.assertFalse(generic.get("validated_metrics"))
         self.assertEqual(esg.fill_validated_metrics([], generic), [])
 
