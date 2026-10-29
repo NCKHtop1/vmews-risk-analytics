@@ -44,8 +44,9 @@ test('fixed-income charts read verified values from the published curves schema'
  assert.equal((cards.match(/class="money-tenor-curve"/g)||[]).length,1);
  assert.doesNotMatch(visible(cards),rejected);
  assert.doesNotMatch(visible(get('money-swap').innerHTML),rejected);
- assert.match(visible(cards),/Nguồn chưa cung cấp đường cong/);
- assert.match(cards,/href="https:\/\/vbma\.org\.vn\//,'Keep clickable, authentic source URL');
+ assert.doesNotMatch(visible(cards),/Nguồn chưa cung cấp đường cong|Nguồn đang theo dõi/);
+ assert.equal((cards.match(/data-download-curve=/g)||[]).length,1);
+ assert.match(cards,/data-download-curve="gov_bond"/,'Download the verified values displayed in the chart');
 });
 test('macro and Alpha copy no longer expose internal operations or lengthy explanations',()=>{
  for(const name of ['macro-dashboard.js','alpha-radar.js','ownership-intelligence.js','derivatives-market.js']){
