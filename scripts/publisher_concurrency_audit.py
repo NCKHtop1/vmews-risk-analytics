@@ -115,6 +115,39 @@ def concurrency_contract(text: str) -> tuple[bool, list[str]]:
     return not problems, problems
 
 
+
+# A single-file UI publisher can have an independent queue only when it uses
+# an atomic non-force push with bounded fetch/rebuild retries and a fixed stage list.
+# This prevents a long-running data publisher from freezing frontend releases
+# while continuing to reject unsafe or whole-tree main writers.
+ATOMIC_UI_BUNDLE=".github/workflows/finquery-bundle-sync.yml"
+
+def atomic_ui_bundle_contract(rel: str, text: str) -> tuple[bool, list[str]]:
+    if rel != ATOMIC_UI_BUNDLE:
+        return False, ["not an approved atomic UI publisher"]
+    active=_active_lines(text)
+    mandatory=(
+        "group: finquery-standalone-bundle-main",
+        "cancel-in-progress: false",
+        "queue: max",
+        "git fetch origin main",
+        "git reset --hard origin/main",
+        "python financial-report/scripts/build_cdn.py",
+        "git diff --cached --quiet",
+        "git commit -m 'Sync FinQuery standalone bundle [bundle-sync]'",
+        "if git push origin HEAD:main; then",
+        "for attempt in 1 2 3 4 5 6 7 8; do",
+    )
+    problems=[f"missing atomic-UI guard {item!r}" for item in mandatory if item not in active]
+    stages=re.findall(r"(?m)^\s*git\s+add\s+([^\n#]+)$",active)
+    if stages!=["financial-report/index.html financial-report/frontend/metrics.js"]:
+        problems.append("atomic publisher must stage exactly the standalone HTML and metrics file")
+    pushes=push_commands(active)
+    if pushes!=["git push origin HEAD:main"]:
+        problems.append("atomic publisher must make exactly one non-force push to main")
+    return not problems,problems
+
+
 DATA_BRANCH = "financial-market-data"
 
 
@@ -164,7 +197,8 @@ def audit() -> tuple[list[str], dict[str, list[str]]]:
             continue
         rel = path.relative_to(ROOT).as_posix()
         writers.append(rel)
-        ok, problems = concurrency_contract(text)
+        ok, problems = (atomic_ui_bundle_contract(rel,text) if rel == ATOMIC_UI_BUNDLE
+                        else concurrency_contract(text))
         if not ok:
             failures[rel] = problems
     return writers, failures
