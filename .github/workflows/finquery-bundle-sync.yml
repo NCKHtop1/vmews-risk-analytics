@@ -20,7 +20,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: finquery-standalone-bundle-main
+  group: vmews-main-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
   cancel-in-progress: false
   queue: max
 
