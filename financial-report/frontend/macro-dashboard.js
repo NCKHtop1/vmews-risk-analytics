@@ -68,7 +68,7 @@ function renderMacro(data){
   host.innerHTML='<article class="macro-viz-card macro-state-full" role="status"><h4>Đang kiểm tra nguồn vĩ mô</h4><p>Dữ liệu vĩ mô chưa kết nối được đến bản phát hành đã xác minh. Thử Cập nhật nguồn; ESG doanh nghiệp vẫn hoạt động độc lập nếu có dữ liệu.</p></article>';
   return;
  }
- host.innerHTML=FEATURES.map(c=>{
+ host.innerHTML=FEATURES.filter(c=>data?.datasets?.[c.id]).map(c=>{
   const ds=data?.datasets?.[c.id],src=sources.find(s=>s.id===c.id);
   const qualityNotice=ds?.qualityStatus==='warning'||src?.qualityStatus==='warning';
   // Quality is assessed per metric rather than suppressing every time-series
