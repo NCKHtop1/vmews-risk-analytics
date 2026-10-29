@@ -370,8 +370,12 @@ def build(core_path: Path, market_dir: Path, now: datetime | None = None, previo
             "date": origin,
             "dataFreshness": "CURRENT" if origin == completed else "STALE_EOD",
             "historicalAsOf": origin,
-            "close": anchor_price,
+            # The completed-session close must never be mislabeled as the
+            # intraday anchor when an optional live price feed becomes unavailable.
+            "close": latest_close,
             "coreClose": latest_close,
+            "forecastAnchorClose": anchor_price,
+            "forecastAnchorAt": quote_time,
             "liveQuoteAt": quote_time,
             "dailyVolatility": hist_vol,
             "lastSessionReturn": latest_close / bars[-2]["close"] - 1.0,
