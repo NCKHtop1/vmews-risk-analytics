@@ -277,14 +277,14 @@ class ChartController{
   const live=M.intraday(this.tf)&&Number.isFinite(age)&&age>=-60000&&age<=12*60000;
   if(node){
    node.textContent=''; // No banner, no numerical last-candle callout.
-   node.setAttribute('aria-hidden','true');
-   node.classList.toggle('is-live',!!live);
-   node.classList.toggle('is-last-verified',!live);
-   node.classList.toggle('is-candle',this.type==='candles');
-   node.classList.toggle('is-line',this.type!=='candles');
+   node.setAttribute?.('aria-hidden','true');
+   node.classList?.toggle('is-live',!!live);
+   node.classList?.toggle('is-last-verified',!live);
+   node.classList?.toggle('is-candle',this.type==='candles');
+   node.classList?.toggle('is-line',this.type!=='candles');
    const rising=last&&Number(last.close)>=Number(last.open);
-   node.style.setProperty('--last-tone',rising?'#0b9074':'#d24e54');
-   node.style.setProperty('--last-glow',rising?'rgba(11,144,116,.27)':'rgba(210,78,84,.27)');
+   node.style?.setProperty?.('--last-tone',rising?'#0b9074':'#d24e54');
+   node.style?.setProperty?.('--last-glow',rising?'rgba(11,144,116,.27)':'rgba(210,78,84,.27)');
    this.positionLatestCue();
   }
   if(!last||!this.series.price)return;
