@@ -49,8 +49,9 @@ function miniHistory(rows){
  const y=v=>64-(v-(lo-pad))/(hi-lo+2*pad)*55;
  const x=i=>8+i/(data.length-1)*624;
  const path=data.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+','+y(p.price).toFixed(1)).join(' ');
- const dots=data.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.price).toFixed(1)+'" r="2.5" fill="#2966bb"><title>'+esc(datetimeVN(p.time)+' · '+fmt(p.price))+'</title></circle>').join('');
- return '<svg class="derivative-spark derivative-spark-wide" viewBox="0 0 640 80" role="img" aria-label="Diễn biến giá hợp đồng"><path d="'+path+'" fill="none" stroke="#2966bb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'</svg>';
+ const precise=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:4});
+ const dots=data.map((p,i)=>'<circle data-fq-point="'+i+'" data-fq-x="'+x(i).toFixed(1)+'" data-fq-y="'+y(p.price).toFixed(1)+'" data-fq-label="'+esc(datetimeVN(p.time))+'" data-fq-series="Giá hợp đồng" data-fq-value="'+esc(precise.format(p.price))+'" data-fq-unit="điểm" cx="'+x(i).toFixed(1)+'" cy="'+y(p.price).toFixed(1)+'" r="2.8" fill="#2966bb"/>').join('');
+ return '<svg class="derivative-spark derivative-spark-wide" viewBox="0 0 640 80" data-fq-inspect="intraday" data-fq-top="4" data-fq-bottom="70" data-fq-color="#2966bb" tabindex="0" role="img" aria-label="Diễn biến giá hợp đồng"><path d="'+path+'" fill="none" stroke="#2966bb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'</svg>';
 }
 function diff(c){return Number.isFinite(c.change)?c.change:c.price-c.reference;}
 function move(c){const change=diff(c),pct=(c.price/c.reference-1)*100;
