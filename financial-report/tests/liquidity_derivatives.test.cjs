@@ -75,7 +75,7 @@ test('HNX VN30 and VN100 derivatives keep OI and volume with monthly labels',()=
  assert.match(out,/203/);
  assert.match(out,/08\/2026/);
  assert.match(out,/09\/2026/);
- assert.match(out,/gov\.hnx\.vn/);
+ assert.doesNotMatch(out,/gov\.hnx\.vn/);
 });
 test('unverified swap is empty, never fabricated; verified points show a curve',()=>{
  const {api,get}=makeEnv();
