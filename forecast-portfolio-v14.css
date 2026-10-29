@@ -1133,3 +1133,6 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
   .rumorQuietOrbit > i { animation: none; }
   .signalCard, .cardAction { transition: none; }
 }
+
+/* Distinct intraday forecast clock; not the completed historical EOD clock. */
+.forecastSyncMeta{display:block;min-height:14px;margin:1px 0 12px;color:#b6caa6;font:10px/1.5 "SFMono-Regular",Consolas,monospace;letter-spacing:.015em;overflow-wrap:anywhere}
