@@ -30,7 +30,7 @@ async function fetchVerifiedFile(file,validator,timeout=12000){
 const fetchMacro=()=>fetchVerifiedFile('macro.json',d=>d?.datasets&&
  Object.keys(d.datasets).length>0&&d.status!=='error',11000);
 const fetchCompanyEsg=()=>fetchVerifiedFile('company-esg.json',d=>
- d?.companies&&Object.keys(d.companies).length>=90&&d.status!=='error',15000);
+ d?.companies&&typeof d.companies==='object'&&Object.keys(d.companies).length>0&&d.status!=='error',15000);
 function periodLabel(value){return periodRank(value)!==null;}
 function periodRank(value){
  const s=String(value||'').trim();
@@ -227,7 +227,7 @@ window.addEventListener('finquery:symbol-change',e=>{
  const symbol=String(e.detail?.symbol||'').toUpperCase();
  if(!symbol||symbol===state.symbol)return;
  state.symbol=symbol;state.companyMetric='';
- if(state.rawMacro){state.data=normalizePayload(state.rawMacro,state.esg,symbol);render();}
+ if(state.rawMacro||state.esg){state.data=normalizePayload(state.rawMacro||{datasets:{},sources:[],checkedAt:''},state.esg,symbol);render();}
  else load();
 });
 load();
