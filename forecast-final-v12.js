@@ -23,16 +23,44 @@ const FETCH_TIMEOUT_MS=Math.max(30,Math.min(30000,Number(window.__FINQUERY_FOREC
 const CHART_EXECUTABLE_CLOSE=item=>finite(item?.rawClose)?+item.rawClose:finite(item?.close)?+item.close:NaN;
 let BASE=null,BASE_PROMISE=null,LEADER_BASE_PROMISE=null,last=null,btH=0,hoverPoints=[],chartRange=65,chartFrame=0,chartBounds=null;
 const JSON_PROMISES=new Map();
-const VN100_BUNDLE_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/finquery-vn100-data/data/finquery-vn100-forecast.json";
+// Product data is a light, independently published VN100 package. The immutable
+// complete backtest remains available as a last-known-good download fallback.
+const VN100_DATA_ROOT="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/finquery-vn100-data/data/";
+const VN100_MIRROR_ROOT="https://cdn.jsdelivr.net/gh/NCKHtop1/vmews-risk-analytics@finquery-vn100-data/data/";
+const VN100_PRODUCT_URL=VN100_DATA_ROOT+"finquery-vn100-product.json";
+const VN100_FULL_URL=VN100_DATA_ROOT+"finquery-vn100-forecast.json";
 let VN100_BUNDLE_PROMISE=null;
-async function loadVN100(){
-  if(INDEPENDENT_CORE_PAGE)return null;
+function validVN100(data){
+  if(data?.status!=="PASS"||data?.gates?.status!=="PASS"||data?.universe?.available!==100)return false;
+  const symbols=data?.dashboard?.symbols||{},charts=data?.dashboard?.charts||{};
+  if(Object.keys(symbols).length!==100||Object.keys(charts).length!==100)return false;
+  const time=Date.parse(data.generatedAt||"");
+  if(!Number.isFinite(time)||time>Date.now()+5*60_000)return false;
+  return Object.values(symbols).every(row=>Object.keys(row?.horizons||{}).length===5&&
+    [1,2,3,4,5].every(n=>{const q=row.horizons[String(n)];return q?.priceValidated===true&&
+    finite(q.expectedPrice)&&+q.expectedPrice>0&&finite(q.q20Price)&&finite(q.q80Price)}));
+}
+async function loadVN100(force=false){
+  if(force)VN100_BUNDLE_PROMISE=null;
   if(!VN100_BUNDLE_PROMISE){
     VN100_BUNDLE_PROMISE=(async()=>{
-      const data=await fetchJsonBounded(`${VN100_BUNDLE_URL}?refresh=${Math.floor(Date.now()/60000)}`,Math.min(FETCH_TIMEOUT_MS,8000));
-      if(data?.status!=="PASS"||data?.gates?.status!=="PASS"||data?.universe?.available!==100||Object.keys(data?.dashboard?.symbols||{}).length!==100)return null;
+      const revision=Math.floor(Date.now()/30000);
+      const targets=[
+        [VN100_PRODUCT_URL,11000],
+        [VN100_MIRROR_ROOT+"finquery-vn100-product.json",9000],
+        [VN100_FULL_URL,16000],
+      ];
+      for(const[url,timeout]of targets){
+        try{
+          const data=await fetchJsonBounded(url+"?refresh="+revision,timeout);
+          if(validVN100(data))return data;
+        }catch{}
+      }
+      return null;
+    })().then(data=>{
+      if(!data)VN100_BUNDLE_PROMISE=null; // Recover on the next visible refresh.
       return data;
-    })().catch(()=>null);
+    });
   }
   return VN100_BUNDLE_PROMISE;
 }
@@ -118,8 +146,28 @@ async function json(name){
   try{return await request}
   catch(error){if(JSON_PROMISES.get(name)===request)JSON_PROMISES.delete(name);throw error}
 }
-async function loadLeaderBase(){if(LEADER_BASE_PROMISE)return LEADER_BASE_PROMISE;LEADER_BASE_PROMISE=(async()=>{const bundle=await loadVN100();if(bundle)return{dash:bundle.dashboard,gates:bundle.gates,model:bundle.model};const[dash,gates]=await Promise.all([json("forecast-dashboard-v12.json"),json("phase-gates-v12.json")]);return{dash,gates,model:{promotion:dash.promotion}}})().catch(error=>{LEADER_BASE_PROMISE=null;JSON_PROMISES.clear();throw error});return LEADER_BASE_PROMISE}
-async function loadBase(){if(BASE)return BASE;if(BASE_PROMISE)return BASE_PROMISE;BASE_PROMISE=(async()=>{const bundle=await loadVN100();if(bundle?.status==='PASS'&&bundle.universe?.available===100&&Object.keys(bundle.dashboard?.symbols||{}).length===100){BASE={dash:bundle.dashboard,model:bundle.model,back:bundle.backtest,audit:{},gates:bundle.gates,market:null,legacyModel:bundle.model,source:"VN100"};return BASE}const[dash,legacyModel,audit,gates,market]=await Promise.all([json("forecast-dashboard-v12.json"),json("forecast-model-v12.json"),json("data-audit-v12.json"),json("phase-gates-v12.json"),json("forecast-market-v13.json").catch(()=>null)]);const model=market?.model||legacyModel,back=market?.backtest||await json("forecast-backtest-v12.json");BASE={dash,model,back,audit,gates,market,legacyModel};return BASE})().catch(error=>{BASE_PROMISE=null;JSON_PROMISES.clear();throw error});return BASE_PROMISE}
+function vn100Base(bundle){
+ return{dash:bundle.dashboard,model:bundle.model,back:bundle.backtest,
+   audit:{},gates:bundle.gates,market:null,legacyModel:bundle.model,
+   publishedAt:bundle.generatedAt,source:"VN100"};
+}
+async function loadLeaderBase(){
+ if(LEADER_BASE_PROMISE)return LEADER_BASE_PROMISE;
+ LEADER_BASE_PROMISE=loadBase().then(B=>({dash:B.dash,gates:B.gates,model:B.model}))
+   .catch(error=>{LEADER_BASE_PROMISE=null;throw error});
+ return LEADER_BASE_PROMISE;
+}
+async function loadBase(){
+ if(BASE)return BASE;
+ if(BASE_PROMISE)return BASE_PROMISE;
+ BASE_PROMISE=(async()=>{
+   const bundle=await loadVN100();
+   if(!bundle)throw Error("Dữ liệu VN100 đang gián đoạn. Đang giữ bản đã xác minh; chọn Thử tải lại để kết nối nguồn.");
+   BASE=vn100Base(bundle);
+   return BASE;
+ })().catch(error=>{BASE_PROMISE=null;throw error});
+ return BASE_PROMISE;
+}
 window.__VMEWS_LOAD_BASE__=loadBase;
 window.__VMEWS_LOAD_LEADER_BASE__=loadLeaderBase;
 window.__VMEWS_DATA_ROOT__=ROOT;
@@ -502,13 +550,21 @@ window.__VMEWS_APPLY_COMMUNITY_LIVE__=applyCommunity;
 async function renderSymbol(raw){const B=await loadBase();assertProduction(B);const sym=String(raw||"").trim().toUpperCase(),z=B.dash.symbols?.[sym];if(!z)throw Error(`${sym}: chưa có đủ dữ liệu để phân tích.`);$("#symbol").value=sym;setText("#sparkSymbol",sym);rerender(B,sym,z);const view=last?.view||z;setText("#status",`${sym} · dữ liệu ${z.date||B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}${z.dataFreshness==="STALE_EOD"?" · cần cập nhật":""}`);const url=new URL(location.href);url.searchParams.set("symbol",sym);history.replaceState(null,"",url.href)}
 window.__VMEWS_RENDER_SYMBOL__=renderSymbol;
 async function refreshCore(){
-  if(document.hidden)return;
-  if(last)rerender(last.B,last.sym,last.z);
-  try{
-    const coreRoot=CORE_ROOT;
-    const next=BASE?.source==="VN100"?await fetchJsonBounded(`${VN100_BUNDLE_URL}?refresh=${Date.now()}`,Math.min(FETCH_TIMEOUT_MS,2500)).then(x=>x?.dashboard):await fetchJsonBounded(`${coreRoot}/forecast-dashboard-v12.json?refresh=${Date.now()}`,12000);
-    if(BASE&&next.generatedAt!==BASE.dash.generatedAt&&next.asOf>=BASE.dash.asOf)location.reload();
-  }catch{}
+ if(document.hidden)return false;
+ try{
+  const bundle=await loadVN100(true);
+  if(!validVN100(bundle))return false;
+  const current=BASE?.publishedAt||BASE?.dash?.generatedAt||"";
+  if(Date.parse(bundle.generatedAt)<=Date.parse(current)||bundle.asOf<(BASE?.dash?.asOf||""))return false;
+  const selected=last?.sym||$("#symbol")?.value||"FPT";
+  BASE=vn100Base(bundle);BASE_PROMISE=Promise.resolve(BASE);LEADER_BASE_PROMISE=null;
+  quickButtons(BASE);
+  await renderSymbol(selected);
+  window.dispatchEvent(new CustomEvent("vmews:forecast-updated",{detail:{
+    asOf:bundle.asOf,generatedAt:bundle.generatedAt,coverage:bundle.universe
+  }}));
+  return true;
+ }catch(error){console.warn("VN100 refresh failed, keeping previously verified snapshot",error);return false}
 }
 async function init(){
   const q=(new URLSearchParams(location.search).get("symbol")||"FPT").toUpperCase();
@@ -520,8 +576,8 @@ async function init(){
       setText("#status",q+" · giá thực tế "+price(observed.price)+" · Forecast Core đang được tải và kiểm định độc lập.");
     }
   });
-  const hint=setTimeout(()=>{if(!BASE)setText("#status",q+" · đang tải Forecast Core dung lượng lớn; nếu quá hạn sẽ hiển thị cách thử lại.");},6500);
-  try{const B=await loadBase();assertProduction(B);quickButtons(B);await renderSymbol(q);void priceFetch.then(()=>{if(last?.B&&last.sym===q&&LIVE_QUOTES?.quotes?.[q])rerender(last.B,last.sym,last.B.dash.symbols[q]);}).catch(()=>{});bindChartHover();window.setInterval(()=>void refreshCore(),300000);window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);document.addEventListener("visibilitychange",()=>{void refreshCore();if(!document.hidden)void refreshLiveQuotes(true)});window.addEventListener("focus",()=>void refreshLiveQuotes(true));void refreshCommunity(B);window.setInterval(()=>{if(!document.hidden)void refreshCommunity(B)},120000);$("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);$("#symbol").addEventListener("keydown",e=>{if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError)});window.addEventListener("resize",()=>{if(last)draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[])})}catch(e){showError(e)}finally{clearTimeout(hint)}}
+  const hint=setTimeout(()=>{if(!BASE)setText("#status",q+" · đang tải dữ liệu VN100; các nguồn dự phòng sẽ được kiểm tra nếu tải chậm.");},5000);
+  try{const B=await loadBase();assertProduction(B);quickButtons(B);await renderSymbol(q);void priceFetch.then(()=>{if(last?.B&&last.sym===q&&LIVE_QUOTES?.quotes?.[q])rerender(last.B,last.sym,last.B.dash.symbols[q]);}).catch(()=>{});bindChartHover();window.setInterval(()=>void refreshCore(),300000);window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);document.addEventListener("visibilitychange",()=>{void refreshCore();if(!document.hidden)void refreshLiveQuotes(true)});window.addEventListener("focus",()=>void refreshLiveQuotes(true));void refreshCommunity(BASE);window.setInterval(()=>{if(!document.hidden&&BASE)void refreshCommunity(BASE)},180000);$("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);$("#symbol").addEventListener("keydown",e=>{if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError)});window.addEventListener("resize",()=>{if(last)draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[])})}catch(e){showError(e)}finally{clearTimeout(hint)}}
 function showError(e){console.error(e);setText("#status",String(e?.message||e));setText("#modelBadge","HOSE · FORECAST CORE TẠM GIÁN ĐOẠN");const dateNode=$("#snapshotDate");if(dateNode&&dateNode.textContent.trim()==="ĐANG TẢI")dateNode.textContent="TẠM GIÁN ĐOẠN";const status=$("#status");if(status){const retry=document.createElement("button");retry.type="button";retry.textContent="Thử tải lại";retry.onclick=()=>location.reload();status.append(" ",retry);}const d=$("#decision");if(d){d.textContent="DỰ BÁO TẠM KHÓA";d.className="decision warning"}setText("#summary",String(e?.message||e))}
 window.addEventListener?.("vmews:session-updated",()=>{if(last?.B&&last?.sym){rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);const view=last.view;setText("#status",`${last.sym} · dữ liệu ${last.z.date||last.B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}`)}});
 window.addEventListener?.("vmews:live-quotes-updated",()=>{if(last?.B&&last?.sym){rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);const view=last.view;setText("#status",`${last.sym} · forecast ${last.z.date||last.B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"LIVE"} ${price(view.close)}`:""}`)}});
