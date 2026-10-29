@@ -137,8 +137,9 @@ def run():
                 """)
                 pan=driver.execute_script("""
                     const c=window.__qaChart,scale=c.chart.timeScale(),cue=document.getElementById('chart-latest-candle');
+                    const before=cue.hidden;c.positionLatestCue();
                     return {viewport:scale.getVisibleLogicalRange(),lastIndex:c.bars.length-1,
-                      cueHidden:cue.hidden,css:getComputedStyle(cue).display};
+                      priorHidden:before,cueHidden:cue.hidden,css:getComputedStyle(cue).display};
                 """)
                 print("FINQUERY_CHART_PAN_DIAGNOSTIC",width,json.dumps(pan),flush=True)
                 assert pan["cueHidden"], ("cue must disappear when user pans away",pan)
