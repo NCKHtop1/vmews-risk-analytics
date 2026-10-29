@@ -1,15 +1,20 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-10-28T16:30:52.272545+00:00",
+  "generatedAt": "2026-10-29T02:39:15.565169+00:00",
   "marketModelDate": "2026-10-28",
   "requested": 25,
-  "reused": 24,
-  "fetched": 1,
+  "reused": 25,
+  "fetched": 0,
   "cached": 25,
   "symbols": {
     "PPT": {
       "rows": 1074,
       "modelAsOf": "2026-10-20",
+      "source": "Vnstock"
+    },
+    "PDB": {
+      "rows": 1764,
+      "modelAsOf": "2026-10-28",
       "source": "Vnstock"
     },
     "KOS": {
@@ -126,11 +131,6 @@
       "rows": 1280,
       "modelAsOf": "2026-08-13",
       "source": "Yahoo Finance"
-    },
-    "PDB": {
-      "rows": 1764,
-      "modelAsOf": "2026-10-28",
-      "source": "Vnstock"
     }
   },
   "errors": [],
