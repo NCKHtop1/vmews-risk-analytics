@@ -72,7 +72,7 @@ function render(){
  '<div class="derivative-chart-wrap">'+miniHistory(c.series)+'</div>'+
  ''
  :'<p class="money-source-pending">Chưa có dữ liệu.</p>';
- const headers=['Mã / Kỳ hạn','Giá','Thay đổi','Khối lượng','Vị thế mở','Dư mua 1','Dư bán 1','Nguồn'];
+ const headers=['Mã / Kỳ hạn','Giá','Thay đổi','Khối lượng','Vị thế mở','Dư mua 1','Dư bán 1'];
  const rows=subset.map(x=>{
   const selected=x.symbol===state.selected;
   const cls='derivative-live-contract'+(selected?' active':'');
@@ -80,15 +80,14 @@ function render(){
   '<td class="derivative-contract-title"><button type="button" data-futures-select="'+esc(x.symbol)+'"><strong>'+esc(x.symbol)+'</strong><small>'+esc(x.alias)+' · '+esc(x.expiry)+'</small></button></td>'+
   '<td class="derivative-last"><strong>'+fmt(x.price)+'</strong></td><td>'+move(x)+'</td><td>'+fmt(x.volume,0)+'</td><td>'+fmt(x.openInterest,0)+'</td>'+
   '<td>'+fmt(x.bid1)+' <small>('+fmt(x.bidVol1,0)+')</small></td><td>'+fmt(x.ask1)+' <small>('+fmt(x.askVol1,0)+')</small></td>'+
-  '<td class="derivative-time">'+esc(datetimeVN(x.sourceTime))+'</td></tr>';
+  '</tr>';
  }).join('');
- host.innerHTML='<div class="derivative-head"><div><span class="macro-viz-kicker">HNX · KBS</span><h4>Bảng giá hợp đồng tương lai</h4><p>'+esc(badge)+' · Giá lúc '+esc(datetimeVN(state.data.latestSourceTime))+'</p></div><button type="button" class="money-refresh" data-futures-refresh>Làm mới</button></div>'+
+ host.innerHTML='<div class="derivative-head"><div><span class="macro-viz-kicker">HỢP ĐỒNG TƯƠNG LAI</span><h4>Bảng giá hợp đồng tương lai</h4><p>'+esc(badge)+' · Giá lúc '+esc(datetimeVN(state.data.latestSourceTime))+'</p></div><button type="button" class="money-refresh" data-futures-refresh>Làm mới</button></div>'+
  '<div class="derivative-filter" role="group" aria-label="Lọc chỉ số hợp đồng">'+choice+'</div>'+
  '<div class="derivative-focus-select"><label for="futures-contract-select">Chọn hợp đồng</label><select id="futures-contract-select" aria-label="Chọn hợp đồng tương lai">'+selector+'</select></div>'+
  '<section class="derivative-focus" aria-label="Chi tiết giá và biểu đồ hợp đồng">'+pricePanel+'</section>'+
  '<div class="derivative-board-scroll"><table class="derivative-board-table"><thead><tr>'+headers.map(x=>'<th>'+esc(x)+'</th>').join('')+'</tr></thead><tbody>'+
- (rows||'<tr><td colspan="8">Không có hợp đồng phù hợp bộ lọc.</td></tr>')+'</tbody></table></div>'+
- '<div class="macro-viz-source"><span>Nguồn giá: KBS · cập nhật định kỳ.</span><a href="https://kbbuddywts.kbsec.com.vn/" target="_blank" rel="noopener noreferrer">Nguồn giá ↗</a></div>';
+ (rows||'<tr><td colspan="7">Không có hợp đồng phù hợp bộ lọc.</td></tr>')+'</tbody></table></div>';
 }
 async function load(){
  if(state.loading)return;state.loading=true;state.lastAttempt=Date.now();
