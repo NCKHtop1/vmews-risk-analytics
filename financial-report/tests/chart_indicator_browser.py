@@ -35,7 +35,7 @@ def bars():
 def fixture(folder):
     vendor = folder / "vendor"
     vendor.mkdir()
-    for name in ("chart-math.js", "chart-engine.js"):
+    for name in ("chart-math.js", "chart-engine.js", "market.css"):
         shutil.copy2(FRONT / name, folder / name)
     shutil.copy2(FRONT / "vendor/lightweight-charts-5.0.9.js",
                  vendor / "lightweight-charts-5.0.9.js")
@@ -45,17 +45,17 @@ def fixture(folder):
     controls = ("chart-zoom-in", "chart-zoom-out", "chart-fit", "chart-focus-latest", "chart-fullscreen", "indicator-open", "indicator-close", "chart-marker-toggle")
     buttons = "".join(f'<button type="button" id="{name}">{name}</button>' for name in controls)
     html = f"""<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-    <style>*{{box-sizing:border-box}}body{{margin:0;padding:12px;font-family:Arial}}#chart-terminal{{max-width:1080px;margin:auto;min-width:0}}
+    <link rel="stylesheet" href="market.css"><style>*{{box-sizing:border-box}}body{{margin:0;padding:12px;font-family:Arial}}#chart-terminal{{max-width:1080px;margin:auto;min-width:0}}
     #price-chart{{height:540px;min-height:400px;width:100%;overflow:hidden}}[hidden]{{display:none!important}}
     #chart-insight-markers{{height:10px}}</style></head>
     <body><div id="chart-terminal">
     <select id="chart-interval"><option value="1d" selected>Ngày</option><option value="1m">1 phút</option></select>
-    <select id="chart-type"><option value="candles" selected>Nến</option></select>
+    <select id="chart-type"><option value="candles" selected>Nến</option><option value="line">Đường</option><option value="area">Vùng</option></select>
     <select id="chart-period"><option value="recent" selected>Gần nhất</option><option value="0">All</option></select>
     {buttons}<span id="chart-status"></span><span id="chart-range-label"></span>
     <div id="chart-oscillator-nav" hidden><label for="chart-oscillator-focus">Pane</label><select id="chart-oscillator-focus"></select><small id="chart-oscillator-hint"></small></div>
     <dialog id="chart-indicators"><input id="indicator-search"><div id="indicator-list">{checks}</div><div id="indicator-selected-empty"></div><p id="chart-indicator-error"></p></dialog>
-    <div id="price-chart"></div><div id="chart-insight-markers"></div><div id="chart-latest-candle" hidden></div>
+    <div class="chart-canvas-wrap"><div id="price-chart"></div><div id="chart-insight-markers"></div><span id="chart-latest-candle" class="chart-latest-candle" aria-hidden="true" hidden></span></div>
     <div id="price-readout"></div><div id="signal-toast-stack"></div><div id="signal-feed"></div>
     <div id="signal-title"></div><div id="signal-status"></div><p id="chart-stream-status" hidden></p>
     </div>
@@ -95,22 +95,75 @@ def run():
                 focus=driver.execute_script("""
                     const c=window.__qaChart,range=c.chart.timeScale().getVisibleLogicalRange();
                     const latest=document.getElementById('chart-latest-candle');
+                    const chart=document.getElementById('price-chart');
+                    const observed=latest?.getBoundingClientRect();
+                    const root=chart?.getBoundingClientRect();
+                    const exactX=c.chart.timeScale().timeToCoordinate(c.bars.at(-1).time);
+                    const markerX=observed?.left+(observed?.width||0)/2;
+                    const style=latest?getComputedStyle(latest):null;
                     return {from:range?.from,to:range?.to,bars:c.bars.length,
-                      label:latest?.textContent||'',period:document.getElementById('chart-period').value};
+                      label:latest?.textContent||'',period:document.getElementById('chart-period').value,
+                      tf:document.getElementById('chart-interval').value,
+                      cueHidden:latest?.hidden,cueClass:latest?.className,
+                      pulse:style?.animationName,markerWidth:observed?.width,
+                      xError:Math.abs(markerX-(root?.left||0)-exactX)};
                 """)
                 assert focus["period"]=="recent", focus
                 assert focus["to"]>=focus["bars"]-1, "latest observation outside initial view"
-                assert focus["to"]-focus["from"]<=85, "too many tiny candles in initial view"
-                assert "NẾN GẦN NHẤT" in focus["label"] and "MBB" in focus["label"], focus
+                assert focus["to"]-focus["from"]<=30, "default daily chart must show readable candles without user zoom"
+                assert focus["tf"]=="1d", ("chart must enter in daily candles", focus)
+                assert focus["label"]=="", ("no intrusive latest-candle value banner", focus)
+                assert not focus["cueHidden"] and "is-candle" in focus["cueClass"], focus
+                assert focus["pulse"]=="finquery-bar-focus", ("last candle itself must pulse", focus)
+                assert 5 <= focus["markerWidth"] <= 24 and focus["xError"]<7, ("cue must track last candle, not chart corner", focus)
                 driver.execute_script("""
-                    const c=window.__qaChart;
-                    c.chart.timeScale().setVisibleLogicalRange({from:12,to:37});
-                    document.getElementById('chart-focus-latest').click();
+                    const select=document.getElementById('chart-type');
+                    select.value='line';select.dispatchEvent(new Event('change',{bubbles:true}));
                 """)
-                centered=driver.execute_script("""
-                    return window.__qaChart.chart.timeScale().getVisibleLogicalRange();
+                line=driver.execute_script("""
+                    const cue=document.getElementById('chart-latest-candle');
+                    return {line:cue.classList.contains('is-line'),hidden:cue.hidden,
+                      label:cue.textContent,animate:getComputedStyle(cue).animationName};
                 """)
-                assert centered["to"]>=focus["bars"]-1, "one-click latest focus does not recenter"
+                assert line=={"line":True,"hidden":False,"label":"","animate":"finquery-bar-focus"},line
+                driver.execute_script("""
+                    const select=document.getElementById('chart-type');
+                    select.value='candles';select.dispatchEvent(new Event('change',{bubbles:true}));
+                """)
+                # Wait for a responsive chart resize to settle, then verify
+                # historical navigation and disappearance of the last-bar glow.
+                pan=WebDriverWait(driver,6,poll_frequency=.12).until(
+                    lambda d:d.execute_script("""
+                      const c=window.__qaChart,period=document.getElementById('chart-period');
+                      if(period.value!=='0'){
+                        period.value='0';period.dispatchEvent(new Event('change',{bubbles:true}));
+                      }
+                      const scale=c.chart.timeScale();
+                      const before=scale.getVisibleLogicalRange();
+                      if(!before||before.to>=c.bars.length-1)
+                        scale.setVisibleLogicalRange({from:12,to:37});
+                      c.positionLatestCue();
+                      const viewport=scale.getVisibleLogicalRange();
+                      const cue=document.getElementById('chart-latest-candle');
+                      return viewport?.to<c.bars.length-2&&cue.hidden
+                        ? {viewport,lastIndex:c.bars.length-1,cueHidden:cue.hidden}
+                        : null;
+                    """)
+                )
+                print("FINQUERY_CHART_PAN_DIAGNOSTIC",width,json.dumps(pan),flush=True)
+                driver.execute_script("document.getElementById('chart-focus-latest').click();")
+                # LightweightCharts applies a range on the next render pass.
+                # Verify the settled viewport, not the previous synchronous frame.
+                centered=WebDriverWait(driver,6,poll_frequency=.1).until(
+                    lambda d:d.execute_script("""
+                      const ctrl=window.__qaChart,range=ctrl.chart.timeScale().getVisibleLogicalRange();
+                      ctrl.positionLatestCue();
+                      return range?.to>=ctrl.bars.length-1
+                        ? {from:range.from,to:range.to,cueHidden:document.getElementById('chart-latest-candle').hidden}
+                        : null;
+                    """)
+                )
+                assert centered["to"]>=focus["bars"]-1 and not centered["cueHidden"], ("one-click latest focus does not recenter",centered)
                 print("CHART_LATEST_FOCUS",width,json.dumps(focus),flush=True)
                 driver.execute_script("""
                     const dialog=document.getElementById('chart-indicators');

@@ -900,3 +900,36 @@ body.strategy-lab-view .strategy-page{display:block}
 @keyframes finquery-last-eod-attention{0%{box-shadow:0 0 0 2px rgba(61,121,203,.08)}45%{box-shadow:0 0 0 8px rgba(61,121,203,.22),0 7px 25px rgba(28,72,138,.16)}100%{box-shadow:0 0 0 3px rgba(61,121,203,.11),0 6px 21px rgba(28,72,138,.15)}}
 @media(prefers-reduced-motion:reduce){.chart-latest-candle.is-last-verified:not(.is-live){animation:none}}
 @media(max-width:670px){.macro-company-picker{width:100%;min-width:0}.macro-company-picker select{width:100%}}
+
+
+/* Chart UX: the latest candle itself is the cue. No floating text banner.
+   Anchor tracks the actual time/price coordinates, including pan and zoom. */
+.chart-canvas-wrap>.chart-latest-candle{
+ position:absolute;right:auto!important;bottom:auto!important;
+ z-index:9;display:block;max-width:none!important;min-width:0!important;
+ margin:0!important;padding:0!important;
+ background:transparent!important;border:2px solid var(--last-tone,#0b9074)!important;
+ border-radius:3px!important;
+ color:var(--last-tone,#0b9074)!important;
+ box-shadow:0 0 0 2px var(--last-glow,rgba(11,144,116,.24));
+ transform:translate(-50%,-50%);
+ pointer-events:none!important;white-space:normal!important;
+ animation:finquery-bar-focus 2.6s ease-in-out infinite!important;
+}
+.chart-canvas-wrap>.chart-latest-candle.is-line{
+ border-radius:50%!important;
+ background:var(--last-tone,#0b9074)!important;
+ border:2px solid #fff!important;
+}
+.chart-canvas-wrap>.chart-latest-candle.is-last-verified{
+ opacity:.72;
+ animation-duration:3.2s!important;
+}
+.chart-canvas-wrap>.chart-latest-candle[hidden]{display:none!important}
+@keyframes finquery-bar-focus{
+ 0%,100%{opacity:.65;box-shadow:0 0 0 1px var(--last-glow,rgba(11,144,116,.24));}
+ 50%{opacity:1;box-shadow:0 0 0 6px var(--last-glow,rgba(11,144,116,.24));}
+}
+@media(prefers-reduced-motion:reduce){
+ .chart-canvas-wrap>.chart-latest-candle{animation:none!important;opacity:.95}
+}
