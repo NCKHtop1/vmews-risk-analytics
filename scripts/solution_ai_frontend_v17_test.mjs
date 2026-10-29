@@ -365,7 +365,7 @@ test("direct Gemini receives audited context and guardrails without exposing the
 });
 
 
-test("current Gemini generateContent grounding exposes answers and safe source links", async () => {
+test("current Gemini grounds answers internally without public source links", async () => {
   const requests = [];
   const { nodes } = await setup(async (url, options) => {
     requests.push({ url, options });
@@ -405,10 +405,8 @@ test("current Gemini generateContent grounding exposes answers and safe source l
   const answer = nodes.get("#solutionAiMessages").children.at(-1);
   assert.match(textOf(answer), /chuyển đổi số/);
   const references = answer.children.find(child => child.className === "aiSources");
-  assert.equal(references.children.length, 1);
-  assert.equal(references.children[0].href, "https://fpt.com/vi/nha-dau-tu");
-  assert.equal(references.children[0].rel, "noopener noreferrer");
-  assert.match(nodes.get("#solutionAiStatus").textContent, /nghiên cứu web/);
+  assert.equal(references, undefined, "No source links should be exposed to the user");
+  assert.match(nodes.get("#solutionAiStatus").textContent, /nghiên cứu mở rộng/);
   const openNews = requests.find(request => request.url.includes("api.gdeltproject.org"));
   assert.equal(openNews.options.headers, undefined);
   const provider = requests.find(request => /:generateContent$/.test(request.url) && !String(request.options?.body || "").includes("Reply with exactly OK"));
@@ -456,11 +454,11 @@ test("unavailable Google Search falls back to embedded open sources without cann
   assert.equal(JSON.parse(providers[1].options.body).tools, undefined);
   assert.match(JSON.parse(providers[1].options.body).contents[0].parts[0].text, /Kinh tế Việt Nam và điều hành lãi suất/);
   assert.doesNotMatch(JSON.parse(providers[1].options.body).contents[0].parts[0].text, /"fundCount":17/);
-  assert.match(nodes.get("#solutionAiStatus").textContent, /nghiên cứu web/);
+  assert.match(nodes.get("#solutionAiStatus").textContent, /nghiên cứu mở rộng/);
   const answer = nodes.get("#solutionAiMessages").children.at(-1);
   assert.ok(answer.children.some(child => /triển vọng kinh tế/.test(child.textContent)));
   const references = answer.children.find(child => child.className === "aiSources");
-  assert.equal(references.children[0].href, "https://example.org/viet-nam-lai-suat");
+  assert.equal(references, undefined, "Fallback should keep sources internal");
 });
 
 
