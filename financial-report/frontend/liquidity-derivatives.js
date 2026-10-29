@@ -161,8 +161,9 @@ function renderON(p){
  const difference=prev?last.value-prev.value:null;
  host.innerHTML=cardHeader('Lãi suất qua đêm',fmt(last.value),'%/năm',dateVN(last.date))+
  '<p class="money-card-caption">'+(difference===null?'':((difference>=0?'+':'')+fmt(difference)+' điểm % so với '+dateVN(prev.date)))+'</p>'+
- '<div class="money-chart">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe',width:Math.max(250,host.clientWidth-36)})+'</div>'+
+ '<div class="money-chart money-on-interactive">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe',width:Math.max(250,host.clientWidth-36)})+'<div class="money-on-tooltip" role="tooltip" hidden><span data-on-tooltip-date></span><strong><span data-on-tooltip-rate></span> <small>%/năm</small></strong></div></div>'+
  onEntryForm();
+ bindONTooltip();
 }
 function renderFutures(p){
  const root=$('money-futures');if(!root)return;
