@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""End-to-end Forecast Core no-hang and nine-symbol navigation smoke on real domain.
+"""End-to-end Forecast Core no-hang and VN100 symbol navigation smoke on real domain.
 
 The UI may explicitly withhold stale forecasts, but must finish loading, show a
 recoverable error if data is unavailable, never print fake current-session
@@ -18,7 +18,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 
 DOMAIN = os.environ.get("FINQUERY_FORECAST_URL", "https://finquery.info.vn/forecast-final.html")
-DISPUTED = ("AGR", "ASP", "BTP", "C47", "EIB", "HDB", "LSS", "MIG", "TLD")
+DISPUTED = ("FPT", "MBB", "HPG", "VCB", "MWG", "SSI", "VNM", "TCB", "CTG")
 URL = DOMAIN + ("&" if "?" in DOMAIN else "?") + "symbol=FPT&smoke=forecast-core"
 RESULTS = Path("forecast-core-browser-evidence")
 RESULTS.mkdir(exist_ok=True)
