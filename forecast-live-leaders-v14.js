@@ -643,6 +643,22 @@
     }
   }
 
+  // The 30-minute VN100 refresh replaces the model in memory: refresh the
+  // leaderboard without waiting for a hard page reload or the retired core.
+  window.addEventListener("vmews:forecast-updated",async()=>{
+    try{
+      const load=window.__VMEWS_LOAD_LEADER_BASE__||window.__VMEWS_LOAD_BASE__;
+      const next=await load();
+      if(next?.gates?.status!=="PASS"||next?.model?.promotion?.status!=="PASS")return;
+      state.base=next;state.session=null;window.__VMEWS_SESSION__=null;
+      state.candidates=finalLeaderboard(next,null,{all:true,includeNonPositive:true});
+      state.universe=finalLeaderboard(next,null,{all:true});
+      state.defensive=state.universe.length===0;
+      state.rows=finalLeaderboard(next,null,{filter:state.filter,includeNonPositive:state.defensive});
+      $("#snapshotDate").textContent=`${next.dash.asOf||"—"}${sessionStamp()}`;
+      refreshMode();renderPulse();renderCards();scheduleRotation();
+    }catch(error){console.warn("VN100 leaderboard refresh failed",error)}
+  });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();
 })();
