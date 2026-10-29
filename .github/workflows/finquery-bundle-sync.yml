@@ -20,7 +20,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: vmews-main-data-publisher-${{ github.event_name == 'pull_request' && github.sha || 'main' }}
+  group: finquery-standalone-bundle-main
   cancel-in-progress: false
   queue: max
 
@@ -43,7 +43,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          for attempt in 1 2 3; do
+          for attempt in 1 2 3 4 5 6 7 8; do
             git fetch origin main
             git reset --hard origin/main
             python financial-report/scripts/build_cdn.py
