@@ -30,8 +30,16 @@ async function renderMethodProof(){
     <article class="proofCard"><span>So với giá không đổi</span><b>${pctOrDash(mean(skills))}</b><small>mức cải thiện sai số · độ phủ vùng ${pctOrDash(mean(coverage))}</small></article>`;
    return;
   }
-  const holdoutRows=metrics.map(x=>+(x.n||0)).filter(Number.isFinite);
-  box.textContent=holdoutRows.length?"Đã tải "+Math.min(...holdoutRows).toLocaleString("vi-VN")+" quan sát kiểm định.":"Chưa có kết quả kiểm định.";
+  // Keep the independent full-HOSE backtest view intact. FinQuery VN100
+  // uses the compact four-card proof above, never invented legacy rank IC.
+  const holdoutRows=metrics.map(x=>+(x.n||0)).filter(Number.isFinite),
+    rank=metrics.map(x=>+(x.rankIC||0)).filter(Number.isFinite),
+    coverage=metrics.map(x=>+(x.coverage20_80||0)).filter(Number.isFinite),
+    improved=metrics.every(x=>+(x.executableMAESkill||0)>0),u=model.universe||{};
+  box.innerHTML=`<article class="proofCard"><span>Mẫu kiểm định</span><b>${holdoutRows.length?Math.min(...holdoutRows).toLocaleString("vi-VN")+"+":"—"}</b><small>mỗi kỳ dự báo</small></article>
+    <article class="proofCard"><span>Sai số so với giá không đổi</span><b>${improved?"TỐT HƠN":"CẦN XEM LẠI"}</b><small>T+1 đến T+5</small></article>
+    <article class="proofCard"><span>IC xếp hạng bình quân</span><b>${rank.length?pct(rank.reduce((a,b)=>a+b,0)/rank.length):"—"}</b><small>trên dữ liệu chưa từng học</small></article>
+    <article class="proofCard"><span>Độ phủ HOSE</span><b>${u.currentSymbols||"—"} mã</b><small>${coverage.length?`vùng giá phủ ${pct(coverage.reduce((a,b)=>a+b,0)/coverage.length)}`:""}</small></article>`;
  }catch{box.innerHTML='<div class="empty">Chưa tải được kết quả kiểm định.</div>'}
 }
 
