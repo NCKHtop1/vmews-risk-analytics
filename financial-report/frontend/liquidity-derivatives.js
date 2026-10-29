@@ -53,10 +53,30 @@ function tenorCurve(points,{title='',unit='',color='#2e74bb',width=600}={}){
  return'<svg class="money-tenor-curve" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(title+' · '+pts.length+' kỳ hạn · '+unit)+'">'+grid+zero+
   '<path d="'+path+'" stroke="'+color+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'+circles+labels+'</svg>';
 }
-function vbmaSourceIcon(url,label){
- if(!url)return'';
- const svg='<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M5 17v3h14v-3"/></svg>';
- return'<a class="money-vbma-download" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" title="'+esc(label)+'" aria-label="'+esc(label)+'">'+svg+'</a>';
+// Download exactly the verified curve shown on screen, never an unvalidated source file.
+function curveDownloadButton(kind,title){
+ const svg='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M5 17v3h14v-3"/></svg>';
+ return '<button type="button" class="money-vbma-download" data-download-curve="'+esc(kind)+'" title="'+esc('Tải CSV '+title)+'" aria-label="'+esc('Tải CSV '+title)+'">'+svg+'</button>';
+}
+function downloadCurveCsv(kind){
+ const labels={swap:'Hoán đổi USD/VND',gov_bond:'Lợi suất trái phiếu Chính phủ',fi_bond:'Trái phiếu và chứng chỉ tiền gửi',short_benchmark:'Lãi suất tham chiếu ngắn hạn'};
+ if(!Object.prototype.hasOwnProperty.call(labels,kind))return;
+ const p=state.payload||{};
+ const row=kind==='swap'?p.vbmaSwap:(p.vbmaCurves||p.curves||{})[kind];
+ if(!row||!['verified','retained'].includes(row.status)||!Array.isArray(row.points)||
+    (kind!=='swap'&&!['approved','source_attributed'].includes(row.licenseStatus))||
+    !/^\d{4}-\d{2}-\d{2}$/.test(row.asOf||''))return;
+ const points=row.points.filter(x=>x&&typeof x.tenor==='string'&&/^[\w -]{1,12}$/.test(x.tenor)&&typeof x.value==='number'&&Number.isFinite(x.value));
+ if(points.length<2)return;
+ const cell=x=>'"'+String(x??'').replace(/^[=+@]/,"'$&").replace(/"/g,'""')+'"';
+ const csv=['date,indicator,tenor,value,unit',...points.map(x=>
+   [cell(row.asOf),cell(labels[kind]),cell(x.tenor),String(x.value),cell(row.unit||'')].join(','))].join('\r\n')+'\r\n';
+ const blob=new Blob(['\ufeff',csv],{type:'text/csv;charset=utf-8'});
+ const url=URL.createObjectURL(blob);
+ const link=document.createElement('a');
+ link.href=url;link.download='finquery-'+kind+'-'+row.asOf+'.csv';
+ document.body.appendChild(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function monthBar(a,b,{unit='',color='#416eca',labelA='Tháng trước',labelB='Tháng này'}={}){
  const values=[a,b];if(values.some(x=>typeof x!=='number'||!Number.isFinite(x)||x<0))return'<div class="macro-no-chart">Chưa có dữ liệu.</div>';
@@ -65,7 +85,8 @@ function monthBar(a,b,{unit='',color='#416eca',labelA='Tháng trước',labelB='
  return'<div class="money-bar-compare" aria-label="Đối chiếu theo tháng">'+make(a,labelA,'.43')+make(b,labelB,'1')+'</div><span class="money-bar-unit">'+esc(unit)+'</span>';
 }
 function cardHeader(label,value,unit,period){
- return'<div class="macro-viz-head"><div><span class="macro-viz-kicker">'+esc(period)+'</span><h4>'+esc(label)+'</h4></div><div class="money-main-num"><strong>'+esc(value)+'</strong><small>'+esc(unit)+'</small></div></div>';
+ const date=/^\d{2}\/\d{2}\/\d{4}$/.test(String(value||''));
+ return'<div class="macro-viz-head money-card-head"><div><span class="macro-viz-kicker">'+esc(period)+'</span><h4>'+esc(label)+'</h4></div><div class="money-main-num'+(date?' money-asof':'')+'"><strong>'+esc(value)+'</strong><small>'+esc(unit)+'</small></div></div>';
 }
 function verifiedBondSpread(curve){
  if(!curve||curve.status!=='verified'||!['approved','source_attributed'].includes(curve.licenseStatus)||curve.unit!=='%/năm'||!/^(20\d{2})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(curve.asOf||''))return null;
@@ -84,17 +105,11 @@ function renderON(p){
  for(const x of state.manual)if(/^\d{4}-\d\d-\d\d$/.test(x.date)&&Number.isFinite(x.value)&&x.value>=0&&x.value<=25)byDate.set(x.date,{date:x.date,value:x.value});
  const points=[...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date));
  const last=points.at(-1),prev=points.at(-2);
- const origin=safeURL(on.source,'stockbiz.vn');
- const cross=safeURL(on.crossCheck,'dulieukinhte.com');
  const verified=['secondary_source_crosschecked','official_source'].includes(on.status);
  if(!last||(!verified&&!state.manual.length)){host.innerHTML=cardHeader('Lãi suất qua đêm','—','%/năm','VND')+
   '<p class="money-source-pending">Chuỗi ON đang chờ cập nhật.</p>'+onEntryForm();return;}
  const difference=prev?last.value-prev.value:null;
- const lag=(Date.now()-Date.parse(last.date+'T00:00:00+07:00'))/86400000;
- const late=Number.isFinite(lag)&&lag>3;
  host.innerHTML=cardHeader('Lãi suất qua đêm',fmt(last.value),'%/năm',dateVN(last.date))+
- (late?'<p class="money-source-pending">Quan sát gần nhất '+esc(dateVN(last.date))+
-  ' · nguồn liên ngân hàng chưa xác minh được kỳ mới; không xem là lãi suất hiện tại.</p>':'')+
  '<p class="money-card-caption">'+(difference===null?'':((difference>=0?'+':'')+fmt(difference)+' điểm % so với '+dateVN(prev.date)))+'</p>'+
  '<div class="money-chart">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe',width:Math.max(250,host.clientWidth-36)})+'</div>'+
  onEntryForm();
@@ -119,47 +134,36 @@ function renderFutures(p){
  (source?'<a href="'+esc(source)+'" target="_blank" rel="noopener noreferrer">Báo cáo HNX ↗</a>':'')+'</div>';
 }
 function renderSwap(p){
- const host=$('money-swap');if(!host)return;const s=p.vbmaSwap||{},source=safeURL(s.source,'vbma.org.vn');
- const points=(Array.isArray(s.points)?s.points:[]).filter(x=>x.tenor&&typeof x.value==='number'&&Number.isFinite(x.value)&&Math.abs(x.value)<100000).slice(0,30);
+ const host=$('money-swap');if(!host)return;
+ const s=p.vbmaSwap||{},points=(Array.isArray(s.points)?s.points:[]).filter(x=>x.tenor&&typeof x.value==='number'&&Number.isFinite(x.value)&&Math.abs(x.value)<100000).slice(0,30);
  const enabled=['verified','retained'].includes(s.status)&&s.unit&&/^\d{4}-\d\d-\d\d$/.test(s.asOf||'')&&points.length>=2;
- const link=vbmaSourceIcon(source,'Tải dữ liệu nguồn');
  if(!enabled){
-    
-    host.innerHTML=cardHeader('Hoán đổi USD/VND','—','','Kỳ hạn')+
-      '<p class="money-source-pending">Chưa xác minh được ít nhất hai kỳ hạn hoán đổi từ nguồn công bố. Không nội suy đường cong.</p>'+
-      '<div class="macro-viz-source">'+link+'</div>';return;
+   host.innerHTML=cardHeader('Hoán đổi USD/VND','—','','Kỳ hạn')+
+     '<p class="money-empty-inline">Chưa có dữ liệu hợp lệ.</p>';
+   return;
  }
  host.innerHTML=cardHeader('Hoán đổi USD/VND',dateVN(s.asOf),s.unit,'Kỳ hạn')+
- (s.status==='retained'?'<p class="money-source-pending">Bản công bố đã lưu, cập nhật mới chưa xác minh. Không coi như giá hoán đổi hiện tại.</p>':'')+'<div class="money-curve" role="group" aria-label="Đường cong Hoán đổi USD/VND theo kỳ hạn">'+tenorCurve(points,{title:'Hoán đổi USD/VND',unit:s.unit,color:'#276bb7',width:Math.max(270,host.clientWidth-38)})+'</div><div class="macro-viz-source"><span>'+(s.asOf?'Ngày '+esc(dateVN(s.asOf)):'')+'</span>'+link+'</div>';
+   '<div class="money-curve" role="group" aria-label="Đường cong Hoán đổi USD/VND theo kỳ hạn">'+
+   tenorCurve(points,{title:'Hoán đổi USD/VND',unit:s.unit,color:'#276bb7',width:Math.max(270,host.clientWidth-38)})+
+   '</div><div class="macro-viz-source money-download-row">'+curveDownloadButton('swap','Hoán đổi USD/VND')+'</div>';
 }
 function renderBondCurves(p){
  const host=$('money-vbma-curves');if(!host)return;
  const sources=[['fi_bond','Trái phiếu và chứng chỉ tiền gửi'],['gov_bond','Lợi suất trái phiếu Chính phủ'],['short_benchmark','Lãi suất tham chiếu ngắn hạn']];
- const data=p.vbmaCurves||p.curves||{},spread=verifiedBondSpread(data.gov_bond),cards=[],pending=[];
- if(spread)cards.push('<article class="macro-viz-card money-spread-card"><div class="macro-viz-head"><div><span class="macro-viz-kicker">ĐỘ DỐC ĐƯỜNG CONG</span><h4>Chênh lệch lợi suất 10Y – 2Y</h4></div><span class="macro-viz-period">'+esc(dateVN(spread.asOf))+'</span></div><div class="macro-viz-value"><strong>'+esc((spread.difference>0?'+':'')+fmt(spread.difference*100,1))+'</strong><span>điểm cơ bản</span></div></article>');
+ const data=p.vbmaCurves||p.curves||{},spread=verifiedBondSpread(data.gov_bond),cards=[];
+ if(spread)cards.push('<article class="macro-viz-card money-spread-card"><div class="macro-viz-head"><div><span class="macro-viz-kicker">ĐƯỜNG CONG LỢI SUẤT</span><h4>Chênh lệch 10Y – 2Y</h4></div><span class="macro-viz-period">'+esc(dateVN(spread.asOf))+'</span></div><div class="macro-viz-value"><strong>'+esc((spread.difference>0?'+':'')+fmt(spread.difference*100,1))+'</strong><span>điểm cơ bản</span></div></article>');
  for(const[key,title]of sources){
   const row=data[key]||{},points=Array.isArray(row.points)?row.points.filter(x=>x.tenor&&Number.isFinite(x.value)):[];
-  const url=safeURL(row.source||('https://vbma.org.vn/csv/markets/charts/vi/'+({fi_bond:'fi_bond_yield_curve',gov_bond:'government_bond_yield',short_benchmark:'short_term_benchmark_rate'}[key])+'.csv'),'vbma.org.vn');
-  const link=vbmaSourceIcon(url,'Tải dữ liệu nguồn');
   const valid=['verified','retained'].includes(row.status)&&['approved','source_attributed'].includes(row.licenseStatus)&&
-    row.unit&&/^\d{4}-\d\d-\d\d$/.test(row.asOf||'')&&points.length>=2;
-  if(!valid){
-   const reason=row.status==='unavailable'?'Nguồn chưa cung cấp đường cong có ngày và kỳ hạn hợp lệ trong lượt thu thập mới nhất.':
-    row.status==='retained'?'Bản lưu chưa đủ điều kiện sử dụng':'Chưa có đủ kỳ hạn và quyền sử dụng được kiểm chứng';
-   pending.push('<span class="money-source-pending">'+esc(title)+' · '+esc(reason)+
-      (link?' · '+link:'')+'</span>');
-   continue;
-  }
+   row.unit&&/^\d{4}-\d\d-\d\d$/.test(row.asOf||'')&&points.length>=2;
+  if(!valid)continue;
   cards.push('<article class="macro-viz-card">'+cardHeader(title,dateVN(row.asOf),row.unit,'Kỳ hạn')+
-   (row.status==='retained'?'<p class="money-source-pending">Đường cong từ kỳ công bố đã lưu '+esc(dateVN(row.asOf))+'. Không phải số liệu mới.</p>':'')+
    '<div class="money-curve">'+tenorCurve(points,{title,unit:row.unit,color:'#28837a',
     width:Math.max(270,(host.clientWidth||960)/(window.innerWidth<950?1:3)-40)})+
-   '</div><div class="macro-viz-source">'+link+'</div></article>');
+   '</div><div class="macro-viz-source money-download-row">'+curveDownloadButton(key,title)+'</div></article>');
  }
- // Keep the verified charts visible, collapse unsupported feeds into one
- // factual source-status strip instead of multiple giant empty graphs.
- host.innerHTML=cards.join('')+(pending.length?'<div class="macro-source-notice money-source-summary" role="status"><strong>Nguồn đang theo dõi · '+pending.length+' chỉ tiêu</strong><div>'+
-  pending.join('<span class="money-source-separator"> · </span>')+'</div></div>':'');
+ // Unsupported feeds stay in internal quality metadata, not in a large visible box.
+ host.innerHTML=cards.length?cards.join(''):'<p class="money-empty-inline">Chưa có dữ liệu đường cong hợp lệ.</p>';
 }
 function render(){
  const p=state.payload;if(!p)return;
@@ -177,6 +181,10 @@ async function loadManualON(){
   if(state.payload)renderON(state.payload);
  }catch(e){console.warn('ON manual observations unavailable');}
 }
+document.addEventListener?.('click',event=>{
+ const download=event.target.closest?.('[data-download-curve]');
+ if(download)downloadCurveCsv(download.dataset.downloadCurve);
+});
 document.addEventListener?.('submit',async function(event){
  const form=event.target;if(form?.id!=='finquery-on-manual-form')return;
  event.preventDefault();if(!state.canEditOn)return;

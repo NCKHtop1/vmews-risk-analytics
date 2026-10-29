@@ -118,8 +118,12 @@ def run():
           })();
         """})
         try:
-            for width, height in ((1280, 920), (390, 844)):
+            for width, height in ((1280, 920), (768, 900), (430, 932), (390, 844), (360, 800), (320, 760)):
                 driver.set_window_size(width, height)
+                driver.execute_cdp_cmd("Emulation.setDeviceMetricsOverride", {
+                    "width": width, "height": height, "deviceScaleFactor": 1,
+                    "mobile": width <= 768
+                })
                 driver.get(f"http://127.0.0.1:{server.server_port}/index.html?symbol=MBB")
                 WebDriverWait(driver, 25).until(
                     lambda d: d.execute_script(
@@ -139,9 +143,18 @@ def run():
                                    "vn100":{"openInterest":77,"avgVolume":66}},
                                   {"month":"2026-09","vn30":{"openInterest":39543,"avgVolume":219121},
                                    "vn100":{"openInterest":203,"avgVolume":259}}]},
-                    "vbmaSwap":{"status":"awaiting_verified_source",
+                    "vbmaSwap":{"status":"verified","asOf":"2026-10-28","unit":"%/năm",
                                "source":"https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv",
-                               "points":[]}
+                               "points":[{"tenor":"SPOT","value":0.55},{"tenor":"1W","value":1.61},
+                                         {"tenor":"1M","value":2.25},{"tenor":"6M","value":2.72},
+                                         {"tenor":"1Y","value":2.76}]},
+                    "vbmaCurves":{
+                        "gov_bond":{"status":"verified","asOf":"2026-10-28",
+                                    "unit":"%/năm","licenseStatus":"source_attributed",
+                                    "points":[{"tenor":"1Y","value":3.55},{"tenor":"2Y","value":3.65},
+                                              {"tenor":"5Y","value":4.1},{"tenor":"10Y","value":4.47}]},
+                        "fi_bond":{"status":"unavailable","points":[]},
+                        "short_benchmark":{"status":"unavailable","points":[]}}
                 })
                 WebDriverWait(driver,12).until(lambda d:d.execute_script(
                     "return document.getElementById('macro-company-chart')?.textContent.includes('Năm 2025')"
@@ -188,6 +201,62 @@ def run():
                 assert overlap, "ON chart x-axis labels overlap"
                 assert report["moneyWithin"]
                 assert report["noExtraPIN"]
+                # Exercise the exact two mobile cards that previously overflowed:
+                # as-of date must be metadata, not a headline-sized number.
+                driver.execute_script("window.FinWorkspaceTabs.openMacro('vbma')")
+                bond_report=driver.execute_script("""
+                  const host=document.getElementById('money-vbma-curves');
+                  const card=host.querySelector('.money-card-head');
+                  const title=card?.querySelector('h4');
+                  const date=card?.querySelector('.money-asof strong');
+                  const download=host.querySelectorAll('[data-download-curve]');
+                  const tabs=document.getElementById('macro-primary-tabs');
+                  const tr=tabs.getBoundingClientRect();
+                  const t=title?.getBoundingClientRect(),d=date?.getBoundingClientRect();
+                  return {
+                    viewport:window.innerWidth,scrollWidth:document.documentElement.scrollWidth,
+                    noSourceBox:!host.querySelector('.money-source-summary')&&!host.textContent.includes('Nguồn đang theo dõi'),
+                    chartCount:host.querySelectorAll('.money-tenor-curve').length,
+                    downloadCount:download.length,downloadId:download[0]?.dataset.downloadCurve,
+                    dateFont:date?parseFloat(getComputedStyle(date).fontSize):999,
+                    noOverlap:!!t&&!!d&&t.right<=d.left+2,
+                    contained:[...host.querySelectorAll('.macro-viz-card')].every(el=>{
+                      const r=el.getBoundingClientRect();return r.left>=-2&&r.right<=window.innerWidth+2;}),
+                    tabsFit:[...tabs.querySelectorAll('button')].every(el=>{
+                      const r=el.getBoundingClientRect();
+                      return r.right<=tr.right+2&&r.left>=tr.left-2&&el.scrollWidth<=el.clientWidth+3;
+                    })
+                  };
+                """)
+                print(f"BOND_MOBILE_QA_{width}",json.dumps(bond_report,ensure_ascii=False),flush=True)
+                assert bond_report["noSourceBox"] and bond_report["chartCount"]==1
+                assert bond_report["downloadCount"]==1 and bond_report["downloadId"]=="gov_bond"
+                assert bond_report["noOverlap"] and bond_report["contained"] and bond_report["tabsFit"]
+                assert bond_report["dateFont"]<=14 and bond_report["scrollWidth"]<=bond_report["viewport"]+3
+                driver.execute_script("window.FinWorkspaceTabs.openMacro('swap')")
+                swap_report=driver.execute_script("""
+                  const card=document.querySelector('#money-swap .money-card-head');
+                  const t=card?.querySelector('h4')?.getBoundingClientRect();
+                  const label=card?.querySelector('.money-asof strong');
+                  const r=label?.getBoundingClientRect();
+                  return {
+                    noOverlap:!!t&&!!r&&t.right<=r.left+2,
+                    font:label?parseFloat(getComputedStyle(label).fontSize):999,
+                    downloads:document.querySelectorAll('#money-swap [data-download-curve="swap"]').length,
+                    scrollWidth:document.documentElement.scrollWidth
+                  };
+                """)
+                assert swap_report["noOverlap"] and swap_report["font"]<=14
+                assert swap_report["downloads"]==1 and swap_report["scrollWidth"]<=width+3
+                if width==390:
+                    driver.execute_cdp_cmd("Page.setDownloadBehavior", {
+                      "behavior":"allow","downloadPath":str(directory)
+                    })
+                    csv_path=directory/"finquery-gov_bond-2026-10-28.csv"
+                    driver.execute_script("window.FinWorkspaceTabs.openMacro('vbma')")
+                    driver.execute_script("document.querySelector('[data-download-curve=gov_bond]').click()")
+                    WebDriverWait(driver,10).until(lambda _:csv_path.is_file())
+                    assert '"10Y",4.47,' in csv_path.read_text(encoding='utf-8-sig')
                 driver.save_screenshot(str(directory / f"macro_esg_{width}.png"))
                 # The details panel should still display the legacy full-data tools on demand.
                 driver.execute_script("window.FinWorkspaceTabs.openMacro('esg'); document.getElementById('macro-explore').open=true")
