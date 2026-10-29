@@ -936,6 +936,39 @@ body.strategy-lab-view .strategy-page{display:block}
 @keyframes finquery-last-eod-attention{0%{box-shadow:0 0 0 2px rgba(61,121,203,.08)}45%{box-shadow:0 0 0 8px rgba(61,121,203,.22),0 7px 25px rgba(28,72,138,.16)}100%{box-shadow:0 0 0 3px rgba(61,121,203,.11),0 6px 21px rgba(28,72,138,.15)}}
 @media(prefers-reduced-motion:reduce){.chart-latest-candle.is-last-verified:not(.is-live){animation:none}}
 @media(max-width:670px){.macro-company-picker{width:100%;min-width:0}.macro-company-picker select{width:100%}}
+
+
+/* Chart UX: the latest candle itself is the cue. No floating text banner.
+   Anchor tracks the actual time/price coordinates, including pan and zoom. */
+.chart-canvas-wrap>.chart-latest-candle{
+ position:absolute;right:auto!important;bottom:auto!important;
+ z-index:9;display:block;max-width:none!important;min-width:0!important;
+ margin:0!important;padding:0!important;
+ background:transparent!important;border:2px solid var(--last-tone,#0b9074)!important;
+ border-radius:3px!important;
+ color:var(--last-tone,#0b9074)!important;
+ box-shadow:0 0 0 2px var(--last-glow,rgba(11,144,116,.24));
+ transform:translate(-50%,-50%);
+ pointer-events:none!important;white-space:normal!important;
+ animation:finquery-bar-focus 2.6s ease-in-out infinite!important;
+}
+.chart-canvas-wrap>.chart-latest-candle.is-line{
+ border-radius:50%!important;
+ background:var(--last-tone,#0b9074)!important;
+ border:2px solid #fff!important;
+}
+.chart-canvas-wrap>.chart-latest-candle.is-last-verified{
+ opacity:.72;
+ animation-duration:3.2s!important;
+}
+.chart-canvas-wrap>.chart-latest-candle[hidden]{display:none!important}
+@keyframes finquery-bar-focus{
+ 0%,100%{opacity:.65;box-shadow:0 0 0 1px var(--last-glow,rgba(11,144,116,.24));}
+ 50%{opacity:1;box-shadow:0 0 0 6px var(--last-glow,rgba(11,144,116,.24));}
+}
+@media(prefers-reduced-motion:reduce){
+ .chart-canvas-wrap>.chart-latest-candle{animation:none!important;opacity:.95}
+}
 </style><style>.site-locked .risk-monitor-page{display:none!important}
 .header nav a.active{color:#243b7a;font-weight:700}
 .risk-monitor-page{max-width:1500px;margin:0 auto 34px;background:#fff;border:1px solid #e1e7ef;border-radius:18px;box-shadow:0 8px 32px rgba(27,45,78,.05);overflow:hidden}
@@ -1346,7 +1379,7 @@ body.strategy-lab-view .strategy-page{display:block}
 <p id="chart-indicator-error" role="status"></p></aside>
 </div></div></dialog>
 <div id="chart-oscillator-nav" class="chart-oscillator-nav" hidden><label for="chart-oscillator-focus">Nhóm chỉ báo đang xem</label><select id="chart-oscillator-focus" aria-label="Chuyển nhóm chỉ báo phụ"></select><span id="chart-oscillator-hint"></span></div>
-<p id="chart-stream-status" class="chart-stream-status" role="status" hidden></p><div id="price-readout" aria-live="off"></div><div class="chart-canvas-wrap"><div id="price-chart" aria-label="Biểu đồ giá và khối lượng"></div><div id="chart-insight-markers" class="chart-insight-markers" aria-label="Mốc sự kiện và báo cáo phân tích"></div><div id="chart-latest-candle" class="chart-latest-candle" role="status" aria-live="off" hidden></div></div><p id="chart-range-label" hidden></p><p id="chart-status" class="market-subtitle" hidden></p></section>
+<p id="chart-stream-status" class="chart-stream-status" role="status" hidden></p><div id="price-readout" aria-live="off"></div><div class="chart-canvas-wrap"><div id="price-chart" aria-label="Biểu đồ giá và khối lượng"></div><div id="chart-insight-markers" class="chart-insight-markers" aria-label="Mốc sự kiện và báo cáo phân tích"></div><span id="chart-latest-candle" class="chart-latest-candle" aria-hidden="true" hidden></span></div><p id="chart-range-label" hidden></p><p id="chart-status" class="market-subtitle" hidden></p></section>
 <section id="technical-scanner-panel" class="technical-scanner-panel" hidden aria-label="Technical Scanner HOSE">
 <div id="technical-scanner-gate" class="technical-scanner-gate"><div><span class="research-ai-label">BỘ LỌC KỸ THUẬT · HOSE</span><strong>Khu vực tín hiệu kỹ thuật giới hạn</strong><p>Nhập mã truy cập để xem tín hiệu.</p></div><form id="technical-scanner-unlock-form"><input id="technical-scanner-access-code" type="password" inputmode="numeric" autocomplete="off" placeholder="Mã truy cập" aria-label="Mã truy cập Technical Scanner"><button type="submit">Mở bộ lọc</button></form><p id="technical-scanner-error" role="status"></p></div>
 <div id="technical-scanner-workspace" class="technical-scanner-workspace" hidden>
@@ -1844,10 +1877,16 @@ function moneyFlowText(current,previous){
  return detail+'; các chỉ báo dòng tiền chưa đồng thuận, chưa nên kết luận dòng tiền vào hoặc ra rõ'+tail;
 }
 class ChartController{
- constructor(base,onQuote){this.base=base;this.onQuote=onQuote;this.cache=new Map();this.params={...defaults};this.symbol='';this.tf=$('chart-interval')?.value||'1d';this.type='candles';this.bars=[];this.baseBars=[];this.values=[];this.series={};this.watch=[];this.generation=0;this.retries=0;this.stopped=false;this.buffer=[];this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown=new Map();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.insightItems=[];this.insightOpen=null;this.insightsVisible=false;this.focusOscillator=null;
+ constructor(base,onQuote){this.base=base;this.onQuote=onQuote;this.cache=new Map();this.params={...defaults};this.symbol='';this.tf=$('chart-interval')?.value||'1d';this.type='candles';this.bars=[];this.baseBars=[];this.values=[];this.series={};this.watch=[];this.generation=0;this.retries=0;this.stopped=false;this.buffer=[];this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown=new Map();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.insightItems=[];this.insightOpen=null;this.insightsVisible=false;this.focusOscillator=null;this.followingLatest=true;
  this.chart=L.createChart($('price-chart'),{autoSize:true,height:620,layout:{background:{type:'solid',color:'#ffffff'},textColor:'#65728b',fontFamily:'Arial',attributionLogo:false},grid:{vertLines:{color:'#f2f4f8'},horzLines:{color:'#edf0f6'}},rightPriceScale:{borderColor:'#e5eaf3'},timeScale:{borderColor:'#e5eaf3',timeVisible:false,rightOffset:5,lockVisibleTimeRangeOnResize:true},crosshair:{mode:L.CrosshairMode.Normal},localization:{locale:'vi-VN',timeFormatter:timeLabel}});
  this.chart.subscribeCrosshairMove(e=>{const b=e.seriesData.get(this.series.price);if(b)this.readout({...b,volume:e.seriesData.get(this.series.volume)?.value});else this.readout(this.bars.at(-1));});
- this.chart.timeScale().subscribeVisibleLogicalRangeChange?.(()=>raf(()=>this.renderInsights()));
+ this.chart.timeScale().subscribeVisibleLogicalRangeChange?.(visible=>{
+   // Once someone pans to history, a late ResizeObserver callback must not
+   // force the chart back to the newest candle.
+   if(this.bars.length&&visible&&visible.to<this.bars.length-1.25)
+    this.followingLatest=false;
+   raf(()=>{this.renderInsights();this.positionLatestCue();});
+  });
   // Reframe after authentication or resizes; preserve a deliberate historical pan.
   this.visibleChartWidth=0;
   if(typeof ResizeObserver!=='undefined'){
@@ -1855,10 +1894,18 @@ class ChartController{
     const width=Math.round(entries[0]?.contentRect?.width||0);
     if(width<220||Math.abs(width-this.visibleChartWidth)<45)return;
     this.visibleChartWidth=width;
-    if(!this.bars.length||$('chart-period')?.value!=='recent')return;
+    if(!this.bars.length||$('chart-period')?.value!=='recent'||!this.followingLatest){raf(()=>this.positionLatestCue());return;}
     const visible=this.chart.timeScale().getVisibleLogicalRange?.();
-    if(visible&&visible.to<this.bars.length-1.25)return;
-    raf(()=>this.range());
+    if(visible&&visible.to<this.bars.length-1.25){raf(()=>this.positionLatestCue());return;}
+    raf(()=>{
+     // The user can pan while a resize animation is queued. Recheck at
+     // execution time so a stale resize callback cannot snap to latest.
+     const current=this.chart.timeScale().getVisibleLogicalRange?.();
+     if(!this.followingLatest||(current&&current.to<this.bars.length-1.25)){
+      this.positionLatestCue();return;
+     }
+     this.range();this.positionLatestCue();
+    });
    });
    this.focusResizeObserver.observe($('price-chart'));
   }
@@ -1873,7 +1920,7 @@ class ChartController{
  $('chart-type').addEventListener('change',e=>{this.type=e.target.value;this.rebuild(true);});
  $('chart-period').addEventListener('change',e=>{const recent=e.target.value==='recent',months=Number(e.target.value);if(M.intraday(this.tf)&&!recent&&(!months||months>=12)){this.tf='1d';$('chart-interval').value='1d';this.load();return;}this.range();});
  $('chart-zoom-in').addEventListener('click',()=>this.zoom(.75));$('chart-zoom-out').addEventListener('click',()=>this.zoom(1.3));
- $('chart-fit').addEventListener('click',()=>{$('chart-period').value='0';this.chart.timeScale().fitContent();});
+ $('chart-fit').addEventListener('click',()=>{this.followingLatest=false;$('chart-period').value='0';this.chart.timeScale().fitContent();this.positionLatestCue();});
  $('chart-focus-latest')?.addEventListener('click',()=>{$('chart-period').value='recent';this.range();this.updateLatestCue();});
  const markerToggle=$('chart-marker-toggle');markerToggle?.addEventListener('click',()=>{this.insightsVisible=!this.insightsVisible;markerToggle.setAttribute('aria-pressed',String(this.insightsVisible));markerToggle.textContent=this.insightsVisible?'Mốc: bật':'Mốc: tắt';this.renderInsights();});
  $('chart-fullscreen').addEventListener('click',async()=>{const terminal=$('chart-terminal');if(terminal.classList.contains('chart-expanded')){terminal.classList.remove('chart-expanded');$('chart-fullscreen').textContent='Toàn màn hình';return;}try{if(document.fullscreenElement)await document.exitFullscreen();else await terminal.requestFullscreen();}catch{terminal.classList.add('chart-expanded');$('chart-fullscreen').textContent='Thoát toàn màn hình';}});
@@ -1884,7 +1931,7 @@ class ChartController{
  this.syncIndicatorSettings();
  $('chart-oscillator-focus')?.addEventListener('change',e=>{this.focusOscillator=e.target.value;this.rebuild(true);});
  }
- select(symbol,watch=[]){this.watch=[...new Set([symbol,...watch])].filter(s=>/^[A-Z]{3}$/.test(s));if(this.symbol!==symbol){this.symbol=symbol;this.insightItems=[];this.renderInsights();this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown.clear();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.renderSignals();this.load();}else this.subscribe();}
+ select(symbol,watch=[]){this.watch=[...new Set([symbol,...watch])].filter(s=>/^[A-Z]{3}$/.test(s));if(this.symbol!==symbol){this.symbol=symbol;this.followingLatest=true;this.insightItems=[];this.renderInsights();this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown.clear();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.renderSignals();this.load();}else this.subscribe();}
  async load(force=false){const generation=++this.generation;this.abort?.abort();this.abort=new AbortController();const controller=this.abort;this.loading=true;this.buffer=[];const symbol=this.symbol,baseTF=M.intraday(this.tf)?'1m':'1d',key=symbol+':'+baseTF,previousBars=this.baseBars.map(b=>({...b})),previousValues=this.values.map(v=>({...v}));
  $('chart-status').textContent='Đang tải lịch sử '+symbol+'…';if(!previousBars.length){this.bars=[];this.baseBars=[];this.values=[];this.rebuild(false);}this.subscribe();await this.configPromise;if(generation!==this.generation)return;
  try{let data=this.cache.get(key);if(force||!data||Date.now()-data.cachedAt>300000){const url=this.options?.historyBase?new URL(`history?symbol=${symbol}&interval=${baseTF}`,this.options.historyBase).href:this.base+(baseTF==='1m'?'intraday/':'history/')+symbol+'.json';let raw;if(window.FinMarketData&&!this.options?.historyBase){raw=await window.FinMarketData.get((baseTF==='1m'?'intraday/':'history/')+symbol+'.json',{signal:controller.signal});}else{const r=await fetch(url,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)]),cache:'no-cache'});if(!r.ok)throw Error('HTTP '+r.status);raw=await r.json();}if(raw.symbol!==symbol||raw.unit!=='VND'||!Array.isArray(raw.bars))throw Error('Invalid history');data={...raw,bars:M.cleanBars(raw.bars,baseTF==='1m'),cachedAt:Date.now()};if(!data.bars.length)throw Error('Empty');this.cache.set(key,data);if(this.cache.size>24)this.cache.delete(this.cache.keys().next().value);}
@@ -2018,24 +2065,26 @@ class ChartController{
   const labelTime=t=>typeof t==='number'?
    new Date(t*1000).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):String(t);
   if(requested==='recent'){
+   this.followingLatest=true;
    // Initial readability beats showing every candle compressed into <2px.
    // Keep the latest 35-76 observations with a small future right margin.
    const available=Number($('price-chart')?.clientWidth)||960;
    // Default 18-48 visible bars: wide enough for context, large enough to
    // read candle bodies without manually zooming on desktop or phone.
-   const budget=Math.max(12,Math.min(34,Math.floor(Math.max(280,available-92)/25)));
+   const budget=Math.max(10,Math.min(24,Math.floor(Math.max(260,available-86)/27)));
    const count=Math.min(this.bars.length,
     this.tf==='1mo'?Math.min(budget,36):this.tf==='1w'?Math.min(budget,48):budget);
    const from=Math.max(0,this.bars.length-count),to=this.bars.length+2.5;
    this.chart.timeScale().setVisibleLogicalRange({from,to});
-   $('chart-range-label').textContent=count+' nến gần nhất · '+labelTime(this.bars[from].time)+
-    ' → '+labelTime(last.time)+' · nút Về nến mới nhất để quay về';
-   raf(()=>this.renderInsights());return;
+   $('chart-range-label').textContent=(this.tf==='1d'?'1D':'Khung '+this.tf)+' · '+
+    labelTime(this.bars[from].time)+' → '+labelTime(last.time);
+   raf(()=>{this.renderInsights();this.positionLatestCue();});return;
   }
+  this.followingLatest=false;
   if(!months){this.chart.timeScale().fitContent();
    $('chart-range-label').textContent=this.bars.length+' nến · '+labelTime(first.time)+
     ' → '+labelTime(last.time)+' · toàn bộ lịch sử có sẵn';
-   raf(()=>this.renderInsights());return;
+   raf(()=>{this.renderInsights();this.positionLatestCue();});return;
   }
   const end=typeof last.time==='number'?new Date(last.time*1000):new Date(last.time+'T12:00:00Z'),start=new Date(end);
   start.setUTCMonth(start.getUTCMonth()-months);
@@ -2043,7 +2092,7 @@ class ChartController{
   if(index<0)index=0;
   this.chart.timeScale().setVisibleLogicalRange({from:Math.max(0,index),to:this.bars.length+3});
   $('chart-range-label').textContent=(this.bars.length-index)+' nến · '+labelTime(this.bars[index]?.time)+' → '+labelTime(last.time);
-  raf(()=>this.renderInsights());
+  raf(()=>{this.renderInsights();this.positionLatestCue();});
  }
  zoom(f){
   const r=this.chart.timeScale().getVisibleLogicalRange();if(!r)return;
@@ -2057,42 +2106,66 @@ class ChartController{
    this.chart.timeScale().setVisibleLogicalRange({from:mid-half,to:mid+half});
   }
  }
+ positionLatestCue(){
+  const node=$('chart-latest-candle'),bar=this.bars.at(-1),root=$('price-chart');
+  if(!node||!root||!bar||!this.series.price){if(node)node.hidden=true;return;}
+  const wrap=root.parentElement,timeScale=this.chart.timeScale();
+  const viewport=timeScale.getVisibleLogicalRange?.(),lastIndex=this.bars.length-1;
+  if(viewport&&(viewport.to<lastIndex-.25||viewport.from>lastIndex+.25)){
+   node.hidden=true;return;
+  }
+  const x=timeScale.timeToCoordinate?.(bar.time);
+  const closeY=this.series.price.priceToCoordinate?.(Number(bar.close));
+  if(!wrap||!Number.isFinite(x)||!Number.isFinite(closeY)){node.hidden=true;return;}
+  const chartBox=root.getBoundingClientRect(),wrapBox=wrap.getBoundingClientRect();
+  // Only highlight the genuine last bar while it is actually on screen.
+  // Do not let the glow float over historical panning or the right price axis.
+  if(!chartBox.width||x<5||x>chartBox.width-45||closeY<3||closeY>chartBox.height-20){
+   node.hidden=true;return;
+  }
+  const left=chartBox.left-wrapBox.left+x;
+  let top=chartBox.top-wrapBox.top+closeY,shapeWidth=12,shapeHeight=12;
+  if(this.type==='candles'){
+   const openY=this.series.price.priceToCoordinate?.(Number(bar.open));
+   if(!Number.isFinite(openY)){node.hidden=true;return;}
+   const previous=this.bars.at(-2),prevX=previous?timeScale.timeToCoordinate?.(previous.time):NaN;
+   const spacing=Number.isFinite(prevX)?Math.abs(x-prevX):14;
+   shapeWidth=Math.max(7,Math.min(19,spacing*.68));
+   shapeHeight=Math.max(11,Math.abs(openY-closeY)+5);
+   top=chartBox.top-wrapBox.top+Math.min(openY,closeY)+Math.abs(openY-closeY)/2;
+  }
+  node.style.left=left.toFixed(1)+'px';
+  node.style.top=top.toFixed(1)+'px';
+  node.style.width=shapeWidth.toFixed(1)+'px';
+  node.style.height=shapeHeight.toFixed(1)+'px';
+  node.hidden=false;
+ }
  updateLatestCue(){
-  const last=this.bars.at(-1),previous=this.bars.at(-2),node=$('chart-latest-candle');
-  // Only animate a genuinely recent intraday candle. A completed EOD
-  // candle must never masquerade as a newly traded observation.
-  const stamp=last&&typeof last.time==='number'?last.time*1000:NaN;
-  const age=Date.now()-stamp;
+  const last=this.bars.at(-1),node=$('chart-latest-candle');
+  const age=last&&typeof last.time==='number'?Date.now()-last.time*1000:NaN;
+  // EOD highlight means "last recorded bar", never "currently trading".
   const live=M.intraday(this.tf)&&Number.isFinite(age)&&age>=-60000&&age<=12*60000;
-  const delta=last&&previous&&Number.isFinite(previous.close)?last.close-previous.close:NaN;
-  const direction=Number.isFinite(delta)?(delta>0?'▲ ':delta<0?'▼ ':'= ')+' '+fmt(Math.abs(delta)):'';
   if(node){
-   node.hidden=!last;
+   node.textContent=''; // No banner, no numerical last-candle callout.
+   node.setAttribute?.('aria-hidden','true');
    node.classList?.toggle('is-live',!!live);
    node.classList?.toggle('is-last-verified',!live);
-   if(last){
-    node.textContent=(live?'NẾN MỚI · ':'NẾN GẦN NHẤT · ')+this.symbol+' · '+
-     timeLabel(last.time)+' · C '+fmt(last.close)+(direction?' · '+direction:'');
-    node.setAttribute?.('aria-label',live?'Nến thị trường vừa cập nhật':'Nến cuối trong dữ liệu đã tải');
-   }
+   node.classList?.toggle('is-candle',this.type==='candles');
+   node.classList?.toggle('is-line',this.type!=='candles');
+   const rising=last&&Number(last.close)>=Number(last.open);
+   node.style?.setProperty?.('--last-tone',rising?'#0b9074':'#d24e54');
+   node.style?.setProperty?.('--last-glow',rising?'rgba(11,144,116,.27)':'rgba(210,78,84,.27)');
+   this.positionLatestCue();
   }
   if(!last||!this.series.price)return;
   const color=last.close>=last.open?'#0b9074':'#d24e54';
-  if(this.latestPriceLine?.applyOptions){
-   this.latestPriceLine.applyOptions({price:last.close,color});
-  }else if(typeof this.series.price.createPriceLine==='function'){
+  if(this.latestPriceLine?.applyOptions)
+   this.latestPriceLine.applyOptions({price:last.close,color,title:'',axisLabelVisible:false});
+  else if(typeof this.series.price.createPriceLine==='function')
    this.latestPriceLine=this.series.price.createPriceLine({
-    price:last.close,color,lineWidth:2,lineStyle:2,axisLabelVisible:true,title:'NẾN CUỐI'
+    price:last.close,color,lineWidth:1,lineStyle:2,axisLabelVisible:false,title:''
    });
-  }
-  if(typeof L.createSeriesMarkers==='function'){
-   const marker=[{time:last.time,position:'aboveBar',color,
-     shape:'circle',text:live?'VỪA CẬP NHẬT':'NẾN CUỐI',size:2}];
-   try{
-    if(this.latestMarkers?.setMarkers)this.latestMarkers.setMarkers(marker);
-    else this.latestMarkers=L.createSeriesMarkers(this.series.price,marker);
-   }catch{ /* Keep the chart readable if marker API is unsupported. */ }
-  }
+  // Do not add text markers or a second tooltip on the last candle.
  }
  subscribe(){if(this.socket?.readyState===WebSocket.OPEN){this.socket.send(JSON.stringify({type:'subscribe',symbols:this.watch,intervals:['1m','1d']}));}}
  connect(){clearTimeout(this.retry);if(this.stopped||!this.options)return;if(!this.options.websocketUrl){this.status('');return;}if(!/^wss:\/\//.test(this.options.websocketUrl)){this.status('Cấu hình WebSocket cần địa chỉ wss:// hợp lệ.');return;}if(this.socket&&this.socket.readyState<2)return;
