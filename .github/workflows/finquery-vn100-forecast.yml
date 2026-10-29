@@ -5,13 +5,17 @@ on:
     branches: [main]
     paths:
       - "scripts/finquery_vn100_timeseries.py"
+      - "scripts/finquery_vn100_product.py"
+      - "scripts/test_finquery_vn100_product.py"
       - ".github/workflows/finquery-vn100-forecast.yml"
   schedule:
-    - cron: "20 2,3,4,6,7 * * 1-5"
-    - cron: "20 8 * * 1-5"
+    # Every 30 minutes, with minute offset to avoid GitHub cron congestion.
+    - cron: "7,37 * * * *"
   pull_request:
     paths:
       - "scripts/finquery_vn100_timeseries.py"
+      - "scripts/finquery_vn100_product.py"
+      - "scripts/test_finquery_vn100_product.py"
       - ".github/workflows/finquery-vn100-forecast.yml"
 
 permissions:
@@ -37,9 +41,17 @@ jobs:
         run: |
           git fetch origin financial-market-data
           git worktree add --detach /tmp/finquery-market FETCH_HEAD
+      - name: Restore previously certified last-good history for source fallback
+        run: |
+          set -euo pipefail
+          if git fetch origin finquery-vn100-data 2>/dev/null; then
+            git show FETCH_HEAD:data/finquery-vn100-product.json > /tmp/finquery-vn100-previous.json || rm -f /tmp/finquery-vn100-previous.json
+          fi
       - name: Generate and validate VN100 forecast
         run: |
-          python scripts/finquery_vn100_timeseries.py --market /tmp/finquery-market/market --output /tmp/finquery-vn100-forecast.json
+          python scripts/finquery_vn100_timeseries.py --market /tmp/finquery-market/market --previous /tmp/finquery-vn100-previous.json --output /tmp/finquery-vn100-forecast.json
+          python scripts/finquery_vn100_product.py --input /tmp/finquery-vn100-forecast.json --output /tmp/finquery-vn100-product.json --status /tmp/finquery-vn100-status.json
+          python -m unittest scripts/test_finquery_vn100_product.py -v
           python - <<'PY'
           import json
           from pathlib import Path
@@ -54,7 +66,12 @@ jobs:
               assert set(row["horizons"])=={"1","2","3","4","5"},symbol
               assert all(q["priceValidated"] and q["expectedPrice"]>0 for q in row["horizons"].values()),symbol
               assert len(p["dashboard"]["charts"][symbol])>=8,symbol
-          print("VN100 100/100, 500/500 horizon prices, walk-forward validation passed")
+          product=json.loads(Path("/tmp/finquery-vn100-product.json").read_text())
+          heartbeat=json.loads(Path("/tmp/finquery-vn100-status.json").read_text())
+          assert product["asOf"]==p["asOf"]
+          assert heartbeat["symbols"]==100 and heartbeat["horizons"]==500
+          assert len(product["backtest"]["cases"]["5"])>=100
+          print("VN100 100/100, 500/500 numeric T+ prices; historical walk-forward diagnostics available")
           PY
       - name: Publish atomically to dedicated data branch
         if: github.event_name != 'pull_request'
@@ -69,9 +86,11 @@ jobs:
           fi
           mkdir -p /tmp/finquery-vn100-publish/data
           cp /tmp/finquery-vn100-forecast.json /tmp/finquery-vn100-publish/data/finquery-vn100-forecast.json
+          cp /tmp/finquery-vn100-product.json /tmp/finquery-vn100-publish/data/finquery-vn100-product.json
+          cp /tmp/finquery-vn100-status.json /tmp/finquery-vn100-publish/data/finquery-vn100-status.json
           git -C /tmp/finquery-vn100-publish config user.name "github-actions[bot]"
           git -C /tmp/finquery-vn100-publish config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C /tmp/finquery-vn100-publish add data/finquery-vn100-forecast.json
+          git -C /tmp/finquery-vn100-publish add data/finquery-vn100-forecast.json data/finquery-vn100-product.json data/finquery-vn100-status.json
           if git -C /tmp/finquery-vn100-publish diff --cached --quiet; then exit 0; fi
           git -C /tmp/finquery-vn100-publish commit -m "Refresh verified VN100 walk-forward forecasts"
           git -C /tmp/finquery-vn100-publish push origin HEAD:refs/heads/finquery-vn100-data
