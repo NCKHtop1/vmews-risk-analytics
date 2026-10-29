@@ -7,6 +7,9 @@ on:
       - 'financial-report/scripts/build_cdn.py'
       - 'financial-report/tests/site_responsive_browser.py'
       - 'financial-report/tests/responsive_system.test.cjs'
+      - 'finquery-access/login.html'
+      - 'finquery-access/login.js'
+      - 'finquery-access/admin.html'
       - '.github/workflows/finquery-responsive-site-qa.yml'
   push:
     branches: [main]
@@ -15,6 +18,9 @@ on:
       - 'financial-report/scripts/build_cdn.py'
       - 'financial-report/tests/site_responsive_browser.py'
       - 'financial-report/tests/responsive_system.test.cjs'
+      - 'finquery-access/login.html'
+      - 'finquery-access/login.js'
+      - 'finquery-access/admin.html'
       - '.github/workflows/finquery-responsive-site-qa.yml'
   workflow_dispatch:
 
