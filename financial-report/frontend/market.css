@@ -1029,3 +1029,23 @@ body.strategy-lab-view .strategy-page{display:block}
 #macro .macro-source-quicklink{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0!important;border:1px solid #d9e2ec;border-radius:8px;background:#fff;color:#34658d;text-decoration:none!important}
 #macro .macro-source-quicklink:hover{background:#f2f6fa}
 #macro .macro-source-quicklink:focus-visible{outline:2px solid #3872b8;outline-offset:2px}
+
+
+/* Chart cue final override: only a lightweight pulse at the last plotted point. */
+.chart-canvas-wrap>.chart-latest-candle{
+ background:transparent!important;border:1.5px solid var(--last-tone,#0b9074)!important;
+ box-shadow:0 0 0 1px var(--last-glow,rgba(11,144,116,.18));
+ animation:finquery-last-subtle 3.2s ease-in-out infinite!important;
+}
+.chart-canvas-wrap>.chart-latest-candle.is-line{
+ width:9px!important;height:9px!important;border-radius:50%!important;
+ background:var(--last-tone,#0b9074)!important;border:2px solid white!important;
+}
+@keyframes finquery-last-subtle{
+ 0%,100%{opacity:.7;box-shadow:0 0 0 1px var(--last-glow,rgba(11,144,116,.16));}
+ 50%{opacity:1;box-shadow:0 0 0 4px var(--last-glow,rgba(11,144,116,.16));}
+}
+#chart-range-label[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){
+ .chart-canvas-wrap>.chart-latest-candle{animation:none!important;opacity:.95}
+}

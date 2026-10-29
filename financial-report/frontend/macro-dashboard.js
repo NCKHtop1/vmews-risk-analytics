@@ -108,7 +108,7 @@ function renderCountry(data){
  const ds=data?.datasets?.esg_world_bank,body=$('macro-country-chart'),foot=$('macro-country-source'),select=$('macro-country-metric');
  if(!body||!select||!foot)return;
  const choices=WORLD.filter(m=>series(ds,m.id).length>=2);
- if(!choices.length||!['ok','cached','retained'].includes(ds?.status)||ds?.qualityStatus==='warning'){
+ if(!choices.length||!['ok','cached','retained'].includes(ds?.status)){
   select.innerHTML='<option value="">Chờ dữ liệu nguồn</option>';select.disabled=true;
   const message=ds?.qualityStatus==='warning'?'Chuỗi ESG quốc gia đang được đối chiếu chất lượng.':
    !ds?'Chưa kết nối được nguồn ESG quốc gia. Các số liệu doanh nghiệp, nếu có, vẫn được hiển thị độc lập.':
