@@ -83,7 +83,7 @@
       google.accounts.id.initialize({ client_id: CLIENT_ID, callback: credential, auto_select: false });
       google.accounts.id.renderButton(document.getElementById('signin'), {
         type: 'standard', theme: 'outline', size: 'large',
-        shape: 'pill', text: 'signin_with', locale: 'vi', width: 280
+        shape: 'pill', text: 'signin_with', locale: 'vi', width: Math.min(280, Math.max(220, window.innerWidth - 80))
       });
       existingSession();
     } catch (_) { report('Không kết nối được hệ thống đăng nhập. Vui lòng tải lại trang.'); }
