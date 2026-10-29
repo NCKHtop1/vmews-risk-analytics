@@ -133,7 +133,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
   <section class="three" id="events">
     <div class="panel"><div class="eyebrow">Tin tức</div><h2>Tin & sự kiện</h2><div id="news" class="stream"></div></div>
     <div class="panel rumorPanel"><div class="eyebrow">Tín hiệu cộng đồng</div><h2>Lan truyền & xác minh</h2><div id="rumors" class="stream"></div></div>
-    <div class="panel"><div class="eyebrow">Dữ liệu</div><h2>Nguồn & độ phủ</h2><div id="sourceAudit" class="sourceGrid"></div></div>
+    <div class="panel" hidden aria-hidden="true"><div id="sourceAudit" class="sourceGrid"></div></div>
   </section>
 
   <section class="panel bt" id="backtest">
@@ -147,7 +147,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
 </main>
 <footer class="footer"><span><strong>Made in SoluTION.AI team</strong></span><a href="mailto:ngochailuong7274@gmail.com">Contact: ngochailuong7274@gmail.com</a></footer>
 <button id="backToTop" class="backToTop" type="button" aria-label="Cuộn về đầu trang">↑</button>
-<button id="solutionAiLauncher" class="solutionAiLauncher" type="button" aria-controls="solutionAiPanel" aria-expanded="false"><span class="solutionAiOrb" aria-hidden="true"></span><span><strong>SoluTION.AI</strong><small>Hỏi AI · tìm nguồn mở</small></span><i aria-hidden="true">↗</i></button>
+<button id="solutionAiLauncher" class="solutionAiLauncher" type="button" aria-controls="solutionAiPanel" aria-expanded="false"><span class="solutionAiOrb" aria-hidden="true"></span><span><strong>SoluTION.AI</strong><small>Hỏi AI · phân tích</small></span><i aria-hidden="true">↗</i></button>
 <aside id="solutionAiPanel" class="solutionAiPanel" aria-hidden="true" aria-label="Trợ lý phân tích SoluTION.AI">
   <div class="solutionAiHeader"><div class="solutionAiIdentity"><span class="solutionAiOrb" aria-hidden="true"></span><div><strong>SoluTION.AI</strong><small id="solutionAiStatus">Sẵn sàng phân tích</small></div></div><div class="solutionAiActions"><button id="solutionAiSettings" type="button" aria-label="Kết nối Google Gemini">⚙</button><button id="solutionAiClose" type="button" aria-label="Đóng trợ lý">×</button></div></div>
   <div id="solutionAiContext" class="solutionAiContext"><span>ĐANG XEM</span><strong>FPT</strong><small>Đang tải dữ liệu…</small></div>
@@ -159,9 +159,9 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
     <div class="aiConnectActions"><button id="solutionAiGeminiWeb" class="aiConnectPrimary" type="button">Tiếp tục trên Gemini Web ↗</button><button id="solutionAiRetry" type="button">Kiểm tra / kết nối key</button><button id="solutionAiReplaceKey" type="button" hidden>Thay key Gemini</button><a id="solutionAiGoogle" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Tạo / quản lý Auth key ↗</a><button id="solutionAiDisconnect" type="button" hidden>Ngắt kết nối</button></div>
     <small id="solutionAiConnectionState">SoluTION.AI local đang sẵn sàng. Nếu Gemini báo 401/403, hãy thay bằng Auth key mới; nếu báo 429 kéo dài, cần kiểm tra quota/billing của project vì đổi key cùng project không reset quota.</small>
   </section>
-  <div id="solutionAiMessages" class="solutionAiMessages" role="log" aria-live="polite"><article class="aiMessage aiWelcome"><span class="aiRole">SoluTION.AI</span><p>Tôi đọc forecast đang xem ngay cả khi chưa kết nối Gemini. Nếu bật Gemini, tôi sẽ dùng thêm nguồn công khai để đối chiếu và mở rộng phân tích.</p></article></div>
+  <div id="solutionAiMessages" class="solutionAiMessages" role="log" aria-live="polite"><article class="aiMessage aiWelcome"><span class="aiRole">SoluTION.AI</span><p>Tôi đọc forecast đang xem ngay cả khi chưa kết nối Gemini. Nếu bật Gemini, tôi sẽ kết hợp thêm thông tin mới để mở rộng phân tích.</p></article></div>
   <div id="solutionAiSuggestions" class="solutionAiSuggestions"><button type="button" data-ai-prompt="Phân tích đầy đủ mã cổ phiếu đang xem, đọc đường forecast T+1 đến T+5, kết hợp thông tin mới nhất từ nguồn công khai và kết luận đúng trọng tâm.">Phân tích tích hợp</button><button type="button" data-ai-prompt="Tìm thông tin mới về kinh tế vĩ mô, lãi suất và các yếu tố đang ảnh hưởng đến thị trường Việt Nam.">Vĩ mô & tin mới</button><button type="button" data-ai-prompt="Danh mục quỹ, dòng tiền và các yếu tố chính đang tác động đến dự báo như thế nào?">Quỹ & dòng tiền</button><button type="button" data-ai-prompt="Tìm và đối chiếu thông tin mới cho mã đang xem; đánh giá từng nguồn đang ủng hộ, mâu thuẫn hay chưa đủ rõ đối với forecast hiện tại.">Đối chiếu nguồn mới</button><button type="button" data-ai-prompt="Đánh giá chất lượng kiểm định, đường T+1 đến T+5, vùng bất định và các giới hạn của forecast mã đang xem.">Kiểm định forecast</button><button type="button" data-ai-prompt="So sánh các mã HOSE có dự báo tăng tốt nhất trong kỳ được mô hình chọn.">Top HOSE</button></div>
-  <form id="solutionAiForm" class="solutionAiForm"><textarea id="solutionAiInput" rows="1" maxlength="1800" placeholder="Hỏi sâu forecast, nguồn mới, vĩ mô hoặc dán một liên kết…" aria-label="Nội dung câu hỏi"></textarea><button id="solutionAiSend" type="submit" aria-label="Gửi câu hỏi">↑</button></form>
+  <form id="solutionAiForm" class="solutionAiForm"><textarea id="solutionAiInput" rows="1" maxlength="1800" placeholder="Hỏi sâu forecast, tin mới, vĩ mô hoặc dán một liên kết…" aria-label="Nội dung câu hỏi"></textarea><button id="solutionAiSend" type="submit" aria-label="Gửi câu hỏi">↑</button></form>
 </aside>
 <script src="./forecast-freshness.js?release=44.0"></script>
 <script src="./forecast-final-v12.js?release=49.0"></script>
