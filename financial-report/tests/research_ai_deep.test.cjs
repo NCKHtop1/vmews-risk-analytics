@@ -31,7 +31,7 @@ test('deep research exposes explicit academic reasoning contract',()=>{
  assert.match(src,/\[ACADEMIC\]/);
  assert.match(src,/luận điểm → bằng chứng → cơ chế tài chính\/kinh tế → phản biện hoặc giới hạn → hàm ý cần theo dõi/);
  assert.match(src,/counter-thesis/);
- assert.match(src,/Khung học thuật tham chiếu/);
+ assert.match(src,/academicContext/);
 });
 
 test('academic references are canonical and scoped with caveats',()=>{
@@ -51,10 +51,10 @@ test('academic references are canonical and scoped with caveats',()=>{
  assert.match(src,/không thay thế bằng chứng doanh nghiệp/);
 });
 
-test('academic layer is passed through context and rendered separately',()=>{
+test('academic evidence stays in context while public response hides source panels',()=>{
  assert.match(src,/academic=academicLenses\(question,knowledge,deep\)/);
  assert.match(src,/academicSources:\(agentContext\?\.academicContext\?\.references\|\|\[\]\)/);
- assert.match(src,/WEB\|ACADEMIC/);
+ assert.match(src,/WEB\|ACADEMIC/);\n assert.doesNotMatch(src.slice(src.indexOf('function llmHTML('),src.indexOf('function nearBottom(')),/Nguồn đối chiếu|Dấu vết dữ liệu|Khung học thuật tham chiếu/);
 });
 
 test('deep answers have deterministic quality audit and bounded repair pass',()=>{
