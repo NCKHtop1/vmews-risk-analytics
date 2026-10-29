@@ -34,6 +34,10 @@ def fixture(folder):
     (folder / "index.html").write_text(html, encoding="utf-8")
     for item in CSS + JS:
         shutil.copy2(FRONT / item, folder / item)
+    for name in ("login.html", "admin.html"):
+        html=(FRONT.parent.parent / "finquery-access" / name).read_text(encoding="utf-8")
+        html=re.sub(r"<script\\b[^>]*>[\\s\\S]*?</script>", "", html, flags=re.I)
+        (folder / name).write_text(html, encoding="utf-8")
     # Test the same visible table layout the app generates, without requiring backend data.
     return html
 
@@ -172,6 +176,23 @@ def main():
                     d.querySelector('#chart-fit').getBoundingClientRect().height>0;
                 """)
                 driver.execute_script("document.querySelector('#chart-advanced-tools > summary').click()")
+            # Auth pages use independent HTML/CSS: protect mobile sign-in and admin UI.
+            for width in (320, 390, 768, 1024):
+                driver.set_window_size(width, 900)
+                driver.execute_cdp_cmd("Emulation.setDeviceMetricsOverride", {
+                    "width": width, "height": 900, "deviceScaleFactor": 1, "mobile": width <= 768
+                })
+                for page in ("login.html", "admin.html"):
+                    driver.get(f"http://127.0.0.1:{server.server_port}/{page}")
+                    check=driver.execute_script("""
+                      const main=document.querySelector('main').getBoundingClientRect();
+                      const width=innerWidth;
+                      return {documentWidth:document.documentElement.scrollWidth,
+                        mainLeft:main.left,mainRight:main.right,viewport:width};
+                    """)
+                    print("FINQUERY_AUTH_RESPONSIVE",page,width,json.dumps(check),flush=True)
+                    assert check["documentWidth"]<=width+2,(page,width,check)
+                    assert check["mainLeft"]>=-2 and check["mainRight"]<=width+2,(page,width,check)
             print("FINQUERY_RESPONSIVE_SITE_BROWSER_PASS", flush=True)
         finally:
             driver.quit()
