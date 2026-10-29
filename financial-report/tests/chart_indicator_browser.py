@@ -110,11 +110,11 @@ def run():
                 """)
                 assert focus["period"]=="recent", focus
                 assert focus["to"]>=focus["bars"]-1, "latest observation outside initial view"
-                assert focus["to"]-focus["from"]<=30, "default daily chart must show readable candles without user zoom"
+                assert (60 <= focus["to"]-focus["from"] <= 94) if width>=850 else (18 <= focus["to"]-focus["from"] <= 59), ("adaptive readable default window",width,focus)
                 assert focus["tf"]=="1d", ("chart must enter in daily candles", focus)
                 assert focus["label"]=="", ("no intrusive latest-candle value banner", focus)
                 assert not focus["cueHidden"] and "is-candle" in focus["cueClass"], focus
-                assert focus["pulse"]=="finquery-bar-focus", ("last candle itself must pulse", focus)
+                assert focus["pulse"]=="finquery-last-subtle", ("last candle itself must pulse", focus)
                 assert 5 <= focus["markerWidth"] <= 24 and focus["xError"]<7, ("cue must track last candle, not chart corner", focus)
                 driver.execute_script("""
                     const select=document.getElementById('chart-type');
