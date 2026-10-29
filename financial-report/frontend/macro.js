@@ -58,7 +58,10 @@ function normalizeDataset(ds){
 function currentSymbol(){return String(new URL(location.href).searchParams.get('symbol')||$('ticker')?.value||'').trim().toUpperCase();}
 function corporateDataset(esg,symbol){
  const company=esg?.companies?.[symbol];if(!company)return null;
- const years={},labels={},units={},pillars={},metricRows=(Array.isArray(company.canonicalMetrics)?company.canonicalMetrics:[])||[];
+ const years={},labels={},units={},pillars={};
+ // Use the same quality gate in the macro Explorer and the main ESG card.
+ const metricRows=window.FinMacroDashboard?.corporateRows?.(esg,symbol)||
+   (Array.isArray(company.canonicalMetrics)?company.canonicalMetrics:[]);
  for(const row of metricRows){
   const year=Number(row.year),value=row.value;if(!Number.isFinite(year)||typeof value!=='number'||!Number.isFinite(value)||!row.metricId||!row.sourceUrl)continue;
   years[year]??={Year:year};years[year][row.metricId]=value;labels[row.metricId]=row.label||row.metricId;if(row.unit)units[row.metricId]=row.unit;if(row.pillar)pillars[row.metricId]=row.pillar;
@@ -77,8 +80,8 @@ function metricUnit(ds,key){return ds?.metricUnits?.[key]||ds?.units?.[key]||'';
 function metricOptions(){
  const ds=state.data?.datasets?.[state.active],select=$('macro-metric');
  if(!ds||!select)return;
- const metrics=(ds.numericColumns||[]).slice().sort((a,b)=>
-  chartPoints(ds,b).length-chartPoints(ds,a).length);
+ const metrics=(ds.numericColumns||[]).filter(k=>chartPoints(ds,k).length>0)
+  .sort((a,b)=>chartPoints(ds,b).length-chartPoints(ds,a).length);
  select.innerHTML=metrics.length?metrics.map(x=>'<option value="'+esc(x)+'">'+
    esc(metricLabel(ds,x))+(x!==metricLabel(ds,x)?' · '+esc(x):'')+'</option>').join(''):
   '<option value="">Chưa có KPI định lượng</option>';
@@ -100,14 +103,37 @@ function renderKpis(){
    esc([point?.year,metricUnit(ds,k)].filter(Boolean).join(' · '))+'</small></div>';
  }).join('');
 }
-function chartPoints(ds,metric){const label=firstColumn(ds),points=(ds.rows||[]).map((r,i)=>({x:i,label:r[label]??String(i+1),y:r[metric]})).filter(x=>typeof x.y==='number'&&Number.isFinite(x.y));return ds.allYears?points:points.slice(-48);}
+function chartPoints(ds,metric){
+ const label=firstColumn(ds),points=(ds.rows||[])
+  .map((r,i)=>({x:i,label:r[label]??String(i+1),y:r[metric]}))
+  .filter(p=>typeof p.y==='number'&&Number.isFinite(p.y) &&
+   // GDP sector outliers are documented by the feed. Keep only plausible
+   // rows from each chosen metric; do not hide the whole GDP dataset.
+   (ds?.id!=='gdp_growth'||p.y>=-20&&p.y<=20));
+ return ds.allYears?points:points.slice(-48);
+}
 function renderChart(){
  const ds=state.data?.datasets?.[state.active],box=$('macro-chart'),card=box?.closest('.macro-chart-card');
- if(!ds||!state.metric){if(card)card.hidden=!!ds?.companySymbol;box.innerHTML=ds?.companySymbol?'':'<div class="analysis-empty">Chưa kết nối được chuỗi có thể phân tích. Kiểm tra trạng thái nguồn phía trên.</div>';return;}
- if(ds.qualityStatus==='warning'){if(card)card.hidden=false;
-  box.innerHTML='<div class="macro-source-notice">Chuỗi có cảnh báo chất lượng từ nguồn công bố; biểu đồ tạm khóa để tránh diễn giải sai số liệu.</div>';return;}
+ if(!ds||!state.metric){
+   if(card)card.hidden=false;
+   const company=ds?.companySymbol&&state.esg?.companies?.[ds.companySymbol];
+   const documented=company?.coverage?.documents||company?.documents?.length||0;
+   box.innerHTML=ds?.companySymbol?
+    '<div class="macro-source-notice">Đang đối chiếu KPI ESG của '+esc(ds.companySymbol)+'. Đã ghi nhận '+
+     documented+' báo cáo nguồn; chỉ số định lượng chưa xác minh không được tự điền. Chọn tài liệu nguồn phía trên để đối chiếu.</div>':
+    '<div class="macro-source-notice">Nguồn vĩ mô đang được kiểm tra. Chọn một chỉ tiêu có số kỳ công bố hợp lệ.</div>';
+   return;
+ }
  const pts=chartPoints(ds,state.metric),unit=metricUnit(ds,state.metric),label=metricLabel(ds,state.metric);
- if(ds.companySymbol&&pts.length<2){if(card)card.hidden=true;box.innerHTML='';return;}
+ if(ds.companySymbol&&pts.length===1){
+  if(card)card.hidden=false;
+  $('macro-chart-title').textContent='KPI ESG · '+label;
+  $('macro-chart-subtitle').textContent='1 năm có dữ liệu kiểm chứng · không nội suy';
+  box.innerHTML='<div class="macro-single-observation"><strong>'+esc(fmt(pts[0].y))+
+    '</strong><span>'+esc(unit)+' · Năm '+esc(pts[0].label)+
+    '</span><small>Chưa có năm thứ hai để tính biến động. Giá trị lấy từ công bố nguồn.</small></div>';
+  return;
+ }
  if(card)card.hidden=false;
  $('macro-chart-title').textContent=ds.companySymbol?'Xu hướng · '+label:displayTitle(ds.title||'Dữ liệu vĩ mô & ESG');
  $('macro-chart-subtitle').textContent=(unit?unit+' · ':'')+(ds.companySymbol?pts.length+' năm có dữ liệu':label+(ds.allYears?'':''))+(ds.status==='retained'?'':'');
@@ -137,7 +163,8 @@ function renderAssessments(){
  if(!company){box.hidden=true;box.innerHTML='';return;}
  // Raw PDF matches are NOT validated ESG values. Only canonical rows may
  // appear in KPI charts, summaries, or external-source comparison.
- const metrics=(Array.isArray(company.canonicalMetrics)?company.canonicalMetrics:[])
+ const metrics=(window.FinMacroDashboard?.corporateRows?.(state.esg,ds.companySymbol)||
+  (Array.isArray(company.canonicalMetrics)?company.canonicalMetrics:[]))
   .filter(x=>typeof x.value==='number'&&Number.isFinite(x.value)&&x.sourceUrl);
  const metricSources=metrics.filter(x=>x.metricId===state.metric).sort((a,b)=>(b.year||0)-(a.year||0));
  const ratings=(company.externalAssessments||[]).slice().sort((a,b)=>(b.year||0)-(a.year||0)).slice(0,8);
@@ -163,10 +190,12 @@ function updateSourceStatus(){
  const vn=date=>{const d=new Date(date||'');return Number.isNaN(+d)?'chưa xác định':
   d.toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',
     hour:'2-digit',minute:'2-digit',hour12:false});};
- const macro=state.rawMacro?'Vĩ mô '+vn(state.rawMacro.checkedAt):
+ const macro=state.rawMacro?'Vĩ mô '+vn(state.rawMacro.checkedAt)+
+  ((state.rawMacro.sources||[]).some(src=>src.qualityStatus==='warning')?' · có chuỗi cần đối chiếu':''):
   'Vĩ mô chưa kết nối';
  const esg=state.esg?'ESG '+vn(state.esg.checkedAt)+
-  ' · '+Object.values(state.esg.companies||{}).filter(c=>c.canonicalMetrics?.length).length+'/100 mã có KPI':
+  ' · '+Object.keys(state.esg.companies||{}).filter(symbol=>
+    window.FinMacroDashboard?.corporateRows?.(state.esg,symbol)?.length).length+'/100 mã có KPI kiểm chứng':
   'ESG chưa kết nối';
  const retained=[state.sourceStatus.macro,state.sourceStatus.esg].includes('retained');
  el.textContent=macro+' · '+esg+(retained?' · đang giữ bản trước':'');
@@ -175,7 +204,11 @@ function updateSourceStatus(){
 function render(){
  if(!state.data)return;
  const sets=state.data.datasets||{};
- if(!sets[state.active])state.active=sets.pmi?'pmi':Object.keys(sets)[0]||'';
+ if(!sets[state.active]){
+  const companyTab=state.symbol&&'company_esg_'+state.symbol;
+  state.active=String(state.active||'').startsWith('company_esg_')&&sets[companyTab]?
+    companyTab:sets.pmi?'pmi':Object.keys(sets)[0]||'';
+ }
  renderDashboard();renderExplore();updateSourceStatus();
 }
 async function load(){
