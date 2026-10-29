@@ -241,7 +241,14 @@
   window.__VMEWS_FINAL_LEADERBOARD__ = finalLeaderboard;
 
   function sessionStamp() {
-    if (!state.session?.cutoffAt) return " · EOD đã kiểm định";
+    if (!state.session?.cutoffAt) {
+      const stamp=new Date(state.base?.dash?.generatedAt||"");
+      if(state.base?.dash?.asOf&&Number.isFinite(+stamp)){
+        const label=new Intl.DateTimeFormat("vi-VN",{timeZone:"Asia/Ho_Chi_Minh",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(stamp);
+        return " · cập nhật "+label;
+      }
+      return " · EOD đã kiểm định";
+    }
     const date = new Date(state.session.cutoffAt);
     if (Number.isNaN(+date)) return "";
     const time = new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Ho_Chi_Minh" }).format(date);
