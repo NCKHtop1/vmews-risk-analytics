@@ -673,7 +673,35 @@ function renderSummary(B,sym,z){
   setText("#scenarioCaveat",`${z.staleForecast?`Forecast đang dùng là snapshot niêm phong phiên ${z.date||B.dash.asOf||"trước"}; ${z.quoteUnavailable?"chưa có giá live; biểu đồ chỉ hiển thị lịch sử đã kiểm định.":"giá hiện tại lấy từ kênh giá FinQuery."} `:""}${finite(ratio)?`Biên độ mô hình bám ${pct(ratio,0)} mức biến động ngoài mẫu. `:""}${validatedDirection(qp)?"Xác suất tăng được ước lượng từ dữ liệu kiểm định; vùng giá vẫn có thể bị vượt.":signValidated?`Dự báo đúng chiều ${pct(signRate,1)} trong mẫu lịch sử; hai kịch bản vẫn có thể xảy ra.`:"Chưa đủ dữ liệu để hiển thị xác suất tăng; hai kịch bản thể hiện biên độ có thể xảy ra."}${livePosition}${liveScenario}${rank}`);setText("#risk",({GREEN:"THẤP",YELLOW:"THEO DÕI",WATCH:"THEO DÕI",RED:"CAO"})[z.riskStatus]||"—");setText("#chartTitle",z.quoteUnavailable?`${sym} · lịch sử đến ${z.date||B.dash.asOf||"—"} · không có giá live`:z.staleForecast?`${sym} · ${price(z.close)} · các mục tiêu niêm phong còn hiệu lực`:z.verifiedEod?`${sym} · EOD ${z.date||B.dash.asOf||"—"} · ${price(z.close)} → T+1…T+5`:`${sym} · ${price(z.close)} → T+1…T+5`);const scope=B.source==="VN100"?"VN100":"HOSE";setText("#modelBadge",z.quoteUnavailable?`${scope} · CORE ${B.dash.asOf||z.date||"—"} · KHÔNG CÓ GIÁ LIVE · LỊCH SỬ ĐÃ KIỂM ĐỊNH`:z.staleForecast?`${scope} · CORE ${B.dash.asOf||z.date||"—"} · GIÁ FINQUERY · FORECAST NIÊM PHONG`:`${scope} · ${B.dash.asOf||z.date||"—"} · DỰ BÁO T+${primary}${z.liveSession?` · ${z.liveSession.session||"PHIÊN"}`:""}`)
 }
 function quickButtons(B){const box=$("#quick");box.replaceChildren();for(const s of ["FPT","VCB","HPG","MBB","FRT","PNJ","VNM","SSI"]){if(!B.dash.symbols?.[s])continue;const b=document.createElement("button");b.textContent=s;b.onclick=()=>{$("#symbol").value=s;renderSymbol(s)};box.append(b)}}
-function rerender(B,sym,z){const freshness=window.__VMEWS_FRESHNESS__?.inspect(z);const view={...applySessionView(sym,z),staleForecast:freshness?.stale===true,freshnessExpected:freshness?.expected},primary=primaryHorizon(B,view);last={B,sym,z,view};renderSummary(B,sym,view);renderForecastCards(B,view);renderDrivers(view,primary);draw(sym,view,B.dash.charts?.[sym]||[]);renderNews(view);renderRumors(view);renderSource(B,sym);renderBacktest(B,sym,btH||primary);window.dispatchEvent(new CustomEvent("vmews:symbol-changed",{detail:{symbol:sym,snapshot:view}}))}
+function vnModelTime(value){
+ const t=Date.parse(value||"");
+ return Number.isFinite(t)?new Intl.DateTimeFormat("vi-VN",{
+  timeZone:"Asia/Ho_Chi_Minh",day:"2-digit",month:"2-digit",year:"numeric",
+  hour:"2-digit",minute:"2-digit",hour12:false
+ }).format(new Date(t)):"chưa có mốc";
+}
+function renderVN100Status(B,sym,view){
+ if(B?.source!=="VN100")return;
+ const snapshot=B.dash?.symbols?.[sym]||{},updatedAt=snapshot.forecastCalculatedAt||B.publishedAt,
+  basis=snapshot.forecastAnchorBasis==="INTRADAY_QUOTE"?"giá phiên":"giá EOD",
+  anchorAt=snapshot.forecastAnchorAt||null,
+  marketAt=view?.liveSession?.updateAt||null,
+  marketText=marketAt?"Giá thị trường "+vnModelTime(marketAt):"Giá tham chiếu EOD "+(snapshot.date||B.dash.asOf||"—");
+ const age=(Date.now()-Date.parse(updatedAt||""))/60000;
+ const delayed=Number.isFinite(age)&&age>55&&
+    ["LIVE","LUNCH"].includes(window.__VMEWS_FRESHNESS__?.quoteMode?.())?" · chậm cập nhật":"";
+ setText("#forecastUpdatedAt",
+  "Forecast tính "+vnModelTime(updatedAt)+" · T0 "+basis+" "+
+  (anchorAt?vnModelTime(anchorAt):"—")+
+  " · nền lịch sử EOD "+(snapshot.date||B.dash.asOf||"—")+delayed);
+ setText("#status",sym+" · "+marketText+" · Dự báo "+vnModelTime(updatedAt)+delayed);
+ setText("#modelBadge","VN100 · FORECAST 30 PHÚT · GIÁ 5 PHÚT · EOD NỀN "+
+   (snapshot.date||B.dash.asOf||"—"));
+ const priceLabel=document.querySelector("#quoteAsOf");
+ if(priceLabel&&!priceLabel.textContent.includes("kiểm tra mỗi 5 phút"))
+   priceLabel.textContent+=" · kiểm tra mỗi 5 phút";
+}
+function rerender(B,sym,z){const freshness=window.__VMEWS_FRESHNESS__?.inspect(z);const view={...applySessionView(sym,z),staleForecast:freshness?.stale===true,freshnessExpected:freshness?.expected},primary=primaryHorizon(B,view);last={B,sym,z,view};renderSummary(B,sym,view);renderForecastCards(B,view);renderDrivers(view,primary);draw(sym,view,B.dash.charts?.[sym]||[]);renderNews(view);renderRumors(view);renderSource(B,sym);renderBacktest(B,sym,btH||primary);renderVN100Status(B,sym,view);window.dispatchEvent(new CustomEvent("vmews:symbol-changed",{detail:{symbol:sym,snapshot:view}}))}
 function applyCommunity(B,payload){
   if(!payload||!B||!payload.generatedAt||(B.source!=="VN100"&&payload.asOf!==B.dash.asOf))return false;
   const scenariosEligible=payload.asOf===B.dash.asOf;
@@ -721,7 +749,7 @@ async function refreshCommunity(B){
   }catch{return false}
 }
 window.__VMEWS_APPLY_COMMUNITY_LIVE__=applyCommunity;
-async function renderSymbol(raw){const B=await loadBase();assertProduction(B);const sym=String(raw||"").trim().toUpperCase(),z=B.dash.symbols?.[sym];if(!z)throw Error(`${sym}: chưa có đủ dữ liệu để phân tích.`);$("#symbol").value=sym;setText("#sparkSymbol",sym);rerender(B,sym,z);const view=last?.view||z;setText("#status",`${sym} · dữ liệu ${z.date||B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}${z.dataFreshness==="STALE_EOD"?" · cần cập nhật":""}`);const url=new URL(location.href);url.searchParams.set("symbol",sym);history.replaceState(null,"",url.href)}
+async function renderSymbol(raw){const B=await loadBase();assertProduction(B);const sym=String(raw||"").trim().toUpperCase(),z=B.dash.symbols?.[sym];if(!z)throw Error(`${sym}: chưa có đủ dữ liệu để phân tích.`);$("#symbol").value=sym;setText("#sparkSymbol",sym);rerender(B,sym,z);const view=last?.view||z;if(B.source==="VN100")renderVN100Status(B,sym,view);else setText("#status",`${sym} · dữ liệu ${z.date||B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}${z.dataFreshness==="STALE_EOD"?" · cần cập nhật":""}`);const url=new URL(location.href);url.searchParams.set("symbol",sym);history.replaceState(null,"",url.href)}
 window.__VMEWS_RENDER_SYMBOL__=renderSymbol;
 async function refreshCore(){
  if(document.hidden)return false;
