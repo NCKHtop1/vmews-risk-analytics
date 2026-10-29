@@ -1,5 +1,5 @@
 {
-  "version": 13,
+  "version": 14,
   "banks": {
     "ACB": {
       "name": "Asia Commercial Bank",
@@ -894,5 +894,84 @@
       "pattern": "best practice|aligned with|Second Party Opinion|Ý kiến của Bên Thứ Hai",
       "context_pattern": "VIS Rating|VISRating"
     }
-  ]
+  ],
+  "issuers": {
+    "FPT": {
+      "name": "FPT Corporation",
+      "aliases": [
+        "FPT",
+        "FPT Corporation",
+        "Công ty Cổ phần FPT"
+      ],
+      "seed_urls": [
+        "https://fpt.com/-/media/project/fpt-corporation/fpt/ir/information-disclosures/year-report/2026/april/esg-report-2025.pdf",
+        "https://fpt.com/en/ir/report",
+        "https://bctn2025.fpt.com/"
+      ],
+      "year_overrides": {
+        "https://fpt.com/-/media/project/fpt-corporation/fpt/ir/information-disclosures/year-report/2026/april/esg-report-2025.pdf": 2025
+      },
+      "type_overrides": {
+        "https://fpt.com/-/media/project/fpt-corporation/fpt/ir/information-disclosures/year-report/2026/april/esg-report-2025.pdf": "sustainability_report"
+      }
+    },
+    "HPG": {
+      "name": "Hoa Phat Group",
+      "aliases": [
+        "HPG",
+        "Hòa Phát",
+        "Hoa Phat"
+      ],
+      "seed_urls": [
+        "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf",
+        "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-phat-trien-ben-vung",
+        "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-nam-2025-hpg.pdf"
+      ],
+      "type_overrides": {
+        "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf": "sustainability_report"
+      },
+      "year_overrides": {
+        "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf": 2025
+      }
+    },
+    "GAS": {
+      "name": "PV GAS",
+      "aliases": [
+        "GAS",
+        "PV GAS",
+        "Tổng Công ty Khí Việt Nam"
+      ],
+      "seed_urls": [
+        "https://www.pvgas.com.vn/quan-he-co-%C4%91ong/bao-cao-phat-trien-ben-vung-nam-2025"
+      ]
+    },
+    "MWG": {
+      "name": "Mobile World Investment Corporation",
+      "aliases": [
+        "MWG",
+        "Thế Giới Di Động",
+        "The Gioi Di Dong"
+      ],
+      "seed_urls": [
+        "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/news/2026/3/2353/99/4b/994bc4902d35965c5e4013897d4f78f4.pdf"
+      ],
+      "year_overrides": {
+        "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/news/2026/3/2353/99/4b/994bc4902d35965c5e4013897d4f78f4.pdf": 2025
+      },
+      "type_overrides": {
+        "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/news/2026/3/2353/99/4b/994bc4902d35965c5e4013897d4f78f4.pdf": "annual_report"
+      }
+    },
+    "VNM": {
+      "name": "Vinamilk",
+      "aliases": [
+        "VNM",
+        "Vinamilk",
+        "Vietnam Dairy Products"
+      ],
+      "seed_urls": [
+        "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability"
+      ]
+    }
+  }
 }
