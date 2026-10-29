@@ -252,6 +252,18 @@
   window.__VMEWS_APPLY_SESSION_OVERLAY__ = applySessionOverlay;
   window.__VMEWS_FINAL_LEADERBOARD__ = finalLeaderboard;
 
+  function snapshotStamp(){
+    const base=state.base;
+    if(isVN100Product()){
+      const t=Date.parse(base?.dash?.forecastUpdatedAt||base?.dash?.generatedAt||"");
+      const label=Number.isFinite(t)?new Intl.DateTimeFormat("vi-VN",{
+        timeZone:"Asia/Ho_Chi_Minh",day:"2-digit",month:"2-digit",
+        hour:"2-digit",minute:"2-digit",hour12:false
+      }).format(new Date(t)):"chưa có giờ tính";
+      return "Forecast "+label+" · nền EOD "+(base?.dash?.asOf||"—");
+    }
+    return (base?.dash?.asOf||"—")+sessionStamp();
+  }
   function sessionStamp() {
     if (!state.session?.cutoffAt) {
       const stamp=new Date(state.base?.dash?.generatedAt||"");
@@ -282,8 +294,8 @@
       ? "Giá thị trường mới đã được xác thực; bảng xếp hạng giữ nguyên forecast EOD và chờ lõi mô hình cập nhật."
       : defensive
       ? `Chưa có mã HOSE đủ điều kiện có mục tiêu T+${horizon} cao hơn giá tham chiếu; đang hiển thị nhóm giảm ít nhất để theo dõi rủi ro.`
-      : `Top 10 toàn HOSE theo forecast T+${horizon} đã kiểm định, chất lượng tín hiệu và dữ liệu phiên mới nhất.`;
-    if (primaryFilter) primaryFilter.textContent = defensive ? "HOSE phòng thủ" : "HOSE forecast tăng";
+      : `Top 10 ${isVN100Product()?"VN100":"toàn HOSE"} theo forecast T+${horizon} đã kiểm định, chất lượng tín hiệu và dữ liệu phiên mới nhất.`;
+    if (primaryFilter) primaryFilter.textContent = isVN100Product()?(defensive?"VN100 phòng thủ":"VN100 forecast tăng"):(defensive ? "HOSE phòng thủ" : "HOSE forecast tăng");
     if (deck) deck.setAttribute("aria-label", defensive
       ? `Các cổ phiếu HOSE có mức giảm dự báo T+${horizon} thấp nhất`
       : `Các cổ phiếu HOSE có mức tăng dự báo T+${horizon} cao nhất`);
@@ -612,7 +624,7 @@
       state.defensive = state.universe.length === 0;
       state.rows = finalLeaderboard(state.base, next, { filter: state.filter, includeNonPositive: state.defensive });
       state.index = Math.max(0, state.rows.findIndex(row => row.symbol === selected));
-      $("#snapshotDate").textContent = `${state.base.dash.asOf || "—"}${sessionStamp()}`;
+      $("#snapshotDate").textContent = snapshotStamp();
       refreshMode();
       renderPulse();
       renderCards();
@@ -638,7 +650,7 @@
       state.universe = finalLeaderboard(state.base, state.session, { all: true });
       state.defensive = state.universe.length === 0;
       state.rows = finalLeaderboard(state.base, state.session, { filter: state.filter, includeNonPositive: state.defensive });
-      $("#snapshotDate").textContent = `${state.base.dash.asOf || "—"}${sessionStamp()}`;
+      $("#snapshotDate").textContent = snapshotStamp();
       refreshMode();
       updateClock();
       window.setInterval(() => { if (!document.hidden) updateClock(); }, 1000);
@@ -676,7 +688,7 @@
       state.universe=finalLeaderboard(next,null,{all:true});
       state.defensive=state.universe.length===0;
       state.rows=finalLeaderboard(next,null,{filter:state.filter,includeNonPositive:state.defensive});
-      $("#snapshotDate").textContent=`${next.dash.asOf||"—"}${sessionStamp()}`;
+      $("#snapshotDate").textContent=snapshotStamp();
       refreshMode();renderPulse();renderCards();scheduleRotation();
     }catch(error){console.warn("VN100 leaderboard refresh failed",error)}
   });
