@@ -39,7 +39,7 @@ function sourceLink(raw,label){
 }
 function plot(data,opts={}){
  const pts=data.slice(-(opts.limit||24));
- if(pts.length<2)return'<div class="macro-no-chart">Chưa có dữ liệu.</div>';
+ if(pts.length<2)return'<div class="macro-no-chart">Chuỗi này chưa có hai kỳ công bố hợp lệ để vẽ xu hướng.</div>';
  let low=Math.min(...pts.map(p=>p.y)),high=Math.max(...pts.map(p=>p.y));
  if(typeof opts.threshold==='number'){low=Math.min(low,opts.threshold);high=Math.max(high,opts.threshold);}
  const range=Math.max(high-low,Math.abs(high)*.035,.1);low-=range*.1;high+=range*.14;
@@ -60,9 +60,15 @@ function plot(data,opts={}){
 function renderMacro(data){
  const host=$('macro-overview');if(!host)return;
  const sources=data?.sources||[];
+ if(!data?.datasets||!Object.keys(data.datasets).length){
+  host.innerHTML='<article class="macro-viz-card macro-state-full" role="status"><h4>Đang kiểm tra nguồn vĩ mô</h4><p>Dữ liệu vĩ mô chưa kết nối được đến bản phát hành đã xác minh. Thử Cập nhật nguồn; ESG doanh nghiệp vẫn hoạt động độc lập nếu có dữ liệu.</p></article>';
+  return;
+ }
  host.innerHTML=FEATURES.map(c=>{
   const ds=data?.datasets?.[c.id],src=sources.find(s=>s.id===c.id);
-  const allowed=ds?.status==='ok'&&ds.qualityStatus!=='warning'&&src?.status==='ok'&&src?.qualityStatus!=='warning';
+  const qualityBlocked=ds?.qualityStatus==='warning'||src?.qualityStatus==='warning';
+  const allowed=!!ds&&!qualityBlocked&&['ok','cached','retained'].includes(ds.status)&&
+    (!src||['ok','cached','retained','error'].includes(src.status));
   const pts=allowed?series(ds,c.key,c.scale):[];
   const last=pts.at(-1),earlier=pts.at(-2);
   // FDI is cumulative within each calendar year. Connecting December to
@@ -70,12 +76,18 @@ function renderMacro(data){
   const drawn=c.id==='fdi'&&last?pts.filter(p=>p.label.endsWith(last.label.slice(-4))):pts;
   const head='<div class="macro-viz-head"><div><span class="macro-viz-kicker">KINH TẾ VIỆT NAM</span><h4>'+esc(c.title)+'</h4></div>'+(last?'<span class="macro-viz-period">'+esc(last.label)+'</span>':'')+'</div>';
   const link=sourceLink(src?.url,'Nguồn');
-  if(pts.length<2)return'<article class="macro-viz-card">'+head+'<div class="macro-no-chart">Chưa có dữ liệu.</div><div class="macro-viz-source">'+link+'</div></article>';
+  if(pts.length<2){
+    const issue=qualityBlocked?'Chuỗi đang được đối chiếu chất lượng; chưa hiển thị để tránh diễn giải sai.':
+      ds?.status==='retained'?'Nguồn mới tạm gián đoạn; chưa có đủ quan sát đã kiểm chứng trong bản lưu.':
+      'Nguồn hiện chưa công bố đủ hai kỳ số liệu hợp lệ để vẽ xu hướng.';
+    return'<article class="macro-viz-card">'+head+'<div class="macro-source-notice" role="status">'+issue+'</div><div class="macro-viz-source">'+link+'</div></article>';
+  }
   let context='';
   if(c.id==='pmi')context=last.y>=50?'Trên mốc 50 · sản xuất đang mở rộng':'Dưới mốc 50 · sản xuất đang thu hẹp';
   else if(c.id==='fdi')context='';
   else context='So với '+esc(earlier.label)+': '+(last.y>=earlier.y?'+':'')+esc(fmt(last.y-earlier.y))+' '+esc(c.unit);
-  return'<article class="macro-viz-card">'+head+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'</div></article>';
+  const retained=ds?.status==='retained'||src?.status==='retained'||src?.status==='error';
+  return'<article class="macro-viz-card">'+head+(retained?'<div class="macro-source-notice">Dữ liệu kỳ gần nhất đã kiểm chứng · nguồn cập nhật mới đang gián đoạn</div>':'')+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'</div></article>';
  }).join('');
  const checkDate=new Date(data?.checkedAt);
  const freshness=$('macro-data-freshness');
@@ -87,9 +99,12 @@ function renderCountry(data){
  if(!body||!select||!foot)return;
  const choices=WORLD.filter(m=>series(ds,m.id).length>=2);
  if(!choices.length||!['ok','cached','retained'].includes(ds?.status)||ds?.qualityStatus==='warning'){
-  select.innerHTML='<option>Chưa có dữ liệu</option>';select.disabled=true;
-  body.innerHTML='<div class="macro-no-chart">Chưa có dữ liệu.</div>';
-  foot.textContent='';return;
+  select.innerHTML='<option value="">Chờ dữ liệu nguồn</option>';select.disabled=true;
+  const message=ds?.qualityStatus==='warning'?'Chuỗi ESG quốc gia đang được đối chiếu chất lượng.':
+   !ds?'Chưa kết nối được nguồn ESG quốc gia. Các số liệu doanh nghiệp, nếu có, vẫn được hiển thị độc lập.':
+   'Chưa tìm thấy ít nhất hai năm quan sát hợp lệ cho các chỉ tiêu ESG đã chọn.';
+  body.innerHTML='<div class="macro-source-notice" role="status">'+message+'</div>';
+  foot.innerHTML=sourceLink((data?.sources||[]).find(s=>s.id==='esg_world_bank')?.url,'Nguồn World Bank');return;
  }
  select.disabled=false;
  const selected=select.value;
@@ -99,7 +114,9 @@ function renderCountry(data){
  select.value=countryId;
  const metric=choices.find(m=>m.id===countryId);
  const pts=series(ds,metric.id),latest=pts.at(-1);
- body.innerHTML='<div class="macro-viz-value"><strong>'+esc(fmt(latest.y))+'</strong><span>'+esc(metric.unit)+'</span></div><p class="macro-viz-comment">Năm '+esc(latest.label)+'</p><div class="macro-viz-plot">'+plot(pts,{title:metric.title,unit:metric.unit,color:'#158c83',limit:24})+'</div>';
+ body.innerHTML='<div class="macro-viz-value"><strong>'+esc(fmt(latest.y))+'</strong><span>'+esc(metric.unit)+'</span></div><p class="macro-viz-comment">Năm công bố '+esc(latest.label)+' · không đồng nghĩa dữ liệu năm hiện tại</p>'+
+  (ds.status==='retained'?'<div class="macro-source-notice">Đang sử dụng kỳ công bố đã lưu; chưa nhận bản mới.</div>':'')+
+  '<div class="macro-viz-plot">'+plot(pts,{title:metric.title,unit:metric.unit,color:'#158c83',limit:24})+'</div>';
  const source=(data.sources||[]).find(s=>s.id==='esg_world_bank');
  foot.innerHTML=sourceLink(source?.url,'Ngân hàng Thế giới');
 }
@@ -122,10 +139,28 @@ function renderCorporate(esg,symbol){
  const ids=[...groups.keys()];
  if(key!==companySymbol){companySymbol=key;corporateId='';}
  if(!ids.length){
-  select.disabled=true;select.innerHTML='<option value="">Chưa có dữ liệu</option>';
-  body.innerHTML='<div class="macro-no-chart"><b>'+esc(key)+'</b> · Chưa có dữ liệu ESG.</div>';
-  const doc=(company?.documents||[]).find(d=>httpsUrl(d.url));
-  foot.innerHTML=doc?sourceLink(doc.url,'Công bố doanh nghiệp'):'<span></span>';
+  select.disabled=true;select.innerHTML='<option value="">Chưa có KPI đủ điều kiện</option>';
+  const docs=(company?.documents||[]).filter(d=>httpsUrl(d.url));
+  const processed=docs.filter(d=>d.processedAt).length;
+  const found=docs.length;
+  const candidates=docs.slice().sort((a,b)=>(Number(b.year)||0)-(Number(a.year)||0)).slice(0,3);
+  const external=(company?.externalAssessments||[]).filter(x=>httpsUrl(x.sourceUrl)).slice(0,2);
+  const title=company?.name||key||'Doanh nghiệp';
+  const message=!esg?'Nguồn công bố ESG đang gián đoạn. Chưa thể kết luận doanh nghiệp không công bố thông tin.':
+   !company?'Chưa tra cứu được hồ sơ ESG cho mã này trong danh mục VN100.':
+   found?'Đã tìm được '+found+' tài liệu công bố, '+processed+' tài liệu đã xử lý. Chưa trích xuất được KPI định lượng đủ nguồn và kỳ báo cáo để vẽ biểu đồ.':
+   'Chưa tìm được báo cáo ESG đủ điều kiện từ các nguồn đang theo dõi. Điều này không đồng nghĩa doanh nghiệp không có hoạt động ESG.';
+  const links=candidates.map(d=>sourceLink(d.url,
+   (d.type==='annual_report'?'Báo cáo thường niên':d.type==='sustainability_report'?'Báo cáo phát triển bền vững':'Tài liệu công bố')+
+   (d.year?' '+d.year:'')
+  )).join(' · ');
+  const index=key&&/^[A-Z]{3}$/.test(key)?
+   sourceLink('https://24hmoney.vn/stock/'+key.toLowerCase()+'/report','Danh mục công bố của '+key):'';
+  body.innerHTML='<div class="macro-esg-disclosure" role="status"><strong>'+esc(title)+'</strong><p>'+message+'</p>'+
+    (links?'<div class="macro-disclosure-links">'+links+'</div>':'')+
+    (external.length?'<small>Đã có '+external.length+' đánh giá từ nguồn ngoài; không quy đổi thành điểm ESG tổng hợp.</small>':'')+
+    '<small>KPI chưa kiểm chứng được giữ trống; không nội suy số liệu hoặc xếp hạng giả.</small></div>';
+  foot.innerHTML=found?sourceLink(candidates[0]?.url,'Mở tài liệu nguồn'):index;
   return;
  }
  select.disabled=false;
