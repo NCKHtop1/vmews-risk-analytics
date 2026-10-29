@@ -25,7 +25,7 @@ async function renderMethodProof(){
    const coverage=metrics.map(x=>x.coverage20_80).filter(Number.isFinite);
    const mean=a=>a.length?a.reduce((u,v)=>u+v,0)/a.length:NaN;
    box.innerHTML=`<article class="proofCard"><span>Giá dự báo T+1 đến T+5</span><b>${valid*5} / 500</b><small>VN100 · đủ cả 5 phiên dự báo</small></article>
-    <article class="proofCard"><span>Kiểm định lịch sử</span><b>${n?n.toLocaleString("vi-VN")+"+":"—"}</b><small>số dự báo đã có kết quả, mỗi kỳ hạn</small></article>
+    <article class="proofCard"><span>Mẫu kiểm định</span><b>${n?n.toLocaleString("vi-VN")+"+":"—"}</b><small>số dự báo đã có kết quả, mỗi kỳ hạn</small></article>
     <article class="proofCard"><span>Đúng chiều trong quá khứ</span><b>${pctOrDash(mean(direction))}</b><small>không bảo đảm kết quả tương lai</small></article>
     <article class="proofCard"><span>So với giá không đổi</span><b>${pctOrDash(mean(skills))}</b><small>mức cải thiện sai số · độ phủ vùng ${pctOrDash(mean(coverage))}</small></article>`;
    return;
