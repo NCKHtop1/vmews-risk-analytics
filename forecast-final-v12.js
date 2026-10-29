@@ -177,7 +177,7 @@ async function loadBase(){
      return BASE;
    }
    const bundle=await loadVN100();
-   if(!bundle)throw Error("Dữ liệu VN100 đang gián đoạn. Hãy thử tải lại khi nguồn xác minh đã sẵn sàng.");
+   if(!bundle)throw Error("Nguồn dữ liệu VN100 chưa sẵn sàng; giá dự báo đang được khôi phục. Bấm Thử tải lại để kết nối lại.");
    BASE=vn100Base(bundle);
    return BASE;
  })().catch(error=>{BASE_PROMISE=null;throw error});
