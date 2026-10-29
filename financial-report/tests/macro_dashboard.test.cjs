@@ -65,6 +65,8 @@ test('full macro dashboard shows four real trends with period, units and source 
  assert.match(grid,/PMI sản xuất/);
  assert.doesNotMatch(grid,/Lũy kế trong năm · không diễn giải/);
  assert.match(grid,/https:\/\/vbma\.org\.vn\/example\.csv/);
+ assert.match(grid,/class="macro-source-quicklink"/);
+ assert.doesNotMatch(grid,/>Nguồn ↗<\/a>/);
  assert.match($('macro-data-freshness').textContent,/23\/10\/2026/);
 });
 test('quality warning on source does not blank independently valid macro charts',()=>{
@@ -73,7 +75,8 @@ test('quality warning on source does not blank independently valid macro charts'
  data.datasets.pmi.qualityStatus='warning';
  api.render(data,mbb(),'MBB');
  const grid=$('macro-overview').innerHTML;
- assert.match(grid,/Nguồn có cảnh báo ở một số chỉ tiêu/);
+ assert.match(grid,/Một số kỳ cần xác minh/);
+ assert.doesNotMatch(grid,/Nguồn có cảnh báo ở một số chỉ tiêu/);
  assert.equal((grid.match(/class="macro-trend-svg"/g)||[]).length,4);
 });
 test('sparse or invalid data never turn missing observation into zero',()=>{
