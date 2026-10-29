@@ -110,7 +110,7 @@ def run():
                 """)
                 assert focus["period"]=="recent", focus
                 assert focus["to"]>=focus["bars"]-1, "latest observation outside initial view"
-                assert (60 <= focus["to"]-focus["from"] <= 94) if width>=850 else (18 <= focus["to"]-focus["from"] <= 59), ("adaptive readable default window",width,focus)
+                assert (60 <= focus["to"]-focus["from"] <= 94) if width>=720 else (18 <= focus["to"]-focus["from"] <= 59), ("adaptive readable default window",width,focus)
                 assert focus["tf"]=="1d", ("chart must enter in daily candles", focus)
                 assert focus["label"]=="", ("no intrusive latest-candle value banner", focus)
                 assert not focus["cueHidden"] and "is-candle" in focus["cueClass"], focus
