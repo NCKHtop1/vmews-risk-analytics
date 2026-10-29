@@ -1073,3 +1073,20 @@ body.strategy-lab-view .strategy-page{display:block}
 }
 #macro .macro-viz-source:empty{display:none!important}
 .owner-asof{display:block;margin:6px 0 12px;font-size:11px;color:#74849a}
+
+
+/* FinQuery ON: precise point inspection on desktop, touch and keyboard. */
+.money-on-interactive{position:relative;min-height:0;touch-action:pan-y}
+.money-on-interactive .money-on-trend{cursor:crosshair;touch-action:pan-y;user-select:none}
+.money-on-interactive .money-on-trend:focus-visible{outline:2px solid #6e9de1;outline-offset:2px;border-radius:8px}
+.money-on-tooltip{position:absolute;z-index:6;transform:translate(-50%,-100%);pointer-events:none;
+ display:flex;flex-direction:column;gap:4px;min-width:124px;white-space:nowrap;
+ padding:9px 12px;background:#fff;color:#1b3d67;border:1px solid #cddcf0;
+ border-radius:10px;box-shadow:0 6px 19px rgba(29,59,100,.16);font-variant-numeric:tabular-nums}
+.money-on-tooltip[hidden]{display:none!important}
+.money-on-tooltip.is-below{transform:translate(-50%,0)}
+.money-on-tooltip [data-on-tooltip-date]{font-size:11px;font-weight:680;color:#637b9c;line-height:1.35}
+.money-on-tooltip strong{font-size:16px;font-weight:790;line-height:1.25;color:#183f74}
+.money-on-tooltip strong small{font-size:10px;font-weight:650;color:#637b9c}
+@media(max-width:570px){.money-on-tooltip{padding:8px 10px;min-width:112px}
+ .money-on-tooltip strong{font-size:15px}}
