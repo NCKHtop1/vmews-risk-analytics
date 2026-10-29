@@ -18,16 +18,66 @@ function miniLine(points,{unit='',title='',color='#2e74bb',width=640}={}){
  const x=i=>L+(W-L-R)*i/(points.length-1),y=v=>T+(H-T-B)*(high-v)/(high-low);
  const grid=Array.from({length:4},(_,i)=>{const v=low+(high-low)*i/3,py=y(v);return'<line x1="'+L+'" y1="'+py+'" x2="'+(W-R)+'" y2="'+py+'" stroke="#e8edf4"/><text x="'+(L-7)+'" y="'+(py+4)+'" font-size="11" text-anchor="end" fill="#8491a4">'+fmt(v,1)+'</text>';}).join('');
  const line=points.map((p,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(p.value).toFixed(1)).join(' ');
- // Budget horizontal space for the actual rendered label text rather than
- // drawing five full dd/mm/yyyy labels inside a 300px chart.
  const labelWidth=compact?57:83,gap=compact?12:18;
  const limit=Math.max(2,Math.min(5,Math.floor((W-L-R+gap)/(labelWidth+gap))));
  const ticks=[...new Set(Array.from({length:limit},(_,i)=>Math.round(i*(points.length-1)/(limit-1))))];
  const labels=ticks.map(i=>{const p=points[i],full=dateVN(p.date),display=compact?full.slice(0,5):full;
-  return'<text data-on-tick="'+i+'" x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="'+(i===0?'start':i===points.length-1?'end':'middle')+'" font-size="'+(compact?10:11)+'" fill="#74869f">'+esc(display)+'<title>'+esc(full)+'</title></text>';
+  return'<text data-on-tick="'+i+'" x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" text-anchor="'+(i===0?'start':i===points.length-1?'end':'middle')+'" font-size="'+(compact?10:11)+'" fill="#74869f">'+esc(display)+'</text>';
  }).join('');
- const circles=points.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="'+(i===points.length-1?4.8:3)+'" fill="'+color+'"><title>'+esc(dateVN(p.date)+' · '+fmt(p.value)+' '+unit)+'</title></circle>').join('');
- return'<svg viewBox="0 0 '+W+' '+H+'" class="macro-trend-svg money-on-trend" role="img" aria-label="'+esc(title)+'">'+grid+'<path d="'+line+'" stroke="'+color+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" fill="none"/>'+circles+labels+'</svg>';
+ const exactRate=n=>new Intl.NumberFormat('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:4}).format(n);
+ const circles=points.map((p,i)=>'<circle data-on-point="'+i+'" data-on-date="'+esc(dateVN(p.date))+'" data-on-rate="'+esc(exactRate(p.value))+'" cx="'+x(i).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="'+(i===points.length-1?4.8:3.1)+'" fill="'+esc(color)+'" aria-hidden="true"/>').join('');
+ const guide='<line data-on-guide x1="0" x2="0" y1="'+T+'" y2="'+(H-B)+'" stroke="#90aedc" stroke-width="1.3" stroke-dasharray="4 4" pointer-events="none" visibility="hidden"/>';
+ const focus='<circle data-on-focus cx="0" cy="0" r="7" fill="#fff" stroke="'+esc(color)+'" stroke-width="2.5" pointer-events="none" visibility="hidden"/>';
+ return'<svg viewBox="0 0 '+W+' '+H+'" data-on-width="'+W+'" data-on-left="'+L+'" data-on-right="'+R+'" class="macro-trend-svg money-on-trend" role="img" tabindex="0" aria-label="'+esc(title+'. Di chuột, chạm hoặc dùng phím mũi tên để xem số liệu từng ngày.')+'">'+grid+'<path d="'+line+'" stroke="'+esc(color)+'" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round" fill="none"/>'+circles+guide+focus+labels+'</svg>';
+}
+// The tooltip reads only actual dated observations plotted in the SVG.
+function bindONTooltip(){
+ const host=$('money-on'),svg=host?.querySelector?.('svg.money-on-trend');
+ if(!svg||typeof svg.addEventListener!=='function')return;
+ const wrapper=svg.closest('.money-on-interactive'),tooltip=wrapper?.querySelector('.money-on-tooltip');
+ const nodes=[...svg.querySelectorAll('[data-on-point]')],guide=svg.querySelector('[data-on-guide]'),focus=svg.querySelector('[data-on-focus]');
+ if(!tooltip||!nodes.length)return;
+ const width=Number(svg.getAttribute('data-on-width'))||640;
+ const left=Number(svg.getAttribute('data-on-left'))||49,right=Number(svg.getAttribute('data-on-right'))||22;
+ const hide=()=>{tooltip.hidden=true;guide?.setAttribute('visibility','hidden');focus?.setAttribute('visibility','hidden');};
+ const nearest=clientX=>{
+  const r=svg.getBoundingClientRect();
+  if(!Number.isFinite(clientX)||!r.width)return nodes.length-1;
+  const logical=(clientX-r.left)*width/r.width;
+  return Math.max(0,Math.min(nodes.length-1,Math.round(((logical-left)/(width-left-right))*(nodes.length-1))));
+ };
+ const show=index=>{
+  const i=Math.max(0,Math.min(nodes.length-1,index)),dot=nodes[i];
+  if(!dot)return;
+  const dt=dot.getAttribute('data-on-date'),rate=dot.getAttribute('data-on-rate');
+  const cx=Number(dot.getAttribute('cx')),cy=Number(dot.getAttribute('cy'));
+  const r=svg.getBoundingClientRect(),wr=wrapper.getBoundingClientRect();
+  const px=r.left-wr.left+cx*r.width/width,py=r.top-wr.top+cy*r.height/232;
+  const margin=Math.min(78,wr.width/2),below=py<67;
+  tooltip.querySelector('[data-on-tooltip-date]').textContent=dt;
+  tooltip.querySelector('[data-on-tooltip-rate]').textContent=rate;
+  tooltip.style.left=Math.max(margin,Math.min(wr.width-margin,px))+'px';
+  tooltip.style.top=(below?py+16:py-13)+'px';
+  tooltip.classList.toggle('is-below',below);
+  tooltip.hidden=false;
+  guide?.setAttribute('x1',cx);guide?.setAttribute('x2',cx);
+  guide?.setAttribute('visibility','visible');
+  focus?.setAttribute('cx',cx);focus?.setAttribute('cy',cy);focus?.setAttribute('visibility','visible');
+  svg.dataset.activePoint=String(i);
+ };
+ svg.addEventListener('pointermove',event=>{if(event.pointerType!=='touch')show(nearest(event.clientX));});
+ svg.addEventListener('pointerdown',event=>{if(event.pointerType==='touch'||event.pointerType==='pen')show(nearest(event.clientX));});
+ svg.addEventListener('click',event=>{if(Number.isFinite(event.clientX))show(nearest(event.clientX));});
+ svg.addEventListener('pointerleave',event=>{if(event.pointerType!=='touch'&&event.pointerType!=='pen')hide();});
+ svg.addEventListener('focus',()=>show(nodes.length-1));
+ svg.addEventListener('blur',hide);
+ svg.addEventListener('keydown',event=>{
+  if(!['ArrowLeft','ArrowRight','Home','End','Escape'].includes(event.key))return;
+  event.preventDefault();
+  if(event.key==='Escape'){hide();return;}
+  const i=Number.isInteger(Number(svg.dataset.activePoint))?Number(svg.dataset.activePoint):nodes.length-1;
+  show(event.key==='Home'?0:event.key==='End'?nodes.length-1:i+(event.key==='ArrowLeft'?-1:1));
+ });
 }
 function tenorCurve(points,{title='',unit='',color='#2e74bb',width=600}={}){
  const pts=(Array.isArray(points)?points:[]).filter(p=>p&&p.tenor&&Number.isFinite(p.value));
@@ -111,8 +161,9 @@ function renderON(p){
  const difference=prev?last.value-prev.value:null;
  host.innerHTML=cardHeader('Lãi suất qua đêm',fmt(last.value),'%/năm',dateVN(last.date))+
  '<p class="money-card-caption">'+(difference===null?'':((difference>=0?'+':'')+fmt(difference)+' điểm % so với '+dateVN(prev.date)))+'</p>'+
- '<div class="money-chart">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe',width:Math.max(250,host.clientWidth-36)})+'</div>'+
+ '<div class="money-chart money-on-interactive">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe',width:Math.max(250,host.clientWidth-36)})+'<div class="money-on-tooltip" role="tooltip" hidden><span data-on-tooltip-date></span><strong><span data-on-tooltip-rate></span> <small>%/năm</small></strong></div></div>'+
  onEntryForm();
+ bindONTooltip();
 }
 function renderFutures(p){
  const root=$('money-futures');if(!root)return;
