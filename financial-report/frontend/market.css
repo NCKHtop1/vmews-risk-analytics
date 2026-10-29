@@ -933,3 +933,91 @@ body.strategy-lab-view .strategy-page{display:block}
 @media(prefers-reduced-motion:reduce){
  .chart-canvas-wrap>.chart-latest-candle{animation:none!important;opacity:.95}
 }
+
+
+/* 2026-10-29: Macro & ESG compact responsive information hierarchy.
+   Provenance checks stay in data/logic; do not create noisy visible status panels. */
+#macro{-webkit-text-size-adjust:100%;text-size-adjust:100%;min-width:0}
+#macro .macro-head{align-items:center!important;flex-direction:row!important;min-width:0}
+#macro .macro-head .collapse-head-toggle{flex:1 1 auto;min-width:0;text-align:left}
+#macro .macro-head .collapse-head-actions{width:auto!important;flex:0 0 auto;align-self:center;margin-left:auto}
+#macro #macro-source-status,#macro #money-source-stamp{display:none!important}
+#macro .macro-head h2{font-size:clamp(18px,2.2vw,22px)!important;line-height:1.25!important;letter-spacing:-.2px}
+#macro .macro-workspace,#macro [data-macro-panel]{min-width:0}
+#macro .macro-dashboard-head{align-items:center;margin:16px 0 10px;gap:8px}
+#macro .macro-dashboard-head h3{font-size:clamp(17px,1.8vw,21px);letter-spacing:-.2px;line-height:1.3}
+#macro .macro-eyebrow{font-size:9px;letter-spacing:.8px;color:#6c7e93}
+#macro .macro-data-freshness{background:transparent;color:#738396;padding:0;font-size:10px;font-weight:500}
+#macro .macro-viz-card{background:#fff;border:1px solid #dfe6ee;border-radius:12px;box-shadow:none;padding:15px 16px 12px;min-width:0}
+#macro .macro-viz-head{gap:10px;min-width:0;align-items:flex-start}
+#macro .macro-viz-head>div:first-child{min-width:0;flex:1 1 auto}
+#macro .macro-viz-head h4{font-size:clamp(14px,1.2vw,17px);line-height:1.35;letter-spacing:0;font-weight:700;margin:3px 0 0;overflow-wrap:break-word}
+#macro .macro-viz-kicker{font-size:9px;line-height:1.3;font-weight:600;letter-spacing:.4px;color:#718197}
+#macro .macro-viz-period{padding:0;background:transparent;font-size:11px;font-weight:600;color:#687d94}
+#macro .macro-viz-source{gap:6px;border-top:1px solid #edf1f5;padding-top:8px;margin-top:8px;min-height:30px}
+#macro .macro-viz-source a{font-size:11px;text-decoration:none;color:#496b8a}
+#macro .macro-source-notice,#macro .macro-quality-inline{background:transparent;border:0;border-radius:0;padding:5px 0;margin:6px 0;color:#697c91;font-size:11px;line-height:1.45}
+#macro .macro-explore{background:#fff;border-color:#e4e9ef;box-shadow:none}
+#macro .macro-explore[open]>summary{background:#f7f9fb;border-color:#e4e9ef}
+#macro .macro-explore>summary{padding:12px 14px}
+#macro .finquery-workspace-tabs button.active{background:#eaf1f9;border-color:#9fb8d3;color:#27558a;box-shadow:none}
+#macro .finquery-workspace-tabs button{box-shadow:none}
+#macro .money-card-head{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:start;column-gap:10px}
+#macro .money-card-head .money-main-num{min-width:0;max-width:100%;justify-items:end;text-align:right}
+#macro .money-card-head .money-main-num.money-asof strong{font-size:13px;font-weight:650;color:#48647e;letter-spacing:0;line-height:1.2;white-space:nowrap}
+#macro .money-card-head .money-main-num:not(.money-asof) strong{font-size:clamp(18px,2vw,25px);line-height:1.15}
+#macro .money-card-head .money-main-num small{font-size:10px;color:#76899e;font-weight:500;line-height:1.3}
+#macro .money-curve,#macro .money-chart{min-width:0;margin:10px 0 4px}
+#macro .money-tenor-curve{max-width:100%;display:block}
+#macro .money-card-caption{font-size:11px;margin:7px 0 4px;color:#60788d;font-weight:600}
+#macro .money-spread-card .macro-viz-value{margin:11px 0 3px}
+#macro .money-spread-card .macro-viz-value strong{font-size:clamp(23px,2.3vw,28px);letter-spacing:-.3px}
+#macro .money-download-row{justify-content:flex-end;min-height:37px;padding:6px 0 0;margin-top:3px}
+#macro .money-vbma-download{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;padding:0;border:1px solid #d9e2ec;border-radius:8px;background:#fff;color:#34658d;box-shadow:none;cursor:pointer}
+#macro .money-vbma-download:hover{background:#f2f6fa;color:#214b6e}
+#macro .money-vbma-download:focus-visible{outline:2px solid #3872b8;outline-offset:2px}
+#macro .money-empty-inline{margin:5px 0;padding:12px 0;font-size:12px;color:#75869b;line-height:1.4}
+#macro .money-source-summary{display:none!important}
+#macro .macro-viz-plot .macro-trend-svg{max-width:100%}
+
+@media(max-width:760px){
+ #macro.macro-section{padding:16px 14px!important;border-radius:15px!important;background:#fff!important;box-shadow:none!important}
+ #macro .macro-head{gap:8px}
+ #macro .macro-head h2{font-size:20px!important}
+ #macro .macro-head .collapse-head-actions{justify-content:flex-end;padding:0;gap:0}
+ #macro .macro-viz-card{padding:13px}
+ #macro .macro-overview-grid,#macro .macro-esg-dashboard-grid,#macro .money-dashboard-grid,#macro .money-vbma-grid{grid-template-columns:minmax(0,1fr);gap:10px}
+ #macro .macro-viz-head h4{font-size:15px}
+ #macro .macro-viz-head .macro-viz-period{font-size:10px}
+ #macro .money-card-head{column-gap:8px}
+ #macro .money-card-head .money-main-num.money-asof strong{font-size:12px}
+ #macro .money-card-head .money-main-num small{font-size:9px}
+ #macro .money-spread-card .macro-viz-value strong{font-size:24px}
+ #macro .macro-dashboard-head{margin:14px 0 9px}
+ #macro .macro-dashboard-head h3{font-size:17px}
+ #macro .macro-viz-plot .macro-trend-svg{max-height:210px}
+ #macro .macro-viz-card .money-curve{min-height:0}
+ #macro .money-chart{min-height:0}
+ #macro .macro-esg-card .macro-viz-head{align-items:flex-start}
+ #macro .macro-esg-card select{flex-basis:100%;width:100%}
+ #macro #macro-primary-tabs{display:flex;flex-wrap:wrap;overflow:visible;white-space:normal;gap:6px;margin:11px 0 13px;padding:0}
+ #macro #macro-primary-tabs button{flex:1 1 calc(33.333% - 6px);min-width:calc(33.333% - 6px);min-height:40px;padding:8px 5px;white-space:normal;line-height:1.25;font-size:11px;border-radius:8px}
+ #macro #macro-primary-tabs button:nth-last-child(-n+2){flex-basis:calc(50% - 5px);min-width:calc(50% - 5px)}
+ .ai-fab#ai-fab{width:45px!important;height:45px!important;padding:3px!important;right:10px!important;bottom:10px!important;border:1px solid #dce4ed!important;border-radius:50%!important;background:#fff!important;box-shadow:0 2px 12px rgba(20,47,81,.12)!important;gap:0!important}
+ .ai-fab#ai-fab::before,.ai-fab#ai-fab::after{display:none!important;animation:none!important}
+ .ai-fab#ai-fab .ai-fab-orb{width:37px!important;height:37px!important;box-shadow:none!important;background:none!important}
+ .ai-fab#ai-fab .dolphin-logo{width:37px!important;height:37px!important}
+ .ai-fab#ai-fab .ai-fab-copy{display:none!important}
+}
+@media(max-width:390px){
+ #macro.macro-section{padding:13px 10px!important}
+ #macro .macro-head h2{font-size:18px!important}
+ #macro .macro-viz-card{padding:11px 12px}
+ #macro .macro-viz-head h4{font-size:14px}
+ #macro .money-card-head .money-main-num.money-asof strong{font-size:11px}
+ #macro .macro-viz-period{font-size:10px}
+ #macro .macro-dashboard-head h3{font-size:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ #macro .macro-workspace,.ai-fab#ai-fab,.ai-fab#ai-fab::before{animation:none!important;transition:none!important}
+}
