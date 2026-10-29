@@ -1,8 +1,140 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-29T05:58:53+00:00",
+  "updatedAt": "2026-10-29T13:17:27+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "YUANTA-BWE-2026-10-29-be5b635e",
+      "symbol": "BWE",
+      "broker": "YUANTA",
+      "brokerName": "YSVN",
+      "publishedAt": "2026-10-29",
+      "title": "BWE: Khuyến nghị MUA với giá mục tiêu 53,381 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/bwe-khuyen-nghi-mua-voi-gia-muc-tieu-53-381-dong-co-phieu-rpid6232.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 53381,
+      "summary": "YUANTA có báo cáo BWE ngày 29/10/2026 với khuyến nghị MUA, giá mục tiêu 53.381 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VNDIRECT-PVT-2026-10-29-c1df7b42",
+      "symbol": "PVT",
+      "broker": "VNDIRECT",
+      "brokerName": "VNDS",
+      "publishedAt": "2026-10-29",
+      "title": "PVT: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/pvt-bao-cao-cap-nhat-kqkd-q3-2026-rpid6230.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VNDIRECT có báo cáo PVT ngày 29/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VNDIRECT-ACB-2026-10-29-05c8feca",
+      "symbol": "ACB",
+      "broker": "VNDIRECT",
+      "brokerName": "VNDS",
+      "publishedAt": "2026-10-29",
+      "title": "ACB: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/acb-bao-cao-cap-nhat-kqkd-q3-2026-rpid6234.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VNDIRECT có báo cáo ACB ngày 29/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIX-DGW-2026-10-29-176cd35a",
+      "symbol": "DGW",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2026-10-29",
+      "title": "DGW – Báo cáo cập nhật KQKD Quý III Kính gửi quý khách hàng, Công ty Cổ phần Chứng khoán VIX xin gửi báo cáo cập nhật “DGW – Báo cáo cập nhật KQKD Quý III”. TÓM TẮT: Chúng... XEM CHI TIẾT",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
+      "summary": "VIX có báo cáo DGW ngày 29/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-OCB-2026-10-29-001b1c7b",
+      "symbol": "OCB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-29",
+      "title": "Cập nhật KQKD OCB – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo OCB ngày 29/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-NT2-2026-10-29-001b1c7b",
+      "symbol": "NT2",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-29",
+      "title": "Cập nhật KQKD NT2 – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo NT2 ngày 29/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-MSN-2026-10-29-001b1c7b",
+      "symbol": "MSN",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-29",
+      "title": "Cập nhật KQKD MSN – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo MSN ngày 29/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-CTS-2026-10-29-001b1c7b",
+      "symbol": "CTS",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-29",
+      "title": "Cập nhật KQKD CTS – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo CTS ngày 29/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-ACB-2026-10-29-001b1c7b",
+      "symbol": "ACB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-29",
+      "title": "Cập nhật KQKD ACB – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo ACB ngày 29/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "SHS-MSN-2026-10-29-0e678d7d",
+      "symbol": "MSN",
+      "broker": "SHS",
+      "brokerName": "SHS",
+      "publishedAt": "2026-10-29",
+      "title": "MSN: Khuyến nghị KHẢ QUAN với giá mục tiêu 98,300 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/msn-khuyen-nghi-kha-quan-voi-gia-muc-tieu-98-300-dong-co-phieu-rpid6231.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 98300,
+      "summary": "SHS có báo cáo MSN ngày 29/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 98.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "MIRAE-MWG-2026-10-29-d447493e",
+      "symbol": "MWG",
+      "broker": "MIRAE",
+      "brokerName": "MIRAE",
+      "publishedAt": "2026-10-29",
+      "title": "MWG: Khuyến nghị MUA với giá mục tiêu 100,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mwg-khuyen-nghi-mua-voi-gia-muc-tieu-100-000-dong-co-phieu-rpid6235.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 100000,
+      "summary": "MIRAE có báo cáo MWG ngày 29/10/2026 với khuyến nghị MUA, giá mục tiêu 100.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "YUANTA-VCI-2026-10-28-57a14db2",
       "symbol": "VCI",
@@ -41,6 +173,17 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo VPX ngày 28/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-MCH-2026-10-28-001b1c7b",
+      "symbol": "MCH",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-28",
+      "title": "Cập nhật KQKD MCH – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElementById('tcbs-ticker-options'); if (!datalist) { return; } fetch('https://www.tcbs.com.vn/wp-c",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo MCH ngày 28/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "TCBS-MCH-2026-10-28-001b1c7b",
@@ -6713,6 +6856,17 @@
       "recommendation": "TRUNG LẬP",
       "targetPrice": 26200,
       "summary": "VNDIRECT có báo cáo BSR ngày 17/08/2026 với khuyến nghị TRUNG LẬP, giá mục tiêu 26.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIX-CTR-2026-08-17-176cd35a",
+      "symbol": "CTR",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2026-08-17",
+      "title": "CTR-Triển vọng kinh doanh tích cực trong năm 2026 Kính gửi quý khách hàng, Công ty cổ phần chứng khoán VIX xin gửi báo cáo phân tích (cập nhật): “CTR-Triển vọng kinh doanh tích cực trong năm 2026”.... XEM CHI TIẾT 1 / 5",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
+      "summary": "VIX có báo cáo CTR ngày 17/08/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "VIX-CTR-2026-08-17-176cd35a",
