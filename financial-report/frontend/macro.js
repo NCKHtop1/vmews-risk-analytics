@@ -71,7 +71,7 @@ function renderCompanyPicker(){
  select.innerHTML=records.map(([symbol,c])=>{
   const trusted=window.FinMacroDashboard?.corporateRows?.(state.esg,symbol)||[];
   const docs=(c.documents||[]).filter(d=>/^https:\/\//.test(String(d.url||''))).length;
-  const suffix=trusted.length?' · KPI '+trusted.length:docs?' · '+docs+' tài liệu':' · đang tìm nguồn';
+  const suffix=trusted.length?' · KPI '+trusted.length:' · đang cập nhật';
   return '<option value="'+esc(symbol)+'"'+(symbol===selected?' selected':'')+'>'+esc(symbol+suffix)+'</option>';
  }).join('');
  if(records.some(([key])=>key===selected))select.value=selected;
@@ -141,8 +141,8 @@ function renderChart(){
    const documented=company?.coverage?.documents||company?.documents?.length||0;
    box.innerHTML=ds?.companySymbol?
     '<div class="macro-source-notice">Đang đối chiếu KPI ESG của '+esc(ds.companySymbol)+'. Đã ghi nhận '+
-     documented+' báo cáo nguồn; chỉ số định lượng chưa xác minh không được tự điền. Chọn tài liệu nguồn phía trên để đối chiếu.</div>':
-    '<div class="macro-source-notice">Nguồn vĩ mô đang được kiểm tra. Chọn một chỉ tiêu có số kỳ công bố hợp lệ.</div>';
+     documented+' hồ sơ đã ghi nhận; chỉ số định lượng chưa xác minh không được tự điền.</div>':
+    '<div class="macro-source-notice">Dữ liệu vĩ mô đang được kiểm tra. Chọn một chỉ tiêu có số kỳ công bố hợp lệ.</div>';
    return;
  }
  const pts=chartPoints(ds,state.metric),unit=metricUnit(ds,state.metric),label=metricLabel(ds,state.metric);
@@ -152,7 +152,7 @@ function renderChart(){
   $('macro-chart-subtitle').textContent='1 năm có dữ liệu kiểm chứng · không nội suy';
   box.innerHTML='<div class="macro-single-observation"><strong>'+esc(fmt(pts[0].y))+
     '</strong><span>'+esc(unit)+' · Năm '+esc(pts[0].label)+
-    '</span><small>Chưa có năm thứ hai để tính biến động. Giá trị lấy từ công bố nguồn.</small></div>';
+    '</span><small>Chưa có năm thứ hai để tính biến động. Giá trị theo kỳ công bố.</small></div>';
   return;
  }
  if(card)card.hidden=false;
@@ -180,29 +180,27 @@ function conciseSourceTitle(row){
  return title.length>84?title.slice(0,81)+'…':(title||'Nguồn công bố');
 }
 function renderAssessments(){
- const box=$('macro-esg-assessments'),ds=state.data?.datasets?.[state.active],company=ds?.companySymbol&&state.esg?.companies?.[ds.companySymbol];if(!box)return;
+ const box=$('macro-esg-assessments'),ds=state.data?.datasets?.[state.active];
+ const company=ds?.companySymbol&&state.esg?.companies?.[ds.companySymbol];
+ if(!box)return;
  if(!company){box.hidden=true;box.innerHTML='';return;}
- // Raw PDF matches are NOT validated ESG values. Only canonical rows may
- // appear in KPI charts, summaries, or external-source comparison.
  const metrics=(window.FinMacroDashboard?.corporateRows?.(state.esg,ds.companySymbol)||
   (Array.isArray(company.canonicalMetrics)?company.canonicalMetrics:[]))
   .filter(x=>typeof x.value==='number'&&Number.isFinite(x.value)&&x.sourceUrl);
- const metricSources=metrics.filter(x=>x.metricId===state.metric).sort((a,b)=>(b.year||0)-(a.year||0));
- const ratings=(company.externalAssessments||[]).slice().sort((a,b)=>(b.year||0)-(a.year||0)).slice(0,8);
- const years=[...new Set(metrics.map(x=>Number(x.year)).filter(Number.isFinite))].sort((a,b)=>a-b);
- const metricIds=[...new Set(metrics.map(x=>x.metricId).filter(Boolean))];
- const sourceCount=new Set(metrics.map(x=>x.sourceUrl).filter(Boolean)).size;
- const pillarMetricIds=metrics.reduce((acc,x)=>{const p=x.pillar||'—';acc[p]??=new Set();if(x.metricId)acc[p].add(x.metricId);return acc;},{});
- const pillarCounts=Object.fromEntries(Object.entries(pillarMetricIds).map(([k,v])=>[k,v.size]));
- const docsRaw=(company.documents||[]).filter(d=>d.processedAt&&d.url&&d.year).sort((a,b)=>(b.year||0)-(a.year||0));
- const seenDocs=new Set(),docs=[];for(const d of docsRaw){const key=(d.type||'')+'|'+(d.year||'');if(seenDocs.has(key))continue;seenDocs.add(key);docs.push(d);if(docs.length>=4)break;}
- const coverage='<div class="macro-esg-summary"><span><b>'+metricIds.length+'</b> chỉ tiêu</span><span><b>'+metrics.length+'</b> điểm dữ liệu</span><span><b>'+years.length+'</b> năm</span><span><b>'+sourceCount+'</b> nguồn</span><span><b>'+(ratings.length||0)+'</b> đánh giá ngoài</span></div>';
- const pillars='<div class="macro-esg-pillars"><span class="e">E · '+(pillarCounts.E||0)+'</span><span class="s">S · '+(pillarCounts.S||0)+'</span><span class="g">G · '+(pillarCounts.G||0)+'</span></div>';
- const selected=metricSources.length?'<div class="macro-esg-metric-sources"><strong>KPI đang xem · '+esc(metricLabel(ds,state.metric))+'</strong>'+metricSources.map(x=>'<a href="'+esc(x.sourceUrl||'#')+'" target="_blank" rel="noopener"><span>'+esc(String(x.year||'—'))+'</span><b>'+esc(fmt(x.value))+(x.unit?' '+esc(x.unit):'')+'</b><small>'+esc(conciseSourceTitle(x))+'</small></a>').join('')+'</div>':'';
- const ratingBlock=ratings.length?'<div class="macro-esg-section-title">Đánh giá bên ngoài</div><div class="macro-esg-rating-grid">'+ratings.map(x=>'<article><span>'+esc(x.provider||'Nguồn ngoài')+' · '+esc(String(x.year||'—'))+'</span><strong>'+esc(x.value||x.assessmentType||'Đã công bố')+'</strong><small>'+esc(x.assessmentType||'')+'</small>'+(x.sourceUrl?'<a href="'+esc(x.sourceUrl)+'" target="_blank" rel="noopener">Mở nguồn ↗</a>':'')+'</article>').join('')+'</div>':'';
- const noData=!metrics.length?'<p class="macro-source-notice">Chưa chuẩn hóa được KPI ESG định lượng từ công bố hiện có. Các tài liệu tìm được vẫn được giữ ở mục nguồn; không tạo điểm ESG ước tính.</p>':'';
- const docsBlock=docs.length?'<div class="macro-esg-docs"><strong>Nguồn chính</strong>'+docs.map(d=>'<a href="'+esc(d.url)+'" target="_blank" rel="noopener">'+esc(conciseSourceTitle(d))+'</a>').join('')+'</div>':'';
- box.hidden=false;box.innerHTML='<div class="macro-esg-head"><div><strong>ESG doanh nghiệp · '+esc(ds.companySymbol)+'</strong></div>'+pillars+'</div>'+coverage+noData+selected+ratingBlock+docsBlock;
+ const years=new Set(metrics.map(x=>Number(x.year)).filter(Number.isFinite));
+ const metricIds=new Set(metrics.map(x=>x.metricId).filter(Boolean));
+ const pillars={E:new Set(),S:new Set(),G:new Set()};
+ metrics.forEach(x=>{if(pillars[x.pillar]&&x.metricId)pillars[x.pillar].add(x.metricId);});
+ const coverage='<div class="macro-esg-summary"><span><b>'+metricIds.size+
+  '</b> chỉ tiêu</span><span><b>'+metrics.length+
+  '</b> điểm dữ liệu</span><span><b>'+years.size+'</b> năm</span></div>';
+ const pillarHtml='<div class="macro-esg-pillars"><span class="e">E · '+pillars.E.size+
+  '</span><span class="s">S · '+pillars.S.size+
+  '</span><span class="g">G · '+pillars.G.size+'</span></div>';
+ const note=!metrics.length?'<p class="macro-source-notice">Chưa có KPI ESG định lượng đã xác minh; không tạo số liệu ước tính.</p>':'';
+ box.hidden=false;
+ box.innerHTML='<div class="macro-esg-head"><strong>ESG doanh nghiệp · '+esc(ds.companySymbol)+
+  '</strong></div>'+coverage+pillarHtml+note;
 }
 function renderDashboard(){window.FinMacroDashboard?.render(state.data,state.esg,state.symbol);}
 function renderEsgPanels(){window.FinMacroDashboard?.renderEsg(state.data,state.esg,state.symbol);}
@@ -220,7 +218,7 @@ function updateSourceStatus(){
   'ESG chưa kết nối';
  const retained=[state.sourceStatus.macro,state.sourceStatus.esg].includes('retained');
  el.textContent=macro+' · '+esg+(retained?' · đang giữ bản trước':'');
- el.title='Ngày thu thập khác kỳ công bố kinh tế/ESG. Chỉ dùng chỉ tiêu có giá trị và nguồn gốc.';
+ el.title='Ngày thu thập khác kỳ công bố kinh tế/ESG.';
 }
 function render(){
  if(!state.data)return;
