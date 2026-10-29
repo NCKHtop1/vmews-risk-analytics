@@ -95,12 +95,13 @@ function tenorCurve(points,{title='',unit='',color='#2e74bb',width=600}={}){
  const budget=W<420?4:W<690?6:10,step=Math.max(1,Math.ceil((pts.length-1)/(budget-1)));
  const tickIndices=[...new Set([...pts.map((p,i)=>i).filter(i=>i%step===0),pts.length-1])];
  const labels=tickIndices.map(i=>'<text x="'+x(i).toFixed(1)+'" y="'+(H-9)+'" data-tenor-label="'+esc(pts[i].tenor)+'" text-anchor="'+(i===0?'start':i===pts.length-1?'end':'middle')+'" font-size="10" fill="#71859c">'+esc(pts[i].tenor)+'</text>').join('');
- const circles=pts.map((p,i)=>'<circle data-tenor-point="'+esc(p.tenor)+'" cx="'+x(i).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="'+(i===pts.length-1?4.6:3.4)+'" fill="'+color+'" stroke="white" stroke-width="1"><title>'+esc(p.tenor+' · '+fmt(p.value,3)+' '+unit)+'</title></circle>').join('');
+ const precise=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:6});
+ const circles=pts.map((p,i)=>'<circle data-tenor-point="'+esc(p.tenor)+'" data-fq-point="'+i+'" data-fq-x="'+x(i).toFixed(1)+'" data-fq-y="'+y(p.value).toFixed(1)+'" data-fq-label="'+esc(p.tenor)+'" data-fq-series="'+esc(title||'Đường cong kỳ hạn')+'" data-fq-value="'+esc(precise.format(p.value))+'" data-fq-unit="'+esc(unit)+'" cx="'+x(i).toFixed(1)+'" cy="'+y(p.value).toFixed(1)+'" r="'+(i===pts.length-1?4.6:3.4)+'" fill="'+color+'" stroke="white" stroke-width="1"/>').join('');
  let zero='';
  if(lo<0&&hi>0){
   const py=y(0);zero='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+py.toFixed(1)+'" y2="'+py.toFixed(1)+'" stroke="#9eb0c9" stroke-dasharray="4 3" stroke-width="1.2"/>';
  }
- return'<svg class="money-tenor-curve" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(title+' · '+pts.length+' kỳ hạn · '+unit)+'">'+grid+zero+
+ return'<svg class="money-tenor-curve" viewBox="0 0 '+W+' '+H+'" data-fq-inspect="tenor" data-fq-top="'+T+'" data-fq-bottom="'+(H-B)+'" data-fq-color="'+color+'" tabindex="0" role="img" aria-label="'+esc(title+' · '+pts.length+' kỳ hạn · '+unit)+'">'+grid+zero+
   '<path d="'+path+'" stroke="'+color+'" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>'+circles+labels+'</svg>';
 }
 // Download exactly the verified curve shown on screen, never an unvalidated source file.
