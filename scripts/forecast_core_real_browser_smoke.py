@@ -151,7 +151,7 @@ def main():
           const original=window.fetch.bind(window);
           window.fetch=(input,options)=>{
             const url=String(input?.url||input||"");
-            if(url.includes("/forecast-dashboard-v12.json"))return new Promise((resolve,reject)=>{
+            if(url.includes("/forecast-dashboard-v12.json") || url.includes("/finquery-vn100-product.json") || url.includes("/finquery-vn100-forecast.json"))return new Promise((resolve,reject)=>{
               const signal=options?.signal;
               if(signal?.aborted)return reject(new DOMException("Aborted","AbortError"));
               signal?.addEventListener("abort",()=>reject(new DOMException("Aborted","AbortError")),{once:true});
