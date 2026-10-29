@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-10-28T19:59:47.051685+00:00",
+  "checkedAt": "2026-10-29T07:12:02.593628+00:00",
   "extractorVersion": 2,
-  "sourceRegistryVersion": 13,
+  "sourceRegistryVersion": 14,
   "status": "ok",
   "methodology": {
     "compositeScore": false,
@@ -14,9 +14,9 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-10-28T19:58:39.379622+00:00",
+      "checkedAt": "2026-10-29T07:08:56.836607+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "812a30d4a5173222d833",
@@ -494,7 +494,7 @@
     "ANV": {
       "symbol": "ANV",
       "name": "Công ty Cổ phần Nam Việt",
-      "checkedAt": "2026-10-28T19:58:39.379765+00:00",
+      "checkedAt": "2026-10-29T07:08:56.836694+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -525,7 +525,7 @@
     "BAF": {
       "symbol": "BAF",
       "name": "Công ty Cổ phần Nông nghiệp BAF Việt Nam",
-      "checkedAt": "2026-10-28T19:58:39.379774+00:00",
+      "checkedAt": "2026-10-29T07:08:56.836700+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -543,7 +543,7 @@
     "BCM": {
       "symbol": "BCM",
       "name": "Tập đoàn Đầu tư và Phát triển Công nghiệp Becamex - CTCP",
-      "checkedAt": "2026-10-28T19:58:39.380399+00:00",
+      "checkedAt": "2026-10-29T07:08:56.837044+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -745,9 +745,9 @@
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-10-28T19:58:39.381450+00:00",
+      "checkedAt": "2026-10-29T07:08:56.837594+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "7d2c2c8504b19ded0bfc",
@@ -937,7 +937,7 @@
     "BMP": {
       "symbol": "BMP",
       "name": "Công ty Cổ phần Nhựa Bình Minh",
-      "checkedAt": "2026-10-28T19:58:39.382004+00:00",
+      "checkedAt": "2026-10-29T07:08:56.837866+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1091,7 +1091,7 @@
     "BSI": {
       "symbol": "BSI",
       "name": "Công ty Cổ phần Chứng khoán BIDV",
-      "checkedAt": "2026-10-28T19:58:39.382015+00:00",
+      "checkedAt": "2026-10-29T07:08:56.837871+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1109,7 +1109,7 @@
     "BSR": {
       "symbol": "BSR",
       "name": "Công ty Cổ phần - Tổng Công ty Lọc Hoá dầu Việt Nam",
-      "checkedAt": "2026-10-28T19:58:39.382021+00:00",
+      "checkedAt": "2026-10-29T07:08:56.837875+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1127,7 +1127,7 @@
     "BVH": {
       "symbol": "BVH",
       "name": "Tập đoàn Bảo Việt",
-      "checkedAt": "2026-10-28T19:58:39.382563+00:00",
+      "checkedAt": "2026-10-29T07:08:56.838175+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1182,7 +1182,7 @@
     "BWE": {
       "symbol": "BWE",
       "name": "Công ty Cổ phần - Tổng công ty Nước - Môi trường Bình Dương",
-      "checkedAt": "2026-10-28T19:58:39.382571+00:00",
+      "checkedAt": "2026-10-29T07:08:56.838179+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1200,7 +1200,7 @@
     "CII": {
       "symbol": "CII",
       "name": "Công ty Cổ phần Đầu tư Hạ tầng Kỹ thuật Thành phố Hồ Chí Minh",
-      "checkedAt": "2026-10-28T19:58:39.382576+00:00",
+      "checkedAt": "2026-10-29T07:08:56.838182+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1218,7 +1218,7 @@
     "CMG": {
       "symbol": "CMG",
       "name": "Công ty Cổ phần Tập đoàn Công nghệ CMC",
-      "checkedAt": "2026-10-28T19:58:39.383633+00:00",
+      "checkedAt": "2026-10-29T07:08:56.838713+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1287,7 +1287,7 @@
     "CTD": {
       "symbol": "CTD",
       "name": "Công ty Cổ phần Xây dựng Coteccons",
-      "checkedAt": "2026-10-28T19:58:39.390838+00:00",
+      "checkedAt": "2026-10-29T07:08:56.841411+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2195,9 +2195,9 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-10-28T19:58:39.391733+00:00",
+      "checkedAt": "2026-10-29T07:08:56.841880+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "db46a4f303129226523a",
@@ -2238,7 +2238,7 @@
         {
           "id": "5d5bdad6bb1dc0347c18",
           "url": "https://investor.vietinbank.vn/vi/annualreports.aspx",
-          "title": "Báo cáo thường niên",
+          "title": "Báo cáo thường niên Báo cáo thường niên",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2024",
           "year": null,
           "type": "sustainability_report",
@@ -2250,7 +2250,7 @@
         {
           "id": "4c3dd503763f24fd5927",
           "url": "https://investor.vietinbank.vn/vi/sustainabledevelopmentreports.aspx",
-          "title": "Báo cáo phát triển bền vững Báo cáo phát triển bền vững",
+          "title": "Báo cáo phát triển bền vững",
           "sourcePage": "https://investor.vietinbank.vn/vi/w/bao-cao-phat-trien-ben-vung-2024",
           "year": null,
           "type": "sustainability_report",
@@ -2646,7 +2646,7 @@
     "CTR": {
       "symbol": "CTR",
       "name": "Tổng Công ty Cổ phần Công trình Viettel",
-      "checkedAt": "2026-10-28T19:58:39.392452+00:00",
+      "checkedAt": "2026-10-29T07:08:56.842163+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2859,7 +2859,7 @@
     "CTS": {
       "symbol": "CTS",
       "name": "Công ty Cổ phần Chứng khoán Vietinbank",
-      "checkedAt": "2026-10-28T19:58:39.392461+00:00",
+      "checkedAt": "2026-10-29T07:08:56.842168+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2877,7 +2877,7 @@
     "DBC": {
       "symbol": "DBC",
       "name": "Công ty Cổ phần Tập đoàn Dabaco Việt Nam",
-      "checkedAt": "2026-10-28T19:58:39.392467+00:00",
+      "checkedAt": "2026-10-29T07:08:56.842171+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2895,7 +2895,7 @@
     "DCM": {
       "symbol": "DCM",
       "name": "Công ty Cổ phần - Tổng Công ty Phân bón Dầu Khí Cà Mau",
-      "checkedAt": "2026-10-28T19:58:39.392472+00:00",
+      "checkedAt": "2026-10-29T07:08:56.842174+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2913,7 +2913,7 @@
     "DGW": {
       "symbol": "DGW",
       "name": "Công ty Cổ phần Thế Giới Số",
-      "checkedAt": "2026-10-28T19:58:39.392476+00:00",
+      "checkedAt": "2026-10-29T07:08:56.842177+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2931,7 +2931,7 @@
     "DIG": {
       "symbol": "DIG",
       "name": "Tổng Công ty Cổ phần Đầu tư Phát triển Xây dựng",
-      "checkedAt": "2026-10-28T19:58:39.392481+00:00",
+      "checkedAt": "2026-10-29T07:08:56.842181+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2949,7 +2949,7 @@
     "DPM": {
       "symbol": "DPM",
       "name": "Tổng Công ty Phân bón và Hóa chất Dầu khí - Công ty Cổ phần",
-      "checkedAt": "2026-10-28T19:58:39.393106+00:00",
+      "checkedAt": "2026-10-29T07:08:56.842371+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2992,7 +2992,7 @@
     "DSE": {
       "symbol": "DSE",
       "name": "Công ty Cổ phần Chứng khoán DNSE",
-      "checkedAt": "2026-10-28T19:58:39.393114+00:00",
+      "checkedAt": "2026-10-29T07:08:56.842374+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3010,7 +3010,7 @@
     "DXG": {
       "symbol": "DXG",
       "name": "Công ty Cổ phần Bluemarq Group",
-      "checkedAt": "2026-10-28T19:58:39.393120+00:00",
+      "checkedAt": "2026-10-29T07:08:56.842377+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3028,9 +3028,9 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-10-28T19:58:39.393994+00:00",
+      "checkedAt": "2026-10-29T07:08:56.842831+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "7622881a4555adbcc1d3",
@@ -3211,7 +3211,7 @@
     "EVF": {
       "symbol": "EVF",
       "name": "Công ty Tài chính Tổng hợp Cổ phần Điện Lực",
-      "checkedAt": "2026-10-28T19:58:39.394004+00:00",
+      "checkedAt": "2026-10-29T07:08:56.842835+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3228,26 +3228,337 @@
     },
     "FPT": {
       "symbol": "FPT",
-      "name": "Công ty Cổ phần FPT",
-      "checkedAt": "2026-10-28T19:58:39.394009+00:00",
+      "name": "FPT Corporation",
+      "checkedAt": "2026-10-29T07:08:56.843431+00:00",
       "entityType": "company",
-      "sourcePolicy": "disclosure-index",
-      "documents": [],
-      "metrics": [],
+      "sourcePolicy": "curated-issuer+disclosure-index",
+      "documents": [
+        {
+          "id": "5498b9c4df0ccdbc9927",
+          "url": "https://bctn2025.fpt.com/wp-content/uploads/2026/04/BAO-CAO-ESG_VI_02042026.pdf",
+          "title": "Báo cáo ESG",
+          "sourcePage": "https://bctn2025.fpt.com/bao-cao-esg/moi-truong-lam-viec-dang-cap-hanh-phuc/",
+          "year": 2026,
+          "type": "esg_web_content"
+        },
+        {
+          "id": "c352c9859b6163eec232",
+          "url": "https://bctn2025.fpt.com/bao-cao-esg/song-hanh-vi-su-phat-trien-cong-dong/",
+          "title": "Song hành vì sự phát triển cộng đồng",
+          "sourcePage": "https://bctn2025.fpt.com/",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "4878ed48bebb296526689a68ee0cdd5f94e58fc2237b7178ddbed407a749c42b",
+          "processedAt": "2026-10-29T07:09:31.748621+00:00",
+          "textLength": 10420
+        },
+        {
+          "id": "eb5d1888e4ec83e52ea6",
+          "url": "https://bctn2025.fpt.com/bao-cao-esg/quan-tri-huong-den-phat-trien-ben-vung/",
+          "title": "Quản trị hướng đến phát triển bền vững",
+          "sourcePage": "https://bctn2025.fpt.com/",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "af0849732d511f7cfaffef5d01c8c7eba09145b46b2d812e9bd154ccb87b427b",
+          "processedAt": "2026-10-29T07:09:32.295319+00:00",
+          "textLength": 24871
+        },
+        {
+          "id": "ee7a24ae21fcf51650cf",
+          "url": "https://bctn2025.fpt.com/bao-cao-esg/moi-truong-lam-viec-dang-cap-hanh-phuc/",
+          "title": "Môi trường làm việc đẳng cấp, hạnh phúc",
+          "sourcePage": "https://bctn2025.fpt.com/",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "a6f624bfc681eef7b0b416322d9d110982c2bfc160d55d5e6b6aa311ba972001",
+          "processedAt": "2026-10-29T07:09:33.388418+00:00",
+          "textLength": 22287
+        },
+        {
+          "id": "7a1a1507e309d14e1b60",
+          "url": "https://bctn2025.fpt.com/bao-cao-esg/hoat-dong-vi-moi-truong-xanh/",
+          "title": "Hoạt động vì môi trường xanh",
+          "sourcePage": "https://bctn2025.fpt.com/",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "af635c64c90be19e97de266f1e35142cf35f37b7375ae2065f58fab632bf9998",
+          "processedAt": "2026-10-29T07:09:34.897058+00:00",
+          "textLength": 27542
+        },
+        {
+          "id": "b7d4d02407f74a654aa0",
+          "url": "https://bctn2025.fpt.com/wp-content/uploads/2026/04/BCTN-2025.pdf",
+          "title": "BCTN 2025",
+          "sourcePage": "https://bctn2025.fpt.com/bao-cao-esg/moi-truong-lam-viec-dang-cap-hanh-phuc/",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "06124d6cb0daf68eb5d4f739839920ae19d13fb53e52357cf9ebbd66af473985",
+          "processedAt": "2026-10-29T07:09:47.121809+00:00",
+          "textLength": 891256
+        },
+        {
+          "id": "c7c331400a45200442d2",
+          "url": "https://bctn2025.fpt.com/assets/docs/BCTN-2025.pdf",
+          "title": "BCTN 2025",
+          "sourcePage": "https://bctn2025.fpt.com/bao-cao-esg/song-hanh-vi-su-phat-trien-cong-dong/",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "d95c7de9205eeffcd622bf0753a42b855594df0bf3e7a46233227217d3a5435c",
+          "processedAt": "2026-10-29T07:09:35.226524+00:00",
+          "textLength": 204
+        },
+        {
+          "id": "45c58ba3f213656b0ba0",
+          "url": "https://fpt.com/api/media/fpt_annual_report_2024_63d63bc4cd.pdf",
+          "title": "fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourcePage": "https://fpt.com/en/ir/report",
+          "year": 2024,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "e1066c6296a4307929915585b1dadf9a3f1962eccc5813fb8e977f7a9112bff2",
+          "processedAt": "2026-10-29T07:10:00.823404+00:00",
+          "textLength": 535865
+        },
+        {
+          "id": "58276223e1a3479c5e2a",
+          "url": "https://fpt.com/api/media/annual_report_fpt_2023_en_4287f2041d.pdf",
+          "title": "annual_report_fpt_2023_en_4287f2041d.pdf",
+          "sourcePage": "https://fpt.com/en/ir/report",
+          "year": 2023,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "01bc9c98a938ad5b7e144f7ba973cdadb9e67c5a07fc5ce8f68d1621e47c18b9",
+          "processedAt": "2026-10-29T07:10:01.165139+00:00",
+          "textLength": 540703
+        },
+        {
+          "id": "8380663bcb6521b96f8b",
+          "url": "https://bctn2025.fpt.com/assets/docs/BAO-CAO-ESG_VI_02042026.pdf",
+          "title": "Báo cáo ESG",
+          "sourcePage": "https://bctn2025.fpt.com/bao-cao-esg/song-hanh-vi-su-phat-trien-cong-dong/",
+          "year": null,
+          "type": "esg_web_content"
+        },
+        {
+          "id": "60bfb038c084f1672162",
+          "url": "https://fpt.com/api/media/2017_annual_report_resize_59838ba3c0.pdf",
+          "title": "2017_annual_report_resize_59838ba3c0.pdf",
+          "sourcePage": "https://fpt.com/en/ir/report",
+          "year": 2017,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "b814f28ac4dd74afb91b861a8ac38b3ed51eaad67b5e74e40b16a23bf38daccb",
+          "processedAt": "2026-10-29T07:12:02.484273+00:00",
+          "textLength": 384241
+        }
+      ],
+      "metrics": [
+        {
+          "value": 25.6,
+          "rawValue": "25,6",
+          "unit": "billion VND",
+          "qualityScore": 79.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://bctn2025.fpt.com/bao-cao-esg/song-hanh-vi-su-phat-trien-cong-dong/",
+          "sourceTitle": "Song hành vì sự phát triển cộng đồng",
+          "sourceType": "annual_report",
+          "snippet": "a CBNV thông qua chương trình “Góp một ngày lương”. Quỹ tập trung vào hai hoạt động chính là: hỗ trợ CBNV và người thân khi gặp khó khăn, đồng thời triển khai các hoạt động hỗ trợ cộng đồng, phòng ngừa và khắc phục hậu quả thiên tai. Năm 2025, các khoản đóng góp từ CBNV đạt 25,6 tỷ đồng, tăng gần 12% so với năm 2024, phản ánh mức độ gắn kết của người lao động và hiệu quả tạo giá trị xã hội. Tạo cơ hội học tập, phát triển tài năng trẻ cho đất nướ",
+          "confidence": "medium"
+        },
+        {
+          "value": 827940.0,
+          "rawValue": "827,940",
+          "unit": "m3",
+          "qualityScore": 105.0,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2024,
+          "sourceUrl": "https://fpt.com/api/media/fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceTitle": "fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceType": "annual_report",
+          "snippet": "2 2024 MILESTONES & OVERVIEW 04 BUSINESS PERFORMANCE ANALYSIS 03 BUSINESS STRATEGY 05 CORPORATE GOVERNANCE 07 CONSOLIDATED FINANCIAL REPORT ANNUAL REPORT 2024 In 2024, FPT’s total water consumption reached 827,940 m3, reflecting an increase of 6.95% compared to 2023 (774,152 m3). This rise is consistent with the growth of human resources and the expansion of facilities and operations across the Corporation. To ensure efficient and responsible water use,",
+          "confidence": "high"
+        },
+        {
+          "value": 36.0,
+          "rawValue": "36.0",
+          "unit": "%",
+          "qualityScore": 107.67,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2024,
+          "sourceUrl": "https://fpt.com/api/media/fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceTitle": "fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceType": "annual_report",
+          "snippet": "lass workplace culture Environmentally sustainable operations Corporate Social Responsibility Sustainable governance TOP 10 Best Places to Work in Vietnam 54,687 Stable jobs 37.1% Female staff 36.0% Female Managers 184.7 billion VND Allocated for In-house training 118,000 Hours of learning and accessing to ESG insights and trends 3,489 Foreign employees (87 Nationalities) KEY FIGURES AND ACTIVITY HIGHLIGHTS Key figures 1 00% 1 00% 1 00% 1,769,884 1",
+          "confidence": "high"
+        },
+        {
+          "value": 30.0,
+          "rawValue": "30",
+          "unit": "hours",
+          "qualityScore": 114.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2024,
+          "sourceUrl": "https://fpt.com/api/media/fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceTitle": "fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceType": "annual_report",
+          "snippet": "s, with a course completion rate of up to 99.1%. FPT also continued to implement Udemy, the world’s largest online learning platform, with study hours making up 30% of total MOOCs learning hours, averaging 30 hours of learning per account. Additionally, in 2024, FPT partnered with Udemy to provide 58,200 learning accounts for employees, aimed at enhancing professional skills and capabilities. Furthermore, to foster personal development and provide gu",
+          "confidence": "high"
+        },
+        {
+          "value": 139.0,
+          "rawValue": "139",
+          "unit": "hours",
+          "qualityScore": 109.33,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2024,
+          "sourceUrl": "https://fpt.com/api/media/fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceTitle": "fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceType": "annual_report",
+          "snippet": "Under 14% 2 A joyful workplace The number of employees receiving support for home and vehicle purchases. 3,500 5,000 3 A lifelong learning organization Average annual learning and training hours per employee. 139 150 4 Equality and diversity The percentage of women in the workforce. 37.1% Over 1/3 5 Equality and diversity The percentage of female leadership in the workforce. 36% 1/3 10506 Together for community development ESG messages and orientation Governance",
+          "confidence": "high"
+        },
+        {
+          "value": 6.254e-05,
+          "rawValue": "62,540",
+          "unit": "billion VND",
+          "qualityScore": 104.33,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "sourceUrl": "https://fpt.com/api/media/fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceTitle": "fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceType": "annual_report",
+          "snippet": "gitally signed contracts, accounting for approximately 80% of total signed contracts Internal documents to be signed digitally 66.3 billion VND 168.1 billion VND 62,540 1 ,880 431 CSR in community support Awarded through the Nguyen Van Đao Scholarship program Beneficiaries nationwide Blood units donated Bridges supporting students in rural areas AI-driven solutions Ecovadis Certification ISO 27001:2013 ISO 14001:2015 For financial risk man",
+          "confidence": "high"
+        },
+        {
+          "value": 37.4,
+          "rawValue": "37.4",
+          "unit": "%",
+          "qualityScore": 107.67,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2023,
+          "sourceUrl": "https://fpt.com/api/media/annual_report_fpt_2023_en_4287f2041d.pdf",
+          "sourceTitle": "annual_report_fpt_2023_en_4287f2041d.pdf",
+          "sourceType": "annual_report",
+          "snippet": "nance 48,162 Stable jobs 2,925 Foreign employees 73 Nationalities 100,000 E-Contracts, 6.6% YoY increase 59,745 Virtual meetings, accounting for 67.8% of total held meetings 37.4% Female employees 5.6 million Hours of in-house training 127 Hours/year/employee 8,167 Billion VND Contribution to the State Budget 205.2 Billion VND CSR sponsorship AI to be utilized in financial risk management and conflict of interest prevention ISO 27001:2013 Information s",
+          "confidence": "high"
+        },
+        {
+          "value": 59000.0,
+          "rawValue": "59,000",
+          "unit": "hours",
+          "qualityScore": 110.0,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2023,
+          "sourceUrl": "https://fpt.com/api/media/annual_report_fpt_2023_en_4287f2041d.pdf",
+          "sourceTitle": "annual_report_fpt_2023_en_4287f2041d.pdf",
+          "sourceType": "annual_report",
+          "snippet": "ng MiniMBA courses to improve management, executive, and leadership skills, as well as capacity-building courses exclusively for middle managers (core staff training), with 59,000 training hours in 2023. MiniMBA shortens and distills the quintessential content of the MBA program, organized by FPT Academy in collaboration with the FPT School of Business & Technology (FSB) under FPT University. The program aims to help learners consolidate core managem",
+          "confidence": "high"
+        },
+        {
+          "value": 1787369.0,
+          "rawValue": "1,787,369",
+          "unit": "hours",
+          "qualityScore": 117.67,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2017,
+          "sourceUrl": "https://fpt.com/api/media/2017_annual_report_resize_59838ba3c0.pdf",
+          "sourceTitle": "2017_annual_report_resize_59838ba3c0.pdf",
+          "sourceType": "annual_report",
+          "snippet": "r complete at least one online course on MOOC (Massive Open Online Courses). Metrics 2017 +/- YoY Training budget VND 77.9 billion 102.9% Participations 268,864 participants 20.4% Training hours 1,787,369 hours 76.7% Training costs per staff member VND 2.6 million 67.7% Participations per staff members 9 participations/person 0% Training hours per staff member 55.7 hours/person 35.9% Number of certificates issued to FPT staff members6,834 certificate",
+          "confidence": "high"
+        }
+      ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 168.1,
+          "rawValue": "168.1",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "sourceUrl": "https://fpt.com/api/media/fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceTitle": "fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceType": "annual_report",
+          "snippet": "gitally signed contracts, accounting for approximately 80% of total signed contracts Internal documents to be signed digitally 66.3 billion VND 168.1 billion VND 62,540 1 ,880 431 CSR in community support Awarded through the Nguyen Van Đao Scholarship program Beneficiaries nationwide Blood units donated Bridges supporting students in rural areas AI-driven solutions Ecovadis Certification ISO 27001:2013 ISO 14001:2015 For financial risk man",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "62,540",
+          "repaired": true
+        },
+        {
+          "value": 827940.0,
+          "rawValue": "827,940",
+          "unit": "m3",
+          "qualityScore": 105.0,
+          "metricId": "water",
+          "pillar": "E",
+          "label": "Nước tiêu thụ",
+          "year": 2024,
+          "sourceUrl": "https://fpt.com/api/media/fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceTitle": "fpt_annual_report_2024_63d63bc4cd.pdf",
+          "sourceType": "annual_report",
+          "snippet": "2 2024 MILESTONES & OVERVIEW 04 BUSINESS PERFORMANCE ANALYSIS 03 BUSINESS STRATEGY 05 CORPORATE GOVERNANCE 07 CONSOLIDATED FINANCIAL REPORT ANNUAL REPORT 2024 In 2024, FPT’s total water consumption reached 827,940 m3, reflecting an increase of 6.95% compared to 2023 (774,152 m3). This rise is consistent with the growth of human resources and the expansion of facilities and operations across the Corporation. To ensure efficient and responsible water use,",
+          "confidence": "high"
+        },
+        {
+          "value": 25.6,
+          "rawValue": "25,6",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://bctn2025.fpt.com/bao-cao-esg/song-hanh-vi-su-phat-trien-cong-dong/",
+          "sourceTitle": "Song hành vì sự phát triển cộng đồng",
+          "sourceType": "annual_report",
+          "snippet": "a CBNV thông qua chương trình “Góp một ngày lương”. Quỹ tập trung vào hai hoạt động chính là: hỗ trợ CBNV và người thân khi gặp khó khăn, đồng thời triển khai các hoạt động hỗ trợ cộng đồng, phòng ngừa và khắc phục hậu quả thiên tai. Năm 2025, các khoản đóng góp từ CBNV đạt 25,6 tỷ đồng, tăng gần 12% so với năm 2024, phản ánh mức độ gắn kết của người lao động và hiệu quả tạo giá trị xã hội. Tạo cơ hội học tập, phát triển tài năng trẻ cho đất nướ",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "25,6",
+          "repaired": true
+        }
+      ],
       "coverage": {
-        "documents": 0,
-        "processedDocuments": 0,
-        "metrics": 0,
-        "canonicalMetrics": 0,
+        "documents": 11,
+        "processedDocuments": 9,
+        "metrics": 9,
+        "canonicalMetrics": 3,
         "externalAssessments": 0
       }
     },
     "FRT": {
       "symbol": "FRT",
       "name": "Công ty Cổ phần Bán lẻ Kỹ thuật số FPT",
-      "checkedAt": "2026-10-28T19:58:39.394562+00:00",
+      "checkedAt": "2026-10-29T07:08:56.843721+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3339,7 +3650,7 @@
     "FTS": {
       "symbol": "FTS",
       "name": "Công ty Cổ phần Chứng khoán FPT",
-      "checkedAt": "2026-10-28T19:58:39.394570+00:00",
+      "checkedAt": "2026-10-29T07:08:56.843725+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3356,17 +3667,30 @@
     },
     "GAS": {
       "symbol": "GAS",
-      "name": "Tổng Công ty Khí Việt Nam - Công ty Cổ phần",
-      "checkedAt": "2026-10-28T19:58:39.394576+00:00",
+      "name": "PV GAS",
+      "checkedAt": "2026-10-29T07:08:56.843814+00:00",
       "entityType": "company",
-      "sourcePolicy": "disclosure-index",
-      "documents": [],
+      "sourcePolicy": "curated-issuer+disclosure-index",
+      "documents": [
+        {
+          "id": "f8dad52e3395e47cb73e",
+          "url": "https://www.pvgas.com.vn/quan-he-co-%C4%91ong/bao-cao-phat-trien-ben-vung-nam-2025",
+          "title": "Báo cáo phát triển bền vững năm 2025 Menu Trang chủ Giới thiệu Thông tin chung Văn hóa doanh nghiệp Mục tiêu và định hướng Hình thành và phá",
+          "sourcePage": "https://www.pvgas.com.vn/quan-he-co-%C4%91ong/bao-cao-phat-trien-ben-vung-nam-2025",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "d53c7ae50d04608d950ecd312bea652361658973c960926e397e39ad217bfaad",
+          "processedAt": "2026-10-29T07:09:09.823058+00:00",
+          "textLength": 1496
+        }
+      ],
       "metrics": [],
       "externalAssessments": [],
       "canonicalMetrics": [],
       "coverage": {
-        "documents": 0,
-        "processedDocuments": 0,
+        "documents": 1,
+        "processedDocuments": 1,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -3375,7 +3699,7 @@
     "GEE": {
       "symbol": "GEE",
       "name": "Công ty Cổ phần Điện lực Gelex",
-      "checkedAt": "2026-10-28T19:58:39.394580+00:00",
+      "checkedAt": "2026-10-29T07:08:56.843817+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3393,7 +3717,7 @@
     "GEX": {
       "symbol": "GEX",
       "name": "Công ty Cổ phần Tập đoàn Gelex",
-      "checkedAt": "2026-10-28T19:58:39.394585+00:00",
+      "checkedAt": "2026-10-29T07:08:56.843820+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3411,7 +3735,7 @@
     "GMD": {
       "symbol": "GMD",
       "name": "Công ty Cổ phần Tập đoàn Gemadept",
-      "checkedAt": "2026-10-28T19:58:39.394589+00:00",
+      "checkedAt": "2026-10-29T07:08:56.843823+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3429,7 +3753,7 @@
     "GVR": {
       "symbol": "GVR",
       "name": "Tập đoàn Công nghiệp Cao su Việt Nam - Công ty Cổ phần",
-      "checkedAt": "2026-10-28T19:58:39.395173+00:00",
+      "checkedAt": "2026-10-29T07:08:56.844028+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3488,7 +3812,7 @@
     "HAG": {
       "symbol": "HAG",
       "name": "Công ty Cổ phần Hoàng Anh Gia Lai",
-      "checkedAt": "2026-10-28T19:58:39.396356+00:00",
+      "checkedAt": "2026-10-29T07:08:56.844489+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3555,7 +3879,7 @@
     "HCM": {
       "symbol": "HCM",
       "name": "Công ty Cổ phần Chứng khoán Thành phố Hồ Chí Minh",
-      "checkedAt": "2026-10-28T19:58:39.396365+00:00",
+      "checkedAt": "2026-10-29T07:08:56.844493+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3573,9 +3897,9 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-10-28T19:58:39.398067+00:00",
+      "checkedAt": "2026-10-29T07:08:56.845366+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "1ca737584cb9587064ef",
@@ -3728,7 +4052,7 @@
     "HDG": {
       "symbol": "HDG",
       "name": "Công ty Cổ phần Tập đoàn Hà Đô",
-      "checkedAt": "2026-10-28T19:58:39.398340+00:00",
+      "checkedAt": "2026-10-29T07:08:56.845507+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3771,7 +4095,7 @@
     "HHV": {
       "symbol": "HHV",
       "name": "Công ty Cổ phần Đầu tư Hạ tầng Giao thông Đèo Cả",
-      "checkedAt": "2026-10-28T19:58:39.398348+00:00",
+      "checkedAt": "2026-10-29T07:08:56.845510+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3788,26 +4112,512 @@
     },
     "HPG": {
       "symbol": "HPG",
-      "name": "Công ty Cổ phần Tập đoàn Hòa Phát",
-      "checkedAt": "2026-10-28T19:58:39.398353+00:00",
+      "name": "Hoa Phat Group",
+      "checkedAt": "2026-10-29T07:08:56.846427+00:00",
       "entityType": "company",
-      "sourcePolicy": "disclosure-index",
-      "documents": [],
-      "metrics": [],
+      "sourcePolicy": "curated-issuer+disclosure-index",
+      "documents": [
+        {
+          "id": "408e6844247be932e1f3",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
+          "title": "Download",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-phat-trien-ben-vung",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "5532e21d5100b4385f4f2baae3ec13824db2857d38c5a3c2a7e965006ef798dc",
+          "processedAt": "2026-10-29T07:09:14.407316+00:00",
+          "textLength": 224214
+        },
+        {
+          "id": "f56f318b172810092338",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/05/bao-cao-thuong-nien-nam-2025.pdf",
+          "title": "Download",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "acee6a44ad7f3396ea6b0fcb3c3e3876218af531de9526020b600440a02ff8e3",
+          "processedAt": "2026-10-29T07:09:21.323953+00:00",
+          "textLength": 203497
+        },
+        {
+          "id": "83f2aa3faaad83549165",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf",
+          "title": "hpg-bao-cao-ptbv-2025.pdf",
+          "sourcePage": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "9194a291ecef8678a4ba6664773c5a1e70f86712ca1bf5bde44fb215e3fab90d",
+          "processedAt": "2026-10-29T07:09:20.625543+00:00",
+          "textLength": 224658
+        },
+        {
+          "id": "fdfc4ee4a0f1ff707658",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-nam-2025-hpg.pdf",
+          "title": "bao-cao-thuong-nien-nam-2025-hpg.pdf",
+          "sourcePage": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-nam-2025-hpg.pdf",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "2b4e79bc07e3f780126b171fde20f8a3ea71f55971e258b83b664f934acdaecf",
+          "processedAt": "2026-10-29T07:09:23.648953+00:00",
+          "textLength": 203448
+        },
+        {
+          "id": "8d950e6d1b00ac343368",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2025/04/bao-cao-thuong-nien-hpg-2024.pdf",
+          "title": "Download",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
+          "year": 2024,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "d083f483fb26e88669dc8aa705832581f1f5e77d73cd14b97897cedce2b99874",
+          "processedAt": "2026-10-29T07:09:30.976954+00:00",
+          "textLength": 319870
+        },
+        {
+          "id": "554411fb039c4553df4d",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2025/03/bao-cao-thuong-nien-2023.pdf",
+          "title": "Download",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
+          "year": 2023,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "bbbcca12f915127a68bc86fbfede938a01fae41bbb2635e92ef007122bf60ebd",
+          "processedAt": "2026-10-29T07:09:34.784864+00:00",
+          "textLength": 286749
+        },
+        {
+          "id": "06ad0d26523844630c7a",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2023/03/bao-cao-thuong-nien-2022.pdf",
+          "title": "Download",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
+          "year": 2022,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "5cbadec24bb74e6f50e497e7df70e488f8af7c20129daa04d3d8e157c86639d2",
+          "processedAt": "2026-10-29T07:09:48.120515+00:00",
+          "textLength": 287477
+        },
+        {
+          "id": "e9ea46c45d505d0e6876",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2022/04/bao-cao-thuong-nien-2021.pdf",
+          "title": "Download",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
+          "year": 2022,
+          "type": "annual_report"
+        },
+        {
+          "id": "cde21fe2aa3aa4682570",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2021/04/bctn-2020-online.pdf",
+          "title": "Download",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
+          "year": 2021,
+          "type": "annual_report"
+        },
+        {
+          "id": "159bcae91dd83500a143",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2020/04/bao-cao-thuong-nien-hpg-2019.pdf",
+          "title": "Download",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
+          "year": 2020,
+          "type": "annual_report"
+        },
+        {
+          "id": "77fffdfaf9fe04fa04a1",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/uploads/Bao-cao-thuong-nien-nam-2017-1.pdf",
+          "title": "Download",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
+          "year": 2017,
+          "type": "annual_report"
+        },
+        {
+          "id": "7798067744643ee85759",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/uploads/Bao-cao-thuong-nien-2015.pdf",
+          "title": "Download",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
+          "year": 2015,
+          "type": "annual_report"
+        },
+        {
+          "id": "61ad17260d592180c728",
+          "url": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-phat-trien-ben-vung",
+          "title": "Phát triển bền vững",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-phat-trien-ben-vung",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "c81caf0deef6112fa3340a67c311ceac09b1693382943267a5f3c1adfed6c977",
+          "processedAt": "2026-10-29T07:09:10.861019+00:00",
+          "textLength": 1889
+        },
+        {
+          "id": "3b5ad238bd04ea609fed",
+          "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/uploads/HPG_BCTN_2018_V3.3.pdf",
+          "title": "Download",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
+          "year": 2018,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "d8f5991adc0158a60b9cdd8469461153454a78377f395d0af4d2f5750afff1c9",
+          "processedAt": "2026-10-29T07:09:59.050790+00:00",
+          "textLength": 267018
+        },
+        {
+          "id": "169d18d68b4b1f1c1e8d",
+          "url": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
+          "title": "Báo cáo thường niên",
+          "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-phat-trien-ben-vung",
+          "year": 2026,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "803ba6f9a5919da366415cd22f01b905106edb225143661b7b0ca3a81d9faf1d",
+          "processedAt": "2026-10-29T07:09:37.235251+00:00",
+          "textLength": 2328
+        }
+      ],
+      "metrics": [
+        {
+          "value": 35.85,
+          "rawValue": "35,85",
+          "unit": "%",
+          "qualityScore": 95.67,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "sustainability_report",
+          "snippet": "MỚI TUYỂN NĂM 2025 7.070 ĐA DẠNG VÀ HÒA NHẬP [GRI 405-1b] Phụ nữ chiếm tỷ lệ đáng kể trong các ban quản trị, ban điều hành của Tập đoàn và hiện diện rõ nét ở nhiều vị trí quản lý. Tỷ lệ nữ giới ở cấp quản lý của Hòa Phát đạt 35,85% trong năm 2025, đáp ứng mục tiêu nội bộ và vượt mức trung bình của ngành thép và kim loại toàn cầu – nơi tỷ lệ nữ lãnh đạo thường rất thấp cho thấy những bước tiến tích cực hướng tới cân bằng giới. Những thành quả nà",
+          "confidence": "medium"
+        },
+        {
+          "value": 1200000.0,
+          "rawValue": "1,2 triệu",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "sustainability_report",
+          "snippet": "o tạo tập trung; kèm cặp chỉ dẫn; hội thảo/trao đổi, chia sẻ kinh nghiệm; E-learning và học thông qua luân chuyển công việc. Tổng kết năm 2025, Hòa Phát đã thực hiện hơn 1,2 triệu giờ đào tạo, trung bình mỗi cá nhân được đào tạo 38 giờ/năm, trong đó trên 70% chương trình đào tạo được triển khai bởi các Giảng viên Nội bộ Hòa Phát. Trong năm, ngoài các nội dung đào tạo chuyên môn, an toàn lao động thường xuyên, công tác đào tạo còn tập trung vào trọ",
+          "confidence": "high"
+        },
+        {
+          "value": 38.0,
+          "rawValue": "38",
+          "unit": "hours",
+          "qualityScore": 110.67,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "sustainability_report",
+          "snippet": "kiểm kê khí nhà kính theo tiêu chuẩn ISO 14064-1:2018 cho toàn Tập đoàn và được BSI thẩm định số liệu. Tái chế, tái sử dụng chất thải rắn nhóm thép và nông nghiệp đạt trên 99% Số giờ đào tạo trung bình cho mỗi nhân viên là 38 giờ mỗi năm 22% thành viên Hội đồng Quản trị là thành viên độc lập. Điểm nổi bật về phát triển bền vững năm 2025 Giải thưởng và vinh danh năm 2025 Thành viên của các Hiệp hội ngành nghề Hoạt động kinh doanh tại Tập đoàn PHẦN 3 TỔNG QUA",
+          "confidence": "high"
+        },
+        {
+          "value": 120.0,
+          "rawValue": "120",
+          "unit": "billion VND",
+          "qualityScore": 98.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "sustainability_report",
+          "snippet": "NGƯỜI 71 BÁO CÁO PHÁT TRIỂN BỀN VỮNG 2025 PHÁT TRIỂN CỘNG ĐỒNG6.4 KẾT QUẢ THỰC HIỆN NĂM 2025 Trong năm 2025, Tập đoàn Hòa Phát đã dành hơn 120 tỷ đồng cho các hoạt động phát triển cộng đồng và phúc lợi xã hội, hỗ trợ các nhóm đối tượng dễ bị tổn thương tại 26 tỉnh, thành phố trên cả nước. Các chương trình đã góp phần mang lại những cải thiện rõ rệt về an sinh xã hội, tăng khả năng tiếp cận y tế, giáo dục, nhà ở, phục hồi sau thiên tai, và tăng c",
+          "confidence": "medium"
+        },
+        {
+          "value": 22.0,
+          "rawValue": "22",
+          "unit": "%",
+          "qualityScore": 105.67,
+          "metricId": "board_independence_pct",
+          "pillar": "G",
+          "label": "Tỷ lệ thành viên HĐQT độc lập",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "sustainability_report",
+          "snippet": "quyết định đúng đắn, hành động trung thực và vì lợi ích cao nhất của doanh nghiệp và cổ đông. HĐQT của Tập đoàn Hòa Phát gồm 09 thành viên, do Chủ tịch HĐQT làm Chủ tọa. Trong đó, thành viên độc lập chiếm 22% (2/9 thành viên). Cơ cấu này giúp Hòa Phát có được sự đa dạng về góc nhìn, chuyên môn và kinh nghiệm, từ đó tăng cường năng lực lãnh đạo, giám sát và nâng cao chất lượng ra quyết định. Điều này giúp doanh nghiệp theo đuổi hiệu quả các mục tiêu chiến",
+          "confidence": "high"
+        },
+        {
+          "value": 35.85,
+          "rawValue": "35,85",
+          "unit": "%",
+          "qualityScore": 95.67,
+          "metricId": "women_workforce_pct",
+          "pillar": "S",
+          "label": "Tỷ lệ nữ trong lực lượng lao động",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf",
+          "sourceTitle": "hpg-bao-cao-ptbv-2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "MỚI TUYỂN NĂM 2025 7.070 ĐA DẠNG VÀ HÒA NHẬP [GRI 405-1b] Phụ nữ chiếm tỷ lệ đáng kể trong các ban quản trị, ban điều hành của Tập đoàn và hiện diện rõ nét ở nhiều vị trí quản lý. Tỷ lệ nữ giới ở cấp quản lý của Hòa Phát đạt 35,85% trong năm 2025, đáp ứng mục tiêu nội bộ và vượt mức trung bình của ngành thép và kim loại toàn cầu – nơi tỷ lệ nữ lãnh đạo thường rất thấp cho thấy những bước tiến tích cực hướng tới cân bằng giới. Những thành quả nà",
+          "confidence": "medium"
+        },
+        {
+          "value": 1200000.0,
+          "rawValue": "1,2 triệu",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf",
+          "sourceTitle": "hpg-bao-cao-ptbv-2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "o tạo tập trung; kèm cặp chỉ dẫn; hội thảo/trao đổi, chia sẻ kinh nghiệm; E-learning và học thông qua luân chuyển công việc. Tổng kết năm 2025, Hòa Phát đã thực hiện hơn 1,2 triệu giờ đào tạo, trung bình mỗi cá nhân được đào tạo 38 giờ/năm, trong đó trên 70% chương trình đào tạo được triển khai bởi các Giảng viên Nội bộ Hòa Phát. Trong năm, ngoài các nội dung đào tạo chuyên môn, an toàn lao động thường xuyên, công tác đào tạo còn tập trung vào trọ",
+          "confidence": "high"
+        },
+        {
+          "value": 38.52,
+          "rawValue": "38,52",
+          "unit": "hours",
+          "qualityScore": 110.67,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf",
+          "sourceTitle": "hpg-bao-cao-ptbv-2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "kiểm kê khí nhà kính theo tiêu chuẩn ISO 14064-1:2018 cho toàn Tập đoàn và được BSI thẩm định số liệu. Tái chế, tái sử dụng chất thải rắn nhóm thép và nông nghiệp đạt trên 99% Số giờ đào tạo trung bình cho mỗi nhân viên là 38,52 giờ mỗi năm 22% thành viên Hội đồng Quản trị là thành viên độc lập. Điểm nổi bật về phát triển bền vững năm 2025 Giải thưởng và vinh danh năm 2025 Thành viên của các Hiệp hội ngành nghề Hoạt động kinh doanh tại Tập đoàn PHẦN 3 TỔNG",
+          "confidence": "high"
+        },
+        {
+          "value": 120.0,
+          "rawValue": "120",
+          "unit": "billion VND",
+          "qualityScore": 98.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf",
+          "sourceTitle": "hpg-bao-cao-ptbv-2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "NGƯỜI 71 BÁO CÁO PHÁT TRIỂN BỀN VỮNG 2025 PHÁT TRIỂN CỘNG ĐỒNG6.4 KẾT QUẢ THỰC HIỆN NĂM 2025 Trong năm 2025, Tập đoàn Hòa Phát đã dành hơn 120 tỷ đồng cho các hoạt động phát triển cộng đồng và phúc lợi xã hội, hỗ trợ các nhóm đối tượng dễ bị tổn thương tại 26 tỉnh, thành phố trên cả nước. Các chương trình đã góp phần mang lại những cải thiện rõ rệt về an sinh xã hội, tăng khả năng tiếp cận y tế, giáo dục, nhà ở, phục hồi sau thiên tai, và tăng c",
+          "confidence": "medium"
+        },
+        {
+          "value": 22.0,
+          "rawValue": "22",
+          "unit": "%",
+          "qualityScore": 105.67,
+          "metricId": "board_independence_pct",
+          "pillar": "G",
+          "label": "Tỷ lệ thành viên HĐQT độc lập",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf",
+          "sourceTitle": "hpg-bao-cao-ptbv-2025.pdf",
+          "sourceType": "sustainability_report",
+          "snippet": "quyết định đúng đắn, hành động trung thực và vì lợi ích cao nhất của doanh nghiệp và cổ đông. HĐQT của Tập đoàn Hòa Phát gồm 09 thành viên, do Chủ tịch HĐQT làm Chủ tọa. Trong đó, thành viên độc lập chiếm 22% (2/9 thành viên). Cơ cấu này giúp Hòa Phát có được sự đa dạng về góc nhìn, chuyên môn và kinh nghiệm, từ đó tăng cường năng lực lãnh đạo, giám sát và nâng cao chất lượng ra quyết định. Điều này giúp doanh nghiệp theo đuổi hiệu quả các mục tiêu chiến",
+          "confidence": "high"
+        },
+        {
+          "value": 1200000.0,
+          "rawValue": "1,2 triệu",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/05/bao-cao-thuong-nien-nam-2025.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "annual_report",
+          "snippet": "o tạo tập trung; kèm cặp chỉ dẫn; hội thảo/trao đổi, chia sẻ kinh nghiệm; E-learning và học thông qua luân chuyển công việc. Tổng kết năm 2025, Hòa Phát đã thực hiện hơn 1,2 triệu giờ đào tạo, trung bình mỗi cá nhân được đào tạo 38 giờ/năm, trong đó trên 70% chương trình đào tạo được triển khai bởi các giảng viên nội bộ Hòa Phát. Hoạt động của các công ty con • Tổng công ty Gang thép • Tổng công ty Sản phẩm thép • Tổng công ty Nông nghiệp • Tổng c",
+          "confidence": "high"
+        },
+        {
+          "value": 120.0,
+          "rawValue": "120",
+          "unit": "billion VND",
+          "qualityScore": 101.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/05/bao-cao-thuong-nien-nam-2025.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "annual_report",
+          "snippet": "đồng Khởi công nhà máy ray đường sắt cao tốc “Made in Vietnam” đầu tiên Đông Nam Á công suất 700.000 tấn/năm, dự kiến ra sản phẩm vào năm 2027 Dành 120 tỷ đồng thực hiện hàng loạt hoạt động xã hội thiết thực 1 6 2 7 3 8 4 9 5 THÔNG TIN CHUNG PHẦN 1 THÔNG TIN CƠ BẢN THÔNG TIN CỔ PHIẾU NGÀNH NGHỀ KINH DOANH SƠ ĐỒ TỔ CHỨC / MÔ HÌNH HOẠT ĐỘNG TÓM TẮT CÁC CHỈ SỐ TÀI CHÍNH 8 8 8 9 11 12 17 18 20 DANH SÁCH CÁC CÔNG TY CON TỔNG QUAN VỀ HÒA PHÁT LỊCH SỬ HÌNH TH",
+          "confidence": "high"
+        },
+        {
+          "value": 1200000.0,
+          "rawValue": "1,2 triệu",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours",
+          "pillar": "S",
+          "label": "Tổng giờ đào tạo",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-nam-2025-hpg.pdf",
+          "sourceTitle": "bao-cao-thuong-nien-nam-2025-hpg.pdf",
+          "sourceType": "annual_report",
+          "snippet": "o tạo tập trung; kèm cặp chỉ dẫn; hội thảo/trao đổi, chia sẻ kinh nghiệm; E-learning và học thông qua luân chuyển công việc. Tổng kết năm 2025, Hòa Phát đã thực hiện hơn 1,2 triệu giờ đào tạo, trung bình mỗi cá nhân được đào tạo 38 giờ/năm, trong đó trên 70% chương trình đào tạo được triển khai bởi các giảng viên nội bộ Hòa Phát. Hoạt động của các công ty con • Tổng công ty Gang thép • Tổng công ty Sản phẩm thép • Tổng công ty Nông nghiệp • Tổng c",
+          "confidence": "high"
+        },
+        {
+          "value": 120.0,
+          "rawValue": "120",
+          "unit": "billion VND",
+          "qualityScore": 101.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-nam-2025-hpg.pdf",
+          "sourceTitle": "bao-cao-thuong-nien-nam-2025-hpg.pdf",
+          "sourceType": "annual_report",
+          "snippet": "đồng Khởi công nhà máy ray đường sắt cao tốc “Made in Vietnam” đầu tiên Đông Nam Á công suất 700.000 tấn/năm, dự kiến ra sản phẩm vào năm 2027 Dành 120 tỷ đồng thực hiện hàng loạt hoạt động xã hội thiết thực 1 6 2 7 3 8 4 9 5 THÔNG TIN CHUNG PHẦN 1 THÔNG TIN CƠ BẢN THÔNG TIN CỔ PHIẾU NGÀNH NGHỀ KINH DOANH SƠ ĐỒ TỔ CHỨC / MÔ HÌNH HOẠT ĐỘNG TÓM TẮT CÁC CHỈ SỐ TÀI CHÍNH 8 8 8 9 11 12 17 18 20 DANH SÁCH CÁC CÔNG TY CON TỔNG QUAN VỀ HÒA PHÁT LỊCH SỬ HÌNH TH",
+          "confidence": "high"
+        },
+        {
+          "value": 100.0,
+          "rawValue": "100",
+          "unit": "billion VND",
+          "qualityScore": 101.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2024,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2025/04/bao-cao-thuong-nien-hpg-2024.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "annual_report",
+          "snippet": "hân nộp thuế lớn nhất Việt Nam; Top 50 Công ty kinh doanh hiệu quả nhất Việt Nam,... Gắn sự phát triển của mình với cộng đồng, Tập đoàn đã dành hơn 100 tỷ đồng thực hiện hàng loạt hoạt động xã hội, cộng đồng ý nghĩa như: Chung tay xóa nhà tạm, nhà dột nát trên toàn quốc; “Nhịp đập yêu thương”, “Xuân yêu thương”, “Hòa Phát cùng em tới trường”,... Năm 2025, Chính phủ đặt mục tiêu tăng trưởng đạt 8% trở lên, tạo nền tảng vững chắc để đạt tốc độ tăng trưởn",
+          "confidence": "high"
+        },
+        {
+          "value": 30.0,
+          "rawValue": "30",
+          "unit": "billion VND",
+          "qualityScore": 94.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2023,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2025/03/bao-cao-thuong-nien-2023.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "annual_report",
+          "snippet": "t động của mình với lợi ích Xã hội, Tập đoàn Hòa Phát triển khai nhiều chương trình hỗ trợ những hoàn cảnh kém may mắn, tập trung vào 4 nhóm chính: Y tế - Giáo dục – Giao thông và Cộng đồng. Năm 2023, Tập đoàn Hòa Phát đã dành hơn 30 tỷ đồng cho các hoạt động an sinh Xã hội như xây nhà tình nghĩa; kiên cố hóa công trình công ích, trường học; học bổng cho học sinh sinh viên, tặng quà cho người nghèo, tài trợ phẫu thuật cho trẻ em mắc bệnh tim bẩm",
+          "confidence": "medium"
+        },
+        {
+          "value": 15.0,
+          "rawValue": "15",
+          "unit": "billion VND",
+          "qualityScore": 99.0,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2022,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2023/03/bao-cao-thuong-nien-2022.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "annual_report",
+          "snippet": "ắn kết hài hòa hoạt động sản xuất kinh doanh và trách nhiệm của doanh nghiệp với xã hội. Trong năm qua, Hòa Phát tập trung hỗ trợ vào 4 nhóm chính: Y tế - Giáo dục - Giao thông và Cộng đồng, với tổng kinh phí khoảng 15 tỷ đồng. NHỊP ĐẬP YÊU THƯƠNG - TÀI TRỢ PHẪU THUẬT CHO TRẺ EM NGHÈO MẮC BỆNH TIM BẨM SINH Xuất phát từ mong muốn mang lại cho cho trẻ em Việt Nam một trái tim khỏe mạnh, chương trình “Nhịp đập yêu thương” của Hòa Phát chính thức đư",
+          "confidence": "medium"
+        }
+      ],
       "externalAssessments": [],
-      "canonicalMetrics": [],
+      "canonicalMetrics": [
+        {
+          "value": 15.0,
+          "rawValue": "15",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2022,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2023/03/bao-cao-thuong-nien-2022.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "annual_report",
+          "snippet": "ắn kết hài hòa hoạt động sản xuất kinh doanh và trách nhiệm của doanh nghiệp với xã hội. Trong năm qua, Hòa Phát tập trung hỗ trợ vào 4 nhóm chính: Y tế - Giáo dục - Giao thông và Cộng đồng, với tổng kinh phí khoảng 15 tỷ đồng. NHỊP ĐẬP YÊU THƯƠNG - TÀI TRỢ PHẪU THUẬT CHO TRẺ EM NGHÈO MẮC BỆNH TIM BẨM SINH Xuất phát từ mong muốn mang lại cho cho trẻ em Việt Nam một trái tim khỏe mạnh, chương trình “Nhịp đập yêu thương” của Hòa Phát chính thức đư",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "15",
+          "repaired": true
+        },
+        {
+          "value": 30.0,
+          "rawValue": "30",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2023,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2025/03/bao-cao-thuong-nien-2023.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "annual_report",
+          "snippet": "t động của mình với lợi ích Xã hội, Tập đoàn Hòa Phát triển khai nhiều chương trình hỗ trợ những hoàn cảnh kém may mắn, tập trung vào 4 nhóm chính: Y tế - Giáo dục – Giao thông và Cộng đồng. Năm 2023, Tập đoàn Hòa Phát đã dành hơn 30 tỷ đồng cho các hoạt động an sinh Xã hội như xây nhà tình nghĩa; kiên cố hóa công trình công ích, trường học; học bổng cho học sinh sinh viên, tặng quà cho người nghèo, tài trợ phẫu thuật cho trẻ em mắc bệnh tim bẩm",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "30",
+          "repaired": true
+        },
+        {
+          "value": 120.0,
+          "rawValue": "120",
+          "unit": "billion VND",
+          "qualityScore": 116,
+          "metricId": "csr_spend",
+          "pillar": "S",
+          "label": "Chi cho cộng đồng/CSR",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "sustainability_report",
+          "snippet": "NGƯỜI 71 BÁO CÁO PHÁT TRIỂN BỀN VỮNG 2025 PHÁT TRIỂN CỘNG ĐỒNG6.4 KẾT QUẢ THỰC HIỆN NĂM 2025 Trong năm 2025, Tập đoàn Hòa Phát đã dành hơn 120 tỷ đồng cho các hoạt động phát triển cộng đồng và phúc lợi xã hội, hỗ trợ các nhóm đối tượng dễ bị tổn thương tại 26 tỉnh, thành phố trên cả nước. Các chương trình đã góp phần mang lại những cải thiện rõ rệt về an sinh xã hội, tăng khả năng tiếp cận y tế, giáo dục, nhà ở, phục hồi sau thiên tai, và tăng c",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "120",
+          "repaired": true
+        },
+        {
+          "value": 38.0,
+          "rawValue": "38",
+          "unit": "hours",
+          "qualityScore": 116,
+          "metricId": "training_hours_per_employee",
+          "pillar": "S",
+          "label": "Giờ đào tạo bình quân/nhân viên",
+          "year": 2025,
+          "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-phat-trien-ben-vung-2025-7.pdf",
+          "sourceTitle": "Download",
+          "sourceType": "sustainability_report",
+          "snippet": "kiểm kê khí nhà kính theo tiêu chuẩn ISO 14064-1:2018 cho toàn Tập đoàn và được BSI thẩm định số liệu. Tái chế, tái sử dụng chất thải rắn nhóm thép và nông nghiệp đạt trên 99% Số giờ đào tạo trung bình cho mỗi nhân viên là 38 giờ mỗi năm 22% thành viên Hội đồng Quản trị là thành viên độc lập. Điểm nổi bật về phát triển bền vững năm 2025 Giải thưởng và vinh danh năm 2025 Thành viên của các Hiệp hội ngành nghề Hoạt động kinh doanh tại Tập đoàn PHẦN 3 TỔNG QUA",
+          "confidence": "high",
+          "canonicalizedFromRawValue": "38",
+          "repaired": true
+        }
+      ],
       "coverage": {
-        "documents": 0,
-        "processedDocuments": 0,
-        "metrics": 0,
-        "canonicalMetrics": 0,
+        "documents": 15,
+        "processedDocuments": 10,
+        "metrics": 17,
+        "canonicalMetrics": 4,
         "externalAssessments": 0
       }
     },
     "HSG": {
       "symbol": "HSG",
       "name": "Công ty Cổ phần Tập đoàn Hoa Sen",
-      "checkedAt": "2026-10-28T19:58:39.398357+00:00",
+      "checkedAt": "2026-10-29T07:08:56.846431+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3825,7 +4635,7 @@
     "HT1": {
       "symbol": "HT1",
       "name": "Công ty Cổ phần Xi măng VICEM Hà Tiên",
-      "checkedAt": "2026-10-28T19:58:39.398362+00:00",
+      "checkedAt": "2026-10-29T07:08:56.846434+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3843,7 +4653,7 @@
     "KBC": {
       "symbol": "KBC",
       "name": "Tổng Công ty Phát triển Đô thị Kinh Bắc - CTCP",
-      "checkedAt": "2026-10-28T19:58:39.398688+00:00",
+      "checkedAt": "2026-10-29T07:08:56.846607+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3886,7 +4696,7 @@
     "KDC": {
       "symbol": "KDC",
       "name": "Công ty Cổ phần Tập đoàn KIDO",
-      "checkedAt": "2026-10-28T19:58:39.398984+00:00",
+      "checkedAt": "2026-10-29T07:08:56.846751+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3945,7 +4755,7 @@
     "KDH": {
       "symbol": "KDH",
       "name": "Công ty Cổ phần Đầu tư và Kinh doanh nhà Khang Điền",
-      "checkedAt": "2026-10-28T19:58:39.398993+00:00",
+      "checkedAt": "2026-10-29T07:08:56.846754+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3963,7 +4773,7 @@
     "KOS": {
       "symbol": "KOS",
       "name": "Công ty Cổ phần KOSY",
-      "checkedAt": "2026-10-28T19:58:39.399289+00:00",
+      "checkedAt": "2026-10-29T07:08:56.846913+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4006,9 +4816,9 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-10-28T19:58:39.400238+00:00",
+      "checkedAt": "2026-10-29T07:08:56.847401+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "83ae132689391be88eb5",
@@ -4142,9 +4952,9 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-10-28T19:58:39.400874+00:00",
+      "checkedAt": "2026-10-29T07:08:56.847740+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "79ffdf8b3df3c61aabb6",
@@ -4358,7 +5168,7 @@
     "MCH": {
       "symbol": "MCH",
       "name": "Công ty Cổ phần Hàng Tiêu Dùng MaSan",
-      "checkedAt": "2026-10-28T19:58:39.401533+00:00",
+      "checkedAt": "2026-10-29T07:08:56.848101+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4415,9 +5225,9 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-10-28T19:58:39.405215+00:00",
+      "checkedAt": "2026-10-29T07:08:56.850065+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "4dd2f118fe31db0d2716",
@@ -4951,7 +5761,7 @@
     "MSN": {
       "symbol": "MSN",
       "name": "Công ty Cổ phần Tập đoàn Masan",
-      "checkedAt": "2026-10-28T19:58:39.405225+00:00",
+      "checkedAt": "2026-10-29T07:08:56.850069+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4968,17 +5778,30 @@
     },
     "MWG": {
       "symbol": "MWG",
-      "name": "Công ty Cổ phần Đầu tư Thế Giới Di Động",
-      "checkedAt": "2026-10-28T19:58:39.405231+00:00",
+      "name": "Mobile World Investment Corporation",
+      "checkedAt": "2026-10-29T07:08:56.850169+00:00",
       "entityType": "company",
-      "sourcePolicy": "disclosure-index",
-      "documents": [],
+      "sourcePolicy": "curated-issuer+disclosure-index",
+      "documents": [
+        {
+          "id": "40f370b80d8638c801cc",
+          "url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/news/2026/3/2353/99/4b/994bc4902d35965c5e4013897d4f78f4.pdf",
+          "title": "994bc4902d35965c5e4013897d4f78f4.pdf",
+          "sourcePage": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/news/2026/3/2353/99/4b/994bc4902d35965c5e4013897d4f78f4.pdf",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "1dc34c9184f326fc064a7106453c9494b99884b7739718d30765dfa13fdcbb52",
+          "processedAt": "2026-10-29T07:09:46.299758+00:00",
+          "textLength": 143284
+        }
+      ],
       "metrics": [],
       "externalAssessments": [],
       "canonicalMetrics": [],
       "coverage": {
-        "documents": 0,
-        "processedDocuments": 0,
+        "documents": 1,
+        "processedDocuments": 1,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -4987,9 +5810,9 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-10-28T19:58:39.409964+00:00",
+      "checkedAt": "2026-10-29T07:08:56.852516+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "610b6d4725c024c5862c",
@@ -5002,6 +5825,30 @@
           "contentHash": "4e78f3c7c80077464e0bc4b849129de80c17ec7e5bd39e767bb2bb2dd427394c",
           "processedAt": "2026-10-07T20:17:40.557894+00:00",
           "textLength": 10431
+        },
+        {
+          "id": "3513a04144dc75ee4ff0",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
+          "title": "Báo cáo thường niên tiếng Anh năm 2025",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
+          "processedAt": "2026-09-29T03:25:01.084606+00:00",
+          "textLength": 337
+        },
+        {
+          "id": "358356aafec4c64c0e15",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
+          "title": "Báo cáo thường niên năm 2025",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
+          "processedAt": "2026-09-29T03:25:01.578252+00:00",
+          "textLength": 336
         },
         {
           "id": "9905202effdd869504d3",
@@ -5038,30 +5885,6 @@
           "contentHash": "c18446c089d79f987638290bb1a088705fad4710a91b42407cc39616483ab448",
           "processedAt": "2026-09-29T03:24:41.470566+00:00",
           "textLength": 245573
-        },
-        {
-          "id": "3513a04144dc75ee4ff0",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab-2025-annual-report.pdf",
-          "title": "20260318---nab-2025-annual-report.pdf",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
-          "processedAt": "2026-09-29T03:25:01.084606+00:00",
-          "textLength": 337
-        },
-        {
-          "id": "358356aafec4c64c0e15",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
-          "title": "20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
-          "processedAt": "2026-09-29T03:25:01.578252+00:00",
-          "textLength": 336
         },
         {
           "id": "2290a0dd8e19254302c4",
@@ -5112,6 +5935,18 @@
           "textLength": 87023
         },
         {
+          "id": "9a75823f7a984b02ebf5",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
+          "title": "Báo cáo phát triển bền vững tiếng Anh năm 2024",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "da4b2b93920239f8a45454e5e39ed38367a881d63e434668b5bbce38ee713756",
+          "processedAt": "2026-09-29T03:24:53.506586+00:00",
+          "textLength": 190892
+        },
+        {
           "id": "fa5f1a67142c3668d602",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/esg/20260127_esg-namabank-2024_vn_view.pdf",
           "title": "Báo cáo phát triển bền vững năm 2024",
@@ -5136,30 +5971,6 @@
           "textLength": 213889
         },
         {
-          "id": "9a75823f7a984b02ebf5",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260119_esg-namabank-2024-en.pdf",
-          "title": "20260119_esg-namabank-2024-en.pdf",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2024,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "da4b2b93920239f8a45454e5e39ed38367a881d63e434668b5bbce38ee713756",
-          "processedAt": "2026-09-29T03:24:53.506586+00:00",
-          "textLength": 190892
-        },
-        {
-          "id": "33e5a56cd74d6d5f8f61",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
-          "title": "bao-cao-phat-trien-ben-vung-nam-2023.pdf",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2023,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "b8d2e349ddccc88a6ab62a318e1cea8438a0689c6d1666d5c54a22052dae7efd",
-          "processedAt": "2026-09-29T03:25:05.799971+00:00",
-          "textLength": 262818
-        },
-        {
           "id": "672efd9d89b939b0cb7a",
           "url": "https://www.namabank.com.vn/Data/Sites/1/userfiles/25/bctn_2023/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-2023.pdf",
           "title": "Báo cáo thường niên năm 2023",
@@ -5172,12 +5983,24 @@
           "textLength": 1251
         },
         {
-          "id": "0c9ce9572663228d1389",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
-          "title": "Báo cáo phát triển bền vững năm 2023 tiếng Anh",
+          "id": "33e5a56cd74d6d5f8f61",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-phat-trien-ben-vung-nam-2023.pdf",
+          "title": "Báo cáo phát triển bền vững năm 2023",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2023,
           "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "b8d2e349ddccc88a6ab62a318e1cea8438a0689c6d1666d5c54a22052dae7efd",
+          "processedAt": "2026-09-29T03:25:05.799971+00:00",
+          "textLength": 262818
+        },
+        {
+          "id": "0c9ce9572663228d1389",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
+          "title": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2023,
+          "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "bc88397feb5aa8ae307420639fdc5e40ffb935c261d4ddadb396cdc04385762d",
           "processedAt": "2026-09-29T03:40:21.817994+00:00",
@@ -5991,7 +6814,7 @@
     "NKG": {
       "symbol": "NKG",
       "name": "Công ty Cổ phần Thép Nam Kim",
-      "checkedAt": "2026-10-28T19:58:39.409976+00:00",
+      "checkedAt": "2026-10-29T07:08:56.852521+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6009,7 +6832,7 @@
     "NLG": {
       "symbol": "NLG",
       "name": "Công ty Cổ phần Đầu tư Nam Long",
-      "checkedAt": "2026-10-28T19:58:39.409982+00:00",
+      "checkedAt": "2026-10-29T07:08:56.852524+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6027,7 +6850,7 @@
     "NT2": {
       "symbol": "NT2",
       "name": "Công ty Cổ phần Điện lực Dầu khí Nhơn Trạch 2",
-      "checkedAt": "2026-10-28T19:58:39.410498+00:00",
+      "checkedAt": "2026-10-29T07:08:56.852799+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -6070,7 +6893,7 @@
     "NVL": {
       "symbol": "NVL",
       "name": "Công ty Cổ phần Tập đoàn Đầu tư Địa ốc No Va",
-      "checkedAt": "2026-10-28T19:58:39.410506+00:00",
+      "checkedAt": "2026-10-29T07:08:56.852879+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6088,10 +6911,22 @@
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-10-28T19:58:39.415007+00:00",
+      "checkedAt": "2026-10-29T07:08:56.855232+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
+        {
+          "id": "ef5d26c67b5ad742bf85",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20260408184738_20260408-ocb-bao-cao-thuong-nien-2025-website.pdf",
+          "title": "Xem thêm",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "d8aa34eef82dfc41ca3eaefef2a1326d6eabbe6a24a5c28f7d54bf687c6d9f40",
+          "processedAt": "2026-09-29T02:17:17.840725+00:00",
+          "textLength": 202003
+        },
         {
           "id": "8ed3ce868c1f74962d4e",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20260903101122_2608-bc-ptbv-2025-en.pdf",
@@ -6103,18 +6938,6 @@
           "lastError": "document too large > 36700160 bytes",
           "lastAttemptAt": "2026-10-28T19:58:46.440958+00:00",
           "retryAfter": "2026-10-29T19:58:46.440970+00:00"
-        },
-        {
-          "id": "ef5d26c67b5ad742bf85",
-          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20260408184738_20260408-ocb-bao-cao-thuong-nien-2025-website.pdf",
-          "title": "Báo cáo thường niên 2025 2025 Ngày đăng: 08/4/2026 Xem thêm",
-          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "d8aa34eef82dfc41ca3eaefef2a1326d6eabbe6a24a5c28f7d54bf687c6d9f40",
-          "processedAt": "2026-09-29T02:17:17.840725+00:00",
-          "textLength": 202003
         },
         {
           "id": "4d319969b646fceb4754",
@@ -6153,18 +6976,6 @@
           "textLength": 203768
         },
         {
-          "id": "9c0f8fa4ea6087a7f9b7",
-          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250923154047_bao-cao-phat-trien-ben-vung-2024.pdf",
-          "title": "Xem thêm",
-          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-          "year": 2024,
-          "type": "sustainability_report",
-          "contentType": "pdf",
-          "contentHash": "9357a7a944ab77d4378e12daa40218c6a1122dbb26f020401eddedfa104b0cbc",
-          "processedAt": "2026-09-29T02:15:24.665503+00:00",
-          "textLength": 336491
-        },
-        {
           "id": "d328fb66a416709ad8a7",
           "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250923155055_sustainability-report-2024.pdf",
           "title": "SEE_MORE",
@@ -6175,6 +6986,18 @@
           "lastError": "document too large > 36700160 bytes",
           "lastAttemptAt": "2026-10-28T19:58:46.429291+00:00",
           "retryAfter": "2026-10-29T19:58:46.429313+00:00"
+        },
+        {
+          "id": "9c0f8fa4ea6087a7f9b7",
+          "url": "https://webocb-api.ocb.com.vn/Resources/Files/20250923154047_bao-cao-phat-trien-ben-vung-2024.pdf",
+          "title": "Báo cáo phát triển bền vững 2024 2024 Ngày đăng: 23/9/2025 Xem thêm",
+          "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
+          "year": 2024,
+          "type": "sustainability_report",
+          "contentType": "pdf",
+          "contentHash": "9357a7a944ab77d4378e12daa40218c6a1122dbb26f020401eddedfa104b0cbc",
+          "processedAt": "2026-09-29T02:15:24.665503+00:00",
+          "textLength": 336491
         },
         {
           "id": "6c8fee76b6ca9bf4702e",
@@ -7055,7 +7878,7 @@
     "PAN": {
       "symbol": "PAN",
       "name": "Công ty Cổ phần Tập đoàn PAN",
-      "checkedAt": "2026-10-28T19:58:39.415020+00:00",
+      "checkedAt": "2026-10-29T07:08:56.855238+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7073,7 +7896,7 @@
     "PC1": {
       "symbol": "PC1",
       "name": "Công ty Cổ phần Tập đoàn PC1",
-      "checkedAt": "2026-10-28T19:58:39.415026+00:00",
+      "checkedAt": "2026-10-29T07:08:56.855241+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7091,7 +7914,7 @@
     "PDR": {
       "symbol": "PDR",
       "name": "Công ty Cổ phần Phát triển Bất động sản Phát Đạt",
-      "checkedAt": "2026-10-28T19:58:39.415031+00:00",
+      "checkedAt": "2026-10-29T07:08:56.855243+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7109,7 +7932,7 @@
     "PHR": {
       "symbol": "PHR",
       "name": "Công ty Cổ phần Cao su Phước Hòa",
-      "checkedAt": "2026-10-28T19:58:39.415036+00:00",
+      "checkedAt": "2026-10-29T07:08:56.855246+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7127,7 +7950,7 @@
     "PLX": {
       "symbol": "PLX",
       "name": "Tập đoàn Xăng dầu Việt Nam",
-      "checkedAt": "2026-10-28T19:58:39.416451+00:00",
+      "checkedAt": "2026-10-29T07:08:56.855991+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -7300,7 +8123,7 @@
     "PNJ": {
       "symbol": "PNJ",
       "name": "Công ty Cổ phần Vàng bạc Đá quý Phú Nhuận",
-      "checkedAt": "2026-10-28T19:58:39.416461+00:00",
+      "checkedAt": "2026-10-29T07:08:56.855994+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7318,7 +8141,7 @@
     "POW": {
       "symbol": "POW",
       "name": "Tổng Công ty Điện lực Dầu khí Việt Nam - CTCP",
-      "checkedAt": "2026-10-28T19:58:39.416968+00:00",
+      "checkedAt": "2026-10-29T07:08:56.856244+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -7361,7 +8184,7 @@
     "PVD": {
       "symbol": "PVD",
       "name": "Tổng Công ty Cổ phần Khoan và Dịch vụ khoan Dầu khí",
-      "checkedAt": "2026-10-28T19:58:39.416977+00:00",
+      "checkedAt": "2026-10-29T07:08:56.856248+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7379,7 +8202,7 @@
     "PVT": {
       "symbol": "PVT",
       "name": "Tổng Công ty Cổ phần Vận tải Dầu khí",
-      "checkedAt": "2026-10-28T19:58:39.416982+00:00",
+      "checkedAt": "2026-10-29T07:08:56.856251+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7397,7 +8220,7 @@
     "REE": {
       "symbol": "REE",
       "name": "Công ty Cổ phần Cơ điện Lạnh",
-      "checkedAt": "2026-10-28T19:58:39.416988+00:00",
+      "checkedAt": "2026-10-29T07:08:56.856254+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7415,7 +8238,7 @@
     "SAB": {
       "symbol": "SAB",
       "name": "Tổng Công ty Cổ phần Bia - Rượu - Nước Giải khát Sài Gòn",
-      "checkedAt": "2026-10-28T19:58:39.418077+00:00",
+      "checkedAt": "2026-10-29T07:08:56.856813+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -7482,7 +8305,7 @@
     "SBT": {
       "symbol": "SBT",
       "name": "Công ty Cổ phần Thành Thành Công - Biên Hòa",
-      "checkedAt": "2026-10-28T19:58:39.418086+00:00",
+      "checkedAt": "2026-10-29T07:08:56.856816+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7500,9 +8323,9 @@
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-10-28T19:58:39.419813+00:00",
+      "checkedAt": "2026-10-29T07:08:56.857696+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "03dad30e4551a54698e3",
@@ -8281,7 +9104,7 @@
     "SIP": {
       "symbol": "SIP",
       "name": "Công ty Cổ phần Đầu tư Sài Gòn VRG",
-      "checkedAt": "2026-10-28T19:58:39.420344+00:00",
+      "checkedAt": "2026-10-29T07:08:56.857963+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8324,7 +9147,7 @@
     "SJS": {
       "symbol": "SJS",
       "name": "Công ty Cổ phần SJ Group",
-      "checkedAt": "2026-10-28T19:58:39.421265+00:00",
+      "checkedAt": "2026-10-29T07:08:56.858426+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8379,9 +9202,9 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-10-28T19:58:39.423907+00:00",
+      "checkedAt": "2026-10-29T07:08:56.859726+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "246f0179d5b5020d920f",
@@ -8494,7 +9317,7 @@
         {
           "id": "8fd342db37c26fd52c8f",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2024",
-          "title": "SeABank's Annual Report 2024 08/04/2025 Read more",
+          "title": "SeABank's Annual Report 2024 08/04/2025",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -9176,7 +9999,7 @@
     "SSI": {
       "symbol": "SSI",
       "name": "Công ty Cổ phần Chứng khoán SSI",
-      "checkedAt": "2026-10-28T19:58:39.423918+00:00",
+      "checkedAt": "2026-10-29T07:08:56.859730+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -9194,9 +10017,9 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-10-28T19:58:39.425624+00:00",
+      "checkedAt": "2026-10-29T07:08:56.860602+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "3abb0dc508defa362a46",
@@ -9365,7 +10188,7 @@
     "TAL": {
       "symbol": "TAL",
       "name": "Công Ty Cổ Phần Đầu Tư Bất Động Sản Taseco",
-      "checkedAt": "2026-10-28T19:58:39.425633+00:00",
+      "checkedAt": "2026-10-29T07:08:56.860606+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -9383,9 +10206,9 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-10-28T19:58:39.428018+00:00",
+      "checkedAt": "2026-10-29T07:08:56.861718+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "725b2cc303c70d1ae0c8",
@@ -9493,18 +10316,6 @@
           "textLength": 5751
         },
         {
-          "id": "b29212c4fc9f6ede5273",
-          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
-          "title": "See all ESG solutions",
-          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
-          "year": null,
-          "type": "esg_web_content",
-          "contentType": "html",
-          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
-          "processedAt": "2026-09-29T01:34:42.419679+00:00",
-          "textLength": 3469
-        },
-        {
           "id": "92a4cc6c630bcb4bdbd4",
           "url": "https://techcombank.com/en/about-us/sustainability/strategy",
           "title": "Our Strategy",
@@ -9515,6 +10326,18 @@
           "contentHash": "f0468fee44062f55383674dc3119b7f88f24b09e4481d984084ff8c5895441d4",
           "processedAt": "2026-09-29T01:34:42.044934+00:00",
           "textLength": 8288
+        },
+        {
+          "id": "b29212c4fc9f6ede5273",
+          "url": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking",
+          "title": "Our Solutions",
+          "sourcePage": "https://techcombank.com/en/about-us/sustainability",
+          "year": null,
+          "type": "esg_web_content",
+          "contentType": "html",
+          "contentHash": "06dee33a36240e3e942f88ec50450ece996c3fcb608e8cb5e49bceed598a0db2",
+          "processedAt": "2026-09-29T01:34:42.419679+00:00",
+          "textLength": 3469
         },
         {
           "id": "97d2416e207bace17546",
@@ -9913,7 +10736,7 @@
     "TCH": {
       "symbol": "TCH",
       "name": "Công ty Cổ phần Đầu tư Dịch vụ Tài chính Hoàng Huy",
-      "checkedAt": "2026-10-28T19:58:39.428029+00:00",
+      "checkedAt": "2026-10-29T07:08:56.861722+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -9931,7 +10754,7 @@
     "TCX": {
       "symbol": "TCX",
       "name": "Công ty Cổ phần Chứng khoán Kỹ Thương",
-      "checkedAt": "2026-10-28T19:58:39.428034+00:00",
+      "checkedAt": "2026-10-29T07:08:56.861725+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -9949,9 +10772,9 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-10-28T19:58:39.429949+00:00",
+      "checkedAt": "2026-10-29T07:08:56.862734+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "4cd4d68d59b486c0c810",
@@ -10202,9 +11025,9 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-10-28T19:58:39.431240+00:00",
+      "checkedAt": "2026-10-29T07:08:56.863415+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "c1df632d1a0cf5f03997",
@@ -10732,7 +11555,7 @@
     "VCG": {
       "symbol": "VCG",
       "name": "Tổng Công ty Cổ phần Xuất nhập khẩu và Xây dựng Việt Nam",
-      "checkedAt": "2026-10-28T19:58:39.431249+00:00",
+      "checkedAt": "2026-10-29T07:08:56.863419+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -10750,7 +11573,7 @@
     "VCI": {
       "symbol": "VCI",
       "name": "Công ty Cổ phần Chứng khoán Vietcap",
-      "checkedAt": "2026-10-28T19:58:39.431255+00:00",
+      "checkedAt": "2026-10-29T07:08:56.863423+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -10768,7 +11591,7 @@
     "VCK": {
       "symbol": "VCK",
       "name": "Công ty Cổ phần Chứng Khoán VPS",
-      "checkedAt": "2026-10-28T19:58:39.431260+00:00",
+      "checkedAt": "2026-10-29T07:08:56.863426+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -10786,7 +11609,7 @@
     "VGC": {
       "symbol": "VGC",
       "name": "Tổng Công ty Viglacera - Công ty Cổ phần",
-      "checkedAt": "2026-10-28T19:58:39.431859+00:00",
+      "checkedAt": "2026-10-29T07:08:56.863741+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10829,7 +11652,7 @@
     "VHC": {
       "symbol": "VHC",
       "name": "Công ty Cổ phần Vĩnh Hoàn",
-      "checkedAt": "2026-10-28T19:58:39.432372+00:00",
+      "checkedAt": "2026-10-29T07:08:56.863882+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -10872,7 +11695,7 @@
     "VHM": {
       "symbol": "VHM",
       "name": "Công ty Cổ phần Vinhomes",
-      "checkedAt": "2026-10-28T19:58:39.432381+00:00",
+      "checkedAt": "2026-10-29T07:08:56.863886+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -10890,9 +11713,9 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-10-28T19:58:39.434161+00:00",
+      "checkedAt": "2026-10-29T07:08:56.864818+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "a069414236cac1eda311",
@@ -11004,7 +11827,7 @@
     "VIC": {
       "symbol": "VIC",
       "name": "Tập đoàn Vingroup - Công ty CP",
-      "checkedAt": "2026-10-28T19:58:39.434171+00:00",
+      "checkedAt": "2026-10-29T07:08:56.864822+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11022,7 +11845,7 @@
     "VIX": {
       "symbol": "VIX",
       "name": "Công ty Cổ phần Chứng khoán VIX",
-      "checkedAt": "2026-10-28T19:58:39.434177+00:00",
+      "checkedAt": "2026-10-29T07:08:56.864825+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11040,7 +11863,7 @@
     "VJC": {
       "symbol": "VJC",
       "name": "Công ty Cổ phần Hàng không Vietjet",
-      "checkedAt": "2026-10-28T19:58:39.434650+00:00",
+      "checkedAt": "2026-10-29T07:08:56.865076+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11083,7 +11906,7 @@
     "VND": {
       "symbol": "VND",
       "name": "Công ty Cổ phần Chứng khoán VNDIRECT",
-      "checkedAt": "2026-10-28T19:58:39.435165+00:00",
+      "checkedAt": "2026-10-29T07:08:56.865330+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11125,10 +11948,10 @@
     },
     "VNM": {
       "symbol": "VNM",
-      "name": "Công ty Cổ phần Sữa Việt Nam",
-      "checkedAt": "2026-10-28T19:58:39.435799+00:00",
+      "name": "Vinamilk",
+      "checkedAt": "2026-10-29T07:08:56.866930+00:00",
       "entityType": "company",
-      "sourcePolicy": "disclosure-index",
+      "sourcePolicy": "curated-issuer+disclosure-index",
       "documents": [
         {
           "id": "35cb8eab3974d17477c7",
@@ -11143,6 +11966,50 @@
           "textLength": 3249
         },
         {
+          "id": "a09ba82dbdad42c8e49f",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/VNMSR_EN_3ed5d9bc55.pdf",
+          "title": "Sustainable Development Report 2025 21/04/2026",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
+          "year": 2025,
+          "type": "esg_web_content"
+        },
+        {
+          "id": "9175fe66891921d98474",
+          "url": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "title": "Sustainability Reports",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "1eda039ad9b0de15fc70e6e0cbab8d31f66fd0c44630252815b8e66ef7d0dcf1",
+          "processedAt": "2026-10-29T07:09:09.560427+00:00",
+          "textLength": 2189
+        },
+        {
+          "id": "93aca181a6ddda233eed",
+          "url": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "title": "Annual Reports",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "year": 2025,
+          "type": "sustainability_report",
+          "contentType": "html",
+          "contentHash": "d7b2f84ec033b6077a59ee61a6651fe1e76f21530ff068609429d97640a40831",
+          "processedAt": "2026-10-29T07:09:09.742443+00:00",
+          "textLength": 2217
+        },
+        {
+          "id": "3eb5a4f06724b53ffb06",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/20260319_VNM_Bao_cao_thuong_nien_2025_EN_08b4412765.pdf",
+          "title": "Annual Report 2025 19/03/2026",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2025,
+          "type": "annual_report",
+          "failedAttempts": 1,
+          "lastError": "HTTP Error 403: Forbidden",
+          "lastAttemptAt": "2026-10-29T07:09:21.496850+00:00",
+          "retryAfter": "2026-10-30T07:09:21.496874+00:00"
+        },
+        {
           "id": "53614b18d03b7991a134",
           "url": "https://cdn.24hmoney.vn/medialib/FG/2026/2026-04/2026-04-23/VNM/20260422--VNM--Thong-bao-hoan-thanh-bao-cao-phat-trien-ben-vung-2025.pdf",
           "title": "20260422--VNM--Thong-bao-hoan-thanh-bao-cao-phat-trien-ben-vung-2025.pdf",
@@ -11153,14 +12020,239 @@
           "contentHash": "90457a798539eee01e2cf5f96553214a2e5efdf4fb2b0c7860d504e4644fa9cf",
           "processedAt": "2026-09-29T17:06:35.746071+00:00",
           "textLength": 1632
+        },
+        {
+          "id": "c8ec018f9bd8368bd9d4",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/VNMSR_2024_EN_7def0938c9.pdf",
+          "title": "Sustainable Development Report 2024 08/04/2025",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
+          "year": 2024,
+          "type": "esg_web_content"
+        },
+        {
+          "id": "6d715d4ec9a7b00ae3a4",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/VNMSR_2023_EN_69ddc39b5d.pdf",
+          "title": "Sustainable Development Report 2023 25/11/2024",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
+          "year": 2023,
+          "type": "esg_web_content"
+        },
+        {
+          "id": "1c24997cae458f711465",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1683632005_a8367043262056cdfbcdd116e02df5302f165403da2790ab1cb6d2c01c017a3e_eb25462496.pdf",
+          "title": "Sustainable Development Report 2022 01/05/2023",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "year": 2022,
+          "type": "sustainability_report"
+        },
+        {
+          "id": "16fddf9bd8fa722e9ea7",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1656491134_41ae55e12ed75bb850882ef4ed011f4daca3a27544f0298e20a6ec764b5208a8_f027637ffd.pdf",
+          "title": "Sustainable Development Report 2021 29/06/2022",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "year": 2021,
+          "type": "sustainability_report"
+        },
+        {
+          "id": "9716df53301fd6a8eacb",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1650451537_6f22ffdd6ecd4ea5cc133b0046bc3085a10648db1369033c5dfe1daed93f04a7_1372ac1845.pdf",
+          "title": "Annual Report 2021 20/04/2022",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2021,
+          "type": "annual_report"
+        },
+        {
+          "id": "7ade7cfe131a3537e217",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1618816520_d81a593920bb76205f92770d36e54f2a14d7f124f481609fac1a85a0ddf1469a_8ccaedb48a.pdf",
+          "title": "Sustainable Development Report 2020 19/04/2021",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "year": 2020,
+          "type": "sustainability_report"
+        },
+        {
+          "id": "e2416f843ad5707457b4",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1617354921_f48f48ff7baf40d9af270083a736eaaf0f52a6c5873367d134b4c83f193b0677_a1d64e4bbf.pdf",
+          "title": "Annual Report 2020 02/04/2021",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2020,
+          "type": "annual_report"
+        },
+        {
+          "id": "5362d83b7694d99d933c",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1620207740_efeb3c478d0d7f272ab76bdfe2864f6cdbb1cd51d3739ce9e378f8978e337cca_e06293a342.pdf",
+          "title": "Sustainable Development Report 2019 05/05/2020",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "year": 2019,
+          "type": "sustainability_report"
+        },
+        {
+          "id": "75bebeb40f3cb03e0bc6",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1585291614_e5df6f54f1b460c71648e3b3974c13d41721ed54aaef4e256def7956f8cc7d38_2f5e176e82.pdf",
+          "title": "Annual Report 2019 27/03/2020",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2019,
+          "type": "annual_report"
+        },
+        {
+          "id": "8526e7620c1e65e59bf2",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1555043744_c9bbd26b3ab88182c259011def719526d227eb55ea83143ed04fba61ec314474_35ca10c4fb.pdf",
+          "title": "Sustainable Development Report 2018 12/04/2019",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "year": 2018,
+          "type": "sustainability_report"
+        },
+        {
+          "id": "928e24b00d190d3af03a",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1553157661_ea4e37fe1db29419325178dd843588da6e8234bb730198a6aa961d741128712e_fd356ad26f.pdf",
+          "title": "Annual Report 2018 21/03/2019",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2018,
+          "type": "annual_report"
+        },
+        {
+          "id": "c869d0f8e61bfbc4cb2a",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1680152612_554166be56badab60777b6e08015b116d35ca47d8bcca0e36efdf39f6d4ec16e_f6b730018e.pdf",
+          "title": "Sustainable Development Report 2017 30/03/2018",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "year": 2017,
+          "type": "sustainability_report"
+        },
+        {
+          "id": "ad5b21a15164c86e43b2",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1524798633_c31c7d599e81153429ac1aae5651da38c69725a442999c2eb2319e32a3abe5fb_79f93a4720.pdf",
+          "title": "Annual Report 2017 26/03/2018",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2017,
+          "type": "annual_report"
+        },
+        {
+          "id": "68a09d484c951f48fd39",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1680152281_c07086e3cf1777b8b7e2861a01f9a49416561bf595aaf739136c92dc17d97d0d_8043240ebc.pdf",
+          "title": "Sustainable Development Report 2016 30/03/2017",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "year": 2016,
+          "type": "sustainability_report"
+        },
+        {
+          "id": "5c2d1921019dbf194116",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1491555026_8200b97437fc4416662f04431290995f23e8b83ea13bb8fb4a9fc1498893d1c2_2078299514.pdf",
+          "title": "Annual Report 2016 20/03/2017",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2016,
+          "type": "annual_report"
+        },
+        {
+          "id": "6cf4b3a7700dc98c2da0",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1680151960_ea36908a68c682c968cd77451dee321461caa02f0ef122d46a4d12c03c00bcd2_bcb1663f4f.pdf",
+          "title": "Sustainable Development Report 2015 30/03/2016",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "year": 2015,
+          "type": "sustainability_report"
+        },
+        {
+          "id": "a625aca4425cda218666",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1463564750_564913525bcfdc84fcad83da839f2d6dc773b1020ce26bb54f12255adcc9a66e_fc1419f64d.pdf",
+          "title": "Annual Report 2015 18/05/2016",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2015,
+          "type": "annual_report"
+        },
+        {
+          "id": "e084367e3806f6d5f1e7",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1430732750_5c41e87967dbbdca965a5259940b86b1e38c958b17a649c98582621a4c7a897f_b4787a72d7.pdf",
+          "title": "Sustainable Development Report 2014 04/05/2015",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "year": 2014,
+          "type": "sustainability_report"
+        },
+        {
+          "id": "10deeb7330e242596d5d",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1426843683_7fd7119f0c2d2e9bd538f170cf960824f6fb16f7e94da5af5361b851a598634a_en_a9dbca936e.pdf",
+          "title": "Annual Report 2014 20/05/2015",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2014,
+          "type": "annual_report"
+        },
+        {
+          "id": "b26be17468d4e748849b",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1412564299_c48e4d8fcfae78aa5c64b53c71a60b1197e34f65e52269b47dc7801b30f006d4_1076e47e8f.pdf",
+          "title": "Annual Report 2013 22/04/2014",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2013,
+          "type": "annual_report"
+        },
+        {
+          "id": "11e5b393f18e068a381d",
+          "url": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
+          "title": "Sustainability",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+          "year": 2012,
+          "type": "esg_web_content",
+          "contentType": "html"
+        },
+        {
+          "id": "51b4b680fdcc6ab59765",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1412564524_5a8b33a7ce272c21f33291faf10e78aa4372fb85c3320e4f1f0c891da8b43ac3_2726bc5588.pdf",
+          "title": "Annual Report 2011 22/04/2012",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2011,
+          "type": "annual_report"
+        },
+        {
+          "id": "1a674ef3df39a338282a",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1412565160_ce4ac56166795c818e54d6a442f00a5902d28ed516ded4a94f73aee27583eb5f_e4902cc969.pdf",
+          "title": "Annual Report 2010 22/04/2011",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2010,
+          "type": "annual_report"
+        },
+        {
+          "id": "ec502ca8a09e53767401",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1412564937_622d3e74c489400c588b300e439caa5da48dfbc43e73745ccc7a9efc11590a88_0ff0b58782.pdf",
+          "title": "Annual Report 2009 22/04/2010",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2009,
+          "type": "annual_report"
+        },
+        {
+          "id": "100b54f48e2de496a930",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1412565038_0e9f3ada6be9b7beee61cc94ee1678057e9903e7fcb27401c2e7f31d350972e3_bf04e45290.pdf",
+          "title": "Annual Report 2008 22/04/2009",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2008,
+          "type": "annual_report"
+        },
+        {
+          "id": "87b3e303b7406d8cbc35",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1412564821_1f411760efba4111b2b7f10a4e040b98aa97bddce3fea99cd20c1eda2c335535_ad57efec63.pdf",
+          "title": "Annual Report 2007 22/04/2008",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2007,
+          "type": "annual_report"
+        },
+        {
+          "id": "740d246a9733e0b601c4",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/1412564671_130f6f8b9674d0b50fe5aa8adfbabf8b433e77c134b643356aa207d351ceea6c_79da05b3a6.pdf",
+          "title": "Annual Report 2006 22/04/2007",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": 2006,
+          "type": "annual_report"
+        },
+        {
+          "id": "df2ba7f0c1da2ab4977a",
+          "url": "https://d8um25gjecm9v.cloudfront.net/cms/Vinamilk_Quy_che_hoat_dong_san_giao_dich_TMDT_vinamilk_com_vn_Cap_nhat_03_09_2025_88a7d62ae9.pdf",
+          "title": "Operating Regulations",
+          "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
+          "year": null,
+          "type": "annual_report"
         }
       ],
       "metrics": [],
       "externalAssessments": [],
       "canonicalMetrics": [],
       "coverage": {
-        "documents": 2,
-        "processedDocuments": 2,
+        "documents": 34,
+        "processedDocuments": 4,
         "metrics": 0,
         "canonicalMetrics": 0,
         "externalAssessments": 0
@@ -11169,9 +12261,9 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-10-28T19:58:39.436332+00:00",
+      "checkedAt": "2026-10-29T07:08:56.867200+00:00",
       "entityType": "bank",
-      "sourcePolicy": "curated+disclosure-index",
+      "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
         {
           "id": "cfd2d6876e43dae46618",
@@ -11452,7 +12544,7 @@
     "VPI": {
       "symbol": "VPI",
       "name": "Công ty Cổ phần Phát triển Bất động sản Văn Phú",
-      "checkedAt": "2026-10-28T19:58:39.436341+00:00",
+      "checkedAt": "2026-10-29T07:08:56.867205+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11470,7 +12562,7 @@
     "VPL": {
       "symbol": "VPL",
       "name": "Công ty Cổ phần Vinpearl",
-      "checkedAt": "2026-10-28T19:58:39.436877+00:00",
+      "checkedAt": "2026-10-29T07:08:56.867487+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11667,7 +12759,7 @@
     "VPX": {
       "symbol": "VPX",
       "name": "Công ty Cổ phần Chứng khoán VPBank",
-      "checkedAt": "2026-10-28T19:58:39.436884+00:00",
+      "checkedAt": "2026-10-29T07:08:56.867491+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11685,7 +12777,7 @@
     "VRE": {
       "symbol": "VRE",
       "name": "Công ty Cổ phần Vincom Retail",
-      "checkedAt": "2026-10-28T19:58:39.437411+00:00",
+      "checkedAt": "2026-10-29T07:08:56.867750+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11789,7 +12881,7 @@
     "VSC": {
       "symbol": "VSC",
       "name": "Công ty Cổ phần Container Việt Nam",
-      "checkedAt": "2026-10-28T19:58:39.437419+00:00",
+      "checkedAt": "2026-10-29T07:08:56.867753+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11807,7 +12899,7 @@
     "VTP": {
       "symbol": "VTP",
       "name": "Tổng Công ty Cổ phần Bưu chính Viettel",
-      "checkedAt": "2026-10-28T19:58:39.437424+00:00",
+      "checkedAt": "2026-10-29T07:08:56.867756+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11867,18 +12959,14 @@
       "textLength": 4043
     },
     {
-      "id": "c3ae1e1e5c89eec1b45b",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
-      "title": "SUSBA-2023-Report-Final.pdf",
+      "id": "abbe2ce24605a50fc5f0",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "title": "Above-Board_Final.pdf",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2023,
-      "type": "climate_disclosure",
+      "year": 2024,
+      "type": "susba",
       "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-10-28T19:58:58.837569+00:00",
-      "textLength": 98218
+      "externalKind": "bank_assessment"
     },
     {
       "id": "c3ae1e1e5c89eec1b45b",
@@ -11895,18 +12983,14 @@
       "textLength": 98218
     },
     {
-      "id": "abbe2ce24605a50fc5f0",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
-      "title": "2023 Assessment of Banks' Seafood Sector Policies",
+      "id": "c3ae1e1e5c89eec1b45b",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
+      "title": "2023 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2023,
-      "type": "sustainability_report",
+      "type": "susba",
       "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
-      "processedAt": "2026-10-26T20:13:45.944760+00:00",
-      "textLength": 61879
+      "externalKind": "bank_assessment"
     },
     {
       "id": "abbe2ce24605a50fc5f0",
@@ -11924,17 +13008,13 @@
     },
     {
       "id": "c6d164862c0327932c55",
-      "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2017-compressed.pdf",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2017-compressed.pdf",
       "title": "report-2017-compressed.pdf",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2022,
-      "type": "climate_disclosure",
+      "type": "esg_other",
       "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "950ff0da90cee4ccece587f82b729d943e04db3b43756ad9576d1a1abf09eb1a",
-      "processedAt": "2026-10-28T19:59:16.349236+00:00",
-      "textLength": 239941
+      "externalKind": "bank_assessment"
     },
     {
       "id": "736d1a258096fff8e0cd",
@@ -11963,20 +13043,6 @@
       "contentHash": "26266fb705f0fe142702d4f5fb1d89284bb5be6a3648119074e673cc949bcd04",
       "processedAt": "2026-09-28T23:58:58.570532+00:00",
       "textLength": 34895
-    },
-    {
-      "id": "6a7e0d05d95a47e318e1",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2023/01/SUSBA-2021-FINAL.pdf",
-      "title": "SUSBA-2021-FINAL.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2021,
-      "type": "susba",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "d13a158220109f8ae074db8921c911842dd5c386b8bccba007d5c8483766c238",
-      "processedAt": "2026-10-28T19:59:06.598950+00:00",
-      "textLength": 69470
     },
     {
       "id": "75115a3050a133626083",
@@ -12021,6 +13087,16 @@
       "textLength": 69470
     },
     {
+      "id": "6a7e0d05d95a47e318e1",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2023/01/SUSBA-2021-FINAL.pdf",
+      "title": "2021 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2021,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
       "id": "952a7cf2c85642395465",
       "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2020.pdf",
       "title": "2020 Summary Report",
@@ -12036,6 +13112,16 @@
     },
     {
       "id": "1ba16d784121888b47f1",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2019-compressed.pdf",
+      "title": "2019 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2019,
+      "type": "esg_other",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "1ba16d784121888b47f1",
       "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2019-compressed.pdf",
       "title": "2019 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
@@ -12047,20 +13133,6 @@
       "contentHash": "1a9bc6752be7be9a2cf60d2053b68d956c2cd41c48a1ae981da2265732333305",
       "processedAt": "2026-10-26T20:14:10.143570+00:00",
       "textLength": 59978
-    },
-    {
-      "id": "5a3092bae6468b8e3d31",
-      "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
-      "title": "2018 Updated Report",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2017,
-      "type": "climate_disclosure",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "70eb5195f4e8faeea609ac94531b2547740cfee1be547c7280d046ba35706e11",
-      "processedAt": "2026-10-26T20:14:26.840420+00:00",
-      "textLength": 167687
     },
     {
       "id": "5a3092bae6468b8e3d31",
@@ -12737,7 +13809,7 @@
     {
       "id": "55e5ff5caff997330a73",
       "url": "https://www.wwf.sg/susba/assessments/",
-      "title": "Assessments",
+      "title": "Assessment page",
       "sourcePage": "https://www.wwf.sg/susba/about/",
       "year": null,
       "type": "susba",
@@ -12891,7 +13963,7 @@
     {
       "url": "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien-2024",
       "status": "ok",
-      "documents": 0,
+      "documents": 1,
       "symbol": "ACB"
     },
     {
@@ -12981,7 +14053,7 @@
     {
       "url": "https://24hmoney.vn/stock/ctd/report",
       "status": "ok",
-      "documents": 16,
+      "documents": 0,
       "symbol": "CTD"
     },
     {
@@ -13017,7 +14089,7 @@
     {
       "url": "https://24hmoney.vn/stock/ctr/report",
       "status": "ok",
-      "documents": 2,
+      "documents": 1,
       "symbol": "CTR"
     },
     {
@@ -13053,7 +14125,7 @@
     {
       "url": "https://24hmoney.vn/stock/dpm/report",
       "status": "ok",
-      "documents": 2,
+      "documents": 1,
       "symbol": "DPM"
     },
     {
@@ -13087,6 +14159,24 @@
       "symbol": "EVF"
     },
     {
+      "url": "https://fpt.com/-/media/project/fpt-corporation/fpt/ir/information-disclosures/year-report/2026/april/esg-report-2025.pdf",
+      "status": "error",
+      "error": "HTTP Error 404: Not Found",
+      "symbol": "FPT"
+    },
+    {
+      "url": "https://fpt.com/en/ir/report",
+      "status": "ok",
+      "documents": 3,
+      "symbol": "FPT"
+    },
+    {
+      "url": "https://bctn2025.fpt.com/",
+      "status": "ok",
+      "documents": 8,
+      "symbol": "FPT"
+    },
+    {
       "url": "https://24hmoney.vn/stock/fpt/report",
       "status": "ok",
       "documents": 0,
@@ -13103,6 +14193,12 @@
       "status": "ok",
       "documents": 0,
       "symbol": "FTS"
+    },
+    {
+      "url": "https://www.pvgas.com.vn/quan-he-co-%C4%91ong/bao-cao-phat-trien-ben-vung-nam-2025",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "GAS"
     },
     {
       "url": "https://24hmoney.vn/stock/gas/report",
@@ -13131,13 +14227,13 @@
     {
       "url": "https://24hmoney.vn/stock/gvr/report",
       "status": "ok",
-      "documents": 2,
+      "documents": 1,
       "symbol": "GVR"
     },
     {
       "url": "https://24hmoney.vn/stock/hag/report",
       "status": "ok",
-      "documents": 4,
+      "documents": 2,
       "symbol": "HAG"
     },
     {
@@ -13193,6 +14289,24 @@
       "status": "ok",
       "documents": 0,
       "symbol": "HHV"
+    },
+    {
+      "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/hpg-bao-cao-ptbv-2025.pdf",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "HPG"
+    },
+    {
+      "url": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-phat-trien-ben-vung",
+      "status": "ok",
+      "documents": 13,
+      "symbol": "HPG"
+    },
+    {
+      "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2026/04/bao-cao-thuong-nien-nam-2025-hpg.pdf",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "HPG"
     },
     {
       "url": "https://24hmoney.vn/stock/hpg/report",
@@ -13303,6 +14417,12 @@
       "symbol": "MSN"
     },
     {
+      "url": "https://cdnv2.tgdd.vn/mwgvn/investorrelations/files/news/2026/3/2353/99/4b/994bc4902d35965c5e4013897d4f78f4.pdf",
+      "status": "ok",
+      "documents": 1,
+      "symbol": "MWG"
+    },
+    {
       "url": "https://24hmoney.vn/stock/mwg/report",
       "status": "ok",
       "documents": 0,
@@ -13322,8 +14442,8 @@
     },
     {
       "url": "https://web.stockbiz.vn/News/2026/3/19/1865683/nab-bao-cao-thuong-nien-nam-2025.aspx",
-      "status": "error",
-      "error": "The read operation timed out",
+      "status": "ok",
+      "documents": 1,
       "symbol": "NAB"
     },
     {
@@ -13569,7 +14689,7 @@
     {
       "url": "https://techcombank.com/en/about-us/sustainability",
       "status": "ok",
-      "documents": 6,
+      "documents": 4,
       "symbol": "TCB"
     },
     {
@@ -13677,7 +14797,7 @@
     {
       "url": "https://24hmoney.vn/stock/vhc/report",
       "status": "ok",
-      "documents": 2,
+      "documents": 0,
       "symbol": "VHC"
     },
     {
@@ -13745,6 +14865,12 @@
       "status": "ok",
       "documents": 2,
       "symbol": "VND"
+    },
+    {
+      "url": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+      "status": "ok",
+      "documents": 32,
+      "symbol": "VNM"
     },
     {
       "url": "https://24hmoney.vn/stock/vnm/report",
@@ -13863,13 +14989,13 @@
   ],
   "run": {
     "mode": "recent",
-    "documentsProcessed": 7,
-    "backlogBeforeRun": 23,
-    "activeBacklogBeforeRun": 11,
-    "backlogRemaining": 4,
-    "eligibleBacklog": 20,
-    "recentBacklog": 11,
-    "historicalBacklog": 3,
+    "documentsProcessed": 23,
+    "backlogBeforeRun": 81,
+    "activeBacklogBeforeRun": 32,
+    "backlogRemaining": 9,
+    "eligibleBacklog": 71,
+    "recentBacklog": 32,
+    "historicalBacklog": 33,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 24,
     "documentWorkers": 4
