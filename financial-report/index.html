@@ -1255,6 +1255,295 @@ body.strategy-lab-view .strategy-page{display:block}
 @media(max-width:1000px){.risk-breadth-symbols{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:760px){.risk-breadth-symbols{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:480px){.risk-breadth-symbols{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style><style>/*
+ * FinQuery responsive system · 2026-10-29
+ * One shared layout layer for Market, Scanner, Strategy, Risk, Finance, Macro/ESG.
+ * Important: table overflow is LOCAL to its scroll container; never hide body overflow
+ * as a substitute for fixing layout. Core computations, quotes and permissions are untouched.
+ */
+:root{--fq-space-1:6px;--fq-space-2:10px;--fq-space-3:14px;--fq-space-4:18px;--fq-touch:42px;--fq-ui-border:#dce4ed;--fq-ui-ink:#263a53}
+html{scroll-padding-top:18px}
+body{max-width:100%;min-width:0}
+main{width:100%;max-width:1560px;min-width:0;padding:clamp(12px,2vw,30px)}
+main > *,main section,main article,main aside,.workspace,.preview,.configuration{min-width:0}
+main .chart-grid,main .market-grid,main .strategy-builder-grid,
+main .strategy-output-grid,main .risk-main-grid,main .macro-overview-grid{min-width:0}
+main img,main svg[viewBox]{max-width:100%}
+input,textarea,select{max-width:100%}
+.header{min-width:0;box-shadow:none}
+.header .brand{flex-shrink:0}
+.header nav a{line-height:1.35}
+.header nav a:focus-visible,.header nav a.active{border-radius:5px;text-underline-offset:4px}
+#finquery-nav-toggle{display:none}
+.intro{min-width:0;gap:12px}
+.intro>div:first-child{min-width:0}
+.intro h1{font-size:clamp(19px,2.2vw,27px);line-height:1.34;letter-spacing:-.35px}
+.site-access-form{max-width:100%}
+
+/* Section headings and panels: no decorative backgrounds competing with charts. */
+#market,.strategy-builder-section,.risk-monitor-page,.market-insights,.preview,
+.configuration,.macro-section{box-shadow:none}
+#market,.strategy-builder-section,.macro-section{border-radius:14px;background:#fff}
+.market-top,.market-toolbar,.market-controls,.price-head,.market-asset-head,
+.strategy-builder-head,.risk-page-head,.preview-heading,.preview-toolbar,
+.overview .section-heading{min-width:0}
+.market-top>*,.market-toolbar>*,.price-head>*,.market-asset-head>*,
+.strategy-builder-head>*,.risk-page-head>*,.preview-heading>*{min-width:0}
+.market-top h2,.strategy-builder-head h2,.risk-page-head h1{letter-spacing:-.3px}
+.market-section .market-subtitle,.market-asset-head p,.strategy-agent-subtitle{
+ color:#738298;line-height:1.5
+}
+.market-section .macro-viz-card,.strategy-builder-section .sai-panel,
+.risk-monitor-page .risk-panel{box-shadow:none}
+.market-section select,.market-section input[type=search],
+.strategy-builder-section input,.strategy-builder-section select,
+.configuration input:not([type=checkbox]):not([type=radio]),
+.overview select{min-width:0}
+
+/* Large tables remain horizontally scrollable with a visible stable first column.
+ * This does not force the document itself to scroll sideways. */
+.table-container,.market-table-wrap,.risk-stock-table-wrap,
+.ownership-table-wrap,.macro-table-wrap,.strategy-result-table-wrap{
+ width:100%;max-width:100%;min-width:0;overflow-x:auto;overscroll-behavior-x:contain;
+ -webkit-overflow-scrolling:touch;scrollbar-width:thin
+}
+.table-container table,.market-table-wrap table,.risk-stock-table-wrap table,
+.ownership-table-wrap table,.macro-table-wrap table{width:max-content;min-width:100%}
+.table-container{max-width:100%}
+#report-tabs{min-width:0;max-width:100%;overscroll-behavior-x:contain}
+#report-tabs button{min-height:40px;flex-shrink:0}
+.market-table-wrap:focus-visible,.risk-stock-table-wrap:focus-visible,
+.table-container:focus-visible{outline:2px solid #5e83b9;outline-offset:2px}
+
+/* Finance preview, period pickers, metric cards */
+.preview-heading,.preview-toolbar,.overview .section-heading{gap:10px}
+#kpi-grid,.chart-grid{min-width:0}
+.chart-grid>*,.chart-panel,#trend-chart,#capital-chart{min-width:0;max-width:100%}
+.preview-toolbar #unit-caption{flex-shrink:0}
+.preview .table-container th:first-child,.preview .table-container td:first-child{
+ max-width:clamp(150px,21vw,275px)
+}
+.configuration .config-section h2{line-height:1.4}
+.years,.quarter-row,.reports{min-width:0}
+.configuration .year-option span{overflow-wrap:normal}
+
+/* Market controls: commonly used filters visible; advanced tools behind one disclosure. */
+#chart-terminal{min-width:0;width:100%;max-width:100%}
+#chart-terminal .market-controls{align-items:center}
+#chart-terminal .market-controls>*{min-width:0}
+#chart-terminal .market-controls label{min-width:0}
+#chart-terminal .market-controls select{min-width:0;max-width:100%}
+#price-chart{max-width:100%;min-width:0}
+.chart-canvas-wrap{min-width:0;max-width:100%}
+.chart-advanced-controls{flex:0 1 auto;min-width:0}
+.chart-advanced-controls>summary{
+ list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+ min-height:40px;padding:8px 11px;border:1px solid #dce4ed;border-radius:8px;
+ color:#405a76;background:#fff;font-size:12px;font-weight:650;user-select:none
+}
+.chart-advanced-controls>summary::-webkit-details-marker{display:none}
+.chart-advanced-controls>summary::after{content:'⌄';margin-left:8px;font-size:14px}
+.chart-advanced-controls[open]>summary::after{content:'⌃'}
+.chart-advanced-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:8px 0 4px}
+.chart-advanced-actions button{min-height:40px}
+#chart-advanced-tools[open]{flex-basis:100%;order:99}
+.market-table-wrap,.risk-stock-table-wrap{position:relative}
+#chart-advanced-tools:not([open]) .chart-advanced-actions{display:none}
+
+/* Dashboard pages must not borrow chart-axis sizes for prominent metadata. */
+.market-asset-head h3,.macro-dashboard-head h3{line-height:1.3}
+.strategy-builder-section .sai-panel,.strategy-builder-section .strategy-workbench{min-width:0}
+.strategy-builder-section .strategy-canvas,.strategy-builder-section .strategy-preview,
+.strategy-builder-section .strategy-results,.strategy-builder-section .strategy-output-grid{
+ width:100%;max-width:100%;min-width:0
+}
+.risk-page-head .risk-page-tools,.risk-main-grid>.risk-panel,.risk-summary-grid>article{min-width:0}
+.risk-panel svg,.risk-summary-card svg{max-width:100%;height:auto}
+
+/* Mid-size desktop/tablet: retain usable navigation and avoid 7 links colliding. */
+@media(min-width:851px) and (max-width:1430px){
+ .header{height:auto;min-height:70px;display:flex;flex-wrap:wrap;gap:8px 20px;padding:10px clamp(16px,2.2vw,30px)}
+ .header nav{order:3;flex:1 1 100%;width:100%;min-width:0;gap:clamp(10px,2.1vw,25px);
+   padding:6px 0 3px;font-size:12px;justify-content:space-between}
+ .header nav a{white-space:nowrap}
+ .header-label{margin-left:auto}
+}
+
+/* Tablet: collapse side rail gracefully before widgets become too narrow. */
+@media(max-width:1050px){
+ main{padding:16px}
+ .workspace{grid-template-columns:minmax(0,1fr);gap:14px}
+ .configuration{position:static;top:auto}
+ .preview{min-width:0}
+ .configuration .config-section{padding:16px}
+ .configuration .years{grid-template-columns:repeat(6,minmax(0,1fr))}
+ .configuration .quarter-row{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .market-grid,.strategy-builder-grid,.risk-main-grid{grid-template-columns:minmax(0,1fr)}
+ .market-news{border-left:0;padding-left:0}
+ .market-asset-head{flex-wrap:wrap}
+ .risk-summary-grid{min-width:0}
+}
+
+/* Real mobile navigation: a single plain button in place of a clipped horizontal rail. */
+@media(max-width:850px){
+ .header{height:auto;min-height:60px;padding:9px 12px;display:flex;align-items:center;
+   flex-wrap:wrap;gap:8px 10px;position:relative}
+ .header .brand{flex:1 1 auto;min-width:0;gap:7px}
+ .header .brand-copy strong{font-size:17px}
+ .header .brand-copy small{display:none}
+ .header .finquery-logo,.header .finquery-logo svg{width:36px;height:36px;flex-basis:36px}
+ #finquery-nav-toggle{display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 auto;width:auto;min-width:88px;height:42px;margin-left:auto;padding:0 10px;
+  background:#fff;border:1px solid #d5dfe9;border-radius:9px;color:#294765;
+  font-size:12px;font-weight:700;box-shadow:none}
+ #finquery-nav-toggle .finquery-menu-bars{display:flex;flex-direction:column;gap:3px;margin-right:8px}
+ #finquery-nav-toggle .finquery-menu-bars i{display:block;width:15px;height:2px;background:currentColor;border-radius:2px}
+ .header nav[aria-label="Điều hướng nền tảng"]{
+  order:5;flex:1 1 100%;width:100%;max-width:100%;display:none;
+  grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:9px 0 4px;
+  margin:0;border-top:1px solid #edf0f4;white-space:normal;overflow:visible
+ }
+ .header.finquery-nav-open nav[aria-label="Điều hướng nền tảng"]{display:grid}
+ .header nav[aria-label="Điều hướng nền tảng"] a{
+  min-width:0;min-height:44px;padding:10px 9px;border-radius:8px;
+  display:flex;align-items:center;font-size:12px;line-height:1.3;
+  white-space:normal;color:#40556c;background:#f7f9fb
+ }
+ .header nav[aria-label="Điều hướng nền tảng"] a.active{background:#eef3f9;color:#174d80;font-weight:750}
+ .header-label{display:none!important}
+ .site-locked #finquery-nav-toggle{display:none!important}
+ .site-locked .header nav{display:none!important}
+ .intro{align-items:flex-start;gap:8px;margin-bottom:14px}
+ .intro h1{font-size:20px;line-height:1.3}
+ .intro .finquery-google-account{min-width:0;max-width:100%}
+ .intro .finquery-login-toolbar{max-width:100%;min-width:0}
+ .intro .finquery-account-email{overflow-wrap:anywhere}
+ .site-access-form{margin-left:0;max-width:100%}
+ .site-access-row{min-width:0;max-width:100%}
+ .site-access-row input{width:140px;min-width:0}
+ .configuration,.preview,#market,.strategy-builder-section,.macro-section{border-radius:12px}
+ .configuration .config-section{padding:13px}
+ .configuration .years{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .configuration .quarter-row{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .configuration .year-option span{min-height:39px;padding:10px 3px}
+ .configuration .year-actions{gap:8px}
+ .configuration .year-actions button{min-height:36px;padding:4px 5px}
+ .preview-heading{flex-wrap:wrap;padding:13px;gap:8px}
+ .preview-actions{flex-wrap:wrap;gap:6px}
+ .preview-toolbar{display:flex;flex-wrap:wrap;align-items:center;padding:0 10px}
+ .preview-toolbar #report-tabs{flex:1 1 100%;order:1;min-height:42px}
+ .preview-toolbar #unit-caption{order:0;text-align:left;min-height:0;margin:6px 0 0}
+ .table-container{height:min(520px,62dvh)}
+ .table-container th,.table-container td{padding:9px 10px}
+ .table-container th:first-child,.table-container td:first-child{
+   min-width:150px;max-width:190px;padding-left:10px
+ }
+ .chart-grid{grid-template-columns:minmax(0,1fr)}
+ .chart-panel{padding:12px;min-width:0}
+ .chart-heading{flex-wrap:wrap;align-items:start;gap:7px}
+ .chart-heading select{min-height:40px}
+ .overview{min-width:0}
+ .overview .section-heading{flex-wrap:wrap;align-items:flex-start}
+ .overview .overview-heading-tools{justify-content:flex-start}
+ .overview .kpi-card{min-width:0}
+ .market-section{padding:14px 12px}
+ .market-top h2,.market-asset-head h3{font-size:18px}
+ .price-head{align-items:start;gap:8px}
+ .price-head #quote-price{font-size:24px;line-height:1.25}
+ .price-head #quote-change{font-size:13px;margin-left:6px}
+ .market-grid{gap:12px;margin-top:10px}
+ #price-chart{height:clamp(245px,70vw,390px)!important;min-height:245px}
+ #chart-terminal .market-controls{
+   display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:11px 0 9px
+ }
+ #chart-terminal .market-controls label{display:flex;flex-direction:column;align-items:stretch;
+   justify-content:flex-end;gap:4px;font-size:11px;line-height:1.3}
+ #chart-terminal .market-controls label select{width:100%;min-height:42px;padding:7px 6px;
+   font-size:12px;text-overflow:ellipsis}
+ #chart-terminal .market-controls button{min-height:42px;padding:7px 8px;
+   font-size:11px;line-height:1.25;white-space:normal}
+ #chart-terminal .market-controls #chart-focus-latest{background:#edf3fa;color:#265583;border-color:#ccdce9;font-weight:700}
+ #chart-terminal .market-controls .chart-advanced-controls{width:100%}
+ .chart-advanced-controls>summary{min-height:42px;padding:7px 8px;font-size:11px;line-height:1.2}
+ .chart-advanced-actions{justify-content:flex-start}
+ #market-primary-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+   white-space:normal;overflow:visible;gap:6px;padding:0;margin:10px 0}
+ #market-primary-tabs button{min-width:0;min-height:42px;padding:9px 7px;border-radius:8px;
+   white-space:normal;font-size:11px;line-height:1.25;box-shadow:none}
+ .market-toolbar{gap:8px}
+ .market-toolbar input{max-width:100%;min-height:40px}
+ .market-table-wrap{max-width:100%}
+ .market-news{padding:12px 0 0}
+ .strategy-builder-section{padding:13px!important;margin:12px 0!important}
+ .strategy-builder-head h2{font-size:21px}
+ .strategy-builder-head,.strategy-head-actions{gap:8px;align-items:center}
+ .strategy-builder-grid,.strategy-output-grid,.strategy-config-bar{
+   grid-template-columns:minmax(0,1fr)!important;gap:10px
+ }
+ .strategy-builder-section .strategy-library-panel{max-height:none;padding:11px}
+ .strategy-builder-section .strategy-panel-title,.sai-section-title{min-width:0}
+ .strategy-builder-section .strategy-panel-title strong,.sai-section-title h3{font-size:15px}
+ .strategy-builder-section .strategy-canvas{padding:9px;min-height:150px}
+ .strategy-builder-section .strategy-drop-empty{height:130px}
+ .strategy-builder-section .strategy-indicator-chip{min-height:42px}
+ .strategy-builder-section button:not(.term-info-button){min-height:38px}
+ .strategy-builder-section .sai-overview-grid,.strategy-builder-section .sai-main-grid{
+   grid-template-columns:minmax(0,1fr)!important
+ }
+ .strategy-agent-shell::before{display:none}
+ .risk-monitor-page{border-radius:12px;border:1px solid #e5eaf1}
+ .risk-page-head{padding:13px!important;gap:10px}
+ .risk-page-head h1{font-size:21px;line-height:1.3}
+ .risk-page-tools{min-width:0;width:100%;justify-items:start;gap:6px}
+ .risk-body{padding:12px!important}
+ .risk-main-grid,.risk-summary-grid{grid-template-columns:minmax(0,1fr)!important;gap:10px}
+ .risk-panel{padding:12px!important;border-radius:10px}
+ .risk-summary-card{min-width:0;padding:13px}
+ .risk-section-head{gap:8px}
+ .risk-stock-table-wrap{max-width:100%}
+ .market-asset-workspace,#market-ownership-content{min-width:0}
+ .ownership-section-title,.risk-section-head{flex-wrap:wrap}
+ .news-item a{overflow-wrap:anywhere}
+ .macro-section .finquery-workspace-tabs{max-width:100%}
+ .bottom-line{padding:0 0 18px;gap:9px}
+ .bottom-line .finquery-visit-count{margin-left:0}
+ .ai-fab#ai-fab{width:44px!important;height:44px!important;padding:2px!important;right:9px!important;bottom:9px!important;box-shadow:0 2px 12px rgba(20,47,81,.12)!important}
+ .ai-fab#ai-fab::before,.ai-fab#ai-fab::after{display:none!important}
+ .ai-fab#ai-fab .ai-fab-orb,.ai-fab#ai-fab .dolphin-logo{width:38px!important;height:38px!important;box-shadow:none!important}
+ .research-ai.ai-drawer{right:8px!important;bottom:8px!important;
+  width:calc(100vw - 16px)!important;max-height:calc(100dvh - 16px)!important;
+  border-radius:14px!important}
+ .research-ai.ai-drawer .research-ai-head{min-width:0}
+ .research-ai.ai-drawer .research-ai-head h3{font-size:16px!important}
+ .research-ai.ai-drawer .research-ai-form{grid-template-columns:minmax(0,1fr) auto!important}
+ .research-ai.ai-drawer .research-ai-form textarea{min-width:0}
+}
+@media(max-width:390px){
+ main{padding:9px}
+ .header{padding:8px 9px}
+ .intro h1{font-size:18px}
+ #market,.strategy-builder-section,.macro-section{padding:11px!important}
+ #chart-terminal .market-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #chart-terminal .market-controls #chart-focus-latest{grid-column:span 2}
+ #price-chart{height:260px!important;min-height:240px}
+ .configuration .config-section{padding:11px}
+ .preview-heading{padding:11px}
+ .market-section .market-toolbar{align-items:flex-start}
+ .risk-page-head h1{font-size:19px}
+}
+@media(max-width:340px){
+ .header .finquery-brand{gap:5px}
+ .header .finquery-logo,.header .finquery-logo svg{width:32px;height:32px;flex-basis:32px}
+ #finquery-nav-toggle{min-width:82px;padding:0 7px}
+ #market-primary-tabs button{font-size:10px}
+}
+@media(max-height:540px) and (max-width:850px){
+ .ai-fab#ai-fab:not([hidden]){display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ .finquery-nav-open nav,.chart-advanced-controls *{animation:none!important;transition:none!important}
+}
 </style>
 
 <style id="finquery-google-signin-style">
@@ -1280,7 +1569,7 @@ body.strategy-lab-view .strategy-page{display:block}
 </style>
 </head>
 <body class="site-locked">
-<header class="header"><a class="brand finquery-brand" href="index.html" aria-label="FinQuery Phân tích tài chính"><span class="finquery-logo" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><defs><linearGradient id="fq-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#4ea8ff"/><stop offset=".55" stop-color="#376de8"/><stop offset="1" stop-color="#7548d8"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="18" fill="url(#fq-gradient)"/><path d="M18 19h25v7H27v7h13v7H27v10h-9V19Z" fill="white"/><path d="M43 37c4.9 0 8.8 3.9 8.8 8.8 0 1.6-.4 3.1-1.1 4.4l4.1 4.1-4.9 4.9-4-4c-.9.3-1.9.5-2.9.5-4.9 0-8.8-3.9-8.8-8.8S38.1 37 43 37Zm0 6.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" fill="#dff5ff"/></svg></span><span class="brand-copy"><strong>FinQuery</strong><small>Phân tích tài chính</small></span></a><nav aria-label="Điều hướng nền tảng"><a href="#market" data-platform-view="analysis">Giám sát thị trường</a><a href="#risk-monitor" data-platform-view="risk">Giám sát rủi ro <span id="risk-nav-badge" class="risk-nav-badge" hidden aria-label="Số cảnh báo cần chú ý"></span></a><a href="#strategy-builder" data-platform-view="strategy" class="strategy-agent-nav"><span class="strategy-agent-dot" aria-hidden="true"></span>Trợ lý chiến lược</a><a href="#research-ai">Phân tích</a><a href="#macro">Vĩ mô &amp; ESG</a><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">HOSE <span>Nhóm chính · Thanh khoản · Mở rộng</span></div></header>
+<header class="header"><a class="brand finquery-brand" href="index.html" aria-label="FinQuery Phân tích tài chính"><span class="finquery-logo" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><defs><linearGradient id="fq-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#4ea8ff"/><stop offset=".55" stop-color="#376de8"/><stop offset="1" stop-color="#7548d8"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="18" fill="url(#fq-gradient)"/><path d="M18 19h25v7H27v7h13v7H27v10h-9V19Z" fill="white"/><path d="M43 37c4.9 0 8.8 3.9 8.8 8.8 0 1.6-.4 3.1-1.1 4.4l4.1 4.1-4.9 4.9-4-4c-.9.3-1.9.5-2.9.5-4.9 0-8.8-3.9-8.8-8.8S38.1 37 43 37Zm0 6.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" fill="#dff5ff"/></svg></span><span class="brand-copy"><strong>FinQuery</strong><small>Phân tích tài chính</small></span></a><button id="finquery-nav-toggle" type="button" aria-expanded="false" aria-controls="finquery-primary-navigation" aria-label="Mở danh mục FinQuery"><span class="finquery-menu-bars" aria-hidden="true"><i></i><i></i><i></i></span>Danh mục</button><nav id="finquery-primary-navigation" aria-label="Điều hướng nền tảng"><a href="#market" data-platform-view="analysis">Giám sát thị trường</a><a href="#risk-monitor" data-platform-view="risk">Giám sát rủi ro <span id="risk-nav-badge" class="risk-nav-badge" hidden aria-label="Số cảnh báo cần chú ý"></span></a><a href="#strategy-builder" data-platform-view="strategy" class="strategy-agent-nav"><span class="strategy-agent-dot" aria-hidden="true"></span>Trợ lý chiến lược</a><a href="#research-ai">Phân tích</a><a href="#macro">Vĩ mô &amp; ESG</a><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">HOSE <span>Nhóm chính · Thanh khoản · Mở rộng</span></div></header>
 <main>
 <div class="intro"><div><h1>Giám sát thị trường chứng khoán Việt Nam</h1></div><div class="finquery-google-account" id="finquery-google-account" hidden>
   <div class="finquery-google-signin" id="finquery-google-signin"></div>
@@ -1422,7 +1711,7 @@ body.strategy-lab-view .strategy-page{display:block}
 <button type="button" data-market-view="scanner" role="tab" aria-selected="false">Lọc tín hiệu kỹ thuật 🔒</button>
 </div>
 <section id="chart-terminal" aria-label="Biểu đồ chứng khoán chuyên nghiệp">
-<div class="market-controls"><button id="indicator-open" class="indicator-open" type="button"><span>ƒx</span> Các chỉ báo</button><label>Khung nến <select id="chart-interval"><option value="1m">1 phút</option><option value="5m">5 phút</option><option value="15m">15 phút</option><option value="30m">30 phút</option><option value="1h">1 giờ</option><option value="1d" selected>Ngày</option><option value="1w">Tuần</option><option value="1mo">Tháng</option></select></label><label>Kiểu <select id="chart-type"><option value="candles">Nến</option><option value="line">Đường</option><option value="area">Vùng</option></select></label><label>Khoảng xem <select id="chart-period"><option value="1">1 tháng</option><option value="3">3 tháng</option><option value="6">6 tháng</option><option value="12">1 năm</option><option value="60">5 năm</option><option value="recent" selected>Gần nhất · dễ theo dõi</option><option value="0">Tất cả</option></select></label><button id="chart-zoom-in" type="button" aria-label="Phóng to biểu đồ">+</button><button id="chart-zoom-out" type="button" aria-label="Thu nhỏ biểu đồ">−</button><button id="chart-fit" type="button">Vừa khung</button><button id="chart-focus-latest" type="button" aria-label="Về nến gần nhất và phóng vừa vùng theo dõi">Về nến mới nhất</button><button id="chart-marker-toggle" type="button" aria-pressed="false" title="Hiện hoặc ẩn mốc sự kiện và báo cáo trên biểu đồ">Mốc: tắt</button><button id="chart-fullscreen" type="button">Toàn màn hình</button></div>
+<div class="market-controls"><button id="indicator-open" class="indicator-open" type="button"><span>ƒx</span> Các chỉ báo</button><label>Khung nến <select id="chart-interval"><option value="1m">1 phút</option><option value="5m">5 phút</option><option value="15m">15 phút</option><option value="30m">30 phút</option><option value="1h">1 giờ</option><option value="1d" selected>Ngày</option><option value="1w">Tuần</option><option value="1mo">Tháng</option></select></label><label>Kiểu <select id="chart-type"><option value="candles">Nến</option><option value="line">Đường</option><option value="area">Vùng</option></select></label><label>Khoảng xem <select id="chart-period"><option value="1">1 tháng</option><option value="3">3 tháng</option><option value="6">6 tháng</option><option value="12">1 năm</option><option value="60">5 năm</option><option value="recent" selected>Gần nhất · dễ theo dõi</option><option value="0">Tất cả</option></select></label><button id="chart-focus-latest" type="button" aria-label="Về nến gần nhất và phóng vừa vùng theo dõi">Nến gần nhất</button><details id="chart-advanced-tools" class="chart-advanced-controls"><summary>Công cụ khác</summary><div class="chart-advanced-actions"><button id="chart-zoom-in" type="button" aria-label="Phóng to biểu đồ">+</button><button id="chart-zoom-out" type="button" aria-label="Thu nhỏ biểu đồ">−</button><button id="chart-fit" type="button">Vừa khung</button><button id="chart-marker-toggle" type="button" aria-pressed="false" title="Hiện hoặc ẩn mốc sự kiện và báo cáo trên biểu đồ">Mốc: tắt</button><button id="chart-fullscreen" type="button">Toàn màn hình</button></div></details></div>
 <div class="signal-center"><div class="signal-center-head"><div><span>TÍN HIỆU KỸ THUẬT</span><div class="signal-title-row"><strong id="signal-title">Theo dõi tín hiệu kỹ thuật</strong><button class="term-info-button" type="button" data-info-key="technical-signals" aria-label="Giải thích cách đọc tín hiệu kỹ thuật">i</button></div></div><div class="signal-center-meta"><small id="signal-status"></small></div></div><div id="signal-feed" class="signal-feed"><p>Chưa có tín hiệu mới.</p></div></div>
 <div id="signal-toast-stack" class="signal-toast-stack" aria-live="polite"></div>
 <dialog id="chart-indicators" class="indicator-dialog">
@@ -6982,6 +7271,44 @@ init();
     if (status) status.textContent = 'Không thể tải Google Identity Services.';
   };
   document.head.appendChild(script);
+})();
+</script><script>(function(){
+ 'use strict';
+ // Progressive enhancement for the existing platform navigation.
+ // The links retain their original href/data-platform-view handlers.
+ const header=document.querySelector('.header');
+ const nav=header?.querySelector('nav[aria-label="Điều hướng nền tảng"]');
+ const toggle=document.getElementById('finquery-nav-toggle');
+ if(!header||!nav||!toggle)return;
+ const media=window.matchMedia('(max-width:850px)');
+ const close=(focus=false)=>{
+  header.classList.remove('finquery-nav-open');
+  toggle.setAttribute('aria-expanded','false');
+  toggle.setAttribute('aria-label','Mở danh mục FinQuery');
+  if(focus&&media.matches)toggle.focus({preventScroll:true});
+ };
+ const open=()=>{
+  if(!media.matches)return;
+  header.classList.add('finquery-nav-open');
+  toggle.setAttribute('aria-expanded','true');
+  toggle.setAttribute('aria-label','Đóng danh mục FinQuery');
+ };
+ toggle.addEventListener('click',()=>{
+  if(header.classList.contains('finquery-nav-open'))close();
+  else open();
+ });
+ nav.addEventListener('click',event=>{
+  if(event.target.closest('a'))close();
+ });
+ document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&header.classList.contains('finquery-nav-open'))close(true);
+ });
+ document.addEventListener('pointerdown',event=>{
+  if(media.matches&&header.classList.contains('finquery-nav-open')&&!header.contains(event.target))close();
+ });
+ if(media.addEventListener)media.addEventListener('change',()=>close());
+ else if(media.addListener)media.addListener(()=>close());
+ close();
 })();
 </script></body></html>
 
