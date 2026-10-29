@@ -19,9 +19,9 @@ function render(x){
  state.last=x;const grid=$('data-health-grid'),meta=$('data-health-meta');if(!grid)return;
  const cards=[];
  cards.push(card('Giá HOSE',x.quoteCoverage+'/'+x.quoteExpected,x.sessionActive?('P50 '+fmt(x.quoteMedianAge)+'p · P95 '+fmt(x.quoteP95Age)+'p'):(x.marketPhase==='LUNCH'?'Giữ giá chốt phiên sáng':'Giữ giá chốt phiên gần nhất'),x.quoteTone));
- cards.push(card('Mã đang xem',x.sessionActive?(x.selectedAge===null?'—':fmt(x.selectedAge)+' phút'):(x.marketPhase==='LUNCH'?'Chốt sáng':'Giá chốt'),x.selectedFallback?'Đã dùng nguồn trực tiếp':x.quoteFallbackError?'Nguồn trực tiếp lỗi · đang tự thử lại':x.sessionActive?(x.selectedFresh?'Đúng nhịp nguồn':'Đang đồng bộ'):'Snapshot chốt phiên',x.selectedTone));
+ cards.push(card('Mã đang xem',x.sessionActive?(x.selectedAge===null?'—':fmt(x.selectedAge)+' phút'):(x.marketPhase==='LUNCH'?'Chốt sáng':'Giá chốt'),x.selectedFallback?'Đã cập nhật giá':x.quoteFallbackError?'Cập nhật giá lỗi · đang tự thử lại':x.sessionActive?(x.selectedFresh?'Đúng nhịp nguồn':'Đang đồng bộ'):'Snapshot chốt phiên',x.selectedTone));
  cards.push(card('Technical Scanner',x.scannerCoverage?x.scannerCoverage+'/'+x.scannerUniverse:'—',x.scannerAligned?'Đồng bộ sourceTime với giá':'Chưa đồng bộ snapshot',x.scannerTone));
- cards.push(card('Tin tức',Number.isFinite(x.newsAge)?fmt(x.newsAge)+' phút':'—',x.newsSources+' nguồn phản hồi',x.newsTone));
+ cards.push(card('Tin tức',Number.isFinite(x.newsAge)?fmt(x.newsAge)+' phút':'—','Đang theo dõi tin tức',x.newsTone));
  cards.push(card('Evidence scanner',x.evidenceSignals?x.evidenceSignals+' rule':'—',x.evidenceReady?'Backtest lịch sử đã sẵn sàng':'Đang chờ evidence',x.evidenceTone));
  cards.push(card('Forecast live OOS',x.forecastOrigins?fmt(x.forecastOrigins,0)+' origins':'—',x.forecastHit!==null?'T+3 hit '+fmt(x.forecastHit*100,1)+'% · '+x.forecastEvidence:'Đang tích lũy prequential record',x.forecastTone));
  cards.push(card('Risk live track',fmt(x.liveMatured,0)+' matured',fmt(x.livePending,0)+' pending · '+x.liveStatus,x.liveTone));

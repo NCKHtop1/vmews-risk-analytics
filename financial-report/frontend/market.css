@@ -1049,3 +1049,27 @@ body.strategy-lab-view .strategy-page{display:block}
 @media(prefers-reduced-motion:reduce){
  .chart-canvas-wrap>.chart-latest-candle{animation:none!important;opacity:.95}
 }
+
+
+/* Product-wide source-free presentation.
+   Keep data lineage for QA internally; only suppress provider UI chrome.
+   Do NOT remove the small CSV curve download buttons. */
+.owner-source,
+.insight-source-link,
+.ai-source-tag,
+.ai-provenance,
+.ai-anchor,
+.macro-esg-metric-sources,
+.macro-esg-docs,
+#macro .macro-source-quicklink,
+#macro .macro-viz-source:not(.money-download-row),
+#macro #macro-source-status,
+#macro #money-source-stamp{
+ display:none!important;
+}
+#macro .macro-viz-source.money-download-row{
+ display:flex!important;justify-content:flex-end!important;
+ border:0!important;padding-top:0!important;min-height:0!important;
+}
+#macro .macro-viz-source:empty{display:none!important}
+.owner-asof{display:block;margin:6px 0 12px;font-size:11px;color:#74849a}

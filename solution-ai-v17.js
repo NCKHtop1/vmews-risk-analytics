@@ -1252,31 +1252,7 @@
     label.textContent = role === "user" ? "BẠN" : "SoluTION.AI";
     item.append(label);
     renderMessageBody(item, body);
-    if (role !== "user" && meta.length) {
-      const trace = document.createElement("div");
-      trace.className = "aiResearchTrace";
-      for (const entry of meta.slice(0, 5)) {
-        const chip = document.createElement("span");
-        chip.textContent = entry;
-        trace.append(chip);
-      }
-      item.append(trace);
-    }
-    if (role !== "user" && sources.length) {
-      const references = document.createElement("div");
-      references.className = "aiSources";
-      for (const source of sources.slice(0, 6)) {
-        const safe = safeSource(source.url, source.title);
-        if (!safe) continue;
-        const link = document.createElement("a");
-        link.href = safe.url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        link.textContent = safe.title;
-        references.append(link);
-      }
-      if (references.children.length) item.append(references);
-    }
+    // Research trace and source URLs stay in the data layer; no source panels in UI.
     $("#solutionAiMessages").append(item);
     item.scrollIntoView({ block: "nearest", behavior: "smooth" });
     return item;
@@ -1483,13 +1459,13 @@
 
     const drivers = primaryDrivers(anchorForecast);
     if (drivers.length && !/chỉ.*quỹ/.test(question)) lines.push("### Yếu tố mô hình", `Các đóng góp lớn nhất tại ${anchorLabel || "kỳ ưu tiên"}: ${drivers.join("; ")}.`);
-    if (context.news.length && /tin|đầy đủ|phân tích|kết hợp|tổng hợp|forecast/.test(question)) lines.push("### Tin trong dữ liệu hiện có", ...context.news.slice(0, 4).map(item => `- ${item.title} — ${item.publisher || "chưa rõ nguồn"}${item.date ? `, ${item.date}` : ""}.`));
+    if (context.news.length && /tin|đầy đủ|phân tích|kết hợp|tổng hợp|forecast/.test(question)) lines.push("### Tin trong dữ liệu hiện có", ...context.news.slice(0, 4).map(item => `- ${item.title} — ${item.date || ""}.`));
 
     if ((context.communitySignals.length || context.communityMonitoring.length) && /tin đồn|cộng đồng|lan truyền|xác minh|đầy đủ|phân tích|kết hợp|forecast/.test(question)) {
       lines.push("### Tín hiệu cộng đồng");
-      for (const item of context.communitySignals.slice(0, 4)) lines.push(`- ${item.title} — ${item.independentSources || 0} nguồn độc lập, chất lượng ${item.quality || 0}/100, trạng thái ${item.truthState || item.state || "đang xác minh"}.`);
+      for (const item of context.communitySignals.slice(0, 4)) lines.push(`- ${item.title} — chất lượng ${item.quality || 0}/100, trạng thái ${item.truthState || item.state || "đang xác minh"}.`);
       if (!context.communitySignals.length && context.communityMonitoring.length) lines.push(`Có ${context.communityMonitoring.length} tín hiệu đang theo dõi; các tín hiệu này không điều chỉnh giá dự báo trung tâm.`);
-      lines.push("Nguồn cộng đồng chỉ được dùng làm tín hiệu cần kiểm tra và kịch bản tham khảo; không được coi là công bố chính thức.");
+      lines.push("Thông tin cộng đồng chỉ dùng làm tín hiệu cần kiểm tra, không coi là dữ kiện chính thức.");
     }
 
     if (validationQuestion) {
@@ -1533,15 +1509,6 @@
     const lines = [];
     if (intent.useSnapshot) lines.push(localAnalysis(question, context));
     else lines.push("### Trạng thái nghiên cứu", "Tôi chưa thể đọc sâu và tổng hợp nguồn web bằng Gemini ở lượt này nên không đưa ra kết luận vĩ mô như thể đã xác minh đầy đủ.");
-    if (sources.length) {
-      lines.push(
-        "### Nguồn công khai đã thu thập để đối chiếu",
-        ...sources.slice(0, 6).map(item => `- ${item.title}${item.publisher ? ` — ${item.publisher}` : ""}${item.publishedAt ? `, ${item.publishedAt}` : ""}.`),
-        intent.useSnapshot
-          ? "Các nguồn trên chưa tự động thay đổi dự báo trung tâm; cần đọc nội dung và xác minh trước khi dùng để ủng hộ hoặc phản biện luận điểm mô hình."
-          : "Danh sách trên là đầu mối nghiên cứu, chưa phải kết luận đã xác minh.",
-      );
-    }
     if (reason) lines.push("### Giới hạn phiên", reason);
     return lines.filter(Boolean).join("\n");
   }
@@ -1554,7 +1521,7 @@
     $("#solutionAiSend").disabled = true;
     message("user", question);
     setStatus("Đang tìm hiểu câu hỏi…");
-    const waiting = message("assistant", "Đang tìm hiểu câu hỏi và lựa chọn nguồn thông tin phù hợp…", "aiThinking");
+    const waiting = message("assistant", "Đang tìm hiểu câu hỏi và dữ liệu liên quan…", "aiThinking");
     try {
       await fetchSolutionLive(false).catch(() => null);
       const context = await buildContextResilient();
@@ -1565,7 +1532,7 @@
       let sources = [];
       let meta = [];
       if (secret) {
-        if (intent.shouldSearch) setStatus("Đang tìm nguồn công khai…");
+        if (intent.shouldSearch) setStatus("Đang tổng hợp thông tin mới…");
         try {
           const result = await resilientDirectAnalysis(question, context, secret, intent);
           answer = enforceAnswerFocus(result.text, question, context, intent);
@@ -1578,7 +1545,7 @@
           if (result.modelFallbacks) meta.push("Đã tự nối lại");
           if (result.searchLimited) meta.push("Google Search giới hạn");
           setStatus(result.searched || result.readUrls || result.openSourceCount
-            ? "Gemini · nghiên cứu web và nguồn mở"
+            ? "Gemini · nghiên cứu mở rộng"
             : "Gemini · phân tích theo câu hỏi");
           if (result.searchLimited) {
             const connection = $("#solutionAiConnectionState");
@@ -1601,7 +1568,7 @@
           sources = fallbackSources;
           meta = [intent.useSnapshot ? `Forecast ${context.symbol}` : "Nguồn công khai", "Gemini gián đoạn"];
           if (fallbackSources.length) meta.push(`${fallbackSources.length} nguồn chờ đối chiếu`);
-          setStatus(intent.useSnapshot ? "Phân tích từ dữ liệu forecast · Gemini tạm không khả dụng" : "Nguồn mở · Gemini tạm không khả dụng");
+          setStatus(intent.useSnapshot ? "Phân tích từ dữ liệu forecast · Gemini tạm không khả dụng" : "Thông tin mới · Gemini tạm không khả dụng");
         }
       } else {
         const openSources = intent.shouldSearch
@@ -1616,7 +1583,7 @@
         meta = intent.useSnapshot ? [`Forecast ${context.symbol}`, "Dữ liệu VMEWS"] : ["Nguồn công khai"];
         if (openSources.length) meta.push(`${openSources.length} nguồn chờ đối chiếu`);
         if (!openSources.length) meta.push("Không dùng web");
-        setStatus(intent.useSnapshot ? "Phân tích từ dữ liệu forecast" : "Kết nối Gemini để đọc sâu nguồn mở");
+        setStatus(intent.useSnapshot ? "Phân tích từ dữ liệu forecast" : "Kết nối Gemini để nghiên cứu sâu");
       }
       waiting.remove();
       message("assistant", answer, "", sources, meta);

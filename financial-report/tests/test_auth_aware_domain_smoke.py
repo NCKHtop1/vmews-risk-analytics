@@ -30,7 +30,7 @@ class AuthAwareDomainSmokeTests(unittest.TestCase):
     def test_hnx_index_equities_not_on_new_hub(self):
         doc = pathlib.Path(__file__).resolve().parents[1] / "data-hub.html"
         s = doc.read_text(encoding="utf-8")
-        self.assertIn("HNX chỉ là nguồn công bố chính thức của dữ liệu phái sinh", s)
+        self.assertIn("Dữ liệu phái sinh được tổng hợp riêng", s)
         self.assertIn("VN30", s)
         self.assertIn("VN100", s)
 

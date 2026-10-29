@@ -464,7 +464,7 @@
   function newsMarkup(row) {
     const recent = (row.snapshot.evidence?.decisionRecent || row.snapshot.evidence?.recent || []).filter(item => issuerNewsMatches(row, item) && (item.decisionTimeEligible || belongsToLastFiveSessions(row, item))).slice(0, 2);
     if (!recent.length) return '<p class="detailEmpty">Chưa có tin mới đáng chú ý.</p>';
-    return recent.map(item => `<article class="detailNewsItem"><span>${escapeHTML(item.publisher || item.source || "Nguồn đã đối chiếu")} · ${escapeHTML(shortDate(item.availableDate || item.publishedAt || item.date))}</span><strong>${escapeHTML(item.title || "Sự kiện chưa có tiêu đề")}</strong></article>`).join("");
+    return recent.map(item => `<article class="detailNewsItem"><span>${escapeHTML(shortDate(item.availableDate || item.publishedAt || item.date))}</span><strong>${escapeHTML(item.title || "Sự kiện chưa có tiêu đề")}</strong></article>`).join("");
   }
 
   function corridorMarkup(row) {
@@ -669,7 +669,7 @@
       if(snapshotBadge)snapshotBadge.textContent="TẠM GIÁN ĐOẠN";
       if(summary)summary.textContent="Không thể tải Forecast Core đã kiểm định. Có thể thử tải lại; chưa có dự báo mới để xếp hạng.";
       if(pulse)pulse.textContent="Dữ liệu Forecast Core tạm thời không sẵn sàng.";
-      if(detail)detail.textContent="Chưa thể hiển thị phân tích do nguồn dữ liệu không sẵn sàng.";
+      if(detail)detail.textContent="Chưa thể hiển thị phân tích do dữ liệu chưa sẵn sàng.";
       $("#signalDeck").innerHTML = `<div class="deckEmpty">${escapeHTML(error?.message || error)} <button type="button" id="forecastLeaderRetry">Thử tải lại</button></div>`;
       const retry = $("#forecastLeaderRetry");
       if (retry) retry.onclick = () => location.reload();

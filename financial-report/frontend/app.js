@@ -50,7 +50,7 @@ $('term-info-close')?.addEventListener('click',closeTermInfo);
 document.addEventListener('click',e=>{const button=e.target.closest?.('[data-info-key]');if(button){e.preventDefault();e.stopPropagation();const pop=$('term-info-popover');if(!pop.hidden&&button.getAttribute('aria-expanded')==='true')closeTermInfo();else openTermInfo(button);return;}const pop=$('term-info-popover');if(pop&&!pop.hidden&&!pop.contains(e.target))closeTermInfo();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeTermInfo();});
 const state={bundle:null,data:null,companies:[],years:[],reports:[],active:'balance_sheet',chartMetric:'profit',overviewPeriod:null,overviewCompare:null,loading:false,controller:null,mode:new URLSearchParams(location.search).get('mode')==='year'?'year':'quarter',fallback:false};
-const names={balance_sheet:'Cân đối kế toán',income_statement:'Kết quả kinh doanh',cash_flow:'Lưu chuyển tiền tệ',ratios:'Chỉ số từ nguồn',derived_ratios:'Chỉ số tính từ BCTC',notes:'Thuyết minh',off_balance:'Ngoại bảng'};
+const names={balance_sheet:'Cân đối kế toán',income_statement:'Kết quả kinh doanh',cash_flow:'Lưu chuyển tiền tệ',ratios:'Chỉ số công bố',derived_ratios:'Chỉ số tính từ BCTC',notes:'Thuyết minh',off_balance:'Ngoại bảng'};
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const nf=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:2});
 const fmt=v=>v==null?'':v===0?'–':v<0?`(${nf.format(-v)})`:nf.format(v);

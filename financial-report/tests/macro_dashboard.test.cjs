@@ -54,7 +54,7 @@ test('main page embeds real charts in Macro & ESG; no second PIN gate',()=>{
  assert.match(html,/id="macro-body" class="collapsible-section-body" hidden/);
  assert.ok(html.indexOf('src="macro-dashboard.js"')<html.indexOf('src="macro.js"'));
 });
-test('full macro dashboard shows four real trends with period, units and source links',()=>{
+test('full macro dashboard shows verified trends but no provider/source links',()=>{
  const {api,$}=harness();
  api.render(fixture(),mbb(),'MBB');
  const grid=$('macro-overview').innerHTML;
@@ -64,8 +64,8 @@ test('full macro dashboard shows four real trends with period, units and source 
  assert.match(grid,/51,9/);
  assert.match(grid,/PMI sản xuất/);
  assert.doesNotMatch(grid,/Lũy kế trong năm · không diễn giải/);
- assert.match(grid,/https:\/\/vbma\.org\.vn\/example\.csv/);
- assert.match(grid,/class="macro-source-quicklink"/);
+ assert.doesNotMatch(grid,/https:\/\/vbma\.org\.vn\/example\.csv/);
+ assert.doesNotMatch(grid,/class="macro-source-quicklink"/);
  assert.doesNotMatch(grid,/>Nguồn ↗<\/a>/);
  assert.match($('macro-data-freshness').textContent,/23\/10\/2026/);
 });
@@ -99,7 +99,7 @@ test('World Bank chart states actual last observation year instead of crawl year
  api.render(fixture(),mbb(),'MBB');
  assert.match($('macro-country-chart').innerHTML,/2023/);
  assert.match($('macro-country-chart').innerHTML,/class="macro-trend-svg"/);
- assert.match($('macro-country-source').innerHTML,/Ngân hàng Thế giới/);
+ assert.equal($('macro-country-source').innerHTML,'');
  assert.doesNotMatch($('macro-country-chart').innerHTML,/2026/);
 });
 test('MBB with one green-credit year shows value but cannot fake a trend',()=>{
@@ -111,7 +111,7 @@ test('MBB with one green-credit year shows value but cannot fake a trend',()=>{
  assert.match(data,/Năm 2025/);
  assert.doesNotMatch(data,/Chưa đủ hai năm|không đồng nghĩa|được để trống/);
  assert.doesNotMatch(data,/<svg/);
- assert.match($('macro-company-source').innerHTML,/https:\/\/example.com\/mbb.pdf/);
+ assert.equal($('macro-company-source').innerHTML,'');
 });
 test('two genuine comparable annual disclosures draw one ESG company chart',()=>{
  const {api,$}=harness(),data=mbb();
@@ -123,7 +123,7 @@ test('two genuine comparable annual disclosures draw one ESG company chart',()=>
 test('unverified ESG company has no fabricated score or bar',()=>{
  const {api,$}=harness();
  api.render(fixture(),{companies:{FPT:{canonicalMetrics:[],documents:[]}}},'FPT');
- assert.match($('macro-company-chart').innerHTML,/Đang theo dõi nguồn công bố chính thức/);
+ assert.match($('macro-company-chart').innerHTML,/Đang cập nhật hồ sơ công bố/);
  assert.doesNotMatch($('macro-company-chart').innerHTML,/<svg/);
  assert.equal($('macro-company-metric').disabled,true);
 });
@@ -156,14 +156,14 @@ test('disclosure-only issuer is documented without claiming a metric or fake ESG
  api.render(fixture(),esg,'FPT');
  const body=$('macro-company-chart').innerHTML;
  assert.match(body,/1 hồ sơ công bố \(1 hồ sơ xử lý\)/);
- assert.match(body,/https:\/\/example.com\/verified-fpt-2025.pdf/);
+ assert.doesNotMatch(body,/https:\/\/example.com\/verified-fpt-2025.pdf/);
  assert.doesNotMatch(body,/<svg|KPI=0|điểm ESG tổng hợp: 0/);
  assert.match($('macro-esg-coverage').textContent,/1 doanh nghiệp|1 có tài liệu ESG/);
 });
 test('macro numerical data can render while company ESG feed is disconnected',()=>{
  const {api,$}=harness();api.render(fixture(),null,'FPT');
  assert.match($('macro-overview').innerHTML,/PMI sản xuất/);
- assert.match($('macro-company-chart').innerHTML,/Nguồn công bố ESG đang gián đoạn/);
+ assert.match($('macro-company-chart').innerHTML,/Dữ liệu ESG đang gián đoạn/);
  assert.match($('macro-esg-coverage').textContent,/Dữ liệu ESG doanh nghiệp đang kết nối/);
 });
 
@@ -217,7 +217,7 @@ test('live ESG coverage does not mistake disclosure-only issuers for zero ESG ac
  assert.match($('macro-esg-coverage').textContent,/3 doanh nghiệp · 2 có tài liệu ESG · 1 có KPI chuẩn hóa/);
  const disclosure=$('macro-company-chart').innerHTML;
  assert.match(disclosure,/1 hồ sơ công bố/);
- assert.match(disclosure,/https:\/\/example.com\/hpg.pdf/);
+ assert.doesNotMatch(disclosure,/https:\/\/example.com\/hpg.pdf/);
  assert.doesNotMatch(disclosure,/<svg|0 điểm ESG|ESG bằng 0/);
 });
 

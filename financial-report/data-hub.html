@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="refresh" content="0; url=/financial-report/index.html#macro">
 
-<meta name="description" content="FinQuery Data Hub: dữ liệu phái sinh, vĩ mô, thanh khoản, trái phiếu và kiểm soát chất lượng nguồn.">
+<meta name="description" content="FinQuery Data Hub: dữ liệu phái sinh, vĩ mô, thanh khoản và trái phiếu.">
 <title>FinQuery · Kho dữ liệu</title>
 <style>
 :root{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#193052;background:#f4f7fc;font-synthesis:none}
@@ -53,7 +53,7 @@ footer{font-size:12px;color:#8797af;margin-top:30px;padding-top:15px;border-top:
 @media(max-width:900px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.source-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.header-inner{padding:13px 15px}main{padding:18px 14px 40px}.summary,.grid2,.source-list{grid-template-columns:1fr}.card{min-height:106px}.hero{gap:15px}.pane{padding:16px}nav a{padding:7px 8px;font-size:12px}}
 </style>
-</head>
+<style>[hidden]{display:none!important}</style></head>
 <body>
 <header><div class="header-inner">
 <a class="brand" href="/financial-report/index.html">FinQuery <small>Financial Intelligence</small></a>
@@ -65,18 +65,18 @@ footer{font-size:12px;color:#8797af;margin-top:30px;padding-top:15px;border-top:
 <main>
 <div class="hero">
 <div><span class="eyebrow">Market Data &amp; Research</span><h1>Kho dữ liệu tài chính</h1>
-<p>Theo dõi vĩ mô Việt Nam, chứng khoán phái sinh VN30/VN100 và tình trạng các nguồn dữ liệu được nghiên cứu bổ sung. Phạm vi cổ phiếu: HOSE; không bổ sung cổ phiếu niêm yết HNX. HNX chỉ là nguồn công bố chính thức của dữ liệu phái sinh. Số liệu luôn kèm kỳ quan sát, nguồn và trạng thái chất lượng; không coi dữ liệu lịch sử là giá trực tiếp.</p></div>
+<p>Theo dõi vĩ mô Việt Nam và chứng khoán phái sinh VN30/VN100. Phạm vi cổ phiếu: HOSE; không bổ sung cổ phiếu niêm yết HNX. Dữ liệu phái sinh được tổng hợp riêng. Số liệu hiển thị kỳ quan sát và trạng thái cập nhật; không coi dữ liệu lịch sử là giá trực tiếp.</p></div>
 <div class="controls"><button type="button" class="btn" id="refresh" aria-label="Cập nhật dữ liệu mới nhất">Cập nhật dữ liệu</button></div>
 </div>
-<section aria-labelledby="overview-heading"><h2 id="overview-heading">Vĩ mô Việt Nam · VBMA</h2><p class="section-intro" id="macro-status" role="status" aria-live="polite">Đang lấy dữ liệu từ bản công bố mới nhất…</p>
+<section aria-labelledby="overview-heading"><h2 id="overview-heading">Vĩ mô Việt Nam</h2><p class="section-intro" id="macro-status" role="status" aria-live="polite">Đang lấy dữ liệu từ bản công bố mới nhất…</p>
 <div class="summary">
 <article class="card"><div class="lbl">PMI sản xuất</div><strong id="metric-pmi">—</strong><small id="period-pmi">Đang kiểm tra kỳ quan sát</small></article>
-<article class="card"><div class="lbl">Tổng cung tiền M2</div><strong id="metric-m2">—</strong><small id="period-m2">Dữ liệu gốc · tỷ VND</small></article>
-<article class="card"><div class="lbl">Tổng dư nợ tín dụng</div><strong id="metric-credit">—</strong><small id="period-credit">Kiểm tra dữ liệu nguồn</small></article>
-<article class="card"><div class="lbl">Nhóm dữ liệu VBMA hoạt động</div><strong id="metric-count">—</strong><small id="period-count">Không tính nguồn ESG World Bank</small></article>
+<article class="card"><div class="lbl">Tổng cung tiền M2</div><strong id="metric-m2">—</strong><small id="period-m2">Đơn vị: tỷ VND</small></article>
+<article class="card"><div class="lbl">Tổng dư nợ tín dụng</div><strong id="metric-credit">—</strong><small id="period-credit">Đang cập nhật số liệu</small></article>
+<article class="card"><div class="lbl">Nhóm vĩ mô hoạt động</div><strong id="metric-count">—</strong><small id="period-count">Nhóm thống kê vĩ mô</small></article>
 </div></section>
-<section class="section" aria-labelledby="derivative-heading"><h2 id="derivative-heading">Phái sinh · công bố HNX</h2>
-<p class="section-intro">Bản tổng hợp phái sinh tháng 09/2026, HNX công bố ngày 07/10/2026. Đây là hợp đồng tương lai, không phải cổ phiếu HNX hoặc dữ liệu giao dịch trong ngày.</p>
+<section class="section" aria-labelledby="derivative-heading"><h2 id="derivative-heading">Phái sinh</h2>
+<p class="section-intro">Thống kê phái sinh tháng 09/2026, cập nhật ngày 07/10/2026. Đây là hợp đồng tương lai, không phải cổ phiếu HNX hoặc dữ liệu giao dịch trong ngày.</p>
 <div class="grid2">
 <article class="pane">
 <div class="statrow"><span><b>Hợp đồng tương lai VN30</b></span><span class="status good">Công bố chính thức</span></div>
@@ -90,7 +90,7 @@ footer{font-size:12px;color:#8797af;margin-top:30px;padding-top:15px;border-top:
 </article>
 </div>
 <p class="info">Nguồn: <a href="https://www.gov.hnx.vn/vi-vn/chi-tiet-tin-60023563-0.html" rel="noopener noreferrer" target="_blank">HNX – Báo cáo thị trường chứng khoán phái sinh tháng 9/2026</a>. Dữ liệu OI là tổng hợp cuối tháng, không sử dụng như OI theo hợp đồng hoặc theo phiên.</p></section>
-<section class="section" aria-labelledby="sources-heading"><h2 id="sources-heading">Lãi suất, trái phiếu và FX Swap</h2>
+<section class="section" aria-labelledby="sources-heading" hidden><h2 id="sources-heading">Lãi suất, trái phiếu và FX Swap</h2>
 <p class="section-intro">Các nguồn dưới đây được đưa vào diện theo dõi kỹ thuật; chưa có chuỗi được chứng nhận để hiển thị lãi suất hiện hành hoặc kết nối vào mô hình.</p>
 <div class="source-list">
 <article class="source"><span class="status warn">Chưa chứng nhận</span><h3>Liên ngân hàng ON · NHNN</h3><p>Phải là lãi suất vay mượn không có bảo đảm; không thay bằng benchmark repo VBMA.</p><a href="https://www.sbv.gov.vn/" target="_blank" rel="noopener noreferrer">Nguồn NHNN ↗</a></article>
@@ -101,12 +101,12 @@ footer{font-size:12px;color:#8797af;margin-top:30px;padding-top:15px;border-top:
 <article class="source"><span class="status warn">Đang đối chiếu PIT</span><h3>Sự kiện doanh nghiệp</h3><p>Đối chiếu ngày công bố với ngày hưởng quyền và điều chỉnh giá trước khi đưa vào backtest.</p><a href="https://www.vsdc.vn/vi/" target="_blank" rel="noopener noreferrer">Nguồn VSDC ↗</a></article>
 </div>
 </section>
-<section class="section" aria-labelledby="quality-heading"><h2 id="quality-heading">Chất lượng nguồn vĩ mô</h2>
+<section class="section" aria-labelledby="quality-heading" hidden><h2 id="quality-heading">Chất lượng nguồn vĩ mô</h2>
 <p class="section-intro">Tình trạng được lấy từ manifest nguồn hiện tại; dữ liệu bị cảnh báo vẫn lưu để kiểm toán, không tự chuyển thành tín hiệu đầu tư.</p>
 <div class="table-wrap"><table><thead><tr><th>Nhóm nguồn</th><th>Tình trạng thu thập</th><th>Chất lượng</th><th>Số hàng</th><th>Nguồn</th></tr></thead><tbody id="quality-rows"><tr><td colspan="5">Đang kiểm tra...</td></tr></tbody></table></div>
 <div class="footnote">FinQuery không đưa dữ liệu chưa chứng nhận vào Forecast, Risk hoặc Strategy. Trạng thái nguồn <b>OK</b> chỉ có nghĩa thu thập được; không đồng nghĩa mọi quan sát đều đã được thẩm định. Bản công bố có thể chậm hơn phiên thị trường.</div>
 </section>
-<footer>© FinQuery · Kho dữ liệu bổ sung · Nguồn dữ liệu được ghi nhận minh bạch · <a href="/financial-report/index.html">Quay về FinQuery</a></footer>
+<footer>© FinQuery · Kho dữ liệu bổ sung · <a href="/financial-report/index.html">Quay về FinQuery</a></footer>
 </main>
 <script>
 (function(){
@@ -144,19 +144,19 @@ function renderRows(d){
 function render(d){
  var datasets=d.datasets||{},pmi=newestPoint(datasets.pmi),m2=newestRow(datasets.money_supply),credit=newestRow(datasets.credit_sector);
  if(pmi&&datasets.pmi.qualityStatus!=="warning"){
-   set("metric-pmi",format.format(pmi.value));set("period-pmi",pmi.key+" · điểm PMI · VBMA");
+   set("metric-pmi",format.format(pmi.value));set("period-pmi",pmi.key+" · điểm PMI");
  }else set("period-pmi","Chưa có kỳ PMI đạt tiêu chí hiển thị");
  if(m2&&numeric(m2["M2 (tỷ VND)"])!==null&&datasets.money_supply.qualityStatus!=="warning"){
-   set("metric-m2",format.format(m2["M2 (tỷ VND)"]));set("period-m2",m2["Cột 1"]+" · tỷ VND · VBMA");
- }else set("period-m2","Thiếu số hoặc nguồn đang bị cảnh báo");
+   set("metric-m2",format.format(m2["M2 (tỷ VND)"]));set("period-m2",m2["Cột 1"]+" · tỷ VND");
+ }else set("period-m2","Chưa đủ số liệu hợp lệ");
  if(credit&&numeric(credit["Tổng dư nợ"])!==null&&datasets.credit_sector.qualityStatus!=="warning"){
-   set("metric-credit",format.format(credit["Tổng dư nợ"]));set("period-credit",credit["Cột 1"]+" · đơn vị theo dữ liệu gốc VBMA");
- }else set("period-credit","Thiếu số hoặc nguồn đang bị cảnh báo");
+   set("metric-credit",format.format(credit["Tổng dư nợ"]));set("period-credit",credit["Cột 1"]+" · theo kỳ thống kê");
+ }else set("period-credit","Chưa đủ số liệu hợp lệ");
  var vbma=Object.entries(datasets).filter(function(entry){return entry[1].source==="VBMA";});
  set("metric-count",vbma.filter(function(entry){return entry[1].status==="ok";}).length+"/"+vbma.length);
  var warnings=(Array.isArray(d.sources)?d.sources:[]).filter(function(x){return x.qualityStatus==="warning";}).length;
  var date=d.checkedAt?new Date(d.checkedAt):null,dateLabel=date&&!Number.isNaN(date.getTime())?date.toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh",hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit",year:"numeric"}):"không rõ";
- set("macro-status","Bản dữ liệu kiểm tra lúc "+dateLabel+" · "+warnings+" nguồn cảnh báo chất lượng. Đây không phải dữ liệu realtime.");
+ set("macro-status","Bản dữ liệu kiểm tra lúc "+dateLabel+" · "+warnings+" chỉ tiêu cần kiểm tra. Đây không phải dữ liệu realtime.");
  renderRows(d);
 }
 async function refresh(){

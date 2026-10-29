@@ -130,8 +130,8 @@ function renderFutures(p){
  }).join('');
  const buttons=[['openInterest','Vị thế mở cuối tháng'],['avgVolume','Khối lượng bình quân/phiên']].map(([key,label])=>'<button type="button" data-derivative-mode="'+key+'" class="'+(key===field?'active':'')+'" aria-pressed="'+(key===field)+'">'+label+'</button>').join('');
  root.innerHTML='<div class="money-chart-menu" role="group" aria-label="Chọn chỉ tiêu chứng khoán phái sinh">'+buttons+'</div><div class="money-derivative-grid">'+cards+'</div>'+
- '<div class="macro-viz-source"><span>HNX · dữ liệu tổng hợp tháng '+esc(monthVN(current.month))+'</span>'+
- (source?'<a href="'+esc(source)+'" target="_blank" rel="noopener noreferrer">Báo cáo HNX ↗</a>':'')+'</div>';
+ ''+
+ '';
 }
 function renderSwap(p){
  const host=$('money-swap');if(!host)return;
@@ -167,7 +167,7 @@ function renderBondCurves(p){
 }
 function render(){
  const p=state.payload;if(!p)return;
- if($('money-source-stamp'))$('money-source-stamp').textContent='Bộ dữ liệu nguồn '+dateVN(p.asOf)+
+ if($('money-source-stamp'))$('money-source-stamp').textContent='Cập nhật '+dateVN(p.asOf)+
   ' · kiểm tra '+(p.lastCheckedAt?new Date(p.lastCheckedAt).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):'chưa xác định');
  renderON(p);renderFutures(p);renderSwap(p);renderBondCurves(p);
 }
@@ -235,7 +235,7 @@ async function load(){
    }
   }else{
    render();
-   const stamp=$('money-source-stamp');if(stamp)stamp.textContent+=' · bản đã lưu (nguồn mới gián đoạn)';
+   const stamp=$('money-source-stamp');if(stamp)stamp.textContent+=' · bản đã lưu';
   }
   console.warn('FinQuery liquidity: ',String(error?.message||error));
  }finally{state.loading=false;if(btn)btn.disabled=false}

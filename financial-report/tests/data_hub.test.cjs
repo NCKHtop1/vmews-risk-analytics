@@ -92,7 +92,7 @@ test('macro manifest populates latest periods and flags source warnings',async()
  assert.match(get('period-m2').textContent,/T7 2026/);
  assert.equal(get('metric-credit').textContent,'20.262.110');
  assert.equal(get('metric-count').textContent,'4/4');
- assert.match(get('macro-status').textContent,/1 nguồn cảnh báo/);
+ assert.match(get('macro-status').textContent,/1 chỉ tiêu cần kiểm tra/);
  assert.equal(get('quality-rows').children.length,4);
 });
 test('fetch failure fails closed with explicit empty data',async()=>{
@@ -109,7 +109,7 @@ test('stock catalog is HOSE-only while derivative reports remain sourced from HN
  assert.equal(companies.length,100);
  assert.ok(companies.every(x=>x.exchange==='HOSE'));
  assert.match(html,/không bổ sung cổ phiếu niêm yết HNX/);
- assert.match(html,/HNX chỉ là nguồn công bố chính thức của dữ liệu phái sinh/);
+ assert.match(html,/Dữ liệu phái sinh được tổng hợp riêng/);
  assert.match(html,/VN30/);
  assert.match(html,/VN100/);
 });

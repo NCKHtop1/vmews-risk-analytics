@@ -59,6 +59,7 @@ jobs:
           node --test financial-report/tests/ownership_intelligence.test.cjs
           node --test financial-report/tests/alpha_radar.test.cjs
           node --test financial-report/tests/vi_ui_copy.test.cjs
+          node --test financial-report/tests/source_free_ui.test.cjs
           node --test financial-report/tests/derivatives_market.test.cjs
           node --test financial-report/tests/liquidity_derivatives.test.cjs
           python -m unittest discover -s financial-report/scripts -p test_vbma_curve_reader.py -v
