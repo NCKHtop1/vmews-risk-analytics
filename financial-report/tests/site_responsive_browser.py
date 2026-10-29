@@ -36,7 +36,7 @@ def fixture(folder):
         shutil.copy2(FRONT / item, folder / item)
     for name in ("login.html", "admin.html"):
         html=(FRONT.parent.parent / "finquery-access" / name).read_text(encoding="utf-8")
-        html=re.sub(r"<script\\b[^>]*>[\\s\\S]*?</script>", "", html, flags=re.I)
+        html=re.sub(r"<script\b[^>]*>[\s\S]*?</script>", "", html, flags=re.I)
         (folder / name).write_text(html, encoding="utf-8")
     # Test the same visible table layout the app generates, without requiring backend data.
     return html
