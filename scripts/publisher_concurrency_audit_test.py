@@ -6,6 +6,7 @@ from publisher_concurrency_audit import (
     LOCK_GROUP,
     DATA_BRANCH,
     concurrency_contract,
+    atomic_ui_bundle_contract,
     is_direct_main_writer,
     push_can_advance_main,
     push_commands,
@@ -144,6 +145,47 @@ jobs:
                 ok, problems = concurrency_contract(text)
                 self.assertFalse(ok)
                 self.assertTrue(any("queue" in item for item in problems))
+
+
+    def test_isolated_bundle_queue_requires_atomic_rebuild_and_exact_file_ownership(self) -> None:
+        good = """
+concurrency:
+  group: finquery-standalone-bundle-main
+  cancel-in-progress: false
+  queue: max
+steps:
+  - run: |
+      for attempt in 1 2 3 4 5 6 7 8; do
+        git fetch origin main
+        git reset --hard origin/main
+        python financial-report/scripts/build_cdn.py
+        git add financial-report/index.html financial-report/frontend/metrics.js
+        if git diff --cached --quiet; then
+          exit 0
+        fi
+        git commit -m 'Sync FinQuery standalone bundle [bundle-sync]'
+        if git push origin HEAD:main; then
+          exit 0
+        fi
+      done
+"""
+        rel=".github/workflows/finquery-bundle-sync.yml"
+        ok,problems=atomic_ui_bundle_contract(rel,good)
+        self.assertTrue(ok,problems)
+        bad_cases=[
+            good.replace("git add financial-report/index.html financial-report/frontend/metrics.js","git add ."),
+            good.replace("git fetch origin main","echo no-fetch"),
+            good.replace("for attempt in 1 2 3 4 5 6 7 8; do","for attempt in 1 2 3; do"),
+            good.replace("git push origin HEAD:main","git push --force origin HEAD:main"),
+            good.replace("queue: max","queue: single"),
+        ]
+        for case in bad_cases:
+            with self.subTest(case=case[-200:]):
+                ok,problems=atomic_ui_bundle_contract(rel,case)
+                self.assertFalse(ok)
+                self.assertTrue(problems)
+        ok,_=atomic_ui_bundle_contract("other-workflow.yml",good)
+        self.assertFalse(ok)
 
 
 if __name__ == "__main__":
