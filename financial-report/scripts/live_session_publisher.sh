@@ -235,6 +235,47 @@ PY
   echo "Dispatched stale-news recovery"
 }
 
+# The 5-minute verified quote publisher is the authoritative clock for
+# triggering fresh 30-minute VN100 numerical runs during the market session.
+# Do not rely solely on best-effort GitHub cron events.
+FORECAST_LAST_KICK_CHECK=0
+maybe_dispatch_vn100_forecast() {
+  if [ -z "${GH_TOKEN:-}" ]; then return 0; fi
+  local timestamp output active age_due
+  timestamp="$(date +%s)"
+  if [ $((timestamp - FORECAST_LAST_KICK_CHECK)) -lt 240 ]; then return 0; fi
+  FORECAST_LAST_KICK_CHECK="$timestamp"
+  age_due="$(python - <<'PY'
+import json, urllib.request
+from datetime import datetime, timezone
+url='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/finquery-vn100-data/data/finquery-vn100-status.json'
+try:
+    with urllib.request.urlopen(urllib.request.Request(url+'?v='+str(datetime.now(timezone.utc).timestamp()),headers={'Cache-Control':'no-cache'}), timeout=7) as r:
+        status=json.load(r)
+    stamp=datetime.fromisoformat(str(status.get('generatedAt') or '').replace('Z','+00:00'))
+    age=(datetime.now(timezone.utc)-stamp.astimezone(timezone.utc)).total_seconds()/60
+    verified=status.get('status')=='PASS' and status.get('symbols')==100 and status.get('horizons')==500
+    print('1' if not verified or age>=27 or age< -5 else '0')
+except Exception as error:
+    print('1')
+PY
+)"
+  if [ "$age_due" != "1" ]; then return 0; fi
+  active="$(gh run list --repo "$GH_REPO" --workflow finquery-vn100-forecast.yml --limit 20 --json status,headBranch --jq 'any(.[]; .headBranch == "main" and (.status == "queued" or .status == "pending" or .status == "waiting" or .status == "in_progress"))' 2>/dev/null)" || {
+    echo "::warning::VN100 trigger check could not confirm workflow state; leaving scheduled job to recover"
+    return 0
+  }
+  if [ "$active" = "true" ]; then
+    echo "VN100 30-minute forecast is already queued/running"
+    return 0
+  fi
+  if gh workflow run finquery-vn100-forecast.yml --repo "$GH_REPO" --ref main; then
+    echo "Dispatched VN100 30-minute forecast following verified 5-minute quote publication"
+  else
+    echo "::warning::Failed to dispatch VN100 forecast; dedicated cron/watchdog will recover"
+  fi
+}
+
 collect_validate_publish() {
   local ok=1 current_max_age="$MAX_AGE_MINUTES" local_min
   local_min="$(vn_minutes)"
@@ -253,6 +294,9 @@ collect_validate_publish() {
     sync_market_worktree
     if MARKET_REQUIRE_TODAY=1 MARKET_MAX_QUOTE_AGE_MINUTES="$current_max_age"       python -u "$ROOT/financial-report/scripts/refresh_market.py" --output "$OUT/market" --mode prices       && python -u "$ROOT/financial-report/scripts/build_technical_evidence.py" --output "$OUT/market"       && node "$ROOT/financial-report/scripts/build_strategy_snapshot.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_sector_risk_calibration.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_market_risk_calibration.cjs" "$OUT/market"       && node "$ROOT/financial-report/scripts/build_risk_monitor.cjs" "$OUT/market"       && validate_snapshot "$current_max_age"       && { python -u "$ROOT/financial-report/scripts/refresh_derivative_quotes.py" --output "$OUT/market/derivatives-live.json" || echo "::warning::Futures feed unavailable; preserving last verified derivatives snapshot"; }       && publish_snapshot; then
       ok=0
+      # Independent, best-effort dispatch; never block a verified market-price
+      # publication because the Forecast workflow service is unavailable.
+      maybe_dispatch_vn100_forecast || true
       break
     fi
     echo "::warning::Intraday refresh attempt $attempt failed validation; stale data was not published."
@@ -283,6 +327,7 @@ failures=0
 iterations=0
 
 while true; do
+  iteration_started="$(date +%s)"
   iterations=$((iterations + 1))
   if ! collect_validate_publish; then
     failures=$((failures + 1))
@@ -292,7 +337,11 @@ while true; do
   if [ "$FORCE_ONESHOT" = "1" ] || [ "$now_min" -ge "$end_min" ]; then
     break
   fi
-  sleep "$INTERVAL_SECONDS"
+  # Collecting + validation + publishing consumes time. Sleep only the
+  # remainder to target a 5-minute START-to-START cadence, not 5m + work time.
+  elapsed=$(( $(date +%s) - iteration_started ))
+  remaining=$((INTERVAL_SECONDS - elapsed))
+  if [ "$remaining" -gt 0 ]; then sleep "$remaining"; else sleep 1; fi
 done
 
 echo "Session publisher finished: iterations=$iterations failures=$failures"
