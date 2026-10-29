@@ -26,7 +26,7 @@ def build_fixture(directory: Path):
     html = (
         '<!doctype html><html lang="vi" data-hosting="pages"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
-        '<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="market.css">'
+        '<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="market.css"><link rel="stylesheet" href="responsive-system.css">'
         '<title>Macro ESG mobile QA</title></head><body><main style="max-width:1170px;margin:auto">'
         '<section id="macro"' + segment + "</main>"
         '<script src="section-collapse.js"></script><script src="workspace-tabs.js"></script>'
@@ -35,7 +35,7 @@ def build_fixture(directory: Path):
         '<script src="liquidity-derivatives.js"></script></body></html>'
     )
     preview.write_text(html, encoding="utf-8")
-    for file in ("style.css", "market.css", "section-collapse.js", "workspace-tabs.js", "macro-dashboard.js", "macro.js", "liquidity-derivatives.js"):
+    for file in ("style.css", "market.css", "section-collapse.js", "workspace-tabs.js", "macro-dashboard.js", "macro.js", "liquidity-derivatives.js", "responsive-system.css"):
         shutil.copy2(FRONT / file, directory / file)
     data_dir = directory / "market"
     data_dir.mkdir()
