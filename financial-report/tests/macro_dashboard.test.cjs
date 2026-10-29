@@ -67,14 +67,14 @@ test('full macro dashboard shows four real trends with period, units and source 
  assert.match(grid,/https:\/\/vbma\.org\.vn\/example\.csv/);
  assert.match($('macro-data-freshness').textContent,/23\/10\/2026/);
 });
-test('source quality warnings suppress only the affected plot, not all charts',()=>{
+test('quality warning on source does not blank independently valid macro charts',()=>{
  const {api,$}=harness(),data=fixture();
  data.sources[0].qualityStatus='warning';
  data.datasets.pmi.qualityStatus='warning';
  api.render(data,mbb(),'MBB');
  const grid=$('macro-overview').innerHTML;
- assert.match(grid,/đối chiếu chất lượng/);
- assert.equal((grid.match(/class="macro-trend-svg"/g)||[]).length,3);
+ assert.match(grid,/Nguồn có cảnh báo ở một số chỉ tiêu/);
+ assert.equal((grid.match(/class="macro-trend-svg"/g)||[]).length,4);
 });
 test('sparse or invalid data never turn missing observation into zero',()=>{
  const {api}=harness();
@@ -120,7 +120,7 @@ test('two genuine comparable annual disclosures draw one ESG company chart',()=>
 test('unverified ESG company has no fabricated score or bar',()=>{
  const {api,$}=harness();
  api.render(fixture(),{companies:{FPT:{canonicalMetrics:[],documents:[]}}},'FPT');
- assert.match($('macro-company-chart').innerHTML,/Chưa tìm được báo cáo ESG đủ điều kiện/);
+ assert.match($('macro-company-chart').innerHTML,/Đang theo dõi nguồn công bố chính thức/);
  assert.doesNotMatch($('macro-company-chart').innerHTML,/<svg/);
  assert.equal($('macro-company-metric').disabled,true);
 });
@@ -152,14 +152,46 @@ test('disclosure-only issuer is documented without claiming a metric or fake ESG
  ]}}};
  api.render(fixture(),esg,'FPT');
  const body=$('macro-company-chart').innerHTML;
- assert.match(body,/1 tài liệu công bố, 1 tài liệu đã xử lý/);
+ assert.match(body,/1 hồ sơ công bố \(1 hồ sơ xử lý\)/);
  assert.match(body,/https:\/\/example.com\/verified-fpt-2025.pdf/);
  assert.doesNotMatch(body,/<svg|KPI=0|điểm ESG tổng hợp: 0/);
- assert.match($('macro-esg-coverage').textContent,/1 doanh nghiệp|1 có hồ sơ/);
+ assert.match($('macro-esg-coverage').textContent,/1 doanh nghiệp|1 có tài liệu ESG/);
 });
 test('macro numerical data can render while company ESG feed is disconnected',()=>{
  const {api,$}=harness();api.render(fixture(),null,'FPT');
  assert.match($('macro-overview').innerHTML,/PMI sản xuất/);
  assert.match($('macro-company-chart').innerHTML,/Nguồn công bố ESG đang gián đoạn/);
- assert.match($('macro-esg-coverage').textContent,/Chưa kết nối được nguồn/);
+ assert.match($('macro-esg-coverage').textContent,/Dữ liệu ESG doanh nghiệp đang kết nối/);
+});
+
+test('verified aggregate GDP appears despite independent sector outlier warning',()=>{
+ const {api,$}=harness(),data=fixture();
+ data.sources.push({id:'gdp_growth',status:'ok',qualityStatus:'warning',url:'https://vbma.org.vn/gdp.csv'});
+ data.datasets.gdp_growth={status:'ok',qualityStatus:'warning',title:'Tăng trưởng GDP thực tế',
+  columns:['Date','Tốc độ tăng trưởng GDP thực tế'],
+  rows:[
+   makeRow('Q1 2026','Tốc độ tăng trưởng GDP thực tế',7.08),
+   makeRow('Q2 2026','Tốc độ tăng trưởng GDP thực tế',7.31),
+   makeRow('Q3 2026','Tốc độ tăng trưởng GDP thực tế',7.96),
+   makeRow('Q4 2026','Tốc độ tăng trưởng GDP thực tế',30.63)
+  ]};
+ api.render(data,mbb(),'MBB');
+ const grid=$('macro-overview').innerHTML;
+ assert.match(grid,/Tăng trưởng GDP thực tế/);
+ assert.match(grid,/7,96/);
+ assert.doesNotMatch(grid,/30,63/);
+ assert.equal((grid.match(/class="macro-trend-svg"/g)||[]).length,5);
+ assert.match(grid,/cảnh báo/);
+});
+test('issuer numeric unit conversion anomaly is quarantined, not presented as billion VND',()=>{
+ const {api,$}=harness(),esg={companies:{VCB:{canonicalMetrics:[
+  {metricId:'sustainable_finance',label:'Tài chính bền vững',year:2025,
+    unit:'billion VND',rawValue:'2000',value:0.000002,sourceUrl:'https://example.com/verified.pdf'}
+ ],documents:[{url:'https://example.com/verified.pdf',year:2025,processedAt:'2026-10-29'}]}}};
+ assert.equal(api.corporateRows(esg,'VCB').length,0);
+ api.render(fixture(),esg,'VCB');
+ const body=$('macro-company-chart').innerHTML;
+ assert.match(body,/đang đối chiếu|Đã ghi nhận/i);
+ assert.doesNotMatch(body,/0,000002/);
+ assert.match(body,/nguồn|hồ sơ/i);
 });
