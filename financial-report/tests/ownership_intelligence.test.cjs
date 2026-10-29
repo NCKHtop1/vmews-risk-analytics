@@ -26,7 +26,7 @@ test('verified official disclosure shows registration, not a fake executed order
  api.setData({schemaVersion:1,status:'verified',events:[row]});
  assert.match(host.innerHTML,/Đăng ký mua/);
  assert.match(host.innerHTML,/350\.000/);
- assert.match(host.innerHTML,/www\.hsx\.vn/);
+ assert.doesNotMatch(host.innerHTML,/www\.hsx\.vn/);
  assert.doesNotMatch(host.innerHTML,/Đã mua/);
  assert.doesNotMatch(host.innerHTML,/Lợi nhuận thực hiện/);
 });
@@ -53,7 +53,7 @@ test('primary issuer disclosure without reported quantity is shown without fabri
  api.setData({schemaVersion:1,status:'verified',events:[result]});
  assert.match(host.innerHTML,/Nguyễn Thị Thủy/);
  assert.match(host.innerHTML,/Báo cáo kết quả/);
- assert.match(host.innerHTML,/www\.mbbank\.com\.vn/);
+ assert.doesNotMatch(host.innerHTML,/www\.mbbank\.com\.vn/);
  assert.doesNotMatch(host.innerHTML,/>0<\/td>/);
  assert.doesNotMatch(host.innerHTML,/Đã bán/);
 });
