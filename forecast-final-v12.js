@@ -751,35 +751,67 @@ async function refreshCommunity(B){
 window.__VMEWS_APPLY_COMMUNITY_LIVE__=applyCommunity;
 async function renderSymbol(raw){const B=await loadBase();assertProduction(B);const sym=String(raw||"").trim().toUpperCase(),z=B.dash.symbols?.[sym];if(!z)throw Error(`${sym}: chưa có đủ dữ liệu để phân tích.`);$("#symbol").value=sym;setText("#sparkSymbol",sym);rerender(B,sym,z);const view=last?.view||z;if(B.source==="VN100")renderVN100Status(B,sym,view);else setText("#status",`${sym} · dữ liệu ${z.date||B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}${z.dataFreshness==="STALE_EOD"?" · cần cập nhật":""}`);const url=new URL(location.href);url.searchParams.set("symbol",sym);history.replaceState(null,"",url.href)}
 window.__VMEWS_RENDER_SYMBOL__=renderSymbol;
+async function refreshVN100Heartbeat(){
+ const revision=Math.floor(Date.now()/60000);
+ for(const url of [VN100_STATUS_URL,VN100_STATUS_MIRROR]){
+  try{
+   const payload=await fetchJsonBounded(url+"?refresh="+revision,4500);
+   const time=Date.parse(payload?.generatedAt||"");
+   if(payload?.status!=="PASS"||payload?.symbols!==100||payload?.horizons!==500||
+      !Number.isFinite(time)||time>Date.now()+300000)continue;
+   return payload;
+  }catch{}
+ }
+ return null;
+}
 async function refreshCore(){
  if(document.hidden)return false;
- // SoluTION.AI public Pages is independent of the FinQuery VN100 publisher.
- // Retain its original model freshness reload without swapping products.
- if(INDEPENDENT_CORE_PAGE){
+ if(FORECAST_REFRESHING)return FORECAST_REFRESHING;
+ FORECAST_REFRESHING=(async()=>{
+  // SoluTION.AI is an independent product: preserve its old source contract.
+  if(INDEPENDENT_CORE_PAGE){
+   try{
+    const next=await fetchJsonBounded(CORE_ROOT+"/forecast-dashboard-v12.json?refresh="+Date.now(),
+      Math.min(FETCH_TIMEOUT_MS,12000));
+    if(BASE&&next?.generatedAt!==BASE.dash.generatedAt&&
+       String(next?.asOf||"")>=String(BASE.dash.asOf)){
+      location.reload();return true;
+    }
+   }catch{}
+   return false;
+  }
   try{
-   const next=await fetchJsonBounded(CORE_ROOT+"/forecast-dashboard-v12.json?refresh="+Date.now(),Math.min(FETCH_TIMEOUT_MS,12000));
-   if(BASE&&next?.generatedAt!==BASE.dash.generatedAt&&String(next?.asOf||"")>=String(BASE.dash.asOf)){
-    location.reload();return true;
-   }
-  }catch{}
-  return false;
- }
- try{
-  const bundle=await loadVN100(true);
-  if(!validVN100(bundle))return false;
-  const current=BASE?.publishedAt||BASE?.dash?.generatedAt||"";
-  if(Date.parse(bundle.generatedAt)<=Date.parse(current)||bundle.asOf<(BASE?.dash?.asOf||""))return false;
-  const selected=last?.sym||$("#symbol")?.value||"FPT";
-  BASE=vn100Base(bundle);BASE_PROMISE=Promise.resolve(BASE);LEADER_BASE_PROMISE=null;
-  quickButtons(BASE);
-  await renderSymbol(selected);
-  window.dispatchEvent(new CustomEvent("vmews:forecast-updated",{detail:{
+   // First poll only the tiny publication heartbeat (~0.5KB), not the 3MB
+   // model file. Fetch the full package only after a new 30m model arrived.
+   const heartbeat=await refreshVN100Heartbeat();
+   const current=Date.parse(BASE?.publishedAt||BASE?.dash?.generatedAt||"");
+   const next=Date.parse(heartbeat?.generatedAt||"");
+   const due=Number.isFinite(next)&&(!Number.isFinite(current)||next>current);
+   const deepFallback=!heartbeat&&Date.now()-FORECAST_LAST_DEEP_CHECK>=15*60000;
+   if(!due&&!deepFallback)return false;
+   FORECAST_LAST_DEEP_CHECK=Date.now();
+   const bundle=await loadVN100(true);
+   if(!validVN100(bundle))return false;
+   if(heartbeat&&Date.parse(bundle.generatedAt)<next)return false; // CDN propagation race
+   if(Number.isFinite(current)&&Date.parse(bundle.generatedAt)<=current)return false;
+   if(BASE&&bundle.asOf<BASE.dash.asOf)return false;
+   const selected=last?.sym||$("#symbol")?.value||"FPT";
+   BASE=vn100Base(bundle);BASE_PROMISE=Promise.resolve(BASE);LEADER_BASE_PROMISE=null;
+   quickButtons(BASE);
+   await renderSymbol(selected);
+   window.dispatchEvent(new CustomEvent("vmews:forecast-updated",{detail:{
     asOf:bundle.asOf,generatedAt:bundle.generatedAt,coverage:bundle.universe
-  }}));
-  return true;
- }catch(error){console.warn("VN100 refresh failed, keeping previously verified snapshot",error);return false}
+   }}));
+   return true;
+  }catch(error){
+   console.warn("VN100 heartbeat/model refresh failed, keeping verified snapshot",error);
+   return false;
+  }
+ })().finally(()=>{FORECAST_REFRESHING=null});
+ return FORECAST_REFRESHING;
 }
 window.__VMEWS_REFRESH_CORE__=refreshCore;
+window.__VMEWS_REFRESH_VN100_HEARTBEAT__=refreshVN100Heartbeat;
 window.__VMEWS_REFRESH_COMPANY_NEWS__=refreshCompanyNews;
 let forecastBootstrapped=false;
 async function startForecastProduct(B,q,priceFetch){
@@ -792,8 +824,11 @@ async function startForecastProduct(B,q,priceFetch){
    rerender(last.B,last.sym,last.B.dash.symbols[q]);
  }).catch(()=>{});
  bindChartHover();
- window.setInterval(()=>void refreshCore(),300000);
- window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);
+ // Numerical estimates: 30m backend; 2m lightweight heartbeat to detect
+ // a freshly published model without pulling a 3MB bundle unnecessarily.
+ window.setInterval(()=>void refreshCore(),FORECAST_POLL_MS);
+ // Market quote endpoint is produced every five minutes independently.
+ window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},MARKET_QUOTE_POLL_MS);
  document.addEventListener("visibilitychange",()=>{
   void refreshCore();if(!document.hidden)void refreshLiveQuotes(true);
  });
