@@ -65,7 +65,7 @@ function renderMacro(data){
  const host=$('macro-overview');if(!host)return;
  const sources=data?.sources||[];
  if(!data?.datasets||!FEATURES.some(feature=>data.datasets[feature.id])){
-  host.innerHTML='<article class="macro-viz-card macro-state-full" role="status"><h4>Đang kiểm tra nguồn vĩ mô</h4><p>Dữ liệu vĩ mô chưa kết nối được đến bản phát hành đã xác minh. Thử Cập nhật nguồn; ESG doanh nghiệp vẫn hoạt động độc lập nếu có dữ liệu.</p></article>';
+  host.innerHTML='<article class="macro-viz-card macro-state-full" role="status"><h4>Đang kiểm tra dữ liệu vĩ mô</h4><p>Dữ liệu vĩ mô chưa kết nối được. Thử Cập nhật; ESG doanh nghiệp vẫn hoạt động độc lập nếu có dữ liệu.</p></article>';
   return;
  }
  host.innerHTML=FEATURES.filter(c=>data?.datasets?.[c.id]).map(c=>{
@@ -107,9 +107,9 @@ function renderCountry(data){
  if(!body||!select||!foot)return;
  const choices=WORLD.filter(m=>series(ds,m.id).length>=2);
  if(!choices.length||!['ok','cached','retained'].includes(ds?.status)){
-  select.innerHTML='<option value="">Chờ dữ liệu nguồn</option>';select.disabled=true;
+  select.innerHTML='<option value="">Chờ dữ liệu</option>';select.disabled=true;
   const message=ds?.qualityStatus==='warning'?'Chuỗi ESG quốc gia đang được đối chiếu chất lượng.':
-   !ds?'Chưa kết nối được nguồn ESG quốc gia. Các số liệu doanh nghiệp, nếu có, vẫn được hiển thị độc lập.':
+   !ds?'Chưa tải được ESG quốc gia. Các số liệu doanh nghiệp, nếu có, vẫn được hiển thị độc lập.':
    'Chưa tìm thấy ít nhất hai năm quan sát hợp lệ cho các chỉ tiêu ESG đã chọn.';
   body.innerHTML='<div class="macro-source-notice" role="status">'+message+'</div>';
   foot.innerHTML=sourceLink((data?.sources||[]).find(s=>s.id==='esg_world_bank')?.url,'Nguồn World Bank');return;
@@ -166,10 +166,10 @@ function renderCorporate(esg,symbol){
   const candidates=docs.slice().sort((a,b)=>(Number(b.year)||0)-(Number(a.year)||0)).slice(0,3);
   const external=(company?.externalAssessments||[]).filter(x=>httpsUrl(x.sourceUrl)).slice(0,2);
   const title=company?.name||key||'Doanh nghiệp';
-  const message=!esg?'Nguồn công bố ESG đang gián đoạn. Chưa thể kết luận doanh nghiệp không công bố thông tin.':
+  const message=!esg?'Dữ liệu ESG đang gián đoạn. Chưa thể kết luận doanh nghiệp không công bố thông tin.':
    !company?'Chưa tra cứu được hồ sơ ESG cho mã này trong danh mục VN100.':
    found?'Đã ghi nhận '+found+' hồ sơ công bố ('+processed+' hồ sơ xử lý). Đang đối chiếu số định lượng và năm báo cáo; dữ liệu chưa xác minh không được đưa vào biểu đồ.':
-   'Đang theo dõi nguồn công bố chính thức và danh mục báo cáo của doanh nghiệp. Chưa có hồ sơ đủ điều kiện trong lần thu thập này; không suy ra doanh nghiệp không có hoạt động ESG.';
+   'Đang cập nhật hồ sơ công bố và danh mục báo cáo của doanh nghiệp. Chưa có hồ sơ đủ điều kiện trong lần thu thập này; không suy ra doanh nghiệp không có hoạt động ESG.';
   const links=candidates.map(d=>sourceLink(d.url,
    (d.type==='annual_report'?'Báo cáo thường niên':d.type==='sustainability_report'?'Báo cáo phát triển bền vững':'Tài liệu công bố')+
    (d.year?' '+d.year:'')
