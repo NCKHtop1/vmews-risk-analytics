@@ -55,7 +55,7 @@ test('interbank ON uses actual dated observations, not VBMA government repo',()=
  assert.match(out,/22\/10\/2026/);
  assert.match(out,/0,92 điểm %/);
  assert.match(out,/<svg/);
- assert.match(out,/stockbiz\.vn/);
+ assert.doesNotMatch(out,/stockbiz\.vn|dulieukinhte\.com|Nguồn tham khảo/);
  assert.doesNotMatch(out,/vbma\.org\.vn/);
 });
 test('Owner-only manual ON extends crawled dates without creating duplicate days',()=>{
@@ -97,7 +97,7 @@ test('unverified ON or missing observations cannot masquerade as valid chart',()
  const other=JSON.parse(JSON.stringify(fixture));
  other.interbank.status='unavailable';
  api.setData(other);
- assert.match(get('money-on').innerHTML,/Chưa nhận được quan sát ON/);
+ assert.match(get('money-on').innerHTML,/Chuỗi ON đang chờ cập nhật/);
  assert.doesNotMatch(get('money-on').innerHTML,/<svg/);
 });
 test('URL sanitation and SVG injection gates',()=>{
