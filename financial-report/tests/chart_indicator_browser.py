@@ -42,7 +42,7 @@ def fixture(folder):
     (folder / "chart-config.json").write_text("{}", encoding="utf-8")
     checks = "".join(f'<label><input id="ind-{name}" type="checkbox" {"checked" if name in ("sma","volume") else ""}>{name}</label>'
                      for name in INDICATORS)
-    controls = ("chart-zoom-in", "chart-zoom-out", "chart-fit", "chart-fullscreen", "indicator-open", "indicator-close", "chart-marker-toggle")
+    controls = ("chart-zoom-in", "chart-zoom-out", "chart-fit", "chart-focus-latest", "chart-fullscreen", "indicator-open", "indicator-close", "chart-marker-toggle")
     buttons = "".join(f'<button type="button" id="{name}">{name}</button>' for name in controls)
     html = f"""<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <style>*{{box-sizing:border-box}}body{{margin:0;padding:12px;font-family:Arial}}#chart-terminal{{max-width:1080px;margin:auto;min-width:0}}
@@ -51,11 +51,11 @@ def fixture(folder):
     <body><div id="chart-terminal">
     <select id="chart-interval"><option value="1d" selected>Ngày</option><option value="1m">1 phút</option></select>
     <select id="chart-type"><option value="candles" selected>Nến</option></select>
-    <select id="chart-period"><option value="0" selected>All</option></select>
+    <select id="chart-period"><option value="recent" selected>Gần nhất</option><option value="0">All</option></select>
     {buttons}<span id="chart-status"></span><span id="chart-range-label"></span>
     <div id="chart-oscillator-nav" hidden><label for="chart-oscillator-focus">Pane</label><select id="chart-oscillator-focus"></select><small id="chart-oscillator-hint"></small></div>
     <dialog id="chart-indicators"><input id="indicator-search"><div id="indicator-list">{checks}</div><div id="indicator-selected-empty"></div><p id="chart-indicator-error"></p></dialog>
-    <div id="price-chart"></div><div id="chart-insight-markers"></div>
+    <div id="price-chart"></div><div id="chart-insight-markers"></div><div id="chart-latest-candle" hidden></div>
     <div id="price-readout"></div><div id="signal-toast-stack"></div><div id="signal-feed"></div>
     <div id="signal-title"></div><div id="signal-status"></div><p id="chart-stream-status" hidden></p>
     </div>
@@ -92,6 +92,26 @@ def run():
                 driver.get(f"http://127.0.0.1:{server.server_port}/index.html")
                 WebDriverWait(driver, 18).until(lambda d:d.execute_script(
                     "return window.__qaChart?.bars?.length>180 && !!window.__qaChart?.series?.price"))
+                focus=driver.execute_script("""
+                    const c=window.__qaChart,range=c.chart.timeScale().getVisibleLogicalRange();
+                    const latest=document.getElementById('chart-latest-candle');
+                    return {from:range?.from,to:range?.to,bars:c.bars.length,
+                      label:latest?.textContent||'',period:document.getElementById('chart-period').value};
+                """)
+                assert focus["period"]=="recent", focus
+                assert focus["to"]>=focus["bars"]-1, "latest observation outside initial view"
+                assert focus["to"]-focus["from"]<=85, "too many tiny candles in initial view"
+                assert "NẾN GẦN NHẤT" in focus["label"] and "MBB" in focus["label"], focus
+                driver.execute_script("""
+                    const c=window.__qaChart;
+                    c.chart.timeScale().setVisibleLogicalRange({from:12,to:37});
+                    document.getElementById('chart-focus-latest').click();
+                """)
+                centered=driver.execute_script("""
+                    return window.__qaChart.chart.timeScale().getVisibleLogicalRange();
+                """)
+                assert centered["to"]>=focus["bars"]-1, "one-click latest focus does not recenter"
+                print("CHART_LATEST_FOCUS",width,json.dumps(focus),flush=True)
                 driver.execute_script("""
                     const dialog=document.getElementById('chart-indicators');
                     dialog.querySelectorAll('input[type=checkbox]').forEach(el=>{
