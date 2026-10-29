@@ -652,7 +652,7 @@
 
   // The 30-minute VN100 refresh replaces the model in memory: refresh the
   // leaderboard without waiting for a hard page reload or the retired core.
-  window.addEventListener("vmews:forecast-updated",async()=>{
+  window.addEventListener?.("vmews:forecast-updated",async()=>{
     try{
       const load=window.__VMEWS_LOAD_LEADER_BASE__||window.__VMEWS_LOAD_BASE__;
       const next=await load();
