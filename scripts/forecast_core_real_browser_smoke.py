@@ -145,6 +145,50 @@ def main():
             and "Forecast tính" in repaint.get("modelAt","")
         ), "The verified 5m quote did not repaint the visible VN100 stock price: "+str(repaint)
         errors.append({"fiveMinuteQuoteRepaint": repaint})
+        # A 30m heartbeat must replace the T+ forecast itself, not only the
+        # latest market quote. This mock is browser-local and never published.
+        model_refresh = driver.execute_async_script("""
+        const done=arguments[arguments.length-1];
+        (async()=>{
+          const B=await window.__VMEWS_LOAD_BASE__();
+          if(B?.source!=="VN100")return {skipped:true,source:B?.source};
+          const fetch0=window.fetch;
+          const stamp=new Date(Date.now()+2500).toISOString();
+          const originalPrice=B.dash.symbols.FPT.horizons['1'].expectedPrice;
+          const candidate=JSON.parse(JSON.stringify({
+            status:'PASS',version:'FINQUERY-VN100-TS-1',generatedAt:stamp,
+            asOf:B.dash.asOf,universe:{expected:100,available:100},
+            dashboard:B.dash,model:B.model,backtest:B.back,gates:B.gates
+          }));
+          candidate.dashboard.generatedAt=stamp;
+          candidate.dashboard.forecastUpdatedAt=stamp;
+          candidate.dashboard.symbols.FPT.forecastCalculatedAt=stamp;
+          candidate.dashboard.symbols.FPT.horizons['1'].expectedPrice=originalPrice+100;
+          const heartbeat={status:'PASS',generatedAt:stamp,
+            symbols:100,horizons:500,asOf:B.dash.asOf};
+          try{
+            window.fetch=(resource,opts)=>{
+              const url=String(resource?.url||resource||'');
+              if(url.includes('finquery-vn100-status.json'))
+                return Promise.resolve({ok:true,status:200,json:async()=>heartbeat});
+              if(url.includes('finquery-vn100-product.json'))
+                return Promise.resolve({ok:true,status:200,json:async()=>candidate});
+              return fetch0(resource,opts);
+            };
+            const accepted=await window.__VMEWS_REFRESH_CORE__();
+            const after=await window.__VMEWS_LOAD_BASE__();
+            const priceAfter=after.dash.symbols.FPT.horizons['1'].expectedPrice;
+            return{accepted,originalPrice,priceAfter,
+              modelAt:document.getElementById('forecastUpdatedAt')?.textContent||''};
+          }finally{window.fetch=fetch0}
+        })().then(done).catch(e=>done({error:String(e?.stack||e)}));
+        """)
+        assert model_refresh.get("skipped") or (
+            model_refresh.get("accepted") is True
+            and model_refresh.get("priceAfter")==model_refresh.get("originalPrice",0)+100
+            and "Forecast tính" in model_refresh.get("modelAt","")
+        ), "30m numerical publication did not replace T+ forecasts on the visible page: "+str(model_refresh)
+        errors.append({"thirtyMinuteModelRefresh": model_refresh})
         for symbol in DISPUTED:
             result = render_symbol(driver,symbol)
             errors.append({"symbol":symbol,"status":result["status"][:180]})
