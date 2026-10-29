@@ -1,5 +1,5 @@
 {
-  "version": 14,
+  "version": 15,
   "banks": {
     "ACB": {
       "name": "Asia Commercial Bank",
@@ -970,8 +970,36 @@
         "Vietnam Dairy Products"
       ],
       "seed_urls": [
-        "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability"
-      ]
+        "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/sustainability",
+        "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
+        "https://d8um25gjecm9v.cloudfront.net/cms/VNMSR_EN_3ed5d9bc55.pdf"
+      ],
+      "year_overrides": {
+        "https://d8um25gjecm9v.cloudfront.net/cms/VNMSR_EN_3ed5d9bc55.pdf": 2025
+      },
+      "type_overrides": {
+        "https://d8um25gjecm9v.cloudfront.net/cms/VNMSR_EN_3ed5d9bc55.pdf": "sustainability_report"
+      }
+    },
+    "VIC": {
+      "name": "Vingroup",
+      "aliases": [
+        "VIC",
+        "Vingroup",
+        "Tập đoàn Vingroup"
+      ],
+      "seed_urls": [
+        "https://vingroup.net/phat-trien-ben-vung",
+        "https://vingroup.net/quan-he-co-dong/bao-cao-thuong-nien",
+        "https://vingroup.net/en/investor-relations/",
+        "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2025/ENG%20Vingroup%20AR25.pdf"
+      ],
+      "year_overrides": {
+        "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2025/ENG%20Vingroup%20AR25.pdf": 2025
+      },
+      "type_overrides": {
+        "https://ircdn.vingroup.net/storage/Uploads/0_Bao%20cao%20thuong%20nien/2025/ENG%20Vingroup%20AR25.pdf": "annual_report"
+      }
     }
   }
 }
