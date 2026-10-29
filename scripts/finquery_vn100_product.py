@@ -62,6 +62,8 @@ def make_product(source: dict, *, max_cases: int = 6) -> dict:
         "dashboard": {
             "asOf": dashboard.get("asOf"),
             "generatedAt": dashboard.get("generatedAt"),
+            "forecastUpdatedAt": dashboard.get("forecastUpdatedAt") or source.get("generatedAt"),
+            "forecastSessionDate": dashboard.get("forecastSessionDate"),
             "symbols": cleaned,
             "charts": {symbol: rows[-125:] for symbol, rows in charts.items()},
             "promotion": dashboard.get("promotion"),
@@ -98,6 +100,13 @@ def main() -> None:
         "backtestCases": {h: len(rows) for h, rows in product["backtest"]["cases"].items()},
         "freshHistory": (product["universe"] or {}).get("freshHistory"),
         "activeQuotes": (product["universe"] or {}).get("activeQuotes"),
+        "fallbackQuotes": (product["universe"] or {}).get("fallbackQuotes"),
+        "quoteStatus": (product["universe"] or {}).get("quoteStatus"),
+        "inputMode": (product["universe"] or {}).get("inputMode"),
+        "latestVerifiedQuoteAt": (product["universe"] or {}).get("latestVerifiedQuoteAt"),
+        "forecastSessionDate": (product["dashboard"] or {}).get("forecastSessionDate"),
+        "forecastRunEveryMinutes": 30,
+        "marketQuoteDisplayEveryMinutes": 5,
     }
     args.status.write_text(json.dumps(status, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(json.dumps(status, ensure_ascii=False))
