@@ -110,7 +110,11 @@ async function refreshLiveQuotes(force=false){
           // Never roll back the displayed quote to an older verified source.
           const prior=Date.parse(LIVE_QUOTES?.latestSourceTime||LIVE_QUOTES?.sourceTime||"");
           const latest=Date.parse(payload.latestSourceTime||payload.sourceTime||"");
-          if(Number.isFinite(prior)&&(!Number.isFinite(latest)||latest<=prior))return false;
+          if(Number.isFinite(prior)&&(!Number.isFinite(latest)||latest<=prior)){
+            if(last?.B?.dash?.symbols?.[last.sym])
+              rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);
+            return false;
+          }
           LIVE_QUOTES=payload;
           window.__VMEWS_LIVE_QUOTES__=payload;
           // The old page updated its global quote cache but did not rerender
@@ -123,6 +127,10 @@ async function refreshLiveQuotes(force=false){
           return true;
         }catch{continue}
       }
+      // A 5-minute refresh can discover that a previously good quote has
+      // expired. Re-evaluate its timestamp instead of freezing an old label.
+      if(last?.B?.dash?.symbols?.[last.sym])
+        rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);
       return false;
     }finally{LIVE_QUOTES_REFRESHING=null}
   })();
@@ -247,7 +255,7 @@ function sessionQuote(symbol,session=window.__VMEWS_SESSION__){
     const stamp=live.sourceTime||live.updateAt||live.observedAt||"";
     const now=new Date(),ts=Date.parse(stamp),age=now-ts;
     const mode=window.__VMEWS_FRESHNESS__?.quoteMode?.(now)||"";
-    const maxAge=mode==="LIVE"?10*60000:mode==="LUNCH"?105*60000:mode==="POST_CLOSE"?120*60000:72*3600000;
+    const maxAge=mode==="LIVE"?10*60000:mode==="LUNCH"?105*60000:mode==="POST_CLOSE"?120*60000:mode==="CLOSED"?0:10*60000;
     // Valid source time AND current exchange session, not just HTTP 200.
     if(Number.isFinite(ts)&&age>=-300000&&age<=maxAge&&
        (!expected||vnDateKey(stamp)===expected)){
