@@ -6,6 +6,7 @@ const fmt=n=>typeof n==='number'&&Number.isFinite(n)?nf.format(n):'—';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const FEATURES=[
  {id:'pmi',key:'PMI',title:'PMI sản xuất',unit:'điểm',scale:1,threshold:50,color:'#3565d5',info:'Mốc 50 phân biệt mở rộng và thu hẹp'},
+ {id:'gdp_growth',key:'Tốc độ tăng trưởng GDP thực tế',title:'Tăng trưởng GDP thực tế',unit:'% YoY',scale:1,color:'#20795d',info:'Tổng GDP theo quý, không gộp các ngành có điểm ngoại lệ'},
  {id:'money_supply',key:'M2 (tỷ VND)',title:'Cung tiền M2',unit:'nghìn tỷ đồng',scale:1000,color:'#009d87',info:'Số dư M2 công bố theo tháng'},
  {id:'credit_sector',key:'Tổng dư nợ',title:'Dư nợ tín dụng',unit:'nghìn tỷ đồng',scale:1000,color:'#7561c0',info:'Số dư theo thống kê tín dụng'},
  {id:'fdi',key:'FDI giải ngân (lũy kế năm) (tỷ USD)',title:'FDI giải ngân',unit:'tỷ USD',scale:1,color:'#c88932',info:'Lũy kế năm, bắt đầu lại từ tháng 1'}
@@ -29,7 +30,10 @@ function series(ds,key,scale=1){
  if(!ds||!Array.isArray(ds.rows)||!(scale>0))return[];
  const first=(ds.columns||[])[0]||'Date';
  return ds.rows.map(r=>({label:String(r?.[first]??''),date:rank(r?.[first]),raw:r?.[key]}))
- .filter(p=>p.date!==null&&typeof p.raw==='number'&&Number.isFinite(p.raw))
+ .filter(p=>p.date!==null&&typeof p.raw==='number'&&Number.isFinite(p.raw) &&
+ // A quality warning in another GDP sector must not blank the verified
+ // aggregate; values beyond ±20% remain quarantined, never interpolated.
+ (!(ds?.title||'').toLowerCase().includes('gdp')||p.raw>=-20&&p.raw<=20))
  .sort((a,b)=>a.date-b.date)
  .map(p=>({label:p.label,rank:p.date,y:p.raw/scale}));
 }
@@ -66,8 +70,10 @@ function renderMacro(data){
  }
  host.innerHTML=FEATURES.map(c=>{
   const ds=data?.datasets?.[c.id],src=sources.find(s=>s.id===c.id);
-  const qualityBlocked=ds?.qualityStatus==='warning'||src?.qualityStatus==='warning';
-  const allowed=!!ds&&!qualityBlocked&&['ok','cached','retained'].includes(ds.status)&&
+  const qualityNotice=ds?.qualityStatus==='warning'||src?.qualityStatus==='warning';
+  // Quality is assessed per metric rather than suppressing every time-series
+  // when only a separate GDP sector contains a suspicious observation.
+  const allowed=!!ds&&['ok','cached','retained'].includes(ds.status)&&
     (!src||['ok','cached','retained','error'].includes(src.status));
   const pts=allowed?series(ds,c.key,c.scale):[];
   const last=pts.at(-1),earlier=pts.at(-2);
@@ -77,17 +83,21 @@ function renderMacro(data){
   const head='<div class="macro-viz-head"><div><span class="macro-viz-kicker">KINH TẾ VIỆT NAM</span><h4>'+esc(c.title)+'</h4></div>'+(last?'<span class="macro-viz-period">'+esc(last.label)+'</span>':'')+'</div>';
   const link=sourceLink(src?.url,'Nguồn');
   if(pts.length<2){
-    const issue=qualityBlocked?'Chuỗi đang được đối chiếu chất lượng; chưa hiển thị để tránh diễn giải sai.':
+    const issue=qualityNotice?'Cần đối chiếu chỉ tiêu này trong báo cáo gốc; các chuỗi khác vẫn hiển thị độc lập.':
       ds?.status==='retained'?'Nguồn mới tạm gián đoạn; chưa có đủ quan sát đã kiểm chứng trong bản lưu.':
       'Nguồn hiện chưa công bố đủ hai kỳ số liệu hợp lệ để vẽ xu hướng.';
-    return'<article class="macro-viz-card">'+head+'<div class="macro-source-notice" role="status">'+issue+'</div><div class="macro-viz-source">'+link+'</div></article>';
+    return'<article class="macro-viz-card">'+head+
+      (last?'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">Mốc công bố '+esc(last.label)+' · chưa đủ hai kỳ để vẽ đường.</p>':
+      '<div class="macro-source-notice" role="status">'+issue+'</div>')+
+      '<div class="macro-viz-source">'+link+'</div></article>';
   }
   let context='';
   if(c.id==='pmi')context=last.y>=50?'Trên mốc 50 · sản xuất đang mở rộng':'Dưới mốc 50 · sản xuất đang thu hẹp';
   else if(c.id==='fdi')context='';
   else context='So với '+esc(earlier.label)+': '+(last.y>=earlier.y?'+':'')+esc(fmt(last.y-earlier.y))+' '+esc(c.unit);
   const retained=ds?.status==='retained'||src?.status==='retained'||src?.status==='error';
-  return'<article class="macro-viz-card">'+head+(retained?'<div class="macro-source-notice">Dữ liệu kỳ gần nhất đã kiểm chứng · nguồn cập nhật mới đang gián đoạn</div>':'')+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'</div></article>';
+  return'<article class="macro-viz-card">'+head+(retained?'<div class="macro-source-notice">Dữ liệu kỳ gần nhất đã kiểm chứng · nguồn cập nhật mới đang gián đoạn</div>':'')+
+    (qualityNotice?'<div class="macro-quality-inline">Nguồn có cảnh báo ở một số chỉ tiêu; chuỗi hợp lệ vẫn được hiển thị, không điền số thiếu.</div>':'')+'<div class="macro-viz-value"><strong>'+esc(fmt(last.y))+'</strong><span>'+esc(c.unit)+'</span></div><p class="macro-viz-comment">'+context+'</p><div class="macro-viz-plot">'+plot(drawn,{title:c.title,unit:c.unit,color:c.color,threshold:c.threshold})+'</div><div class="macro-viz-source">'+link+'</div></article>';
  }).join('');
  const checkDate=new Date(data?.checkedAt);
  const freshness=$('macro-data-freshness');
@@ -123,7 +133,18 @@ function renderCountry(data){
 function corporateRows(esg,symbol){
  const company=esg?.companies?.[symbol];
  const approved=Array.isArray(company?.canonicalMetrics)?company.canonicalMetrics:[];
- return approved.filter(m=>m&&m.metricId&&typeof m.value==='number'&&Number.isFinite(m.value)&&Number.isInteger(Number(m.year))&&m.year>=2000&&m.year<=2100&&httpsUrl(m.sourceUrl));
+ return approved.filter(m=>{
+  if(!m||!m.metricId||typeof m.value!=='number'||!Number.isFinite(m.value)||
+     !Number.isInteger(Number(m.year))||m.year<2000||m.year>2100||!httpsUrl(m.sourceUrl))return false;
+  // Reject obviously mis-scaled VND rows (e.g. raw "2000 tỷ VND" parsed
+  // as 0.000002 billion VND). Do not silently transform uncertain disclosures.
+  if(m.unit==='billion VND'&&m.value>0&&m.value<.001){
+    const raw=Number(String(m.rawValue||'').replace(/[^0-9.,]/g,'').replace(/\./g,'').replace(',','.'));
+    if(Number.isFinite(raw)&&raw>=1)return false;
+  }
+  if(m.metricId.endsWith('_pct')&&(m.value<0||m.value>100))return false;
+  return true;
+ });
 }
 function renderCorporate(esg,symbol){
  const body=$('macro-company-chart'),foot=$('macro-company-source'),select=$('macro-company-metric'),title=$('macro-company-symbol');
@@ -131,6 +152,7 @@ function renderCorporate(esg,symbol){
  const key=String(symbol||'').toUpperCase(),company=esg?.companies?.[key];
  if(title)title.textContent='DOANH NGHIỆP · '+(key||'CHƯA CHỌN');
  const rows=corporateRows(esg,key),groups=new Map();
+ const rejected=Math.max(0,(company?.canonicalMetrics?.length||0)-rows.length);
  for(const m of rows){
   if(!groups.has(m.metricId))groups.set(m.metricId,[]);
   const list=groups.get(m.metricId);
@@ -148,8 +170,8 @@ function renderCorporate(esg,symbol){
   const title=company?.name||key||'Doanh nghiệp';
   const message=!esg?'Nguồn công bố ESG đang gián đoạn. Chưa thể kết luận doanh nghiệp không công bố thông tin.':
    !company?'Chưa tra cứu được hồ sơ ESG cho mã này trong danh mục VN100.':
-   found?'Đã tìm được '+found+' tài liệu công bố, '+processed+' tài liệu đã xử lý. Chưa trích xuất được KPI định lượng đủ nguồn và kỳ báo cáo để vẽ biểu đồ.':
-   'Chưa tìm được báo cáo ESG đủ điều kiện từ các nguồn đang theo dõi. Điều này không đồng nghĩa doanh nghiệp không có hoạt động ESG.';
+   found?'Đã ghi nhận '+found+' hồ sơ công bố ('+processed+' hồ sơ xử lý). Đang đối chiếu số định lượng và năm báo cáo; dữ liệu chưa xác minh không được đưa vào biểu đồ.':
+   'Đang theo dõi nguồn công bố chính thức và danh mục báo cáo của doanh nghiệp. Chưa có hồ sơ đủ điều kiện trong lần thu thập này; không suy ra doanh nghiệp không có hoạt động ESG.';
   const links=candidates.map(d=>sourceLink(d.url,
    (d.type==='annual_report'?'Báo cáo thường niên':d.type==='sustainability_report'?'Báo cáo phát triển bền vững':'Tài liệu công bố')+
    (d.year?' '+d.year:'')
@@ -157,8 +179,9 @@ function renderCorporate(esg,symbol){
   const index=key&&/^[A-Z]{3}$/.test(key)?
    sourceLink('https://24hmoney.vn/stock/'+key.toLowerCase()+'/report','Danh mục công bố của '+key):'';
   body.innerHTML='<div class="macro-esg-disclosure" role="status"><strong>'+esc(title)+'</strong><p>'+message+'</p>'+
-    (links?'<div class="macro-disclosure-links">'+links+'</div>':'')+
+    (links?'<div class="macro-disclosure-links"><strong>Hồ sơ hiện có</strong> · '+links+'</div>':'')+
     (external.length?'<small>Đã có '+external.length+' đánh giá từ nguồn ngoài; không quy đổi thành điểm ESG tổng hợp.</small>':'')+
+    (rejected?'<small>'+rejected+' dòng KPI nghi sai đơn vị hoặc vượt giới hạn đã bị giữ lại để đối chiếu.</small>':'')+
     '<small>KPI chưa kiểm chứng được giữ trống; không nội suy số liệu hoặc xếp hạng giả.</small></div>';
   foot.innerHTML=found?sourceLink(candidates[0]?.url,'Mở tài liệu nguồn'):index;
   return;
@@ -202,7 +225,7 @@ function renderEsg(data,esg,symbol){
   const withDocs=companies.filter(c=>(c.documents||[]).some(d=>httpsUrl(d.url))).length;
   const last=esg?.checkedAt?new Date(esg.checkedAt):null;
   const lastCheck=last&&Number.isFinite(+last)?last.toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):'chưa rõ';
-  coverage.textContent=esg?'Theo dõi '+companies.length+' doanh nghiệp · '+withKpi+' có KPI ESG định lượng đã kiểm chứng · '+withDocs+' có hồ sơ công bố · kiểm tra nguồn '+lastCheck+'.':'Chưa kết nối được nguồn ESG doanh nghiệp; chỉ tiêu quốc gia được tải độc lập.';
+  coverage.textContent=esg?'Độ phủ VN100: '+companies.length+' doanh nghiệp · '+withDocs+' có tài liệu ESG · '+withKpi+' có KPI chuẩn hóa · '+Math.max(0,companies.length-withKpi)+' đang rà soát nguồn/KPI · kiểm tra '+lastCheck+'.':'Dữ liệu ESG doanh nghiệp đang kết nối; ESG quốc gia hoạt động độc lập.';
  }
  renderCountry(data);
  renderCorporate(esg,symbol);
