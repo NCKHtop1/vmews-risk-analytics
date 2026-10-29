@@ -40,9 +40,10 @@ class ChartController{
  controls(){
  $('chart-interval').addEventListener('change',e=>{this.tf=e.target.value;const period=$('chart-period');if(M.intraday(this.tf)&&Number(period.value)!==0&&Number(period.value)>=12)period.value='3';if(M.intraday(this.tf)&&period.value==='0')period.value='3';this.load();});
  $('chart-type').addEventListener('change',e=>{this.type=e.target.value;this.rebuild(true);});
- $('chart-period').addEventListener('change',e=>{const months=Number(e.target.value);if(M.intraday(this.tf)&&(!months||months>=12)){this.tf='1d';$('chart-interval').value='1d';this.load();return;}this.range();});
+ $('chart-period').addEventListener('change',e=>{const recent=e.target.value==='recent',months=Number(e.target.value);if(M.intraday(this.tf)&&!recent&&(!months||months>=12)){this.tf='1d';$('chart-interval').value='1d';this.load();return;}this.range();});
  $('chart-zoom-in').addEventListener('click',()=>this.zoom(.75));$('chart-zoom-out').addEventListener('click',()=>this.zoom(1.3));
- $('chart-fit').addEventListener('click',()=>this.chart.timeScale().fitContent());
+ $('chart-fit').addEventListener('click',()=>{$('chart-period').value='0';this.chart.timeScale().fitContent();});
+ $('chart-focus-latest')?.addEventListener('click',()=>{$('chart-period').value='recent';this.range();this.updateLatestCue();});
  const markerToggle=$('chart-marker-toggle');markerToggle?.addEventListener('click',()=>{this.insightsVisible=!this.insightsVisible;markerToggle.setAttribute('aria-pressed',String(this.insightsVisible));markerToggle.textContent=this.insightsVisible?'Mốc: bật':'Mốc: tắt';this.renderInsights();});
  $('chart-fullscreen').addEventListener('click',async()=>{const terminal=$('chart-terminal');if(terminal.classList.contains('chart-expanded')){terminal.classList.remove('chart-expanded');$('chart-fullscreen').textContent='Toàn màn hình';return;}try{if(document.fullscreenElement)await document.exitFullscreen();else await terminal.requestFullscreen();}catch{terminal.classList.add('chart-expanded');$('chart-fullscreen').textContent='Thoát toàn màn hình';}});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('chart-terminal').classList.contains('chart-expanded')){$('chart-terminal').classList.remove('chart-expanded');$('chart-fullscreen').textContent='Toàn màn hình';}});
@@ -86,7 +87,8 @@ class ChartController{
  }
  rebuild(keep){const range=keep?this.chart.timeScale().getVisibleLogicalRange():null;
   const osc=this.visibleOscillators();
-  for(const s of Object.values(this.series))this.chart.removeSeries(s);this.series={};
+  for(const s of Object.values(this.series))this.chart.removeSeries(s);
+ this.series={};this.latestPriceLine=null;this.latestMarkers=null;
  const kind=this.type==='line'?L.LineSeries:this.type==='area'?L.AreaSeries:L.CandlestickSeries;
  this.series.price=this.chart.addSeries(kind,{upColor:'#089981',downColor:'#f23645',wickUpColor:'#089981',wickDownColor:'#f23645',borderVisible:false,color:'#4564cc',lineColor:'#4564cc',topColor:'#4564cc50',bottomColor:'#4564cc05',priceFormat:{type:'price',precision:0,minMove:1}},0);
  let pane=0;const line=(key,color,index=0)=>this.series[key]=this.chart.addSeries(L.LineSeries,{color,lineWidth:1,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false},index);const guides=(series,levels)=>levels.forEach(price=>series.createPriceLine({price,color:'#abb3c3',lineWidth:1,lineStyle:2,axisLabelVisible:true,title:''}));
@@ -111,7 +113,8 @@ class ChartController{
  const chartNode=$('price-chart');if(chartNode?.style)chartNode.style.height=required+'px';
  this.chart.applyOptions({height:required,timeScale:{timeVisible:M.intraday(this.tf),tickMarkFormatter:t=>M.intraday(this.tf)?new Date(t*1000).toLocaleTimeString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',hour:'2-digit',minute:'2-digit'}):null}});
  panes.forEach((p,i)=>p.setHeight(i?Math.max(90,Math.floor((required-335)/(total-1))):335));
- if(range)this.chart.timeScale().setVisibleLogicalRange(range);this.readout(this.bars.at(-1));this.renderInsights();
+ if(range)this.chart.timeScale().setVisibleLogicalRange(range);
+ this.updateLatestCue();this.readout(this.bars.at(-1));this.renderInsights();
  }
  priceData(b){return this.type==='candles'?{time:b.time,open:b.open,high:b.high,low:b.low,close:b.close}:{time:b.time,value:b.close};}
  volumeData(b){return {time:b.time,value:b.volume,color:b.close>=b.open?'#08998177':'#f2364577'};}
@@ -176,8 +179,75 @@ class ChartController{
  barDate(time){if(typeof time==='string')return time.slice(0,10);if(typeof time==='number')return new Date(time*1000).toLocaleDateString('en-CA',{timeZone:'Asia/Ho_Chi_Minh'});if(time&&typeof time==='object')return String(time.year)+'-'+String(time.month).padStart(2,'0')+'-'+String(time.day).padStart(2,'0');return'';}
  snapInsightTime(day){if(!day||!this.bars.length)return null;const target=String(day).slice(0,10),first=this.barDate(this.bars[0].time),last=this.barDate(this.bars.at(-1).time);if(!first||!last||target<first||target>last)return null;let prior=null;for(const b of this.bars){const d=this.barDate(b.time);if(d===target)return b.time;if(d>target)return prior?.time||null;prior=b;}return null;}
  renderInsights(){const layer=$('chart-insight-markers');if(!layer)return;if(!this.insightsVisible){layer.innerHTML='';return;}if(!this.bars.length||!this.insightItems.length||!this.series.price){layer.innerHTML='';return;}const grouped=new Map(),buttons=[],height=layer.clientHeight||420;for(const item of this.insightItems){const time=this.snapInsightTime(item.date);if(time==null)continue;const x=this.chart.timeScale().timeToCoordinate(time);if(!Number.isFinite(x)||x<-20||x>(layer.clientWidth||9999)+20)continue;const bar=this.bars.find(b=>String(b.time)===String(time))||this.bars.find(b=>this.barDate(b.time)===this.barDate(time));if(!bar)continue;const key=String(time)+':'+String(item.kind||'event'),stack=grouped.get(key)||0;grouped.set(key,stack+1);const isResearch=item.kind==='research',anchorPrice=isResearch?Number(bar.high):Number(bar.low),anchorY=this.series.price.priceToCoordinate?.(anchorPrice);if(!Number.isFinite(anchorY))continue;const rawTop=isResearch?anchorY-34-stack*30:anchorY+10+stack*30,top=Math.max(8,Math.min(height-32,rawTop));const stemTop=isResearch?top+26:anchorY,stemBottom=isResearch?anchorY:top;buttons.push('<span class="chart-insight-stem '+(isResearch?'research':'event')+'" style="left:'+x.toFixed(1)+'px;top:'+Math.min(stemTop,stemBottom).toFixed(1)+'px;height:'+Math.max(6,Math.abs(stemBottom-stemTop)).toFixed(1)+'px"></span><button type="button" class="chart-insight-marker '+html(item.kind||'event')+' '+html(item.tone||'')+'" data-insight-id="'+html(item.id)+'" style="left:'+x.toFixed(1)+'px;top:'+top.toFixed(1)+'px" title="'+html(item.title||'')+'" aria-label="'+html(item.title||item.label||'Sự kiện')+'"><span>'+html(item.label||'•')+'</span></button>');}layer.innerHTML=buttons.join('');}
- range(){if(!this.bars.length)return;const months=Number($('chart-period').value),first=this.bars[0],last=this.bars.at(-1),labelTime=t=>typeof t==='number'?new Date(t*1000).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):String(t);if(!months){this.chart.timeScale().fitContent();$('chart-range-label').textContent=`${this.bars.length} nến · ${labelTime(first.time)} → ${labelTime(last.time)} · toàn bộ lịch sử có sẵn`;raf(()=>this.renderInsights());return;}const end=typeof last.time==='number'?new Date(last.time*1000):new Date(last.time+'T12:00:00Z'),start=new Date(end);start.setUTCMonth(start.getUTCMonth()-months);let index=this.bars.findIndex(b=>(typeof b.time==='number'?b.time*1000:Date.parse(b.time+'T12:00:00Z'))>=+start);if(index<0)index=0;this.chart.timeScale().setVisibleLogicalRange({from:Math.max(0,index),to:this.bars.length+3});$('chart-range-label').textContent=`${this.bars.length-index} nến trong khoảng xem · ${labelTime(this.bars[index]?.time)} → ${labelTime(last.time)}`;raf(()=>this.renderInsights());}
- zoom(f){const r=this.chart.timeScale().getVisibleLogicalRange();if(r){const mid=(r.from+r.to)/2,half=(r.to-r.from)*f/2;this.chart.timeScale().setVisibleLogicalRange({from:mid-half,to:mid+half});}}
+ range(){
+  if(!this.bars.length)return;
+  const requested=String($('chart-period')?.value||'recent'),months=Number(requested);
+  const first=this.bars[0],last=this.bars.at(-1);
+  const labelTime=t=>typeof t==='number'?
+   new Date(t*1000).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):String(t);
+  if(requested==='recent'){
+   // Initial readability beats showing every candle compressed into <2px.
+   // Keep the latest 35-76 observations with a small future right margin.
+   const available=Number($('price-chart')?.clientWidth)||960;
+   const budget=Math.max(28,Math.min(76,Math.round((available-80)/12)));
+   const count=Math.min(this.bars.length,
+    this.tf==='1mo'?Math.min(budget,36):this.tf==='1w'?Math.min(budget,48):budget);
+   const from=Math.max(0,this.bars.length-count),to=this.bars.length+2.5;
+   this.chart.timeScale().setVisibleLogicalRange({from,to});
+   $('chart-range-label').textContent=count+' nến gần nhất · '+labelTime(this.bars[from].time)+
+    ' → '+labelTime(last.time)+' · nút Về nến mới nhất để quay về';
+   raf(()=>this.renderInsights());return;
+  }
+  if(!months){this.chart.timeScale().fitContent();
+   $('chart-range-label').textContent=this.bars.length+' nến · '+labelTime(first.time)+
+    ' → '+labelTime(last.time)+' · toàn bộ lịch sử có sẵn';
+   raf(()=>this.renderInsights());return;
+  }
+  const end=typeof last.time==='number'?new Date(last.time*1000):new Date(last.time+'T12:00:00Z'),start=new Date(end);
+  start.setUTCMonth(start.getUTCMonth()-months);
+  let index=this.bars.findIndex(b=>(typeof b.time==='number'?b.time*1000:Date.parse(b.time+'T12:00:00Z'))>=+start);
+  if(index<0)index=0;
+  this.chart.timeScale().setVisibleLogicalRange({from:Math.max(0,index),to:this.bars.length+3});
+  $('chart-range-label').textContent=(this.bars.length-index)+' nến · '+labelTime(this.bars[index]?.time)+' → '+labelTime(last.time);
+  raf(()=>this.renderInsights());
+ }
+ zoom(f){
+  const r=this.chart.timeScale().getVisibleLogicalRange();if(!r)return;
+  const end=this.bars.length+2.5,width=(r.to-r.from)*f;
+  // When following the market, zoom around the latest candle rather than
+  // zooming it out of the viewport. Preserve manually panned history.
+  if(r.to>=this.bars.length-1){
+   this.chart.timeScale().setVisibleLogicalRange({from:end-width,to:end});
+  }else{
+   const mid=(r.from+r.to)/2,half=width/2;
+   this.chart.timeScale().setVisibleLogicalRange({from:mid-half,to:mid+half});
+  }
+ }
+ updateLatestCue(){
+  const last=this.bars.at(-1),node=$('chart-latest-candle');
+  if(node){
+   node.hidden=!last;
+   if(last)node.textContent='NẾN GẦN NHẤT · '+this.symbol+' · '+
+    timeLabel(last.time)+' · C '+fmt(last.close);
+  }
+  if(!last||!this.series.price)return;
+  const color=last.close>=last.open?'#0b9074':'#d24e54';
+  if(this.latestPriceLine?.applyOptions){
+   this.latestPriceLine.applyOptions({price:last.close,color});
+  }else if(typeof this.series.price.createPriceLine==='function'){
+   this.latestPriceLine=this.series.price.createPriceLine({
+    price:last.close,color,lineWidth:1,lineStyle:2,axisLabelVisible:true,title:'MỚI NHẤT'
+   });
+  }
+  if(typeof L.createSeriesMarkers==='function'){
+   const marker=[{time:last.time,position:'aboveBar',color,
+     shape:'circle',text:'MỚI NHẤT',size:1}];
+   try{
+    if(this.latestMarkers?.setMarkers)this.latestMarkers.setMarkers(marker);
+    else this.latestMarkers=L.createSeriesMarkers(this.series.price,marker);
+   }catch{ /* Keep the chart readable if marker API is unsupported. */ }
+  }
+ }
  subscribe(){if(this.socket?.readyState===WebSocket.OPEN){this.socket.send(JSON.stringify({type:'subscribe',symbols:this.watch,intervals:['1m','1d']}));}}
  connect(){clearTimeout(this.retry);if(this.stopped||!this.options)return;if(!this.options.websocketUrl){this.status('');return;}if(!/^wss:\/\//.test(this.options.websocketUrl)){this.status('Cấu hình WebSocket cần địa chỉ wss:// hợp lệ.');return;}if(this.socket&&this.socket.readyState<2)return;
  this.status('Đang kết nối luồng giá…');const socket=this.socket=new WebSocket(this.options.websocketUrl);
@@ -189,7 +259,7 @@ class ChartController{
  // Reaggregate only the current bucket, preserving every earlier rendered candle.
  const t=M.bucket(next.time,this.tf),tail=[];for(let i=this.baseBars.length-1;i>=0&&M.bucket(this.baseBars[i].time,this.tf)===t;i--)tail.unshift(this.baseBars[i]);const b=M.aggregate(tail,this.tf)[0];if(this.bars.at(-1)?.time===b.time)this.bars[this.bars.length-1]=b;else this.bars.push(b);
  const i=this.bars.length-1,v=M.point(this.bars,i,this.params,this.values[i-1]);this.values[i]=v;this.series.price.update(this.priceData(b));this.series.volume?.update(this.volumeData(b));for(const [key,s]of Object.entries(this.series))if(!['price','volume'].includes(key)&&Number.isFinite(v[key]))s.update({time:b.time,value:v[key],...(key==='hist'?{color:v.hist>=0?'#08998188':'#f2364588'}:{})});
- this.readout(b);this.evaluateSignals(true);this.renderInsights();this.cache.delete(this.symbol+':'+baseTF);this.status(`WebSocket · Nến ${timeLabel(next.time)} · Nhận lúc ${new Date().toLocaleTimeString('vi-VN')}`);
+ this.updateLatestCue();this.readout(b);this.evaluateSignals(true);this.renderInsights();this.cache.delete(this.symbol+':'+baseTF);this.status(`WebSocket · Nến ${timeLabel(next.time)} · Nhận lúc ${new Date().toLocaleTimeString('vi-VN')}`);
  }
  close(){this.stopped=true;clearTimeout(this.retry);clearTimeout(this.staleTimer);this.abort?.abort();this.socket?.close();}
 }
