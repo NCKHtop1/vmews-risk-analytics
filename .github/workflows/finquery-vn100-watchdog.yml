@@ -1,0 +1,77 @@
+name: FinQuery VN100 forecast publication watchdog
+on:
+  workflow_dispatch:
+  schedule:
+    # Independent 15-minute monitor; recovers a missed half-hour publisher.
+    - cron: '2,17,32,47 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finquery-vn100-watchdog.yml'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: finquery-vn100-watchdog
+  cancel-in-progress: false
+jobs:
+  detect-and-recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check publisher heartbeat and verify exchange session
+        id: check
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,os,time,urllib.request
+          from datetime import datetime,timezone,timedelta
+          from scripts.vn_exchange_calendar import VN_TZ,latest_completed_session
+          now=datetime.now(timezone.utc)
+          url='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/finquery-vn100-data/data/finquery-vn100-status.json?ts='+str(time.time_ns())
+          stale=True
+          reason='publisher heartbeat missing'
+          try:
+              with urllib.request.urlopen(urllib.request.Request(url,headers={'Cache-Control':'no-cache'}),timeout=16) as response:
+                  status=json.load(response)
+              stamp=datetime.fromisoformat(str(status.get('generatedAt') or '').replace('Z','+00:00'))
+              age=(now-stamp.astimezone(timezone.utc)).total_seconds()/60
+              completed=latest_completed_session(now.astimezone(VN_TZ)).isoformat()
+              # GitHub cron is best-effort. Accept an overnight EOD cutover only
+              # after a bounded grace window; do not call stale market bars live.
+              vn=now.astimezone(VN_TZ)
+              grace=vn.hour==15 and vn.minute<55
+              valid=status.get('status')=='PASS' and status.get('symbols')==100 and status.get('horizons')==500
+              fresh=valid and -5<=age<=85 and (status.get('asOf')>=completed or grace)
+              stale=not fresh
+              reason=f"age={age:.1f}m verified={valid} asOf={status.get('asOf')} expectedEOD={completed} fresh={fresh}"
+          except Exception as exc:
+              reason=type(exc).__name__+': '+str(exc)[:180]
+          print('VN100 publisher check:',reason)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as out:
+              out.write('stale='+str(stale).lower()+'\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as out:
+              out.write('VN100: '+reason+'\n')
+          PY
+      - name: Dispatch one recovery when publisher is stale or offline
+        if: steps.check.outputs.stale == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          active="$(gh run list --workflow finquery-vn100-forecast.yml --limit 12 --json status --jq 'any(.[]; .status=="queued" or .status=="in_progress" or .status=="waiting" or .status=="pending")' 2>/dev/null || echo false)"
+          if [ "$active" != "true" ]; then
+            gh workflow run finquery-vn100-forecast.yml --ref main
+            echo "::warning::VN100 stale: recovery dispatched. Keep this check FAILED until verified by the next run."
+          else
+            echo "::warning::VN100 publisher already running; do not dispatch duplicate."
+          fi
+          exit 1

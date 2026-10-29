@@ -89,7 +89,7 @@ def normalize_bars(payload: dict, completed: str) -> list[dict]:
     return [dedup[day] for day in sorted(dedup)]
 
 
-def load_market(core_path: Path, market_dir: Path, completed: str) -> dict[str, list[dict]]:
+def load_market(core_path: Path, market_dir: Path, completed: str, previous_path: Path | None = None) -> dict[str, list[dict]]:
     core = json.loads(core_path.read_text(encoding="utf-8"))
     symbols = [str(row.get("symbol") or "").upper().strip() for row in core]
     if len(symbols) != 100 or len(set(symbols)) != 100:
@@ -98,12 +98,26 @@ def load_market(core_path: Path, market_dir: Path, completed: str) -> dict[str, 
         raise RuntimeError("Core VN100 includes a non-HOSE symbol")
     histories = {}
     missing = []
+    retained = {}
+    if previous_path is not None and previous_path.is_file():
+        try:
+            prior = json.loads(previous_path.read_text(encoding="utf-8"))
+            if prior.get("status") == "PASS" and len((prior.get("dashboard") or {}).get("symbols") or {}) == 100:
+                retained = (prior.get("dashboard") or {}).get("charts") or {}
+        except (OSError, ValueError, TypeError):
+            retained = {}
     for symbol in symbols:
         path = market_dir / "history" / f"{symbol}.json"
-        if not path.is_file():
-            missing.append(symbol)
-            continue
-        rows = normalize_bars(json.loads(path.read_text(encoding="utf-8")), completed)
+        rows = []
+        if path.is_file():
+            try:
+                rows = normalize_bars(json.loads(path.read_text(encoding="utf-8")), completed)
+            except (OSError, ValueError, TypeError):
+                rows = []
+        if len(rows) < MIN_BARS:
+            # Retain real, previously published closes. Never manufacture an OHLC
+            # observation to cover a temporary source outage.
+            rows = normalize_bars({"bars": retained.get(symbol) or []}, completed)
         if len(rows) < MIN_BARS:
             missing.append(symbol)
             continue
@@ -265,10 +279,10 @@ def backtest(histories: dict[str, list[dict]]) -> tuple[dict, dict, dict]:
     return {"horizons": metrics, "cases": reduced}, walk, per_symbol
 
 
-def build(core_path: Path, market_dir: Path, now: datetime | None = None) -> dict:
+def build(core_path: Path, market_dir: Path, now: datetime | None = None, previous_path: Path | None = None) -> dict:
     now = (now or datetime.now(VN_TZ)).astimezone(VN_TZ)
     completed = latest_completed_session(now).isoformat()
-    histories = load_market(core_path, market_dir, completed)
+    histories = load_market(core_path, market_dir, completed, previous_path)
     quotes_path = market_dir / "quotes.json"
     quotes = json.loads(quotes_path.read_text(encoding="utf-8")) if quotes_path.exists() else {}
     audit, walk, per_symbol = backtest(histories)
@@ -353,11 +367,15 @@ def build(core_path: Path, market_dir: Path, now: datetime | None = None) -> dic
         symbols[symbol] = {
             "symbol": symbol,
             "exchange": "HOSE",
-            "date": completed,
+            "date": origin,
             "dataFreshness": "CURRENT" if origin == completed else "STALE_EOD",
             "historicalAsOf": origin,
-            "close": anchor_price,
+            # The completed-session close must never be mislabeled as the
+            # intraday anchor when an optional live price feed becomes unavailable.
+            "close": latest_close,
             "coreClose": latest_close,
+            "forecastAnchorClose": anchor_price,
+            "forecastAnchorAt": quote_time,
             "liveQuoteAt": quote_time,
             "dailyVolatility": hist_vol,
             "lastSessionReturn": latest_close / bars[-2]["close"] - 1.0,
@@ -392,8 +410,9 @@ def build(core_path: Path, market_dir: Path, now: datetime | None = None) -> dic
         raise RuntimeError("VN100 forecast coverage is not exactly 100/100")
     if recent_bars < 95:
         raise RuntimeError(f"Same-session history coverage below 95/100: {recent_bars}")
-    if active_today and quote_count < 90:
-        raise RuntimeError(f"Intraday verified quote coverage below 90/100: {quote_count}")
+    # Quotes are an optional, independently verified overlay. Source outages
+    # must not suppress 500 EOD-based estimates for the entire VN100 universe.
+    # Individual missing quotes retain the last verified completed EOD anchor.
     model = {
         "source": VERSION,
         "universe": {"currentSymbols": 100},
@@ -405,7 +424,9 @@ def build(core_path: Path, market_dir: Path, now: datetime | None = None) -> dic
         "status": "PASS",
         "generatedAt": now.isoformat(),
         "asOf": completed,
-        "universe": {"expected": 100, "available": len(symbols), "freshHistory": recent_bars, "activeQuotes": quote_count},
+        "universe": {"expected": 100, "available": len(symbols), "freshHistory": recent_bars, "activeQuotes": quote_count,
+                     "quoteStatus": "LIVE_VERIFIED" if quote_count >= 90 else "EOD_FALLBACK",
+                     "fallbackQuotes": len(symbols) - quote_count if active_today else 0},
         "dashboard": {
             "asOf": completed,
             "generatedAt": now.isoformat(),
@@ -425,9 +446,10 @@ def main() -> None:
     parser.add_argument("--market", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--now", default="")
+    parser.add_argument("--previous", type=Path)
     args = parser.parse_args()
     instant = datetime.fromisoformat(args.now.replace("Z", "+00:00")) if args.now else None
-    payload = build(args.core, args.market, instant)
+    payload = build(args.core, args.market, instant, args.previous)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     tmp = args.output.with_name(args.output.name + ".tmp")
     tmp.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":"), allow_nan=False), encoding="utf-8")

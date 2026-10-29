@@ -67,6 +67,18 @@
     return row.upside * (.68 + .32 * quality);
   }
 
+  function isVN100Product(){
+    return state.base?.model?.universe?.currentSymbols===100;
+  }
+  function setUniverseLabels(){
+    if(!isVN100Product())return;
+    const tape=$(".marketTapeLabel"),all=$('[data-filter="all"]'),deck=$("#signalDeck");
+    if(tape)tape.textContent="VN100";
+    if(all)all.textContent="VN100 dự báo tăng";
+    if(deck)deck.setAttribute("aria-label","Các cổ phiếu VN100 theo kỳ dự báo");
+    const command=$("#leaders .commandIndex");
+    if(command&&command.textContent.includes("HOSE"))command.textContent=command.textContent.replace("HOSE","VN100");
+  }
   function rankingHorizon(base) {
     const promotion = base?.model?.promotion || base?.dash?.promotion || {};
     const promoted = new Set((promotion.directPriceHorizons || []).map(Number));
@@ -241,7 +253,14 @@
   window.__VMEWS_FINAL_LEADERBOARD__ = finalLeaderboard;
 
   function sessionStamp() {
-    if (!state.session?.cutoffAt) return " · EOD đã kiểm định";
+    if (!state.session?.cutoffAt) {
+      const stamp=new Date(state.base?.dash?.generatedAt||"");
+      if(state.base?.dash?.asOf&&Number.isFinite(+stamp)){
+        const label=new Intl.DateTimeFormat("vi-VN",{timeZone:"Asia/Ho_Chi_Minh",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(stamp);
+        return " · cập nhật "+label;
+      }
+      return " · EOD đã kiểm định";
+    }
     const date = new Date(state.session.cutoffAt);
     if (Number.isNaN(+date)) return "";
     const time = new Intl.DateTimeFormat("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Ho_Chi_Minh" }).format(date);
@@ -258,6 +277,7 @@
     const deck = $("#signalDeck");
     const stale = window.__VMEWS_FRESHNESS__?.inspect({date:state.base?.dash?.asOf}).stale;
     if (command) command.textContent = stale ? "HOSE · ĐANG CẬP NHẬT" : defensive ? "HOSE · TRẠNG THÁI PHÒNG THỦ" : `HOSE · T+${horizon}`;
+    if(isVN100Product()&&command)command.textContent=command.textContent.replace("HOSE","VN100");
     if (summary) summary.textContent = stale ? "Chờ dữ liệu phiên hoàn tất mới nhất; tạm ẩn xếp hạng từ bộ dự báo cũ." : state.session?.forecastAlignment?.rankingEligible === false
       ? "Giá thị trường mới đã được xác thực; bảng xếp hạng giữ nguyên forecast EOD và chờ lõi mô hình cập nhật."
       : defensive
@@ -344,7 +364,7 @@
       const direction = row.upside > 0 ? "tăng" : "giảm";
       const returnTone = row.upside > 0 ? "signalUp" : "signalDown";
       const returnLabel = state.defensive ? "GIẢM ÍT NHẤT TRÊN HOSE" : `TRIỂN VỌNG T+${row.horizon}`;
-      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo ${direction} ${percent(Math.abs(row.upside), 2)} tại T+${row.horizon}" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / HOSE</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>điểm</small></span></div><div class="signalReturn"><strong class="${returnTone}">${signed(row.upside, 2)}</strong><span>${returnLabel}</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>${money(row.close)} <i>→</i> <b>${money(row.target)}</b></span><span>${shortDate(row.targetDate)}</span></div><div class="signalBand"><span>VÙNG GIÁ</span><b>${money(row.q20)} – ${money(row.q80)}</b></div><div class="signalFacts">${row.directionValidated ? `<span>P↑ ${probability}</span>` : ""}<span>${row.newsCount} tin / 5 phiên</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">Thanh khoản thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
+      return `<article class="signalCard ${riskClass(row)}" data-card="${index}" data-symbol="${escapeHTML(row.symbol)}" aria-label="${escapeHTML(row.symbol)}, dự báo ${direction} ${percent(Math.abs(row.upside), 2)} tại T+${row.horizon}" tabindex="-1"><div class="signalCardTop"><span class="signalRank">#${String(index + 1).padStart(2, "0")} / ${isVN100Product()?"VN100":"HOSE"}</span><span class="signalRisk ${riskClass(row)}">${escapeHTML(riskLabel(row))}</span></div><div class="signalIdentity"><div><h3>${escapeHTML(row.symbol)}</h3><span>${escapeHTML(row.sector)}</span></div><span class="qualityOrbit" style="--quality:${row.quality}%"><b>${row.quality}</b><small>điểm</small></span></div><div class="signalReturn"><strong class="${returnTone}">${signed(row.upside, 2)}</strong><span>${returnLabel}</span></div><canvas class="leaderSpark" data-spark="${index}" aria-label="Biểu đồ giá của ${escapeHTML(row.symbol)}"></canvas><div class="signalPrices"><span>${money(row.close)} <i>→</i> <b>${money(row.target)}</b></span><span>${shortDate(row.targetDate)}</span></div><div class="signalBand"><span>VÙNG GIÁ</span><b>${money(row.q20)} – ${money(row.q80)}</b></div><div class="signalFacts">${row.directionValidated ? `<span>P↑ ${probability}</span>` : ""}<span>${row.newsCount} tin / 5 phiên</span><span class="${illiquid ? "factWarning" : ""}">${valueLabel(row.tradedValue20)} / phiên</span></div>${illiquid ? '<div class="liquidityWarning">Thanh khoản thấp</div>' : ""}<button class="cardAction" type="button" data-analyze="${escapeHTML(row.symbol)}">Phân tích ${escapeHTML(row.symbol)} <span>↗</span></button></article>`;
     }).join("");
 
     $("#leaderDots").innerHTML = state.rows.map((row, index) => `<button type="button" class="leaderDot" data-dot="${index}" aria-label="Xem ${escapeHTML(row.symbol)}" title="${escapeHTML(row.symbol)}"></button>`).join("");
@@ -606,6 +626,7 @@
     try {
       const load = window.__VMEWS_LOAD_LEADER_BASE__ || window.__VMEWS_LOAD_BASE__;
       state.base = await load();
+      setUniverseLabels();
       if (state.base.gates?.status !== "PASS" || state.base.model?.promotion?.status !== "PASS") throw new Error("Model promotion chưa PASS; bảng xếp hạng bị khóa.");
       // Forecast EOD is already audited. Never block the leaderboard shell
       // or snapshot date on the optional intraday session provider.
@@ -643,6 +664,22 @@
     }
   }
 
+  // The 30-minute VN100 refresh replaces the model in memory: refresh the
+  // leaderboard without waiting for a hard page reload or the retired core.
+  window.addEventListener?.("vmews:forecast-updated",async()=>{
+    try{
+      const load=window.__VMEWS_LOAD_LEADER_BASE__||window.__VMEWS_LOAD_BASE__;
+      const next=await load();
+      if(next?.gates?.status!=="PASS"||next?.model?.promotion?.status!=="PASS")return;
+      state.base=next;setUniverseLabels();state.session=null;window.__VMEWS_SESSION__=null;
+      state.candidates=finalLeaderboard(next,null,{all:true,includeNonPositive:true});
+      state.universe=finalLeaderboard(next,null,{all:true});
+      state.defensive=state.universe.length===0;
+      state.rows=finalLeaderboard(next,null,{filter:state.filter,includeNonPositive:state.defensive});
+      $("#snapshotDate").textContent=`${next.dash.asOf||"—"}${sessionStamp()}`;
+      refreshMode();renderPulse();renderCards();scheduleRotation();
+    }catch(error){console.warn("VN100 leaderboard refresh failed",error)}
+  });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();
 })();

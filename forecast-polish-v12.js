@@ -10,7 +10,38 @@ function cleanText(s){if(!s)return s;let t=s;for(const[a,b]of textMap)t=t.split(
 function polishNode(el){if(!el||el.dataset?.polishLock==="1")return;const leaves=el.matches?.(".empty,#summary,#expertMeta,#btMeta,.sourceCard span,.sourceCard small,.forecastCard small,.forecastCard strong,.metric span,.metric small,#btDetail .eyebrow,#btDetail .metric span,#btDetail .metric small,#ablation .metric span,#tooltip span,#tooltip strong,#tooltip b,#status,#chartTitle")?[el]:[...el.querySelectorAll?.(".empty,#summary,#expertMeta,#btMeta,.sourceCard span,.sourceCard small,.forecastCard small,.forecastCard strong,.metric span,.metric small,#btDetail .eyebrow,#btDetail .metric span,#btDetail .metric small,#ablation .metric span,#tooltip span,#tooltip strong,#tooltip b,#status,#chartTitle")||[]];for(const x of leaves)if(x.children.length===0){const v=cleanText(x.textContent);if(v!==x.textContent)x.textContent=v}const title=$("#driverTitle");if(title&&/^T\+\d+ expert contribution$/.test(title.textContent||""))title.textContent=(title.textContent||"").replace(/T\+(\d+) expert contribution/,"Đóng góp mô hình · T+$1")}
 function polishSummary(){const s=$("#summary");if(!s)return;let t=s.textContent||"";t=t.replace(/; q20–q80 /gi," · vùng dự báo ").replace(/; khoảng q20–q80 /gi," · vùng dự báo ").replace(/Full model T\+5 /g,"T+5 dự kiến ").replace(/VMEWS đang RED\. Risk chỉ override stance, không sửa numerical forecast\./g,"Rủi ro hệ thống đang ở mức cao.").replace(/T\+5 chưa vượt đầy đủ ranking \+ distribution \+ generalization gate\. Giá dự báo bị ẩn thay vì nội suy hoặc giả lập\./g,"T+5 hiện chưa đủ điều kiện để công bố mức giá dự báo.");t=cleanText(t);if(t!==s.textContent)s.textContent=t}
 function refresh(){polishNode(document.body);polishSummary()}
-async function renderMethodProof(){const box=$("#methodProof");if(!box)return;try{const B=await window.__VMEWS_LOAD_BASE__(),model=B.model,hs=Object.values(model.horizons||{}),holdoutRows=hs.map(x=>+(x.sealedAudit?.n||0)).filter(Number.isFinite),rank=hs.map(x=>+(x.sealedAudit?.rankIC||0)).filter(Number.isFinite),coverage=hs.map(x=>+(x.sealedAudit?.coverage20_80||0)).filter(Number.isFinite),improved=hs.every(x=>+(x.sealedAudit?.executableMAESkill||0)>0),u=model.universe||{};box.innerHTML=`<article class="proofCard"><span>Mẫu kiểm định</span><b>${holdoutRows.length?Math.min(...holdoutRows).toLocaleString("vi-VN")+"+":"—"}</b><small>mỗi kỳ dự báo</small></article><article class="proofCard"><span>Sai số so với giá không đổi</span><b>${improved?"TỐT HƠN":"CẦN XEM LẠI"}</b><small>T+1 đến T+5</small></article><article class="proofCard"><span>IC xếp hạng bình quân</span><b>${rank.length?pct(rank.reduce((a,b)=>a+b,0)/rank.length):"—"}</b><small>trên dữ liệu chưa từng học</small></article><article class="proofCard"><span>Độ phủ HOSE</span><b>${u.currentSymbols||"—"} mã</b><small>${coverage.length?`vùng giá phủ ${pct(coverage.reduce((a,b)=>a+b,0)/coverage.length)}`:""}</small></article>`}catch{box.innerHTML='<div class="empty">Chưa tải được kết quả kiểm định.</div>'}}
+async function renderMethodProof(){
+ const box=$("#methodProof");if(!box)return;
+ try{
+  const B=await window.__VMEWS_LOAD_BASE__(),model=B.model;
+  const hs=Object.values(model.horizons||{}),metrics=hs.map(x=>x.sealedAudit||{});
+  const pctOrDash=x=>Number.isFinite(x)?pct(x):"—";
+  if(B.source==="VN100"){
+   const n=Math.min(...metrics.map(x=>+x.n||0));
+   const valid=Object.values(B.dash.symbols||{}).filter(z=>
+     [1,2,3,4,5].every(h=>z.horizons?.[String(h)]?.priceValidated===true)).length;
+   const direction=metrics.map(x=>x.directionalAccuracy).filter(Number.isFinite);
+   const skills=metrics.map(x=>x.executableMAESkill).filter(Number.isFinite);
+   const coverage=metrics.map(x=>x.coverage20_80).filter(Number.isFinite);
+   const mean=a=>a.length?a.reduce((u,v)=>u+v,0)/a.length:NaN;
+   box.innerHTML=`<article class="proofCard"><span>Giá dự báo T+1 đến T+5</span><b>${valid*5} / 500</b><small>VN100 · đủ cả 5 phiên dự báo</small></article>
+    <article class="proofCard"><span>Mẫu kiểm định</span><b>${n?n.toLocaleString("vi-VN")+"+":"—"}</b><small>số dự báo đã có kết quả, mỗi kỳ hạn</small></article>
+    <article class="proofCard"><span>Đúng chiều trong quá khứ</span><b>${pctOrDash(mean(direction))}</b><small>không bảo đảm kết quả tương lai</small></article>
+    <article class="proofCard"><span>So với giá không đổi</span><b>${pctOrDash(mean(skills))}</b><small>mức cải thiện sai số · độ phủ vùng ${pctOrDash(mean(coverage))}</small></article>`;
+   return;
+  }
+  // Keep the independent full-HOSE backtest view intact. FinQuery VN100
+  // uses the compact four-card proof above, never invented legacy rank IC.
+  const holdoutRows=metrics.map(x=>+(x.n||0)).filter(Number.isFinite),
+    rank=metrics.map(x=>+(x.rankIC||0)).filter(Number.isFinite),
+    coverage=metrics.map(x=>+(x.coverage20_80||0)).filter(Number.isFinite),
+    improved=metrics.every(x=>+(x.executableMAESkill||0)>0),u=model.universe||{};
+  box.innerHTML=`<article class="proofCard"><span>Mẫu kiểm định</span><b>${holdoutRows.length?Math.min(...holdoutRows).toLocaleString("vi-VN")+"+":"—"}</b><small>mỗi kỳ dự báo</small></article>
+    <article class="proofCard"><span>Sai số so với giá không đổi</span><b>${improved?"TỐT HƠN":"CẦN XEM LẠI"}</b><small>T+1 đến T+5</small></article>
+    <article class="proofCard"><span>IC xếp hạng bình quân</span><b>${rank.length?pct(rank.reduce((a,b)=>a+b,0)/rank.length):"—"}</b><small>trên dữ liệu chưa từng học</small></article>
+    <article class="proofCard"><span>Độ phủ HOSE</span><b>${u.currentSymbols||"—"} mã</b><small>${coverage.length?`vùng giá phủ ${pct(coverage.reduce((a,b)=>a+b,0)/coverage.length)}`:""}</small></article>`;
+ }catch{box.innerHTML='<div class="empty">Chưa tải được kết quả kiểm định.</div>'}
+}
 
 let research=null,lastSym="",taState={SMA20:true,SMA50:true,EMA20:false,BB:true,RSI:true,MACD:true,OBV:false};
 async function researchData(){if(research)return research;const root=window.__VMEWS_DATA_ROOT__||'./data';const[B,ctx]=await Promise.all([window.__VMEWS_LOAD_BASE__(),fetch(`${root}/current-context-v12.json?refresh=${Math.floor(Date.now()/300000)}`,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)]);research={dash:B.dash,ctx};return research}

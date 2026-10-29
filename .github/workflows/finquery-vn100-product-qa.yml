@@ -1,0 +1,54 @@
+name: FinQuery VN100 forecast product and source regression
+on:
+  pull_request:
+    paths:
+      - 'scripts/finquery_vn100_timeseries.py'
+      - 'scripts/finquery_vn100_product.py'
+      - 'scripts/test_finquery_vn100_product.py'
+      - 'scripts/test_finquery_vn100_frontend.cjs'
+      - 'forecast-final.html'
+      - 'forecast-final-v12.js'
+      - 'forecast-polish-v12.js'
+      - 'forecast-live-leaders-v14.js'
+      - '.github/workflows/finquery-vn100-forecast.yml'
+      - '.github/workflows/finquery-vn100-product-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/finquery_vn100_timeseries.py'
+      - 'scripts/finquery_vn100_product.py'
+      - 'scripts/test_finquery_vn100_product.py'
+      - 'scripts/test_finquery_vn100_frontend.cjs'
+      - 'forecast-final.html'
+      - 'forecast-final-v12.js'
+      - 'forecast-polish-v12.js'
+      - 'forecast-live-leaders-v14.js'
+      - '.github/workflows/finquery-vn100-forecast.yml'
+      - '.github/workflows/finquery-vn100-product-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  vn100-publisher-and-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate browser module syntax and source resolution
+        run: |
+          node --check forecast-final-v12.js
+          node --check forecast-polish-v12.js
+          node --check forecast-live-leaders-v14.js
+          node --test scripts/test_finquery_vn100_frontend.cjs
+      - name: Test numerical 100 x 5 forecast and historical fallback
+        run: |
+          python -m py_compile scripts/finquery_vn100_timeseries.py scripts/finquery_vn100_product.py
+          python -m unittest scripts/test_finquery_vn100_product.py -v

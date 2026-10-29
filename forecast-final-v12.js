@@ -23,16 +23,44 @@ const FETCH_TIMEOUT_MS=Math.max(30,Math.min(30000,Number(window.__FINQUERY_FOREC
 const CHART_EXECUTABLE_CLOSE=item=>finite(item?.rawClose)?+item.rawClose:finite(item?.close)?+item.close:NaN;
 let BASE=null,BASE_PROMISE=null,LEADER_BASE_PROMISE=null,last=null,btH=0,hoverPoints=[],chartRange=65,chartFrame=0,chartBounds=null;
 const JSON_PROMISES=new Map();
-const VN100_BUNDLE_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/finquery-vn100-data/data/finquery-vn100-forecast.json";
+// Product data is a light, independently published VN100 package. The immutable
+// complete backtest remains available as a last-known-good download fallback.
+const VN100_DATA_ROOT="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/finquery-vn100-data/data/";
+const VN100_MIRROR_ROOT="https://cdn.jsdelivr.net/gh/NCKHtop1/vmews-risk-analytics@finquery-vn100-data/data/";
+const VN100_PRODUCT_URL=VN100_DATA_ROOT+"finquery-vn100-product.json";
+const VN100_FULL_URL=VN100_DATA_ROOT+"finquery-vn100-forecast.json";
 let VN100_BUNDLE_PROMISE=null;
-async function loadVN100(){
-  if(INDEPENDENT_CORE_PAGE)return null;
+function validVN100(data){
+  if(data?.status!=="PASS"||data?.gates?.status!=="PASS"||data?.universe?.available!==100)return false;
+  const symbols=data?.dashboard?.symbols||{},charts=data?.dashboard?.charts||{};
+  if(Object.keys(symbols).length!==100||Object.keys(charts).length!==100)return false;
+  const time=Date.parse(data.generatedAt||"");
+  if(!Number.isFinite(time)||time>Date.now()+5*60_000)return false;
+  return Object.values(symbols).every(row=>Object.keys(row?.horizons||{}).length===5&&
+    [1,2,3,4,5].every(n=>{const q=row.horizons[String(n)];return q?.priceValidated===true&&
+    finite(q.expectedPrice)&&+q.expectedPrice>0&&finite(q.q20Price)&&finite(q.q80Price)}));
+}
+async function loadVN100(force=false){
+  if(force)VN100_BUNDLE_PROMISE=null;
   if(!VN100_BUNDLE_PROMISE){
     VN100_BUNDLE_PROMISE=(async()=>{
-      const data=await fetchJsonBounded(`${VN100_BUNDLE_URL}?refresh=${Math.floor(Date.now()/60000)}`,Math.min(FETCH_TIMEOUT_MS,8000));
-      if(data?.status!=="PASS"||data?.gates?.status!=="PASS"||data?.universe?.available!==100||Object.keys(data?.dashboard?.symbols||{}).length!==100)return null;
+      const revision=Math.floor(Date.now()/30000);
+      const targets=[
+        [VN100_PRODUCT_URL,Math.min(FETCH_TIMEOUT_MS,11000)],
+        [VN100_MIRROR_ROOT+"finquery-vn100-product.json",Math.min(FETCH_TIMEOUT_MS,9000)],
+        [VN100_FULL_URL,Math.min(FETCH_TIMEOUT_MS,16000)],
+      ];
+      for(const[url,timeout]of targets){
+        try{
+          const data=await fetchJsonBounded(url+"?refresh="+revision,timeout);
+          if(validVN100(data))return data;
+        }catch{}
+      }
+      return null;
+    })().then(data=>{
+      if(!data)VN100_BUNDLE_PROMISE=null; // Recover on the next visible refresh.
       return data;
-    })().catch(()=>null);
+    });
   }
   return VN100_BUNDLE_PROMISE;
 }
@@ -118,8 +146,43 @@ async function json(name){
   try{return await request}
   catch(error){if(JSON_PROMISES.get(name)===request)JSON_PROMISES.delete(name);throw error}
 }
-async function loadLeaderBase(){if(LEADER_BASE_PROMISE)return LEADER_BASE_PROMISE;LEADER_BASE_PROMISE=(async()=>{const bundle=await loadVN100();if(bundle)return{dash:bundle.dashboard,gates:bundle.gates,model:bundle.model};const[dash,gates]=await Promise.all([json("forecast-dashboard-v12.json"),json("phase-gates-v12.json")]);return{dash,gates,model:{promotion:dash.promotion}}})().catch(error=>{LEADER_BASE_PROMISE=null;JSON_PROMISES.clear();throw error});return LEADER_BASE_PROMISE}
-async function loadBase(){if(BASE)return BASE;if(BASE_PROMISE)return BASE_PROMISE;BASE_PROMISE=(async()=>{const bundle=await loadVN100();if(bundle?.status==='PASS'&&bundle.universe?.available===100&&Object.keys(bundle.dashboard?.symbols||{}).length===100){BASE={dash:bundle.dashboard,model:bundle.model,back:bundle.backtest,audit:{},gates:bundle.gates,market:null,legacyModel:bundle.model,source:"VN100"};return BASE}const[dash,legacyModel,audit,gates,market]=await Promise.all([json("forecast-dashboard-v12.json"),json("forecast-model-v12.json"),json("data-audit-v12.json"),json("phase-gates-v12.json"),json("forecast-market-v13.json").catch(()=>null)]);const model=market?.model||legacyModel,back=market?.backtest||await json("forecast-backtest-v12.json");BASE={dash,model,back,audit,gates,market,legacyModel};return BASE})().catch(error=>{BASE_PROMISE=null;JSON_PROMISES.clear();throw error});return BASE_PROMISE}
+function vn100Base(bundle){
+ return{dash:bundle.dashboard,model:bundle.model,back:bundle.backtest,
+   audit:{},gates:bundle.gates,market:null,legacyModel:bundle.model,
+   publishedAt:bundle.generatedAt,source:"VN100"};
+}
+async function loadLeaderBase(){
+ if(LEADER_BASE_PROMISE)return LEADER_BASE_PROMISE;
+ LEADER_BASE_PROMISE=(INDEPENDENT_CORE_PAGE?
+   Promise.all([json("forecast-dashboard-v12.json"),json("phase-gates-v12.json")]).then(([dash,gates])=>({
+     dash,gates,model:{promotion:dash.promotion}
+   })):
+   loadBase().then(B=>({dash:B.dash,gates:B.gates,model:B.model}))
+ ).catch(error=>{LEADER_BASE_PROMISE=null;throw error});
+ return LEADER_BASE_PROMISE;
+}
+async function loadBase(){
+ if(BASE)return BASE;
+ if(BASE_PROMISE)return BASE_PROMISE;
+ BASE_PROMISE=(async()=>{
+   if(INDEPENDENT_CORE_PAGE){
+     const[dash,legacyModel,audit,gates,market]=await Promise.all([
+       json("forecast-dashboard-v12.json"),json("forecast-model-v12.json"),
+       json("data-audit-v12.json"),json("phase-gates-v12.json"),
+       json("forecast-market-v13.json").catch(()=>null)
+     ]);
+     const model=market?.model||legacyModel;
+     const back=market?.backtest||await json("forecast-backtest-v12.json");
+     BASE={dash,model,back,audit,gates,market,legacyModel,source:"INDEPENDENT"};
+     return BASE;
+   }
+   const bundle=await loadVN100();
+   if(!bundle)throw Error("Nguồn dữ liệu VN100 chưa sẵn sàng; giá dự báo đang được khôi phục. Bấm Thử tải lại để kết nối lại.");
+   BASE=vn100Base(bundle);
+   return BASE;
+ })().catch(error=>{BASE_PROMISE=null;throw error});
+ return BASE_PROMISE;
+}
 window.__VMEWS_LOAD_BASE__=loadBase;
 window.__VMEWS_LOAD_LEADER_BASE__=loadLeaderBase;
 window.__VMEWS_DATA_ROOT__=ROOT;
@@ -219,7 +282,7 @@ function renderForecastCards(B,z){
     e.className="forecastCard"+(n===primary?" active":"");e.setAttribute("role","button");e.tabIndex=0;e.setAttribute("aria-label",`Xem phân tích kỳ T+${n}`);
     const validated=forecastAvailable(q),usable=forecastUsableForDecision(q,z),targetState=forecastTargetState(q);
     if(z.staleForecast&&validated&&!usable){
-      e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong>ĐÃ ĐẾN HẠN</strong><small>Forecast niêm phong từ phiên ${esc(z.date||B.dash.asOf||"trước")}: ${price(q.expectedPrice)}. Không dùng như forecast mới cho phiên hiện tại.</small>`;
+      e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong>${B.source==="VN100"?price(q.expectedPrice)+" · CŨ":"ĐÃ ĐẾN HẠN"}</strong><small>Forecast niêm phong từ phiên ${esc(z.date||B.dash.asOf||"trước")}: ${price(q.expectedPrice)}. Không dùng như forecast mới cho phiên hiện tại.</small>`;
     }else if(!validated){
       const review=finite(q?.expectedPrice);
       e.innerHTML=`<span>T+${n}${date?` · ${date}`:""}</span><strong>${review?"CHƯA ĐẠT KIỂM ĐỊNH HORIZON":"CHƯA CÓ DỮ LIỆU"}</strong><small>${review?`T+${n} đang ${modelHorizon.priceStatus||q.validationStatus||"REVIEW"} ở kiểm định toàn thị trường; không phải lỗi riêng ${esc(z.symbol||"mã này")}.`:"Không đủ đầu vào để ước lượng"}</small>`;
@@ -379,7 +442,95 @@ function bindChartHover(){
   }
 }
 
-function renderNews(z){const box=$("#news");box.replaceChildren();const a=(z?.evidence?.decisionRecent||z?.evidence?.recent||[]).filter(item=>issuerHeadlineMatches(z?.symbol,item?.title));for(const x of a.slice(0,12)){const e=document.createElement(x.link?"a":"div");e.className="newsItem";if(x.link){e.href=x.link;e.target="_blank";e.rel="noopener"}const label=({POS:"TÍCH CỰC",NEG:"TIÊU CỰC",NEU:"TRUNG TÍNH"})[x.label]||x.label||"TRUNG TÍNH",event=({GENERAL:"THỊ TRƯỜNG",CORPORATE_ACTION:"DOANH NGHIỆP",EARNINGS:"KINH DOANH",OWNERSHIP:"SỞ HỮU",OPERATIONS_MA:"HOẠT ĐỘNG",ANALYST:"PHÂN TÍCH",REGULATORY:"PHÁP LÝ",FINANCING:"TÀI CHÍNH",MARKET_FLOW:"DÒNG TIỀN"})[x.event]||"SỰ KIỆN";e.innerHTML=`<b>${esc(x.title)}</b><small>${esc(x.publisher)} · ${esc(x.publishedAt||x.availableDate||"")}</small><div class="chips"><span class="chip">${esc(event)}</span><span class="chip">${esc(label)}</span>${x.decisionTimeEligible?'<span class="chip">MỚI CÔNG BỐ</span>':''}</div>`;box.append(e)}if(!a.length)box.innerHTML='<div class="empty">Chưa có tin mới đáng chú ý.</div>'}
+const MARKET_DRIVERS_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/drivers.json";
+const FINANCIAL_MANIFEST_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-report-data/data/manifest.json";
+let LIVE_MARKET_DRIVERS=null,LIVE_FINANCIAL_MANIFEST=null;
+async function refreshDataContext(){
+ const tick=Math.floor(Date.now()/300000);
+ const jobs=[
+  fetchJsonBounded(MARKET_DRIVERS_URL+"?refresh="+tick,8500).then(payload=>{
+   if(!payload?.generatedAt||!payload.symbols)return false;
+   const when=Date.parse(payload.generatedAt);
+   if(!Number.isFinite(when)||when>Date.now()+300000||
+      when<=Date.parse(LIVE_MARKET_DRIVERS?.generatedAt||""))return false;
+   LIVE_MARKET_DRIVERS=payload;return true;
+  }).catch(()=>false),
+  fetchJsonBounded(FINANCIAL_MANIFEST_URL+"?refresh="+tick,8500).then(payload=>{
+   if(payload?.universe!=="VN100"||payload?.coverage?.members!==100||!Array.isArray(payload?.companies))return false;
+   const when=Date.parse(payload.updatedAt);
+   if(!Number.isFinite(when)||when>Date.now()+300000||
+      when<=Date.parse(LIVE_FINANCIAL_MANIFEST?.updatedAt||""))return false;
+   LIVE_FINANCIAL_MANIFEST=payload;return true;
+  }).catch(()=>false),
+ ];
+ const result=await Promise.all(jobs);
+ if(result.some(Boolean)&&last?.B){
+  renderSource(last.B,last.sym);
+  window.dispatchEvent(new CustomEvent("vmews:source-updated",{detail:{
+   marketAt:LIVE_MARKET_DRIVERS?.generatedAt||null,
+   financialAt:LIVE_FINANCIAL_MANIFEST?.updatedAt||null
+  }}));
+ }
+ return result.some(Boolean);
+}
+window.__VMEWS_REFRESH_DATA_CONTEXT__=refreshDataContext;
+const COMPANY_NEWS_RAW="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/news-company-latest.json";
+const COMPANY_NEWS_MIRROR="https://nckhtop1.github.io/vmews-risk-analytics/financial-report/market/news-company-latest.json";
+let LIVE_COMPANY_NEWS=null;
+function currentCompanyNews(symbol){
+ const key=String(symbol||"").toUpperCase();
+ const rows=LIVE_COMPANY_NEWS?.items;
+ return Array.isArray(rows)?rows.filter(item=>Array.isArray(item.symbols)&&item.symbols.includes(key)&&
+  issuerHeadlineMatches(key,item.title)).sort((a,b)=>Date.parse(b.publishedAt||0)-Date.parse(a.publishedAt||0)):[];
+}
+async function refreshCompanyNews(){
+ const tick=Math.floor(Date.now()/180000);
+ for(const url of [COMPANY_NEWS_RAW,COMPANY_NEWS_MIRROR]){
+  try{
+   const payload=await fetchJsonBounded(url+"?refresh="+tick,8000);
+   const timestamp=Date.parse(payload?.checkedAt||"");
+   if(payload?.status!=="ok"||!Array.isArray(payload.items)||!Number.isFinite(timestamp)
+    ||timestamp>Date.now()+300000)continue;
+   if(Date.parse(LIVE_COMPANY_NEWS?.checkedAt||"")>timestamp)return true;
+   LIVE_COMPANY_NEWS=payload;
+   window.__VMEWS_LIVE_COMPANY_NEWS__=payload;
+   if(last){
+    renderNews(last.view);renderSource(last.B,last.sym);
+    renderEventImpact(last.B,last.view,btH||primaryHorizon(last.B,last.view));
+   }else renderNews({symbol:($("#symbol")?.value||"FPT").trim().toUpperCase(),evidence:{}});
+   window.dispatchEvent(new CustomEvent("vmews:news-updated",{detail:{checkedAt:payload.checkedAt,count:payload.items.length}}));
+   return true;
+  }catch{}
+ }
+ return false;
+}
+function renderLegacyNews(z){const box=$("#news");box.replaceChildren();const a=(z?.evidence?.decisionRecent||z?.evidence?.recent||[]).filter(item=>issuerHeadlineMatches(z?.symbol,item?.title));for(const x of a.slice(0,12)){const e=document.createElement(x.link?"a":"div");e.className="newsItem";if(x.link){e.href=x.link;e.target="_blank";e.rel="noopener"}const label=({POS:"TÍCH CỰC",NEG:"TIÊU CỰC",NEU:"TRUNG TÍNH"})[x.label]||x.label||"TRUNG TÍNH",event=({GENERAL:"THỊ TRƯỜNG",CORPORATE_ACTION:"DOANH NGHIỆP",EARNINGS:"KINH DOANH",OWNERSHIP:"SỞ HỮU",OPERATIONS_MA:"HOẠT ĐỘNG",ANALYST:"PHÂN TÍCH",REGULATORY:"PHÁP LÝ",FINANCING:"TÀI CHÍNH",MARKET_FLOW:"DÒNG TIỀN"})[x.event]||"SỰ KIỆN";e.innerHTML=`<b>${esc(x.title)}</b><small>${esc(x.publisher)} · ${esc(x.publishedAt||x.availableDate||"")}</small><div class="chips"><span class="chip">${esc(event)}</span><span class="chip">${esc(label)}</span>${x.decisionTimeEligible?'<span class="chip">MỚI CÔNG BỐ</span>':''}</div>`;box.append(e)}if(!a.length)box.innerHTML='<div class="empty">Chưa có tin mới đáng chú ý.</div>'}
+function renderNews(z){
+ if(last?.B&&last.B.source!=="VN100")return renderLegacyNews(z);
+ const box=$("#news");if(!box)return;box.replaceChildren();
+ const live=currentCompanyNews(z?.symbol);
+ const source=live.length?live.map(item=>({
+  title:item.title,link:item.canonicalUrl||item.url,publisher:item.canonicalSource||item.publisher||item.source,
+  publishedAt:item.publishedAt,event:item.impactTag,label:"NEU"
+ })):(LIVE_COMPANY_NEWS?[]:(z?.evidence?.decisionRecent||z?.evidence?.recent||[]));
+ const records=source.filter(item=>issuerHeadlineMatches(z?.symbol,item?.title));
+ for(const x of records.slice(0,12)){
+  let href="";
+  try{const u=new URL(x.link);if(u.protocol==="https:"&&!u.username&&!u.password)href=u.href}catch{}
+  const e=document.createElement(href?"a":"div");e.className="newsItem";
+  if(href){e.href=href;e.target="_blank";e.rel="noopener"}
+  const event=x.event||"DOANH NGHIỆP";
+  const label=x.label==="POS"?"TÍCH CỰC":x.label==="NEG"?"TIÊU CỰC":"TIN MỚI";
+  e.innerHTML=`<b>${esc(x.title)}</b><small>${esc(x.publisher||"Nguồn công khai")} · ${esc(x.publishedAt||x.availableDate||"")}</small><div class="chips"><span class="chip">${esc(event)}</span><span class="chip">${esc(label)}</span></div>`;
+  box.append(e);
+ }
+ if(!records.length)box.innerHTML=LIVE_COMPANY_NEWS?'<div class="empty">Chưa có tin doanh nghiệp mới phù hợp mã đang xem.</div>':'<div class="empty">Đang kết nối nguồn tin doanh nghiệp…</div>';
+ if(LIVE_COMPANY_NEWS){
+  const status=document.createElement("small");status.className="newsUpdatedAt";
+  status.textContent="Nguồn tin cập nhật: "+new Date(LIVE_COMPANY_NEWS.checkedAt).toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh"});
+  box.append(status);
+ }
+}
 function renderRumors(z){
   const box=$("#rumors");
   box.replaceChildren();
@@ -412,7 +563,7 @@ function renderRumors(z){
   }
 }
 
-function renderSource(B,sym){
+function renderLegacySource(B,sym){
   const box=$("#sourceAudit");box.replaceChildren();
   const z=B.dash.symbols?.[sym]||{},signal=B.market?.sources?.signalAudit||{},rumorAudit=B.market?.sources?.rumorAudit||{},flow=z.flow||{},fund=z.fundContext||{},financial=z.fundamentalContext||{},foreign=flow.foreign||{},prop=flow.proprietary||{};
   const flowValue=item=>item?.available&&finite(item.net1)?`${+item.net1>=0?"+":""}${(+item.net1/1e9).toFixed(1)} tỷ`:"Mở dữ liệu";
@@ -438,24 +589,71 @@ function renderSource(B,sym){
   for(const[label,value,detail]of rows){const e=document.createElement("article");e.className="sourceCard";e.dataset.deepTopic=label;e.innerHTML=`<span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(detail)}</small>`;box.append(e)}
 }
 
-function renderEventImpact(B,z,horizon=5){const box=$("#eventImpact");if(!box)return;const hAudit=B.model.horizons?.[String(horizon)]||{},study=hAudit.eventImpactAudit||{},news=study.positiveNews||{},negative=study.negativeNews||{},feature=z.newsFeatures||{},signed=v=>finite(v)?`${+v>=0?"+":""}${pct(v,2)}`:"—";setText("#eventImpactMeta",`T+${horizon} · ${(study.observations||0).toLocaleString("vi-VN")} quan sát`);box.innerHTML=`<article class="proofCard"><span>Sau tin tích cực</span><b class="${(+news.meanAbnormalReturn)>=0?"good":"bad"}">${signed(news.meanAbnormalReturn)}</b><small>${news.n||0} quan sát</small></article><article class="proofCard"><span>Sau tin tiêu cực</span><b class="${(+negative.meanAbnormalReturn)>=0?"good":"bad"}">${signed(negative.meanAbnormalReturn)}</b><small>${negative.n||0} quan sát</small></article><article class="proofCard"><span>Tin của ${esc(z.symbol||"")} · 5 phiên</span><b>${feature.count5||0} bài</b><small>${feature.positive5||0} tích cực · ${feature.negative5||0} tiêu cực</small></article><article class="proofCard"><span>Nguồn chính thức</span><b>${feature.official5||0} bài</b><small>trong 5 phiên gần nhất</small></article>`}
+function renderSource(B,sym){
+ if(B.source!=="VN100")return renderLegacySource(B,sym);
+  const box=$("#sourceAudit");box.replaceChildren();
+  const z=B.dash.symbols?.[sym]||{},signal=B.market?.sources?.signalAudit||{},rumorAudit=B.market?.sources?.rumorAudit||{},flow=z.flow||{},fund=z.fundContext||{},financial=z.fundamentalContext||{},foreign=flow.foreign||{},prop=flow.proprietary||{};
+  const flowValue=item=>item?.available&&finite(item.net1)?`${+item.net1>=0?"+":""}${(+item.net1/1e9).toFixed(1)} tỷ`:"Mở dữ liệu";
+  const flowDetail=item=>item?.available?`${item.latestDate||"Phiên gần nhất"}${finite(item.net5)?` · 5P ${+item.net5>=0?"+":""}${(+item.net5/1e9).toFixed(1)} tỷ`:""}`:"Phiên gần nhất · lũy kế 5/20 phiên";
+  const tracked=(z.rumorContext?.claimCount||0)+(z.evidence?.communityWatchlist?.length||0);
+  const liveNewsCount=currentCompanyNews(sym).length;
+  const liveDriver=LIVE_MARKET_DRIVERS?.symbols?.[sym]||null;
+  const companyManifest=LIVE_FINANCIAL_MANIFEST?.companies?.find(item=>item.symbol===sym);
+  const latestQuarter=companyManifest?.quarters?.at(-1)||companyManifest?.years?.at(-1)||null;
+  const fundamentalValue=companyManifest?(latestQuarter||"Có BCTC"):(financial.available?(financial.incomePeriod||financial.period||"BCTC gần nhất"):"Mở BCTC");
+  const fundamentalDetail=companyManifest?("BCTC có kỳ đến "+(latestQuarter||"—")+" · nguồn "+LIVE_FINANCIAL_MANIFEST.updatedAt.slice(0,10)):"Đang đối chiếu báo cáo doanh nghiệp";
+  const communitySource=rumorAudit.source?.publishers?.join(" · ")||"Nguồn cộng đồng";
+  const priceDetail=window.__VMEWS_FRESHNESS__?.inspect(z).stale?"Cần cập nhật phiên mới":z.priceSourceAgreement?.status==="PASS"?"Đã đối chiếu nguồn giá":z.dataFreshness==="CURRENT"?"Dữ liệu cùng phiên":"Cần làm mới dữ liệu";
+  const fundValue=fund.available?`${fund.fundCount||0} quỹ`:"Mở dữ liệu quỹ";
+  const fundDetail=fund.available&&finite(fund.weightedNavMomentum20)?`NAV 20P ${+fund.weightedNavMomentum20>=0?"+":""}${pct(fund.weightedNavMomentum20,1)}`:"Danh mục · tỷ trọng · NAV · biến động";
+  const rows=[
+    ["Giá thị trường",z.date||"—",priceDetail],
+    [B.source==="VN100"?"Tin doanh nghiệp":"Tin đã đối chiếu",`${B.source==="VN100"&&LIVE_COMPANY_NEWS?liveNewsCount:(+signal.acceptedEvents||0)} bài`,B.source==="VN100"&&LIVE_COMPANY_NEWS?`Cập nhật ${new Date(LIVE_COMPANY_NEWS.checkedAt).toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh"})}`:`${signal.newsSymbols??"—"} mã cổ phiếu`],
+    ["Dòng tiền khối ngoại",flowValue(foreign),flowDetail(foreign)],
+    ["Dòng tiền tự doanh",flowValue(prop),flowDetail(prop)],
+    ["Danh mục quỹ",fundValue,fundDetail],
+    ["Tài chính doanh nghiệp",fundamentalValue,fundamentalDetail],
+    ["Giá & thanh khoản",liveDriver?"Phiên mới nhất":(LIVE_MARKET_DRIVERS?"Chưa đủ dữ liệu":"Đang đồng bộ"),
+      liveDriver?`Biến động ${(+liveDriver.changePct||0).toFixed(2)}% · KL/TB20 ${finite(liveDriver.volumeRatio20)?(+liveDriver.volumeRatio20).toFixed(2)+"x":"—"} · ${LIVE_MARKET_DRIVERS.generatedAt.slice(0,16).replace("T"," ")}`:"Nguồn giá thị trường độc lập"],
+    ["Tín hiệu cộng đồng",`${tracked} tín hiệu`,rumorAudit.source?.articles?`${communitySource} · ${rumorAudit.source.articles} bài`:communitySource],
+  ];
+  for(const[label,value,detail]of rows){const e=document.createElement("article");e.className="sourceCard";e.dataset.deepTopic=label;e.innerHTML=`<span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(detail)}</small>`;box.append(e)}
+}
+
+function renderEventImpact(B,z,horizon=5){const box=$("#eventImpact");if(!box)return;
+ if(B.source==="VN100"){
+  const news=currentCompanyNews(z?.symbol);
+  setText("#eventImpactMeta",news.length+` tin doanh nghiệp · đối chiếu riêng với giá thực tế`);
+  box.innerHTML=news.length?news.slice(0,3).map(item=>
+    `<article class="proofCard"><span>${esc(item.canonicalSource||item.source||"Tin doanh nghiệp")}</span><b>${esc(item.title||"")}</b><small>${esc(item.publishedAt||"")} · Quan sát tin, không suy diễn tác động nhân quả</small></article>`
+  ).join(""):'<div class="empty">Chưa có sự kiện mới để đối chiếu giá sau công bố.</div>';
+  return;
+ }const hAudit=B.model.horizons?.[String(horizon)]||{},study=hAudit.eventImpactAudit||{},news=study.positiveNews||{},negative=study.negativeNews||{},feature=z.newsFeatures||{},signed=v=>finite(v)?`${+v>=0?"+":""}${pct(v,2)}`:"—";setText("#eventImpactMeta",`T+${horizon} · ${(study.observations||0).toLocaleString("vi-VN")} quan sát`);box.innerHTML=`<article class="proofCard"><span>Sau tin tích cực</span><b class="${(+news.meanAbnormalReturn)>=0?"good":"bad"}">${signed(news.meanAbnormalReturn)}</b><small>${news.n||0} quan sát</small></article><article class="proofCard"><span>Sau tin tiêu cực</span><b class="${(+negative.meanAbnormalReturn)>=0?"good":"bad"}">${signed(negative.meanAbnormalReturn)}</b><small>${negative.n||0} quan sát</small></article><article class="proofCard"><span>Tin của ${esc(z.symbol||"")} · 5 phiên</span><b>${feature.count5||0} bài</b><small>${feature.positive5||0} tích cực · ${feature.negative5||0} tiêu cực</small></article><article class="proofCard"><span>Nguồn chính thức</span><b>${feature.official5||0} bài</b><small>trong 5 phiên gần nhất</small></article>`}
 
 function metricCard(label,value,detail=""){return`<div class="metric"><span>${esc(label)}</span><b>${esc(value)}</b>${detail?`<small>${esc(detail)}</small>`:""}</div>`}
-function renderBacktest(B,sym,horizon=5){btH=horizon;const z=B.back.horizons?.[String(horizon)]||{},m=z.metrics||{},cost=m.costAwareLongAudit||{},latest=(m.chronologicalFolds||[]).at(-1)||{},tabs=$("#tabs");tabs.replaceChildren();for(let n=1;n<=5;n++){const b=document.createElement("button");b.textContent=`T+${n}`;b.className=n===horizon?"active":"";b.onclick=()=>renderBacktest(B,sym,n);tabs.append(b)}setText("#btMeta",`T+${horizon} · ${(m.n??0).toLocaleString("vi-VN")} quan sát`);$("#metrics").innerHTML=[metricCard("Xếp hạng tín hiệu",pct(m.rankIC)),metricCard("Phiên xếp hạng đúng",pct(m.positiveICDayShare)),metricCard("Khoảng cách mạnh/yếu",pct(m.spread,2),"chênh lệch nhóm; không phải lãi chắc chắn"),metricCard("Cải thiện sai số",pct(m.executableMAESkill),"so với giá không đổi"),metricCard("Fold mới nhất",pct(latest.executableMAESkill),"cải thiện sai số thực thi"),metricCard("Dự báo biên độ",pct(m.magnitudeMAESkill),"so với biên độ nền"),metricCard("Độ phủ vùng giá",pct(m.coverage20_80)),metricCard("Đúng chiều lịch sử",pct(m.directionalAccuracy),"không phải xác suất mã"),metricCard("Xác suất hướng",z.directionStatus==="PASS"?pct(m.brierSkill):"CHƯA ĐẠT","kiểm định Brier"),metricCard("Dịch chuyển trung tâm",pct(m.executableMedianAbs,2)),metricCard("Biến động thực tế",pct(m.realizedMedianAbs,2)),metricCard("Mức bắt biên độ của điểm",pct(m.pointToRealizedMoveRatio,0),"trung vị điểm / trung vị thực tế"),metricCard("Biên độ mô hình học",pct(m.medianExpectedAbsMove,2)),metricCard("Mức bám biên độ",pct(m.magnitudeCalibrationRatio,0),"biên độ học / thực tế"),metricCard("Sàng lọc sau phí",pct(cost.meanNetRealizedReturn,2),cost.observations?`${(+cost.observations).toLocaleString("vi-VN")} quan sát · phí ${(cost.roundTripCostBps/100).toFixed(2)}%`:"chưa đủ kiểm định")].join("");const all=(B.back.cases?.[String(horizon)]||[]),same=all.filter(x=>x.symbol===sym),cases=(same.length?same:all).slice(-120).reverse(),tbody=$("#btRows");tbody.replaceChildren();for(const x of cases){const tr=document.createElement("tr"),resultDate=backtestResultDate(B,x,horizon);const dir=x.correctDirection===true?"✓":x.correctDirection===false?"✕":"—",hit=x.intervalHit===true?"✓":x.intervalHit===false?"✕":"—";tr.innerHTML=`<td>${esc(x.symbol)}</td><td>${esc(x.originDate)}</td><td>${esc(resultDate)}</td><td>${pct(x.prior20)}</td><td>${x.predictedReturn>=0?"+":""}${pct(x.predictedReturn)}</td><td>${price(x.expectedPrice)}</td><td>${validatedDirection({directionValidated:z.directionStatus==="PASS",probUp:x.probUp})?pct(x.probUp,0):"—"}</td><td>${price(x.actualRawPrice)}</td><td>${price(x.realizedComparablePrice)}</td><td>${x.actualReturn>=0?"+":""}${pct(x.actualReturn)}</td><td class="${x.correctDirection?"good":"bad"}">${dir}</td><td class="${x.intervalHit?"good":"bad"}">${hit}</td>`;tr.onclick=()=>renderBacktestDetail(B,x,horizon);tbody.append(tr)}if(!cases.length)tbody.innerHTML='<tr><td colspan="12">Chưa có trường hợp phù hợp.</td></tr>';$("#ablation").replaceChildren();if(cases[0])renderBacktestDetail(B,cases[0],horizon);renderEventImpact(B,B.dash.symbols?.[sym]||{},horizon)}
+function renderBacktest(B,sym,horizon=5){btH=horizon;const z=B.back.horizons?.[String(horizon)]||{},m=z.metrics||{},cost=m.costAwareLongAudit||{},latest=(m.chronologicalFolds||[]).at(-1)||{},tabs=$("#tabs");tabs.replaceChildren();for(let n=1;n<=5;n++){const b=document.createElement("button");b.textContent=`T+${n}`;b.className=n===horizon?"active":"";b.onclick=()=>renderBacktest(B,sym,n);tabs.append(b)}setText("#btMeta",`T+${horizon} · ${(m.n??0).toLocaleString("vi-VN")} quan sát`);const legacyMetricGrid=[metricCard("Xếp hạng tín hiệu",pct(m.rankIC)),metricCard("Phiên xếp hạng đúng",pct(m.positiveICDayShare)),metricCard("Khoảng cách mạnh/yếu",pct(m.spread,2),"chênh lệch nhóm; không phải lãi chắc chắn"),metricCard("Cải thiện sai số",pct(m.executableMAESkill),"so với giá không đổi"),metricCard("Fold mới nhất",pct(latest.executableMAESkill),"cải thiện sai số thực thi"),metricCard("Dự báo biên độ",pct(m.magnitudeMAESkill),"so với biên độ nền"),metricCard("Độ phủ vùng giá",pct(m.coverage20_80)),metricCard("Đúng chiều lịch sử",pct(m.directionalAccuracy),"không phải xác suất mã"),metricCard("Xác suất hướng",z.directionStatus==="PASS"?pct(m.brierSkill):"CHƯA ĐẠT","kiểm định Brier"),metricCard("Dịch chuyển trung tâm",pct(m.executableMedianAbs,2)),metricCard("Biến động thực tế",pct(m.realizedMedianAbs,2)),metricCard("Mức bắt biên độ của điểm",pct(m.pointToRealizedMoveRatio,0),"trung vị điểm / trung vị thực tế"),metricCard("Biên độ mô hình học",pct(m.medianExpectedAbsMove,2)),metricCard("Mức bám biên độ",pct(m.magnitudeCalibrationRatio,0),"biên độ học / thực tế"),metricCard("Sàng lọc sau phí",pct(cost.meanNetRealizedReturn,2),cost.observations?`${(+cost.observations).toLocaleString("vi-VN")} quan sát · phí ${(cost.roundTripCostBps/100).toFixed(2)}%`:"chưa đủ kiểm định")].join("");
+$("#metrics").innerHTML=B.source==="VN100"?
+ [metricCard("Mẫu backtest",String(m.n??0)+" quan sát"),
+  metricCard("Sai số so với giá không đổi",pct(m.executableMAESkill)),
+  metricCard("Độ phủ khoảng giá",pct(m.coverage20_80)),
+  metricCard("Đúng chiều lịch sử",pct(m.directionalAccuracy)),
+  metricCard("Biến động thực tế",pct(m.realizedMedianAbs,2)),
+  metricCard("Mức biến động dự báo",pct(m.medianExpectedAbsMove,2))].join(""):legacyMetricGrid;const all=(B.back.cases?.[String(horizon)]||[]),same=all.filter(x=>x.symbol===sym),cases=(same.length?same:all).slice(-120).reverse(),tbody=$("#btRows");tbody.replaceChildren();for(const x of cases){const tr=document.createElement("tr"),resultDate=backtestResultDate(B,x,horizon);const dir=x.correctDirection===true?"✓":x.correctDirection===false?"✕":"—",hit=x.intervalHit===true?"✓":x.intervalHit===false?"✕":"—";tr.innerHTML=`<td>${esc(x.symbol)}</td><td>${esc(x.originDate)}</td><td>${esc(resultDate)}</td><td>${pct(x.prior20)}</td><td>${x.predictedReturn>=0?"+":""}${pct(x.predictedReturn)}</td><td>${price(x.expectedPrice)}</td><td>${validatedDirection({directionValidated:z.directionStatus==="PASS",probUp:x.probUp})?pct(x.probUp,0):"—"}</td><td>${price(x.actualRawPrice)}</td><td>${price(x.realizedComparablePrice)}</td><td>${x.actualReturn>=0?"+":""}${pct(x.actualReturn)}</td><td class="${x.correctDirection?"good":"bad"}">${dir}</td><td class="${x.intervalHit?"good":"bad"}">${hit}</td>`;tr.onclick=()=>renderBacktestDetail(B,x,horizon);tbody.append(tr)}if(!cases.length)tbody.innerHTML='<tr><td colspan="12">Chưa có trường hợp phù hợp.</td></tr>';$("#ablation").replaceChildren();if(cases[0])renderBacktestDetail(B,cases[0],horizon);renderEventImpact(B,B.dash.symbols?.[sym]||{},horizon)}
 function renderBacktestDetail(B,x,horizon){const box=$("#btDetail");if(!box)return;const c=x.contextAtOrigin||{},expert=x.expertPredictions||{},resultDate=backtestResultDate(B,x,horizon);box.innerHTML=`<div class="eyebrow">Kiểm chứng tại thời điểm dự báo</div><h3>${esc(x.symbol)} · ${esc(x.originDate)} → ${esc(resultDate)} · T+${horizon}</h3><div class="sourceGrid">${metricCard("Giá tại thời điểm dự báo",price(x.originPrice))}${metricCard("Giá dự báo",price(x.expectedPrice),pct(x.predictedReturn))}${metricCard(`Giá thực tế · ${resultDate}`,price(x.actualRawPrice),pct(x.actualReturn))}${metricCard("Giá điều chỉnh so sánh",price(x.realizedComparablePrice))}${metricCard("Biến động 20 phiên",pct(c.prior20??x.prior20))}${metricCard("Độ rộng thị trường",pct(c.breadth20))}${metricCard("Tin tức / lan truyền",`${num(c.newsN20,0)} / ${num(c.rumorN20,0)}`)}${metricCard("Dòng tiền tổ chức",`Ngoại ${num(c.foreignAvailable,0)} · Tự doanh ${num(c.propAvailable,0)}`)}</div><div class="chips">${Object.entries(expert).map(([k,v])=>`<span class="chip">${esc(expertLabel(k))}: ${+v>=0?"+":""}${pct(v)}</span>`).join("")}</div>`}
 
 function renderSummary(B,sym,z){
   const primary=primaryHorizon(B,z),d=decision(B,z),de=$("#decision");de.textContent=d.label;de.className=`decision ${d.tone}`;setText("#summary",d.text);setText("#close",price(z.close));setText("#quoteAsOf",z.quoteUnavailable?"Không có giá live · biểu đồ lịch sử giá đã kiểm định đến "+(z.date||B.dash.asOf||"—"):z.liveSession?.updateAt?`Giá nguồn: ${new Date(z.liveSession.updateAt).toLocaleString("vi-VN",{timeZone:"Asia/Ho_Chi_Minh"})}`:`Giá đóng cửa EOD đã kiểm định: ${z.date||B.dash.asOf||"—"}`);
-  for(const n of [1,3,5]){const q=h(z,n),move=forecastUsableForDecision(q,z)?pointMove(q,z.close):null;setText(`#t${n}`,move?`${price(move.target)} · ${move.direction} ${price(Math.abs(move.delta))}`:(z.staleForecast&&forecastAvailable(q)?"ĐÃ ĐẾN HẠN":"—"))}
+  for(const n of [1,3,5]){const q=h(z,n),move=forecastUsableForDecision(q,z)?pointMove(q,z.close):null;setText(`#t${n}`,move?`${price(move.target)} · ${move.direction} ${price(Math.abs(move.delta))}`:(z.staleForecast&&forecastAvailable(q)?(B.source==="VN100"?`${price(q.expectedPrice)} · bản ${esc(q.targetDate||z.date||"cũ")}`:"ĐÃ ĐẾN HẠN"):"—"))}
   const qp=h(z,primary),audit=B.model.horizons?.[String(primary)]?.sealedAudit||{},ratio=finite(qp.magnitudeCalibrationRatio)?+qp.magnitudeCalibrationRatio:finite(audit.medianExpectedAbsMove)&&finite(audit.realizedMedianAbs)?+audit.medianExpectedAbsMove/Math.max(+audit.realizedMedianAbs,1e-12):null,signValidated=qp.pointDirectionValidated===true||(+audit.directionalAccuracy||0)>=.52&&(audit.chronologicalFolds||[]).filter(item=>(+item.directionalAccuracy||0)>.5).length>=3,signRate=finite(qp.historicalDirectionAccuracy)?+qp.historicalDirectionAccuracy:+audit.directionalAccuracy,rank=qp.crossSectionalRankValidated===true&&finite(qp.crossSectionalRankPercentile)?` ${sym} thuộc nhóm ${Math.max(1,Math.ceil((1-+qp.crossSectionalRankPercentile)*100))}% có xếp hạng mạnh nhất toàn HOSE.`:"",liveScenario=qp.liveScenarioOverlay?.scenarioPrice?" Thông tin mới chỉ được lưu thành kịch bản tham khảo và không làm thay đổi giá trung tâm.":"",position=forecastUsableForDecision(qp,z)?sessionPosition(qp,z.close):"",livePosition=position==="ABOVE_BULL"?` Giá phiên ${price(z.close)} đã vượt cả kịch bản tăng ${price(qp.bullScenarioPrice)}; đây là cảnh báo vượt mô hình cũ, không phải forecast mới.`:position==="ABOVE_Q80"?` Giá phiên ${price(z.close)} đã vượt Q80 ${price(qp.q80Price)}; cần định vị lại trước khi ra quyết định.`:position==="BELOW_BEAR"?` Giá phiên ${price(z.close)} đã thấp hơn kịch bản giảm ${price(qp.bearScenarioPrice)}; rủi ro đã vượt mô hình cũ.`:position==="BELOW_Q20"?` Giá phiên ${price(z.close)} đã thấp hơn Q20 ${price(qp.q20Price)}.`:"";
   setText("#primaryForecastLabel",`${z.staleForecast?"Forecast niêm phong":"Mức dự báo"} T+${primary}`);setText("#primaryProbabilityLabel",`Xác suất tăng T+${primary}`);setText("#scenarioHeadingLabel",`${z.staleForecast?"BIÊN ĐỘ FORECAST NIÊM PHONG":"BIÊN ĐỘ THỊ TRƯỜNG ĐÃ HỌC"} · T+${primary}`);$("#scenarioBoard")?.setAttribute("aria-label",`Biên độ và các kịch bản giá T cộng ${primary}`);
   setText("#range5",forecastAvailable(qp)?price(qp.expectedPrice):"—");setText("#pup",validatedDirection(qp)?`P(tăng) ${pct(qp.probUp,0)}`:signValidated?`Đúng chiều lịch sử ${pct(signRate,0)}`:"CHƯA ĐỦ KIỂM ĐỊNH");setText("#move5",finite(qp.expectedAbsReturn)?`±${pct(qp.expectedAbsReturn,2)}`:"—");setText("#bear5",finite(qp.bearScenarioPrice)?price(qp.bearScenarioPrice):"—");setText("#scenarioCenter5",forecastAvailable(qp)?price(qp.expectedPrice):"—");setText("#bull5",finite(qp.bullScenarioPrice)?price(qp.bullScenarioPrice):"—");
-  setText("#scenarioCaveat",`${z.staleForecast?`Forecast đang dùng là snapshot niêm phong phiên ${z.date||B.dash.asOf||"trước"}; ${z.quoteUnavailable?"chưa có giá live; biểu đồ chỉ hiển thị lịch sử đã kiểm định.":"giá hiện tại lấy từ kênh giá FinQuery."} `:""}${finite(ratio)?`Biên độ mô hình bám ${pct(ratio,0)} mức biến động ngoài mẫu. `:""}${validatedDirection(qp)?"Xác suất tăng được ước lượng từ dữ liệu kiểm định; vùng giá vẫn có thể bị vượt.":signValidated?`Dự báo đúng chiều ${pct(signRate,1)} trong mẫu lịch sử; hai kịch bản vẫn có thể xảy ra.`:"Chưa đủ dữ liệu để hiển thị xác suất tăng; hai kịch bản thể hiện biên độ có thể xảy ra."}${livePosition}${liveScenario}${rank}`);setText("#risk",({GREEN:"THẤP",YELLOW:"THEO DÕI",WATCH:"THEO DÕI",RED:"CAO"})[z.riskStatus]||"—");setText("#chartTitle",z.quoteUnavailable?`${sym} · lịch sử đến ${z.date||B.dash.asOf||"—"} · không có giá live`:z.staleForecast?`${sym} · ${price(z.close)} · các mục tiêu niêm phong còn hiệu lực`:z.verifiedEod?`${sym} · EOD ${z.date||B.dash.asOf||"—"} · ${price(z.close)} → T+1…T+5`:`${sym} · ${price(z.close)} → T+1…T+5`);setText("#modelBadge",z.quoteUnavailable?`HOSE · CORE ${B.dash.asOf||z.date||"—"} · KHÔNG CÓ GIÁ LIVE · LỊCH SỬ ĐÃ KIỂM ĐỊNH`:z.staleForecast?`HOSE · CORE ${B.dash.asOf||z.date||"—"} · GIÁ FINQUERY · FORECAST NIÊM PHONG`:`HOSE · ${B.dash.asOf||z.date||"—"} · DỰ BÁO T+${primary}${z.liveSession?` · ${z.liveSession.session||"PHIÊN"}`:""}`)
+  setText("#scenarioCaveat",`${z.staleForecast?`Forecast đang dùng là snapshot niêm phong phiên ${z.date||B.dash.asOf||"trước"}; ${z.quoteUnavailable?"chưa có giá live; biểu đồ chỉ hiển thị lịch sử đã kiểm định.":"giá hiện tại lấy từ kênh giá FinQuery."} `:""}${finite(ratio)?`Biên độ mô hình bám ${pct(ratio,0)} mức biến động ngoài mẫu. `:""}${validatedDirection(qp)?"Xác suất tăng được ước lượng từ dữ liệu kiểm định; vùng giá vẫn có thể bị vượt.":signValidated?`Dự báo đúng chiều ${pct(signRate,1)} trong mẫu lịch sử; hai kịch bản vẫn có thể xảy ra.`:"Chưa đủ dữ liệu để hiển thị xác suất tăng; hai kịch bản thể hiện biên độ có thể xảy ra."}${livePosition}${liveScenario}${rank}`);setText("#risk",({GREEN:"THẤP",YELLOW:"THEO DÕI",WATCH:"THEO DÕI",RED:"CAO"})[z.riskStatus]||"—");setText("#chartTitle",z.quoteUnavailable?`${sym} · lịch sử đến ${z.date||B.dash.asOf||"—"} · không có giá live`:z.staleForecast?`${sym} · ${price(z.close)} · các mục tiêu niêm phong còn hiệu lực`:z.verifiedEod?`${sym} · EOD ${z.date||B.dash.asOf||"—"} · ${price(z.close)} → T+1…T+5`:`${sym} · ${price(z.close)} → T+1…T+5`);const scope=B.source==="VN100"?"VN100":"HOSE";setText("#modelBadge",z.quoteUnavailable?`${scope} · CORE ${B.dash.asOf||z.date||"—"} · KHÔNG CÓ GIÁ LIVE · LỊCH SỬ ĐÃ KIỂM ĐỊNH`:z.staleForecast?`${scope} · CORE ${B.dash.asOf||z.date||"—"} · GIÁ FINQUERY · FORECAST NIÊM PHONG`:`${scope} · ${B.dash.asOf||z.date||"—"} · DỰ BÁO T+${primary}${z.liveSession?` · ${z.liveSession.session||"PHIÊN"}`:""}`)
 }
 function quickButtons(B){const box=$("#quick");box.replaceChildren();for(const s of ["FPT","VCB","HPG","MBB","FRT","PNJ","VNM","SSI"]){if(!B.dash.symbols?.[s])continue;const b=document.createElement("button");b.textContent=s;b.onclick=()=>{$("#symbol").value=s;renderSymbol(s)};box.append(b)}}
 function rerender(B,sym,z){const freshness=window.__VMEWS_FRESHNESS__?.inspect(z);const view={...applySessionView(sym,z),staleForecast:freshness?.stale===true,freshnessExpected:freshness?.expected},primary=primaryHorizon(B,view);last={B,sym,z,view};renderSummary(B,sym,view);renderForecastCards(B,view);renderDrivers(view,primary);draw(sym,view,B.dash.charts?.[sym]||[]);renderNews(view);renderRumors(view);renderSource(B,sym);renderBacktest(B,sym,btH||primary);window.dispatchEvent(new CustomEvent("vmews:symbol-changed",{detail:{symbol:sym,snapshot:view}}))}
 function applyCommunity(B,payload){
-  if(!payload||payload.asOf!==B.dash.asOf||!payload.generatedAt)return false;
+  if(!payload||!B||!payload.generatedAt||(B.source!=="VN100"&&payload.asOf!==B.dash.asOf))return false;
+  const scenariosEligible=payload.asOf===B.dash.asOf;
   const timestamp=Date.parse(payload.generatedAt),previous=Date.parse(window.__VMEWS_COMMUNITY_LIVE__?.generatedAt||"");
   if(!Number.isFinite(timestamp)||(Number.isFinite(previous)&&timestamp<=previous)||timestamp>Date.now()+300000)return false;
   window.__VMEWS_COMMUNITY_LIVE__=payload;
@@ -470,6 +668,7 @@ function applyCommunity(B,payload){
     if(Array.isArray(update.claims)&&update.claims.length)snapshot.evidence.rumorClaims=update.claims;
     if(update.rumorContext&&Object.keys(update.rumorContext).length)snapshot.rumorContext=update.rumorContext;
     if(snapshot.evidence.rumorAudit){snapshot.evidence.rumorAudit.source=source||snapshot.evidence.rumorAudit.source;snapshot.evidence.rumorAudit.qualifiedClaims=snapshot.evidence.rumorClaims?.length||0}
+    if(!scenariosEligible)continue; // Context is independent; never overlay forecasts from a different model session.
     for(const[key,adjustment]of Object.entries(update.horizons||{})){
       const horizon=snapshot.horizons?.[key];
       const scenarioPrice=Number.isFinite(+adjustment.scenarioPrice)?+adjustment.scenarioPrice:+adjustment.expectedPrice;
@@ -502,26 +701,108 @@ window.__VMEWS_APPLY_COMMUNITY_LIVE__=applyCommunity;
 async function renderSymbol(raw){const B=await loadBase();assertProduction(B);const sym=String(raw||"").trim().toUpperCase(),z=B.dash.symbols?.[sym];if(!z)throw Error(`${sym}: chưa có đủ dữ liệu để phân tích.`);$("#symbol").value=sym;setText("#sparkSymbol",sym);rerender(B,sym,z);const view=last?.view||z;setText("#status",`${sym} · dữ liệu ${z.date||B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}${z.dataFreshness==="STALE_EOD"?" · cần cập nhật":""}`);const url=new URL(location.href);url.searchParams.set("symbol",sym);history.replaceState(null,"",url.href)}
 window.__VMEWS_RENDER_SYMBOL__=renderSymbol;
 async function refreshCore(){
-  if(document.hidden)return;
-  if(last)rerender(last.B,last.sym,last.z);
+ if(document.hidden)return false;
+ // SoluTION.AI public Pages is independent of the FinQuery VN100 publisher.
+ // Retain its original model freshness reload without swapping products.
+ if(INDEPENDENT_CORE_PAGE){
   try{
-    const coreRoot=CORE_ROOT;
-    const next=BASE?.source==="VN100"?await fetchJsonBounded(`${VN100_BUNDLE_URL}?refresh=${Date.now()}`,Math.min(FETCH_TIMEOUT_MS,2500)).then(x=>x?.dashboard):await fetchJsonBounded(`${coreRoot}/forecast-dashboard-v12.json?refresh=${Date.now()}`,12000);
-    if(BASE&&next.generatedAt!==BASE.dash.generatedAt&&next.asOf>=BASE.dash.asOf)location.reload();
+   const next=await fetchJsonBounded(CORE_ROOT+"/forecast-dashboard-v12.json?refresh="+Date.now(),Math.min(FETCH_TIMEOUT_MS,12000));
+   if(BASE&&next?.generatedAt!==BASE.dash.generatedAt&&String(next?.asOf||"")>=String(BASE.dash.asOf)){
+    location.reload();return true;
+   }
   }catch{}
+  return false;
+ }
+ try{
+  const bundle=await loadVN100(true);
+  if(!validVN100(bundle))return false;
+  const current=BASE?.publishedAt||BASE?.dash?.generatedAt||"";
+  if(Date.parse(bundle.generatedAt)<=Date.parse(current)||bundle.asOf<(BASE?.dash?.asOf||""))return false;
+  const selected=last?.sym||$("#symbol")?.value||"FPT";
+  BASE=vn100Base(bundle);BASE_PROMISE=Promise.resolve(BASE);LEADER_BASE_PROMISE=null;
+  quickButtons(BASE);
+  await renderSymbol(selected);
+  window.dispatchEvent(new CustomEvent("vmews:forecast-updated",{detail:{
+    asOf:bundle.asOf,generatedAt:bundle.generatedAt,coverage:bundle.universe
+  }}));
+  return true;
+ }catch(error){console.warn("VN100 refresh failed, keeping previously verified snapshot",error);return false}
+}
+window.__VMEWS_REFRESH_CORE__=refreshCore;
+window.__VMEWS_REFRESH_COMPANY_NEWS__=refreshCompanyNews;
+let forecastBootstrapped=false;
+async function startForecastProduct(B,q,priceFetch){
+ assertProduction(B);
+ quickButtons(B);
+ await renderSymbol(q);
+ if(forecastBootstrapped)return true;
+ void priceFetch.then(()=>{
+  if(last?.B&&last.sym===q&&LIVE_QUOTES?.quotes?.[q])
+   rerender(last.B,last.sym,last.B.dash.symbols[q]);
+ }).catch(()=>{});
+ bindChartHover();
+ window.setInterval(()=>void refreshCore(),300000);
+ window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);
+ document.addEventListener("visibilitychange",()=>{
+  void refreshCore();if(!document.hidden)void refreshLiveQuotes(true);
+ });
+ window.addEventListener("focus",()=>void refreshLiveQuotes(true));
+ void refreshCommunity(BASE);
+ window.setInterval(()=>{if(!document.hidden&&BASE)void refreshCommunity(BASE)},180000);
+ $("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);
+ $("#symbol").addEventListener("keydown",e=>{
+  if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError);
+ });
+ window.addEventListener("resize",()=>{
+  if(last)draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[]);
+ });
+ forecastBootstrapped=true;
+ return true;
 }
 async function init(){
-  const q=(new URLSearchParams(location.search).get("symbol")||"FPT").toUpperCase();
-  const priceFetch=refreshLiveQuotes(true).then(ready=>{
-    if(!ready||BASE)return;
-    const observed=LIVE_QUOTES?.quotes?.[q];
-    if(observed&&finite(observed.price)&&+observed.price>0){
-      setText("#close",price(observed.price));
-      setText("#status",q+" · giá thực tế "+price(observed.price)+" · Forecast Core đang được tải và kiểm định độc lập.");
-    }
-  });
-  const hint=setTimeout(()=>{if(!BASE)setText("#status",q+" · đang tải Forecast Core dung lượng lớn; nếu quá hạn sẽ hiển thị cách thử lại.");},6500);
-  try{const B=await loadBase();assertProduction(B);quickButtons(B);await renderSymbol(q);void priceFetch.then(()=>{if(last?.B&&last.sym===q&&LIVE_QUOTES?.quotes?.[q])rerender(last.B,last.sym,last.B.dash.symbols[q]);}).catch(()=>{});bindChartHover();window.setInterval(()=>void refreshCore(),300000);window.setInterval(()=>{if(!document.hidden)void refreshLiveQuotes()},30000);document.addEventListener("visibilitychange",()=>{void refreshCore();if(!document.hidden)void refreshLiveQuotes(true)});window.addEventListener("focus",()=>void refreshLiveQuotes(true));void refreshCommunity(B);window.setInterval(()=>{if(!document.hidden)void refreshCommunity(B)},120000);$("#go").onclick=()=>renderSymbol($("#symbol").value).catch(showError);$("#symbol").addEventListener("keydown",e=>{if(e.key==="Enter")renderSymbol(e.currentTarget.value).catch(showError)});window.addEventListener("resize",()=>{if(last)draw(last.sym,last.view||last.z,last.B.dash.charts?.[last.sym]||[])})}catch(e){showError(e)}finally{clearTimeout(hint)}}
+ const q=(new URLSearchParams(location.search).get("symbol")||"FPT").toUpperCase();
+ // FinQuery's independent live context must not alter SoluTION.AI's
+ // immutable full-HOSE CDN runtime or its source allow-list.
+ if(!INDEPENDENT_CORE_PAGE){
+  void refreshCompanyNews();
+  window.setInterval(()=>{if(!document.hidden)void refreshCompanyNews()},180000);
+  void refreshDataContext();
+  window.setInterval(()=>{if(!document.hidden)void refreshDataContext()},300000);
+ }
+ const priceFetch=refreshLiveQuotes(true).then(ready=>{
+  if(!ready||BASE)return;
+  const observed=LIVE_QUOTES?.quotes?.[q];
+  if(observed&&finite(observed.price)&&+observed.price>0){
+   setText("#close",price(observed.price));
+   setText("#status",q+" · giá thực tế "+price(observed.price)+" · Dự báo đang được tải.");
+  }
+ });
+ const hint=setTimeout(()=>{
+  if(!BASE)setText("#status",q+" · đang kết nối dự báo VN100; kiểm tra nguồn dự phòng nếu cần.");
+ },5000);
+ try{
+  const B=await loadBase();
+  await startForecastProduct(B,q,priceFetch);
+ }catch(error){
+  showError(error);
+  // Do not leave users stuck on a red spinner or demand browser reload for
+  // transient GitHub/Pages outages. Keep retrying without blocking live news.
+  let attempt=0;
+  const recover=async()=>{
+   if(forecastBootstrapped)return;
+   if(!document.hidden){
+    try{
+     const B=await loadBase();
+     await startForecastProduct(B,q,priceFetch);
+     return;
+    }catch(e){console.warn("VN100 automatic recovery pending",String(e?.message||e))}
+   }
+   attempt++;
+   window.setTimeout(recover,Math.min(120000,30000+attempt*15000));
+  };
+  window.setTimeout(recover,30000);
+ }finally{clearTimeout(hint)}
+}
 function showError(e){console.error(e);setText("#status",String(e?.message||e));setText("#modelBadge","HOSE · FORECAST CORE TẠM GIÁN ĐOẠN");const dateNode=$("#snapshotDate");if(dateNode&&dateNode.textContent.trim()==="ĐANG TẢI")dateNode.textContent="TẠM GIÁN ĐOẠN";const status=$("#status");if(status){const retry=document.createElement("button");retry.type="button";retry.textContent="Thử tải lại";retry.onclick=()=>location.reload();status.append(" ",retry);}const d=$("#decision");if(d){d.textContent="DỰ BÁO TẠM KHÓA";d.className="decision warning"}setText("#summary",String(e?.message||e))}
 window.addEventListener?.("vmews:session-updated",()=>{if(last?.B&&last?.sym){rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);const view=last.view;setText("#status",`${last.sym} · dữ liệu ${last.z.date||last.B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"phiên"} ${price(view.close)}`:""}`)}});
 window.addEventListener?.("vmews:live-quotes-updated",()=>{if(last?.B&&last?.sym){rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);const view=last.view;setText("#status",`${last.sym} · forecast ${last.z.date||last.B.dash.asOf||"—"}${view.liveSession?` · giá ${view.liveSession.session||"LIVE"} ${price(view.close)}`:""}`)}});
