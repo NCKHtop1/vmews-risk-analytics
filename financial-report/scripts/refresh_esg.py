@@ -977,6 +977,27 @@ def repair_canonical_row(row):
                 return _apply_money_repair(out, fake)
 
     if metric_id == "sustainable_finance":
+        # Vietnamese ESG tables may print the unit BEFORE its value:
+        # "... tiền gửi xanh ... tỷ VND 2000". The generic parser can treat
+        # "VND 2000" as VND and store 0.000002 *billion VND* instead of 2,000.
+        # Repair only an EXACT matching number near the printed billion unit;
+        # ambiguous amounts remain excluded by the canonical gate.
+        try:
+            parsed_raw = parse_number(out.get("rawValue"), "tỷ VND")
+            stored = float(out.get("value") or 0)
+        except (TypeError, ValueError):
+            parsed_raw, stored = None, 0
+        if out.get("unit") == "billion VND" and 0 < stored < .001 and parsed_raw and parsed_raw >= 1:
+            unit_context = _raw_context(out, radius=65)
+            printed = re.search(r"tỷ\s+(?:đồng|VND|VNĐ)\s*(?P<value>\d[\d.,]*)", unit_context, re.I)
+            printed_value = parse_number(printed.group("value"), "tỷ VND") if printed else None
+            if printed_value is not None and abs(printed_value - parsed_raw) < .000001:
+                repaired = _apply_numeric_repair(out, printed.group("value"), "tỷ VND")
+                repaired["confidence"] = "medium"
+                repaired["repairEvidence"] = "printed billion VND unit preceding exact value"
+                return repaired
+            return out  # never promote ambiguous mis-scaled VND to KPI
+
         english_bond = re.search(
             r"sustainable\s+finance.{0,220}?VND\s*(?P<value>\d[\d.,]*)\s*"
             r"(?P<scale>trillion|billion|million)\s+(?:green\s+bond|sustainability\s+bond|sustainable\s+bond)",
@@ -1467,7 +1488,7 @@ def backlog_bucket(owner, doc, current_year):
     return "recent"
 
 
-def backlog_priority(owner, doc):
+def backlog_priority(owner, doc, underserved=False):
     priorities = {
         "sustainability_report": 12, "climate_disclosure": 11, "annual_report": 10,
         "sustainable_finance_assessment": 9, "vnsi": 8, "susba": 8,
@@ -1477,6 +1498,10 @@ def backlog_priority(owner, doc):
     # External ratings remain important but should not consume every bounded
     # extraction slot while bank reports are still waiting.
     base = 5 if owner == "__external__" else priorities.get(doc.get("type"), 1)
+    # Spread extraction capacity across VN100 before repeatedly processing
+    # additional reports of issuers that already have verified KPI coverage.
+    if underserved and owner != "__external__":
+        base += 4
     return (base, doc.get("year") or 0)
 
 
@@ -1629,11 +1654,21 @@ def collect(config, output):
         else:
             skipped_backlog.append((owner, doc))
     recent_backlog.sort(
-        key=lambda item: (backlog_priority(item[0], item[1]), item[1].get("url", "")),
+        key=lambda item: (
+            backlog_priority(
+                item[0], item[1],
+                not bool((previous.get("companies", {}).get(item[0]) or {}).get("canonicalMetrics"))
+            ), item[1].get("url", "")
+        ),
         reverse=True
     )
     historical_backlog.sort(
-        key=lambda item: (backlog_priority(item[0], item[1]), item[1].get("url", "")),
+        key=lambda item: (
+            backlog_priority(
+                item[0], item[1],
+                not bool((previous.get("companies", {}).get(item[0]) or {}).get("canonicalMetrics"))
+            ), item[1].get("url", "")
+        ),
         reverse=True
     )
     active_backlog = historical_backlog if HISTORY_BACKFILL else recent_backlog
