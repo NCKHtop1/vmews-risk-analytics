@@ -27,7 +27,7 @@ function moneyFlowText(current,previous){
  return detail+'; các chỉ báo dòng tiền chưa đồng thuận, chưa nên kết luận dòng tiền vào hoặc ra rõ'+tail;
 }
 class ChartController{
- constructor(base,onQuote){this.base=base;this.onQuote=onQuote;this.cache=new Map();this.params={...defaults};this.symbol='';this.tf=$('chart-interval')?.value||'1d';this.type='candles';this.bars=[];this.baseBars=[];this.values=[];this.series={};this.watch=[];this.generation=0;this.retries=0;this.stopped=false;this.buffer=[];this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown=new Map();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.insightItems=[];this.insightOpen=null;this.insightsVisible=false;this.focusOscillator=null;this.followingLatest=true;
+ constructor(base,onQuote){this.base=base;this.onQuote=onQuote;this.cache=new Map();this.params={...defaults};this.symbol='';this.tf=$('chart-interval')?.value||'1d';this.type='candles';this.bars=[];this.baseBars=[];this.values=[];this.series={};this.watch=[];this.generation=0;this.retries=0;this.stopped=false;this.buffer=[];this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown=new Map();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.insightItems=[];this.insightOpen=null;this.insightsVisible=false;this.focusOscillator=null;this.followingLatest=true;this.renderedSelection='';
  this.chart=L.createChart($('price-chart'),{autoSize:true,height:620,layout:{background:{type:'solid',color:'#ffffff'},textColor:'#65728b',fontFamily:'Arial',attributionLogo:false},grid:{vertLines:{color:'#f2f4f8'},horzLines:{color:'#edf0f6'}},rightPriceScale:{borderColor:'#e5eaf3'},timeScale:{borderColor:'#e5eaf3',timeVisible:false,rightOffset:5,lockVisibleTimeRangeOnResize:true},crosshair:{mode:L.CrosshairMode.Normal},localization:{locale:'vi-VN',timeFormatter:timeLabel}});
  this.chart.subscribeCrosshairMove(e=>{const b=e.seriesData.get(this.series.price);if(b)this.readout({...b,volume:e.seriesData.get(this.series.volume)?.value});else this.readout(this.bars.at(-1));});
  this.chart.timeScale().subscribeVisibleLogicalRangeChange?.(visible=>{
@@ -81,16 +81,16 @@ class ChartController{
  this.syncIndicatorSettings();
  $('chart-oscillator-focus')?.addEventListener('change',e=>{this.focusOscillator=e.target.value;this.rebuild(true);});
  }
- select(symbol,watch=[]){this.watch=[...new Set([symbol,...watch])].filter(s=>/^[A-Z]{3}$/.test(s));if(this.symbol!==symbol){this.symbol=symbol;this.followingLatest=true;this.insightItems=[];this.renderInsights();this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown.clear();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.renderSignals();this.load();}else this.subscribe();}
- async load(force=false){const generation=++this.generation;this.abort?.abort();this.abort=new AbortController();const controller=this.abort;this.loading=true;this.buffer=[];const symbol=this.symbol,baseTF=M.intraday(this.tf)?'1m':'1d',key=symbol+':'+baseTF,previousBars=this.baseBars.map(b=>({...b})),previousValues=this.values.map(v=>({...v}));
+ select(symbol,watch=[]){this.watch=[...new Set([symbol,...watch])].filter(s=>/^[A-Z]{3}$/.test(s));if(this.symbol!==symbol){this.symbol=symbol;this.renderedSelection='';this.baseBars=[];this.bars=[];this.values=[];this.followingLatest=true;this.insightItems=[];this.renderInsights();this.signalEvents=[];this.signalSnapshot=null;this.signalCooldown.clear();this.lastQuote=null;this.lastMarketQuote=null;this.lastSnapshotSource='';this.dataConsistent=true;this.renderSignals();this.load();}else this.subscribe();}
+ async load(force=false){const generation=++this.generation;this.abort?.abort();this.abort=new AbortController();const controller=this.abort;this.loading=true;this.buffer=[];const symbol=this.symbol,baseTF=M.intraday(this.tf)?'1m':'1d',key=symbol+':'+baseTF,requestedView=symbol+':'+this.tf,keepView=this.renderedSelection===requestedView&&this.bars.length>0,followedBeforeRefresh=keepView&&this.followingLatest&&$('chart-period')?.value==='recent',previousBars=this.baseBars.map(b=>({...b})),previousValues=this.values.map(v=>({...v}));
  $('chart-status').textContent='Đang tải lịch sử '+symbol+'…';if(!previousBars.length){this.bars=[];this.baseBars=[];this.values=[];this.rebuild(false);}this.subscribe();await this.configPromise;if(generation!==this.generation)return;
  try{let data=this.cache.get(key);if(force||!data||Date.now()-data.cachedAt>300000){const url=this.options?.historyBase?new URL(`history?symbol=${symbol}&interval=${baseTF}`,this.options.historyBase).href:this.base+(baseTF==='1m'?'intraday/':'history/')+symbol+'.json';let raw;if(window.FinMarketData&&!this.options?.historyBase){raw=await window.FinMarketData.get((baseTF==='1m'?'intraday/':'history/')+symbol+'.json',{signal:controller.signal});}else{const r=await fetch(url,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)]),cache:'no-cache'});if(!r.ok)throw Error('HTTP '+r.status);raw=await r.json();}if(raw.symbol!==symbol||raw.unit!=='VND'||!Array.isArray(raw.bars))throw Error('Invalid history');data={...raw,bars:M.cleanBars(raw.bars,baseTF==='1m'),cachedAt:Date.now()};if(!data.bars.length)throw Error('Empty');this.cache.set(key,data);if(this.cache.size>24)this.cache.delete(this.cache.keys().next().value);}
- if(generation!==this.generation)return;this.baseBars=data.bars.map(b=>({...b}));if(!M.intraday(this.tf))this.mergeDailyQuote(this.lastMarketQuote,true);this.bars=M.aggregate(this.baseBars,this.tf);this.values=M.indicators(this.bars,this.params);this.loading=false;this.rebuild(false);this.range();this.consistency(this.lastMarketQuote);this.evaluateSignals(false);$('chart-status').textContent=`${data.source||'Vietcap'} · ${baseTF==='1m'?'Lịch sử nến phút':'Lịch sử nến ngày'} · Lấy lúc ${stamp(data.collectedAt)}${data.status==='retained'?' · Bản đã lưu':''}. ${this.lastMarketQuote&&this.lastSnapshotSource===this.lastMarketQuote.sourceTime?'Đã ghép snapshot phiên hiện tại.':'Nến cuối có thể chưa hoàn tất.'}`;this.consistency(this.lastMarketQuote);
+ if(generation!==this.generation)return;this.baseBars=data.bars.map(b=>({...b}));if(!M.intraday(this.tf))this.mergeDailyQuote(this.lastMarketQuote,true);this.bars=M.aggregate(this.baseBars,this.tf);this.values=M.indicators(this.bars,this.params);this.loading=false;this.rebuild(keepView);this.renderedSelection=requestedView;if(!keepView||followedBeforeRefresh)this.range();this.consistency(this.lastMarketQuote);this.evaluateSignals(false);$('chart-status').textContent=`${data.source||'Vietcap'} · ${baseTF==='1m'?'Lịch sử nến phút':'Lịch sử nến ngày'} · Lấy lúc ${stamp(data.collectedAt)}${data.status==='retained'?' · Bản đã lưu':''}. ${this.lastMarketQuote&&this.lastSnapshotSource===this.lastMarketQuote.sourceTime?'Đã ghép snapshot phiên hiện tại.':'Nến cuối có thể chưa hoàn tất.'}`;this.consistency(this.lastMarketQuote);
  for(const message of this.buffer)this.candle(message);this.buffer=[];
  }catch(e){if(generation!==this.generation)return;this.loading=false;if(e.name==='AbortError')return;
   const cached=this.cache.get(key);
-  if(cached?.bars?.length){this.baseBars=cached.bars.map(b=>({...b}));this.bars=M.aggregate(this.baseBars,this.tf);this.values=M.indicators(this.bars,this.params);this.rebuild(false);this.range();this.consistency(this.lastMarketQuote);this.evaluateSignals(false);$('chart-status').textContent='Nguồn cập nhật đang gián đoạn · đang giữ '+this.bars.length+' nến gần nhất đã lưu cho '+symbol+'.';return;}
-  if(previousBars.length){this.baseBars=previousBars;this.bars=M.aggregate(this.baseBars,this.tf);this.values=previousValues.length===this.bars.length?previousValues:M.indicators(this.bars,this.params);this.rebuild(false);this.range();this.consistency(this.lastMarketQuote);this.evaluateSignals(false);$('chart-status').textContent='Nguồn cập nhật đang gián đoạn · biểu đồ vẫn dùng lịch sử đã tải trước đó.';return;}
+  if(cached?.bars?.length){this.baseBars=cached.bars.map(b=>({...b}));this.bars=M.aggregate(this.baseBars,this.tf);this.values=M.indicators(this.bars,this.params);this.rebuild(keepView);this.renderedSelection=requestedView;if(!keepView||followedBeforeRefresh)this.range();this.consistency(this.lastMarketQuote);this.evaluateSignals(false);$('chart-status').textContent='Nguồn cập nhật đang gián đoạn · đang giữ '+this.bars.length+' nến gần nhất đã lưu cho '+symbol+'.';return;}
+  if(previousBars.length){this.baseBars=previousBars;this.bars=M.aggregate(this.baseBars,this.tf);this.values=previousValues.length===this.bars.length?previousValues:M.indicators(this.bars,this.params);this.rebuild(keepView);this.renderedSelection=requestedView;if(!keepView||followedBeforeRefresh)this.range();this.consistency(this.lastMarketQuote);this.evaluateSignals(false);$('chart-status').textContent='Nguồn cập nhật đang gián đoạn · biểu đồ vẫn dùng lịch sử đã tải trước đó.';return;}
   if(baseTF==='1m'){this.tf='1d';$('chart-interval').value='1d';$('chart-status').textContent='Nến phút chưa sẵn sàng cho '+symbol+' · chuyển sang toàn bộ lịch sử ngày.';return this.load(force);}
   $('chart-status').textContent='Chưa nhận được tệp lịch sử '+symbol+' từ nguồn dữ liệu.';
  }
@@ -209,21 +209,19 @@ class ChartController{
  renderInsights(){const layer=$('chart-insight-markers');if(!layer)return;if(!this.insightsVisible){layer.innerHTML='';return;}if(!this.bars.length||!this.insightItems.length||!this.series.price){layer.innerHTML='';return;}const grouped=new Map(),buttons=[],height=layer.clientHeight||420;for(const item of this.insightItems){const time=this.snapInsightTime(item.date);if(time==null)continue;const x=this.chart.timeScale().timeToCoordinate(time);if(!Number.isFinite(x)||x<-20||x>(layer.clientWidth||9999)+20)continue;const bar=this.bars.find(b=>String(b.time)===String(time))||this.bars.find(b=>this.barDate(b.time)===this.barDate(time));if(!bar)continue;const key=String(time)+':'+String(item.kind||'event'),stack=grouped.get(key)||0;grouped.set(key,stack+1);const isResearch=item.kind==='research',anchorPrice=isResearch?Number(bar.high):Number(bar.low),anchorY=this.series.price.priceToCoordinate?.(anchorPrice);if(!Number.isFinite(anchorY))continue;const rawTop=isResearch?anchorY-34-stack*30:anchorY+10+stack*30,top=Math.max(8,Math.min(height-32,rawTop));const stemTop=isResearch?top+26:anchorY,stemBottom=isResearch?anchorY:top;buttons.push('<span class="chart-insight-stem '+(isResearch?'research':'event')+'" style="left:'+x.toFixed(1)+'px;top:'+Math.min(stemTop,stemBottom).toFixed(1)+'px;height:'+Math.max(6,Math.abs(stemBottom-stemTop)).toFixed(1)+'px"></span><button type="button" class="chart-insight-marker '+html(item.kind||'event')+' '+html(item.tone||'')+'" data-insight-id="'+html(item.id)+'" style="left:'+x.toFixed(1)+'px;top:'+top.toFixed(1)+'px" title="'+html(item.title||'')+'" aria-label="'+html(item.title||item.label||'Sự kiện')+'"><span>'+html(item.label||'•')+'</span></button>');}layer.innerHTML=buttons.join('');}
  range(){
   if(!this.bars.length)return;
-  const rangeLabel=$('chart-range-label');if(rangeLabel)rangeLabel.hidden=false;
+  const rangeLabel=$('chart-range-label');if(rangeLabel)rangeLabel.hidden=$('chart-period')?.value==='recent';
   const requested=String($('chart-period')?.value||'recent'),months=Number(requested);
   const first=this.bars[0],last=this.bars.at(-1);
   const labelTime=t=>typeof t==='number'?
    new Date(t*1000).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):String(t);
   if(requested==='recent'){
    this.followingLatest=true;
-   // Initial readability beats showing every candle compressed into <2px.
-   // Keep the latest 35-76 observations with a small future right margin.
+   // Desktop: 60-90 recent bars; mobile: fewer bars with visible candle bodies.
    const available=Number($('price-chart')?.clientWidth)||960;
-   // Default 18-48 visible bars: wide enough for context, large enough to
-   // read candle bodies without manually zooming on desktop or phone.
-   const budget=Math.max(10,Math.min(24,Math.floor(Math.max(260,available-86)/27)));
-   const count=Math.min(this.bars.length,
-    this.tf==='1mo'?Math.min(budget,36):this.tf==='1w'?Math.min(budget,48):budget);
+   const budget=available>=600
+    ?Math.max(60,Math.min(90,Math.floor((available-48)/11)))
+    :Math.max(18,Math.min(54,Math.floor((available-42)/10)));
+   const count=Math.min(this.bars.length,budget);
    const from=Math.max(0,this.bars.length-count),to=this.bars.length+2.5;
    this.chart.timeScale().setVisibleLogicalRange({from,to});
    $('chart-range-label').textContent=(this.tf==='1d'?'1D':'Khung '+this.tf)+' · '+
@@ -246,6 +244,7 @@ class ChartController{
  }
  zoom(f){
   const r=this.chart.timeScale().getVisibleLogicalRange();if(!r)return;
+  this.followingLatest=false; // Preserve manual zoom while quotes arrive.
   const end=this.bars.length+2.5,width=(r.to-r.from)*f;
   // When following the market, zoom around the latest candle rather than
   // zooming it out of the viewport. Preserve manually panned history.
@@ -326,7 +325,7 @@ class ChartController{
  }
  candle(m){const baseTF=M.intraday(this.tf)?'1m':'1d';if(m.symbol!==this.symbol||m.interval!==baseTF||m.unit!=='VND')return;const next=M.cleanBars([m.bar],baseTF==='1m')[0];if(!next||(typeof next.time==='number'&&next.time>Date.now()/1000+60))return;const last=this.baseBars.at(-1);if(last&&next.time<last.time)return;
  const previousVisible=this.chart.timeScale().getVisibleLogicalRange?.();
- const followedLatest=!previousVisible||previousVisible.to>=this.bars.length-1.5;
+ const followedLatest=this.followingLatest&&(!previousVisible||previousVisible.to>=this.bars.length-1.5);
  if(last&&next.time===last.time)this.baseBars[this.baseBars.length-1]=next;else this.baseBars.push(next);
  // Reaggregate only the current bucket, preserving every earlier rendered candle.
  const t=M.bucket(next.time,this.tf),tail=[];for(let i=this.baseBars.length-1;i>=0&&M.bucket(this.baseBars[i].time,this.tf)===t;i--)tail.unshift(this.baseBars[i]);const b=M.aggregate(tail,this.tf)[0];if(this.bars.at(-1)?.time===b.time)this.bars[this.bars.length-1]=b;else this.bars.push(b);
