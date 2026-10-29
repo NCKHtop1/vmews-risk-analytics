@@ -29,6 +29,10 @@ const VN100_DATA_ROOT="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-ana
 const VN100_MIRROR_ROOT="https://cdn.jsdelivr.net/gh/NCKHtop1/vmews-risk-analytics@finquery-vn100-data/data/";
 const VN100_PRODUCT_URL=VN100_DATA_ROOT+"finquery-vn100-product.json";
 const VN100_FULL_URL=VN100_DATA_ROOT+"finquery-vn100-forecast.json";
+const VN100_STATUS_URL=VN100_DATA_ROOT+"finquery-vn100-status.json";
+const VN100_STATUS_MIRROR=VN100_MIRROR_ROOT+"finquery-vn100-status.json";
+const FORECAST_POLL_MS=120000,MARKET_QUOTE_POLL_MS=300000;
+let FORECAST_REFRESHING=null,FORECAST_LAST_DEEP_CHECK=0;
 let VN100_BUNDLE_PROMISE=null;
 function validVN100(data){
   if(data?.status!=="PASS"||data?.gates?.status!=="PASS"||data?.universe?.available!==100)return false;
@@ -74,8 +78,8 @@ function vnDateKey(value){
 }
 function liveQuotePayloadUsable(payload,now=new Date()){
   if(!payload?.quotes||typeof payload.quotes!=="object")return false;
-  const stamp=new Date(payload.sourceTime||payload.generatedAt||payload.latestSourceTime||payload.checkedAt||"");
-  if(Number.isNaN(+stamp)||+stamp>Date.now()+5*60_000)return false;
+  const stamp=new Date(payload.latestSourceTime||payload.sourceTime||payload.generatedAt||payload.checkedAt||"");
+  if(Number.isNaN(+stamp)||+stamp>+now+5*60_000)return false;
   const expected=window.__VMEWS_FRESHNESS__?.expectedQuoteSession?.(now)||vnDateKey(now);
   const mode=window.__VMEWS_FRESHNESS__?.quoteMode?.(now)||"";
   const age=+now-+stamp;
@@ -103,8 +107,18 @@ async function refreshLiveQuotes(force=false){
         try{
           const payload=await fetchJsonBounded(url+"?refresh="+revision,5000);
           if(!liveQuotePayloadUsable(payload))continue;
+          // Never roll back the displayed quote to an older verified source.
+          const prior=Date.parse(LIVE_QUOTES?.latestSourceTime||LIVE_QUOTES?.sourceTime||"");
+          const latest=Date.parse(payload.latestSourceTime||payload.sourceTime||"");
+          if(Number.isFinite(prior)&&(!Number.isFinite(latest)||latest<=prior))return false;
           LIVE_QUOTES=payload;
           window.__VMEWS_LIVE_QUOTES__=payload;
+          // The old page updated its global quote cache but did not rerender
+          // the detail chart/cards after later 5-minute market publications.
+          if(last?.B?.dash?.symbols?.[last.sym]){
+            rerender(last.B,last.sym,last.B.dash.symbols[last.sym]);
+            if(last.B.source==="VN100")renderVN100Status(last.B,last.sym,last.view);
+          }
           window.dispatchEvent(new CustomEvent("vmews:live-quotes-updated",{detail:{quotes:payload,scope:"finquery-market"}}));
           return true;
         }catch{continue}
@@ -229,9 +243,18 @@ window.__VMEWS_ISSUER_HEADLINE_MATCHES__=issuerHeadlineMatches;
 function sessionQuote(symbol,session=window.__VMEWS_SESSION__){
   const expected=window.__VMEWS_FRESHNESS__?.expectedQuoteSession?.();
   const live=(LIVE_QUOTES||window.__VMEWS_LIVE_QUOTES__)?.quotes?.[symbol];
-  if(live&&finite(live.price)){
-    const stamp=live.updateAt||live.observedAt||live.sourceTime||LIVE_QUOTES?.sourceTime||LIVE_QUOTES?.generatedAt||window.__VMEWS_LIVE_QUOTES__?.sourceTime||window.__VMEWS_LIVE_QUOTES__?.generatedAt;
-    if(!expected||vnDateKey(stamp)===expected)return{symbol,liveClose:+live.price,change:finite(live.changePct)?+live.changePct/100:null,updateAt:stamp,quoteCurrent:true,freshForCutoff:true,updateMode:"finquery_market_publisher",source:live.source||"FinQuery Market"};
+  if(live&&finite(live.price)&&!["retained","stale","error","unavailable"].includes(live.status)){
+    const stamp=live.sourceTime||live.updateAt||live.observedAt||"";
+    const now=new Date(),ts=Date.parse(stamp),age=now-ts;
+    const mode=window.__VMEWS_FRESHNESS__?.quoteMode?.(now)||"";
+    const maxAge=mode==="LIVE"?10*60000:mode==="LUNCH"?105*60000:mode==="POST_CLOSE"?120*60000:72*3600000;
+    // Valid source time AND current exchange session, not just HTTP 200.
+    if(Number.isFinite(ts)&&age>=-300000&&age<=maxAge&&
+       (!expected||vnDateKey(stamp)===expected)){
+      return{symbol,liveClose:+live.price,change:finite(live.changePct)?+live.changePct/100:null,
+        updateAt:stamp,quoteCurrent:true,freshForCutoff:true,
+        updateMode:"finquery_market_publisher",source:live.source||"FinQuery Market"};
+    }
   }
   if(expected&&String(session?.coverage?.expectedQuoteDate||"")!==expected)return null;
   return(session?.symbols||[]).find(item=>item.symbol===symbol&&item.quoteCurrent&&item.freshForCutoff!==false&&finite(item.liveClose))||null
