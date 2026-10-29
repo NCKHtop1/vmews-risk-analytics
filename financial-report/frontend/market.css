@@ -1021,3 +1021,11 @@ body.strategy-lab-view .strategy-page{display:block}
 @media(prefers-reduced-motion:reduce){
  #macro .macro-workspace,.ai-fab#ai-fab,.ai-fab#ai-fab::before{animation:none!important;transition:none!important}
 }
+
+
+/* Icon-only disclosure links and short non-blocking quality labels. */
+#macro .macro-quiet-note{display:inline-block;color:#718296;font-size:10px;font-weight:500;line-height:1.4;margin:4px 7px 3px 0}
+#macro .macro-viz-source:has(.macro-source-quicklink){justify-content:flex-end}
+#macro .macro-source-quicklink{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0!important;border:1px solid #d9e2ec;border-radius:8px;background:#fff;color:#34658d;text-decoration:none!important}
+#macro .macro-source-quicklink:hover{background:#f2f6fa}
+#macro .macro-source-quicklink:focus-visible{outline:2px solid #3872b8;outline-offset:2px}
