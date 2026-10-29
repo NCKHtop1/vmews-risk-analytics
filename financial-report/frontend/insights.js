@@ -40,7 +40,7 @@ function rows(){
 }
 function markerItems(){
  return rows().map(x=>x._kind==='research'?{
-  id:'research:'+x.id,date:x.publishedAt,kind:'research',label:String(x.broker||'R').slice(0,4).toUpperCase(),title:(x.broker||'CTCK')+' · '+x.title,tone:'research'
+  id:'research:'+x.id,date:x.publishedAt,kind:'research',label:'PT',title:'Báo cáo phân tích · '+x.title,tone:'research'
  }:{
   id:'event:'+x.id,date:x.date,kind:'event',label:EVENT_MARKS[x.type]||'•',title:(EVENT_LABELS[x.type]||'Sự kiện')+' · '+x.title,tone:x.type||'event'
  });
