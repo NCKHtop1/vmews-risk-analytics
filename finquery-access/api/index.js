@@ -399,7 +399,7 @@ async function onObservations(req,res,user) {
   const body=parseBody(req);
   if (!validOnDate(body.date) || typeof body.value !== 'number' ||
       !Number.isFinite(body.value) || body.value<0 || body.value>25 ||
-      Math.round(body.value*10000)!==body.value*10000) {
+      Math.abs(body.value*10000-Math.round(body.value*10000))>1e-7) {
     return json(res,400,{error:'Ngày hoặc lãi suất ON không hợp lệ (0–25%/năm, tối đa 4 số lẻ).'});
   }
   await db().query(
