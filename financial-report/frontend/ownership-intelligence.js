@@ -58,10 +58,6 @@ function validRows(d,symbol){
    })
    .slice(0,90);
 }
-function sourceLink(url,symbol,label='Nguồn'){
- const href=safeSource(url,symbol);
- return href?'<a href="'+esc(href)+'" target="_blank" rel="noopener noreferrer">'+esc(label)+' ↗</a>':'';
-}
 function pct(v){if(v===null||v===undefined||!Number.isFinite(Number(v)))return'<span class="owner-missing">—</span>';
  const n=Number(v),tone=n>0?'owner-pos':n<0?'owner-neg':'owner-zero';
  return'<span class="'+tone+'">'+(n>0?'+':'')+fmt(n,2)+'%</span>';
@@ -77,11 +73,9 @@ function summarySection(symbol,profile){
  const leaderRows=leaders.slice(0,6).map(x=>'<div class="owner-structure-row"><span>'+esc(x.name)+'</span><small>'+esc(x.role)+'</small></div>').join('')||'<p>Chưa có danh sách đã đối chiếu.</p>';
  const otherLeaders=leaders.length>6?'<details><summary>Xem thêm '+(leaders.length-6)+' thành viên</summary>'+leaders.slice(6).map(x=>'<div class="owner-structure-row"><span>'+esc(x.name)+'</span><small>'+esc(x.role)+'</small></div>').join('')+'</details>':'';
  const latest=[profile.asOf,...own.map(x=>x.asOf),...holders.map(x=>x.asOf)].filter(Boolean).sort().at(-1)||null;
- const meta='<small class="owner-source">'+(latest?'Số liệu kỳ '+day(latest)+' · ':'')+sourceLink(profile.source,symbol,profile.sourceName||'Nguồn')+'</small>';
+ const meta=latest?'<small class="owner-asof">Cập nhật '+day(latest)+'</small>':'';
  return'<div class="owner-overview"><section><h4>Cơ cấu sở hữu</h4>'+ownRows+'</section>'+
- '<section><h4>Cổ đông lớn</h4>'+
-  (profile.shareholdersSource?'<small>'+sourceLink(profile.shareholdersSource,symbol,'Vietcap')+'</small>':'')+
-  holderRows+otherHolders+'</section>'+
+ '<section><h4>Cổ đông lớn</h4>'+holderRows+otherHolders+'</section>'+
  '<section><h4>Ban lãnh đạo</h4>'+leaderRows+otherLeaders+'</section></div>'+meta;
 }
 function marketSignal(event){
@@ -130,11 +124,11 @@ function render(){
    '<td>'+step(1)+'</td><td>'+step(3)+'</td><td>'+step(5)+'</td><td>'+step(10)+'</td>'+
    '<td><span class="owner-signal owner-signal-'+signal[1]+'">'+esc(signal[0])+'</span>'+
    (kind||volume?'<small>'+esc([kind,volume].filter(Boolean).join(' · '))+'</small>':'')+'</td>'+
-   '<td>'+sourceLink(r.sourceUrl,r.symbol,r.sourcePublisher||'Nguồn')+'</td></tr>';
+   '</tr>';
  }).join('');
  const table='<div class="ownership-table-scroll"><table class="ownership-table"><thead><tr>'+
  '<th>Công bố</th><th>Người/tổ chức</th><th>Giao dịch</th><th>Số lượng</th><th>Nắm giữ sau</th>'+
- '<th>T+1</th><th>T+3</th><th>T+5</th><th>T+10</th><th>Diễn biến</th><th>Nguồn</th>'+
+ '<th>T+1</th><th>T+3</th><th>T+5</th><th>T+10</th><th>Diễn biến</th>'+
  '</tr></thead><tbody>'+list+'</tbody></table></div>';
  host.innerHTML=head+summary+counts+table;
 }
