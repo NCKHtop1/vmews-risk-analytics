@@ -668,6 +668,25 @@ def audit_legacy_forecast_isolation(report: Audit, repo_root: Path):
         "FORECAST_PRODUCTION_ARCHIVE_FETCH_BLOCKED",
         "FinQuery must reject direct V12 loads even if old files are restored",
     )
+    leaders_file = repo_root / "forecast-live-leaders-v14.js"
+    leaders = leaders_file.read_text(encoding="utf-8") if leaders_file.is_file() else ""
+    report.check(
+        "if(window.__VMEWS_STANDALONE_CORE_PAGE__!==true)return null" in leaders,
+        "FORECAST_V21_BROWSER_OVERLAY_BLOCKED",
+        "The obsolete V21 overlay is unavailable to the FinQuery frontend",
+    )
+    research_file = repo_root / "forecast-polish-v12.js"
+    research = research_file.read_text(encoding="utf-8") if research_file.is_file() else ""
+    report.check(
+        "window.__VMEWS_STANDALONE_CORE_PAGE__===true" in research,
+        "FORECAST_LEGACY_RESEARCH_FETCH_BLOCKED",
+        "The archived V12 context must never augment VN100 trading decisions",
+    )
+    report.check(
+        'if(B?.source==="VN100")return false;' in browser,
+        "FORECAST_COMMUNITY_LEGACY_BLOCKED",
+        "Old research V19/V20 scenario overlays cannot alter VN100",
+    )
     for workflow in (
         "forecast-v13-daily-refresh.yml", "forecast-v21-session-refresh.yml",
         "forecast-v12-cdn-smoke.yml", "forecast-v12-cdn-browser-smoke.yml",
