@@ -27,7 +27,10 @@ SOURCES = {
     "macro": f"{ROOT}/financial-market-data/market/macro.json",
     "financial": f"{ROOT}/financial-report-data/data/manifest.json",
     "esg": f"{ROOT}/financial-market-data/market/esg-status.json",
-    "forecast": f"{ROOT}/main/data/forecast-session-v21.json",
+    # The actual FinQuery UI uses this independently published VN100 product.
+    "forecast": f"{ROOT}/finquery-vn100-data/data/finquery-vn100-status.json",
+    # Legacy V21 is observed separately; it cannot define FinQuery's live status.
+    "forecast_legacy": f"{ROOT}/main/data/forecast-session-v21.json",
     "live_track": f"{ROOT}/main/data/live-track/track-record.json",
 }
 SEVERITIES = {"OK": 0, "WARNING": 1, "CRITICAL": 2}
@@ -155,22 +158,68 @@ def evaluate(data, now=None, production=None):
             {"eligible": len(discovery), "staleAtLeast2Sessions": stale,
              "staleAtLeast10Sessions": very_stale})
 
-    overlay = payload("forecast")
-    if overlay:
-        forecast_day = day_of(overlay.get("coreAsOf"))
+    forecast = payload("forecast")
+    if forecast:
         completed = day_of(ctx["completedSession"])
-        lag = trading_session_age(forecast_day, completed) if forecast_day and completed else 99
-        # The model already abstains while stale. Alert operators, never resume ranking.
-        status = (overlay.get("forecastAlignment") or {}).get("status")
-        sev = "CRITICAL" if lag >= 2 else "WARNING" if lag or status == "STALE_CORE" else "OK"
-        add("FORECAST_CORE", sev, "Độ mới lõi dự báo đã niêm phong",
-            {"coreAsOf": str(forecast_day), "expectedCompletedSession": str(completed),
-             "lagSessions": lag, "alignment": status, "rankingEligible":
-             (overlay.get("forecastAlignment") or {}).get("rankingEligible")})
-        if lag and (overlay.get("forecastAlignment") or {}).get("rankingEligible") is True:
-            add("FORECAST_FAIL_CLOSED", "CRITICAL", "Lõi stale nhưng vẫn cho phép ranking")
-        else:
-            add("FORECAST_FAIL_CLOSED", "OK", "Lõi stale được fail-closed hoặc lõi hiện hành")
+        asof = day_of(forecast.get("asOf"))
+        stamp = parse_ts(forecast.get("generatedAt"))
+        age = (now - stamp).total_seconds() / 60 if stamp else None
+        structurally_valid = (
+            forecast.get("status") == "PASS"
+            and int(forecast.get("symbols") or 0) == 100
+            and int(forecast.get("horizons") or 0) == 500
+            and int(forecast.get("freshHistory") or 0) >= 95
+        )
+        session_ok = bool(completed and asof == completed)
+        timestamp_ok = age is not None and age >= -5
+        # Current quotes are mandatory in an active session. A newly generated
+        # EOD-only fallback is not a valid intraday VN100 update.
+        live_ok = (
+            not ctx["live"]
+            or (
+                forecast.get("inputMode") == "INTRADAY"
+                and forecast.get("forecastSessionDate") == now.astimezone(VN_TZ).date().isoformat()
+                and int(forecast.get("activeQuotes") or 0) >= 90
+            )
+        )
+        stale = (not structurally_valid or not session_ok or not timestamp_ok
+                 or not live_ok or (ctx["live"] and age is not None and age > 75))
+        sev = "CRITICAL" if stale else "WARNING" if ctx["live"] and age > 45 else "OK"
+        add("FORECAST_CORE", sev,
+            "Độ mới dự báo VN100 đang phục vụ FinQuery",
+            {"source": "finquery-vn100-data", "asOf": str(asof),
+             "expectedCompletedSession": str(completed),
+             "generatedAgeMinutes": round(age, 1) if age is not None else None,
+             "symbols": forecast.get("symbols"), "horizons": forecast.get("horizons"),
+             "inputMode": forecast.get("inputMode"),
+             "activeQuotes": forecast.get("activeQuotes"), "sessionValid": session_ok,
+             "liveSessionValid": live_ok})
+
+    legacy = payload("forecast_legacy")
+    if legacy:
+        legacy_day = day_of(legacy.get("coreAsOf"))
+        completed = day_of(ctx["completedSession"])
+        lag = trading_session_age(legacy_day, completed) if legacy_day and completed else 99
+        alignment = legacy.get("forecastAlignment") or {}
+        stale = lag > 0 or alignment.get("status") == "STALE_CORE"
+        ranking = alignment.get("rankingEligible") is True
+        safely_withheld = (
+            not ranking
+            and legacy.get("mode") == "PRICE_ONLY_STALE_CORE"
+            and not (legacy.get("leaders") or [])
+        )
+        unsafe = stale and not safely_withheld
+        add("FORECAST_LEGACY_V21",
+            "CRITICAL" if unsafe else "WARNING" if stale else "OK",
+            "Mô hình V21 cũ: chỉ lưu lịch sử, tuyệt đối không phát dự báo sai phiên",
+            {"legacyCoreAsOf": str(legacy_day), "expectedCompletedSession": str(completed),
+             "lagSessions": lag, "mode": legacy.get("mode"),
+             "rankingEligible": ranking, "safeAbstention": safely_withheld})
+        add("FORECAST_FAIL_CLOSED",
+            "CRITICAL" if unsafe else "OK",
+            "Dữ liệu dự báo cũ phải ngừng xếp hạng khi sai phiên"
+            if unsafe else "Forecast cũ đã dừng xếp hạng, FinQuery dùng VN100 riêng",
+            {"legacyAsOf": str(legacy_day), "safeAbstention": safely_withheld})
 
     intraday = payload("intraday")
     if intraday:
