@@ -148,6 +148,11 @@ async function fetchJsonBounded(url,timeoutMs=FETCH_TIMEOUT_MS){
   }finally{clearTimeout(timer)}
 }
 async function json(name){
+  // Retired V12/V13/V20 core assets must never be fetched on FinQuery.
+  // Only the separately routed SoluTION.AI standalone page may read its
+  // dedicated historical/research forecast branch.
+  if(!INDEPENDENT_CORE_PAGE&&CORE_ASSETS.has(name))
+    throw Error("Legacy Forecast Core đã được tách riêng, không được phép tải vào FinQuery.");
   if(JSON_PROMISES.has(name))return JSON_PROMISES.get(name);
   const request=(async()=>{
     const isDedicatedCore=INDEPENDENT_CORE_PAGE&&CORE_ASSETS.has(name);
@@ -209,6 +214,7 @@ window.__VMEWS_LOAD_BASE__=loadBase;
 window.__VMEWS_LOAD_LEADER_BASE__=loadLeaderBase;
 window.__VMEWS_DATA_ROOT__=ROOT;
 window.__SOLUTION_AI_CORE_ROOT__=CORE_ROOT;
+window.__VMEWS_STANDALONE_CORE_PAGE__=INDEPENDENT_CORE_PAGE;
 window.__VMEWS_DATA_REF__=DATA_REF;
 window.__VMEWS_ASSET_REF__=CDN_REF||"LOCAL_DEPLOYMENT";
 function assertProduction(B){if(B.gates?.status!=="PASS")throw Error("Bộ kiểm soát dữ liệu chưa đạt; dự báo đang tạm khóa.");if(B.model?.promotion?.status!=="PASS")throw Error("Mô hình chưa vượt điều kiện phát hành; dự báo đang tạm khóa.")}
