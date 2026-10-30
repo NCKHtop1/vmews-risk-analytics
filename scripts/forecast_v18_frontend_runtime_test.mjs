@@ -157,13 +157,18 @@ test("economic point strength is metadata and cannot erase otherwise validated H
   assert.equal(window.__VMEWS_BUILD_LEADERBOARD__(base([lowConfidence]), { all: true }).length, 0);
 });
 
-test("latest production dashboard keeps every structurally valid forecast in the ranking universe", async () => {
-  const dashboard = JSON.parse(await readFile(new URL("../data/forecast-dashboard-v12.json", import.meta.url), "utf8"));
+test("canonical forecast ranking admits every valid symbol without old V12 production files", async () => {
+  const items = [
+    snapshot("FPT", 72000, 75000),
+    snapshot("MCH", 128000, 130000),
+    snapshot("PLX", 44000, 43000),
+    snapshot("VIC", 50000, 52000),
+  ];
+  items[3].horizons["5"].priceValidated = false;
   const window = await loadLeaderboard();
-  const B = { dash: dashboard, model: { promotion: dashboard.promotion } };
-  const horizon = window.__VMEWS_RANKING_HORIZON__(B);
-  const structurallyValid = Object.values(dashboard.symbols).filter(item => {
-    const forecast = item?.horizons?.[String(horizon)] || {};
+  const B = base(items);
+  const structurallyValid = items.filter(item => {
+    const forecast = item?.horizons?.["5"] || {};
     return item.exchange === "HOSE" && item.dataFreshness === "CURRENT"
       && forecast.priceValidated === true && forecast.validationStatus === "PASS"
       && forecast.pointDirectionValidated === true && forecast.magnitudeValidated === true
@@ -171,15 +176,11 @@ test("latest production dashboard keeps every structurally valid forecast in the
       && Number(forecast.tickSize) > 0 && Number(forecast.expectedPrice) % Number(forecast.tickSize) === 0;
   });
   const ranked = window.__VMEWS_BUILD_LEADERBOARD__(B, { all: true, includeNonPositive: true });
-  assert.ok(structurallyValid.length > 0);
   assert.equal(ranked.length, structurallyValid.length);
-  assert.deepEqual(
-    new Set(ranked.map(row => row.symbol)),
-    new Set(structurallyValid.map(row => row.symbol)),
-  );
+  assert.deepEqual(new Set(ranked.map(row => row.symbol)),
+                   new Set(structurallyValid.map(row => row.symbol)));
   assert.ok(ranked.some(row => row.upside > 0));
 });
-
 
 test("session overlay re-filters EOD positives that turn negative at the live cutoff", async () => {
   const window = await loadLeaderboard();
