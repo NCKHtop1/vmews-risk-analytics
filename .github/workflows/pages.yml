@@ -18,6 +18,11 @@ on:
       - 'solution-ai-v17.js'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
+  # The HOSE price/minute publishers stay alive through each trading session.
+  # workflow_run fires only at their end; publish the read-only Pages mirror
+  # independently every 15 minutes so price snapshots do not lag all day.
+  schedule:
+    - cron: '*/15 2-8 * * 1-5'  # 09:00-15:45 Asia/Ho_Chi_Minh
   workflow_run:
     workflows: ['Refresh FinQuery prices and company news', 'Refresh live HOSE Core + Liquid prices', 'Refresh live HOSE minute candles', 'Refresh market news stream', 'Refresh FinQuery macro snapshot', 'Refresh FinQuery market universe', 'Refresh financial reports for CDN', 'Refresh investment insights', 'Forecast V20.1 immutable-price audit and market intelligence', 'Forecast V21 guarded session overlay']
     types: [completed]
