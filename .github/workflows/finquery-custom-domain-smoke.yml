@@ -1,6 +1,13 @@
 name: FinQuery custom-domain end-to-end smoke
 on:
   workflow_dispatch:
+  # PR checks the currently published public Pages shell plus protected domain;
+  # source-specific responsive and chart tests run in their separate PR gates.
+  pull_request:
+    paths:
+      - '.github/workflows/financial-dashboard-browser-smoke.yml'
+      - 'scripts/finquery_custom_domain_browser_run.py'
+      - '.github/workflows/finquery-custom-domain-smoke.yml'
   push:
     branches: [main, fix/finquery-domain-https-route-smoke-20261009, fix/finquery-browser-stale-element-retry-20261009]
     paths:
