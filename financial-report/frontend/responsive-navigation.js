@@ -35,4 +35,22 @@
  if(media.addEventListener)media.addEventListener('change',()=>close());
  else if(media.addListener)media.addListener(()=>close());
  close();
+ // The chart's native details menu remains keyboard/touch accessible and
+ // closes after a command, outside pointer interaction, or Escape.
+ const chartTools=document.getElementById('chart-advanced-tools');
+ if(chartTools){
+  const summary=chartTools.querySelector('summary');
+  chartTools.addEventListener('click',event=>{
+   if(event.target.closest('button'))chartTools.open=false;
+  });
+  document.addEventListener('pointerdown',event=>{
+   if(chartTools.open&&!chartTools.contains(event.target))chartTools.open=false;
+  });
+  document.addEventListener('keydown',event=>{
+   if(event.key==='Escape'&&chartTools.open){
+    chartTools.open=false;
+    summary?.focus({preventScroll:true});
+   }
+  });
+ }
 })();
