@@ -305,6 +305,13 @@ def build(core_path: Path, market_dir: Path, now: datetime | None = None, previo
     now = (now or datetime.now(VN_TZ)).astimezone(VN_TZ)
     completed = latest_completed_session(now).isoformat()
     histories = load_market(core_path, market_dir, completed, previous_path)
+    # Only the canonical VN100 membership supplies issuer identity. Forecast
+    # V12/V13/V20 archives are not a source of current prices, evidence or
+    # corporate context, even as optional display data.
+    issuers = {
+        str(row["symbol"]).upper().strip(): row
+        for row in json.loads(core_path.read_text(encoding="utf-8"))
+    }
     quotes_path = market_dir / "quotes.json"
     quotes = json.loads(quotes_path.read_text(encoding="utf-8")) if quotes_path.exists() else {}
     audit, walk, per_symbol = backtest(histories)
@@ -409,32 +416,14 @@ def build(core_path: Path, market_dir: Path, now: datetime | None = None, previo
             "dailyVolatility": hist_vol,
             "lastSessionReturn": latest_close / bars[-2]["close"] - 1.0,
             "riskStatus": risk,
-            "sector": "UNKNOWN",
+            "name": str(issuers[symbol].get("name") or "").strip(),
+            "companyName": str(issuers[symbol].get("name") or "").strip(),
+            "sector": "UNKNOWN",  # no current verified sector taxonomy in the VN100 manifest
             "horizons": horizon_rows,
             "evidence": {"recent": [], "decisionRecent": []},
         }
-    # Keep existing non-forecast company context in the unchanged dashboard.
-    # These fields are for display only and are never used in the predictor.
-    legacy_file = core_path.resolve().parents[2] / "data" / "forecast-dashboard-v12.json"
-    if legacy_file.is_file():
-        try:
-            legacy = json.loads(legacy_file.read_text(encoding="utf-8"))
-            for symbol, current in symbols.items():
-                previous = (legacy.get("symbols") or {}).get(symbol) or {}
-                for key in (
-                    "name", "companyName", "sector", "newsFeatures", "flow",
-                    "fundContext", "fundamentalContext", "rumorContext",
-                    "priceSourceAgreement",
-                ):
-                    value = previous.get(key)
-                    if value is not None and (key != "sector" or value != "UNKNOWN"):
-                        current[key] = value
-                previous_evidence = previous.get("evidence") or {}
-                if previous_evidence:
-                    current["evidence"] = previous_evidence
-                current["contextAsOf"] = str(legacy.get("asOf") or "")[:10]
-        except (OSError, ValueError, TypeError):
-            pass
+    # No legacy data reads, carry-forward of old evidence, or implicit fallbacks.
+    # Fresh news, flows and financials have their own independent publishers.
     if len(symbols) != 100 or set(symbols) != set(histories):
         raise RuntimeError("VN100 forecast coverage is not exactly 100/100")
     if recent_bars < 95:
