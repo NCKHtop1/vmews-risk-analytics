@@ -451,6 +451,184 @@ def audit_forecast_monitor(report: Audit, repo_root: Path, now):
     report.check(int(manifest.get("count") or 0) >= 20, "FORECAST_ARCHIVE_DEPTH", manifest.get("count"))
 
 
+
+def production_uses_finquery_vn100_core(repo_root: Path):
+    """FinQuery production must fetch validated VN100 product, never stale main V12.
+
+    The standalone Pages SoluTION.AI page is a different product and retains its
+    dedicated core branch. This guard protects the actual executable routing.
+    """
+    try:
+        text = (repo_root / "forecast-final-v12.js").read_text(encoding="utf-8")
+    except (OSError, UnicodeError):
+        return False
+    required = (
+        'const VN100_DATA_ROOT="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/finquery-vn100-data/data/"',
+        "async function loadVN100(",
+        "function validVN100(",
+        "if(validVN100(data))return data;",
+        "if(INDEPENDENT_CORE_PAGE){",
+        "const bundle=await loadVN100();",
+        "if(!bundle)throw Error(",
+        "BASE=vn100Base(bundle);",
+        'const FINQUERY_LIVE_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json"',
+    )
+    return all(token in text for token in required)
+
+
+def audit_finquery_vn100(report: Audit, vn100_dir: Path, core_symbols, now):
+    """Audit the exact atomic publisher artifacts used by FinQuery's live UI.
+
+    This is a provenance, freshness, shape, consistency and *backtest truth*
+    contract. Numerical T+h availability is not evidence of trading alpha:
+    negative backtest skill is reported as a separate warning, never converted
+    into a fabricated positive metric or an outdated legacy V12 release.
+    """
+    import hashlib
+
+    names = {
+        "product": "finquery-vn100-product.json",
+        "status": "finquery-vn100-status.json",
+        "full": "finquery-vn100-forecast.json",
+    }
+    files = {key: vn100_dir / name for key, name in names.items()}
+    if not all(report.check(path.is_file(), "FORECAST_VN100_FILE", str(path))
+               for path in files.values()):
+        return False
+    try:
+        product_raw = files["product"].read_bytes()
+        full_raw = files["full"].read_bytes()
+        product = json.loads(product_raw)
+        status = load_json(files["status"])
+        full = json.loads(full_raw)
+    except (OSError, ValueError, TypeError) as exc:
+        report.check(False, "FORECAST_VN100_DECODE", type(exc).__name__)
+        return False
+
+    expected = latest_completed_session(now.astimezone(VN_TZ)).isoformat()
+    timestamps = (product.get("generatedAt"), status.get("generatedAt"),
+                  full.get("generatedAt"))
+    generated = [parse_ts(t) for t in timestamps]
+    dates = (product.get("asOf"), status.get("asOf"), full.get("asOf"),
+             (product.get("dashboard") or {}).get("asOf"))
+    report.check(all(d == expected for d in dates), "FORECAST_VN100_SESSION",
+                 {"actual": dates, "expected": expected})
+    report.check(len(set(timestamps)) == 1 and all(generated)
+                 and all(t <= now + timedelta(minutes=5) for t in generated if t),
+                 "FORECAST_VN100_GENERATION_ALIGNMENT", timestamps)
+    local = now.astimezone(VN_TZ)
+    minutes = local.hour * 60 + local.minute
+    live = is_trading_day(local.date(), require_certified=True) and 9 * 60 + 15 <= minutes <= 15 * 60 + 5
+    if live and generated[0]:
+        age = (now - generated[0]).total_seconds() / 60
+        report.check(-5 <= age <= 90, "FORECAST_VN100_LIVE_CADENCE", round(age, 1))
+    report.check(
+        status.get("sourceSha256") == hashlib.sha256(full_raw).hexdigest()
+        and int(status.get("productBytes") or -1) == len(product_raw),
+        "FORECAST_VN100_ARTIFACT_INTEGRITY",
+        {"fullSHA": status.get("sourceSha256"), "productBytes": status.get("productBytes")},
+    )
+    report.check(
+        product.get("status") == full.get("status") == status.get("status") == "PASS"
+        and (product.get("gates") or {}).get("status") == "PASS"
+        and (full.get("gates") or {}).get("status") == "PASS"
+        and (product.get("model") or {}).get("promotion", {}).get("status") == "PASS",
+        "FORECAST_VN100_PUBLICATION_GATES", status.get("status"),
+    )
+    universe = product.get("universe") or {}
+    snapshot = product.get("dashboard") or {}
+    symbols = snapshot.get("symbols") or {}
+    charts = snapshot.get("charts") or {}
+    official_core = {str(s).upper() for s in (core_symbols or [])}
+    actual_core = {str(s).upper() for s in symbols}
+    report.check(
+        len(symbols) == len(charts) == 100
+        and actual_core == {str(s).upper() for s in charts}
+        and (not official_core or actual_core == official_core)
+        and int(universe.get("available") or -1) == 100
+        and int(status.get("symbols") or -1) == 100,
+        "FORECAST_VN100_UNIVERSE",
+        {"forecast": len(symbols), "charts": len(charts), "marketCore": len(official_core)},
+    )
+    report.check(
+        int(status.get("horizons") or -1) == 500
+        and set((product.get("model") or {}).get("horizons") or {}) == {"1", "2", "3", "4", "5"},
+        "FORECAST_VN100_HORIZONS", status.get("horizons"),
+    )
+    report.check(
+        int(universe.get("freshHistory") or -1) >= 95
+        and int(status.get("freshHistory") or -1) >= 95,
+        "FORECAST_VN100_EOD_COVERAGE",
+        {"product": universe.get("freshHistory"), "status": status.get("freshHistory")},
+    )
+    date_ok, price_ok, chart_ok, anchor_ok, horizon_ok = True, True, True, True, True
+    for symbol, row in symbols.items():
+        if not isinstance(row, dict):
+            date_ok = price_ok = anchor_ok = horizon_ok = False
+            continue
+        date_ok &= (row.get("historicalAsOf") == expected
+                    and row.get("forecastHistoricalAsOf") == expected)
+        basis = row.get("forecastAnchorBasis")
+        anchor = parse_ts(row.get("forecastAnchorAt"))
+        anchor_ok &= basis in {"INTRADAY_QUOTE", "VERIFIED_EOD"} and anchor is not None and anchor <= now + timedelta(minutes=5) if anchor else False
+        anchor_price = row.get("forecastAnchorClose")
+        price_ok &= finite(anchor_price) and float(anchor_price) > 0
+        history = charts.get(symbol) or []
+        chart_dates = [str(x.get("date") or "") for x in history if isinstance(x, dict)]
+        chart_ok &= (len(history) >= 8 and len(chart_dates) == len(history)
+                     and chart_dates == sorted(set(chart_dates))
+                     and bool(chart_dates) and chart_dates[-1] == expected)
+        targets = row.get("horizons") or {}
+        horizon_ok &= set(targets) == {"1", "2", "3", "4", "5"}
+        for horizon in ("1", "2", "3", "4", "5"):
+            q = targets.get(horizon) or {}
+            fields = (q.get("q20Price"), q.get("expectedPrice"), q.get("q80Price"))
+            price_ok &= (q.get("priceValidated") is True
+                         and all(finite(v) and float(v) > 0 for v in fields)
+                         and (float(fields[0]) <= float(fields[1]) <= float(fields[2])
+                              if all(finite(v) for v in fields) else False))
+            horizon_ok &= str(q.get("targetDate") or "") > str(row.get("forecastSessionDate") or "")
+    report.check(date_ok, "FORECAST_VN100_SYMBOL_EOD", expected)
+    report.check(anchor_ok, "FORECAST_VN100_PRICE_PROVENANCE", "Missing/invalid price anchor or future timestamp")
+    report.check(price_ok, "FORECAST_VN100_PRICE_NUMERIC", "Invalid T+ price, quantile or anchor")
+    report.check(chart_ok, "FORECAST_VN100_CHART_HISTORY", "Incomplete or non-monotonic chart")
+    report.check(horizon_ok, "FORECAST_VN100_TARGET_DATES", "Missing/expired T+ horizon")
+
+    expected_session = local.date().isoformat() if live else expected
+    if live:
+        report.check(
+            status.get("inputMode") == "INTRADAY"
+            and status.get("forecastSessionDate") == expected_session
+            and int(status.get("activeQuotes") or 0) >= 90
+            and universe.get("inputMode") == "INTRADAY",
+            "FORECAST_VN100_INTRADAY_SESSION",
+            {"mode": status.get("inputMode"), "session": status.get("forecastSessionDate"),
+             "liveQuotes": status.get("activeQuotes"), "expected": expected_session},
+        )
+
+    backtest = product.get("backtest") or {}
+    audit_horizons = backtest.get("horizons") or {}
+    cases = backtest.get("cases") or {}
+    for h in ("1", "2", "3", "4", "5"):
+        rows = cases.get(h) or []
+        actual = {str(r.get("symbol") or "") for r in rows if isinstance(r, dict)}
+        report.check(
+            len(rows) >= 100 and actual == set(symbols)
+            and len(rows) == int((status.get("backtestCases") or {}).get(h) or -1)
+            and int(((audit_horizons.get(h) or {}).get("metrics") or {}).get("n") or 0) >= len(rows),
+            "FORECAST_VN100_BACKTEST_EVIDENCE_" + h,
+            {"cases": len(rows), "covered": len(actual)},
+        )
+        metrics = ((audit_horizons.get(h) or {}).get("metrics") or {})
+        skill = metrics.get("executableMAESkill")
+        report.check(finite(skill), "FORECAST_VN100_BACKTEST_METRIC_" + h, skill)
+        if finite(skill):
+            report.warn(float(skill) > 0, "FORECAST_VN100_SKILL_UNPROVEN_" + h,
+                        {"executableMAESkill": skill, "note": "numeric forecast != proved alpha"})
+    return not any(r["status"] == "FAIL" and r["code"].startswith("FORECAST_VN100_")
+                   for r in report.results)
+
+
 def production_prefers_solution_core(repo_root: Path):
     """The standalone Pages/CDN page reads only validated independent core assets."""
     try:
@@ -700,6 +878,7 @@ def main():
     parser.add_argument("--insights-dir", required=True)
     parser.add_argument("--solution-live")
     parser.add_argument("--solution-core-dir")
+    parser.add_argument("--vn100-dir")
     parser.add_argument("--ignore-solution-ai", action="store_true")
     parser.add_argument("--repo-root", default=str(ROOT))
     parser.add_argument("--report-json")
@@ -712,9 +891,18 @@ def main():
     audit_forecast_monitor(audit, Path(args.repo_root), now)
     repo_root = Path(args.repo_root)
     if args.ignore_solution_ai:
-        core_route_ok = production_uses_finquery_main_core(repo_root)
-        audit.check(core_route_ok, "FORECAST_PRODUCTION_CORE_ROUTE", "FinQuery Forecast must load main/data and FinQuery market quotes without SoluTION data branches")
-        audit_main_forecast(audit, repo_root, now, authoritative_core_ready=False)
+        core_route_ok = production_uses_finquery_vn100_core(repo_root)
+        audit.check(core_route_ok, "FORECAST_PRODUCTION_CORE_ROUTE",
+                    "FinQuery must load the published VN100 branch and the verified market quotes")
+        vn100_ready = audit_finquery_vn100(
+            audit, Path(args.vn100_dir), core, now) if args.vn100_dir else False
+        if not args.vn100_dir:
+            audit.check(False, "FORECAST_VN100_DIRECTORY_MISSING", "--vn100-dir required for FinQuery production")
+        # Main V12 is not loaded by the FinQuery product. Keep it visible as a
+        # dated, fail-closed legacy fallback: stale => WARN only if the actual
+        # canonical VN100 publisher is verified and the runtime route is safe.
+        audit_main_forecast(audit, repo_root, now,
+                            authoritative_core_ready=bool(core_route_ok and vn100_ready))
     else:
         if not args.solution_live or not args.solution_core_dir:
             parser.error("--solution-live and --solution-core-dir are required unless --ignore-solution-ai is set")

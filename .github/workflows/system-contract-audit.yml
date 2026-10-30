@@ -23,6 +23,7 @@ on:
       - Refresh investment insights
       - Forecast V20.1 immutable-price audit and market intelligence
       - Forecast V21 guarded session overlay
+      - FinQuery VN100 forecast refresh
     types: [completed]
     branches: [main]
 
@@ -73,12 +74,21 @@ jobs:
           path: _insight-data
           sparse-checkout: data
 
+      # The actual FinQuery forecast UI reads this separately published,
+      # atomically committed VN100 product, not legacy main/data/V12.
+      - uses: actions/checkout@v4
+        with:
+          ref: finquery-vn100-data
+          path: _vn100-data
+          sparse-checkout: data
+
       - name: Recompute all production data contracts
         run: |
           python scripts/system_contract_audit.py \
             --market-dir _market-data/market \
             --financial-dir _financial-data/data \
             --insights-dir _insight-data/data \
+            --vn100-dir _vn100-data/data \
             --ignore-solution-ai \
             --repo-root . \
             --report-json /tmp/system-contract.json
