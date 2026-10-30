@@ -27,7 +27,7 @@ def sessions():
 
 
 def fixtures(root):
-    core = [{"symbol": "S%03d" % i, "exchange": "HOSE"} for i in range(100)]
+    core = [{"symbol": "S%03d" % i, "name": "Official VN100 Company %03d" % i, "exchange": "HOSE"} for i in range(100)]
     (root / "companies.json").write_text(json.dumps(core), encoding="utf-8")
     market = root / "market"
     (market / "history").mkdir(parents=True)
@@ -61,6 +61,20 @@ class PublisherTests(unittest.TestCase):
             self.assertEqual(set(row["horizons"]), {"1", "2", "3", "4", "5"})
             self.assertTrue(all(item["expectedPrice"] > 0 and item["priceValidated"] for item in row["horizons"].values()))
             self.assertEqual(row["date"], "2026-10-14")
+
+    def test_issuer_context_is_from_current_vn100_universe_not_archived_forecast(self):
+        from inspect import getsource
+        row = self.full["dashboard"]["symbols"]["S000"]
+        self.assertEqual(row["name"], "Official VN100 Company 000")
+        self.assertEqual(row["companyName"], row["name"])
+        self.assertEqual(row["sector"], "UNKNOWN")
+        self.assertEqual(row["evidence"], {"recent": [], "decisionRecent": []})
+        for field in ("contextAsOf", "flow", "fundContext", "fundamentalContext",
+                      "rumorContext", "newsFeatures"):
+            self.assertNotIn(field, row, field)
+        # Prevent an engineer from silently adding the old main/data read back.
+        self.assertNotIn("forecast-dashboard-v12.json", getsource(build))
+        self.assertNotIn("legacy_file", getsource(build))
 
     def test_no_live_quote_does_not_block_verified_eod_forecast(self):
         self.assertEqual(self.full["status"], "PASS")
