@@ -758,6 +758,9 @@ function applyCommunity(B,payload){
   return true;
 }
 async function refreshCommunity(B){
+  // The archived V19/V20 scenario feed has no certified current-session
+  // context for VN100. Do not mix it into independent VN100 predictions.
+  if(B?.source==="VN100")return false;
   try{
     const revision=Math.floor(Date.now()/90000),response=await fetch(`${ROOT}/community-intelligence-live-v19.json?refresh=${revision}`,{cache:"no-store"});
     if(!response.ok)return false;
