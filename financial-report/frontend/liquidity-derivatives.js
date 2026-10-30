@@ -7,7 +7,7 @@ const esc=t=>String(t??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'
 const dateVN=iso=>/^\d{4}-\d\d-\d\d$/.test(String(iso||''))?iso.slice(8,10)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4):'—';
 const monthVN=iso=>/^\d{4}-(0[1-9]|1[0-2])$/.test(String(iso||''))?iso.slice(5,7)+'/'+iso.slice(0,4):'—';
 const safeURL=(url,hostname)=>{try{let u=new URL(url);return u.protocol==='https:'&&u.hostname===hostname?u.href:'';}catch{return'';}};
-const state={payload:null,derivativeMode:'openInterest',loading:false,manual:[],canEditOn:false};
+const state={payload:null,derivativeMode:'openInterest',loading:false,manual:[],canEditOn:false,onHistory:[],onRange:'1M',onYear:'all',onMonth:'all'};
 const target=$('macro-liquidity-overview');
 if(!target)return;
 function miniLine(points,{unit='',title='',color='#2e74bb',width=640}={}){
@@ -148,21 +148,58 @@ function verifiedBondSpread(curve){
  if(!Number.isFinite(a)||!Number.isFinite(b))return null;
  return {difference:b-a,asOf:curve.asOf};
 }
+
+function historyOnRows(data){
+ if(data?.schemaVersion!==1||data.series!=='MMONVND'||data.baseDate!=='2025-01-01'||!Array.isArray(data.observations))return [];
+ const start=Date.parse('2025-01-01T00:00:00Z');
+ return data.observations.filter(x=>Array.isArray(x)&&Number.isInteger(x[0])&&Number.isInteger(x[1])&&x[0]>=0&&x[1]>=0&&x[1]<=2500)
+ .map(x=>({date:new Date(start+x[0]*86400000).toISOString().slice(0,10),value:x[1]/100}));
+}
+function filterOnTimeline(points,range,year,month){
+ if(year!=='all'||month!=='all')return points.filter(p=>(year==='all'||p.date.slice(0,4)===year)&&(month==='all'||p.date.slice(5,7)===month));
+ if(range==='ALL'||!points.length)return points;
+ const days={'1W':7,'1M':31,'3M':93,'6M':186,'1Y':366}[range]||31;
+ const cutoff=new Date(Date.parse(points.at(-1).date+'T00:00:00Z')-(days-1)*86400000).toISOString().slice(0,10);
+ return points.filter(p=>p.date>=cutoff);
+}
+function onFilters(points){
+ const ranges=[['1W','1 tuần'],['1M','1 tháng'],['3M','3 tháng'],['6M','6 tháng'],['1Y','1 năm'],['ALL','Tất cả']];
+ const range=ranges.map(([k,v])=>'<button type="button" data-on-range="'+k+'" aria-pressed="'+(state.onRange===k)+'">'+v+'</button>').join('');
+ const years=[...new Set(points.map(p=>p.date.slice(0,4)))].sort().reverse();
+ const yo='<option value="all">Mọi năm</option>'+years.map(y=>'<option value="'+y+'"'+(state.onYear===y?' selected':'')+'>'+y+'</option>').join('');
+ const mo='<option value="all">Mọi tháng</option>'+Array.from({length:12},(_,i)=>{const m=String(i+1).padStart(2,'0');return'<option value="'+m+'"'+(state.onMonth===m?' selected':'')+'>Tháng '+(i+1)+'</option>';}).join('');
+ return '<div class="on-timeline-controls"><div class="on-range-group">'+range+'</div><div class="on-date-group"><label>Năm <select data-on-filter="year" aria-label="Chọn năm ON">'+yo+'</select></label><label>Tháng <select data-on-filter="month" aria-label="Chọn tháng ON">'+mo+'</select></label></div></div>';
+}
+async function loadONHistory(){
+ try{
+  const r=await fetch('/financial-report/data/on-mmonvnd-history.json',{cache:'no-store',signal:AbortSignal.timeout(10000)});
+  if(!r.ok)throw Error('History HTTP '+r.status);
+  const items=historyOnRows(await r.json());
+  if(items.length<400)throw Error('Insufficient history');
+  state.onHistory=[...new Map(items.map(p=>[p.date,p])).values()].sort((a,b)=>a.date.localeCompare(b.date));
+ }catch(e){console.warn('Historical ON unavailable',String(e?.message||e));}
+ if(state.payload)renderON(state.payload);
+}
+
 function onEntryForm(){return state.canEditOn?'<form id="finquery-on-manual-form" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:end"><label>Ngày<br><input name="date" type="date" required></label><label>ON (%/năm)<br><input name="value" type="number" min="0" max="25" step="0.0001" required placeholder="3.95"></label><button type="submit">Lưu ON</button><span id="finquery-on-entry-status" role="status"></span></form>':'';}
 function renderON(p){
  const host=$('money-on');if(!host)return;
  const on=p.interbank||{},crawled=(Array.isArray(on.observations)?on.observations:[]).filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)&&typeof x.value==='number'&&Number.isFinite(x.value)&&x.value>=0&&x.value<=25);
- const byDate=new Map(crawled.map(x=>[x.date,x]));
+ const byDate=new Map();
+ for(const x of state.onHistory)byDate.set(x.date,x);
+ for(const x of crawled)byDate.set(x.date,x);
  for(const x of state.manual)if(/^\d{4}-\d\d-\d\d$/.test(x.date)&&Number.isFinite(x.value)&&x.value>=0&&x.value<=25)byDate.set(x.date,{date:x.date,value:x.value});
  const points=[...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date));
+ const displayed=filterOnTimeline(points,state.onRange,state.onYear,state.onMonth);
  const last=points.at(-1),prev=points.at(-2);
  const verified=['secondary_source_crosschecked','official_source'].includes(on.status);
- if(!last||(!verified&&!state.manual.length)){host.innerHTML=cardHeader('Lãi suất qua đêm','—','%/năm','VND')+
+ if(!last||(!verified&&!state.manual.length&&!state.onHistory.length)){host.innerHTML=cardHeader('Lãi suất qua đêm','—','%/năm','VND')+
   '<p class="money-source-pending">Chuỗi ON đang chờ cập nhật.</p>'+onEntryForm();return;}
  const difference=prev?last.value-prev.value:null;
  host.innerHTML=cardHeader('Lãi suất qua đêm',fmt(last.value),'%/năm',dateVN(last.date))+
  '<p class="money-card-caption">'+(difference===null?'':((difference>=0?'+':'')+fmt(difference)+' điểm % so với '+dateVN(prev.date)))+'</p>'+
- '<div class="money-chart money-on-interactive">'+miniLine(points.slice(-25),{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe',width:Math.max(250,host.clientWidth-36)})+'<div class="money-on-tooltip" role="tooltip" hidden><span data-on-tooltip-date></span><strong><span data-on-tooltip-rate></span> <small>%/năm</small></strong></div></div>'+
+ onFilters(points)+
+ '<div class="money-chart money-on-interactive">'+miniLine(displayed,{unit:'%/năm',title:'Lãi suất bình quân liên ngân hàng ON VND',color:'#326bbe',width:Math.max(250,host.clientWidth-36)})+'<div class="money-on-tooltip" role="tooltip" hidden><span data-on-tooltip-date></span><strong><span data-on-tooltip-rate></span> <small>%/năm</small></strong></div></div>'+
  onEntryForm();
  bindONTooltip();
 }
@@ -234,8 +271,16 @@ async function loadManualON(){
  }catch(e){console.warn('ON manual observations unavailable');}
 }
 document.addEventListener?.('click',event=>{
+ const button=event.target.closest?.('[data-on-range]');
+ if(button){state.onRange=button.dataset.onRange;state.onYear='all';state.onMonth='all';if(state.payload)renderON(state.payload);return;}
  const download=event.target.closest?.('[data-download-curve]');
  if(download)downloadCurveCsv(download.dataset.downloadCurve);
+});
+document.addEventListener?.('change',event=>{
+ if(event.target?.dataset?.onFilter==='year')state.onYear=event.target.value;
+ else if(event.target?.dataset?.onFilter==='month')state.onMonth=event.target.value;
+ else return;
+ if(state.payload)renderON(state.payload);
 });
 document.addEventListener?.('submit',async function(event){
  const form=event.target;if(form?.id!=='finquery-on-manual-form')return;
@@ -303,6 +348,6 @@ if(onHost&&typeof ResizeObserver==='function'){
  let prior=0;
  new ResizeObserver(entries=>{const width=Math.round(entries[0]?.contentRect?.width||0);if(width&&Math.abs(width-prior)>12){prior=width;if(state.payload)renderON(state.payload);}}).observe(onHost);
 }
-window.FinLiquidityDerivatives={refresh:load,_test:{fmt,miniLine,tenorCurve,monthBar,dateVN,monthVN,safeURL,verifiedBondSpread},setData:payload=>{state.payload=payload;render();}};
-load();loadManualON();
+window.FinLiquidityDerivatives={refresh:load,_test:{fmt,miniLine,tenorCurve,monthBar,dateVN,monthVN,safeURL,verifiedBondSpread,historyOnRows,filterOnTimeline},setData:payload=>{state.payload=payload;render();}};
+load();loadManualON();loadONHistory();
 })();
