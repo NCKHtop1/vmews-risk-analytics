@@ -23,9 +23,6 @@ def fixtures():
                      "freshHistory": 100, "generatedAt": "2026-10-23T08:00:00+00:00",
                      "forecastSessionDate": SESSION, "inputMode": "EOD",
                      "activeQuotes": 0},
-        "forecast_legacy": {"coreAsOf": SESSION, "mode": "FORECAST_ALIGNED",
-                            "leaders": [{"symbol": "MBB"}],
-                            "forecastAlignment": {"status": "PASS", "rankingEligible": True}},
         "intraday": {"success": 111, "expected": 111, "errors": []},
         "financial": {"coverage": {"members": 100, "annual": 100, "quarterly": 100},
                       "updatedAt": "2026-10-23T23:42:00+00:00"},
@@ -57,33 +54,14 @@ class OperationsMonitorTest(unittest.TestCase):
         data["forecast"]["asOf"] = "2026-10-20"
         result = evaluate(data, NOW, prod())
         self.assertEqual(find(result, "FORECAST_CORE")["severity"], "CRITICAL")
-        self.assertEqual(find(result, "FORECAST_FAIL_CLOSED")["severity"], "OK")
 
-    def test_legacy_stale_safely_withheld_is_only_warning_when_vn100_is_current(self):
-        data = fixtures()
-        data["forecast_legacy"] = {
-            "coreAsOf": "2026-10-20", "mode": "PRICE_ONLY_STALE_CORE",
-            "leaders": [], "forecastAlignment": {
-                "status": "STALE_CORE", "rankingEligible": False,
-            },
-        }
-        result = evaluate(data, NOW, prod())
+    def test_ops_monitor_does_not_poll_retired_legacy_core(self):
+        from finquery_ops_health import SOURCES
+        self.assertNotIn("forecast_legacy", SOURCES)
+        self.assertIn("finquery-vn100-data", SOURCES["forecast"])
+        result = evaluate(fixtures(), NOW, prod())
+        self.assertFalse(any("LEGACY" in row["code"] for row in result["checks"]))
         self.assertEqual(find(result, "FORECAST_CORE")["severity"], "OK")
-        self.assertEqual(find(result, "FORECAST_LEGACY_V21")["severity"], "WARNING")
-        self.assertEqual(find(result, "FORECAST_FAIL_CLOSED")["severity"], "OK")
-        self.assertEqual(result["overall"], "WARNING")
-
-    def test_stale_legacy_forecast_allowed_to_rank_is_critical(self):
-        data = fixtures()
-        data["forecast_legacy"] = {
-            "coreAsOf": "2026-10-20", "mode": "FORECAST_ALIGNED",
-            "leaders": [{"symbol": "MBB"}], "forecastAlignment": {
-                "status": "STALE_CORE", "rankingEligible": True,
-            },
-        }
-        result = evaluate(data, NOW, prod())
-        self.assertEqual(find(result, "FORECAST_FAIL_CLOSED")["severity"], "CRITICAL")
-        self.assertEqual(find(result, "FORECAST_LEGACY_V21")["severity"], "CRITICAL")
 
     def test_live_vn100_heartbeat_and_price_anchor_required(self):
         now = datetime(2026, 10, 30, 3, 0, tzinfo=timezone.utc)  # Friday 10:00 VN
