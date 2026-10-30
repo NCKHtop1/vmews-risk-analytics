@@ -676,19 +676,37 @@ jobs:
                   wait.until(lambda d:d.execute_script("return document.getElementById('price-chart')?.getBoundingClientRect().width>0;"))
                   time.sleep(.4)
                   analysis_mobile=driver.execute_script("""
-                    const nav=document.querySelector('.header nav');
-                    const root=document.documentElement;
-                    const rect=nav?.getBoundingClientRect();
-                    return {
-                      pageOverflow:root.scrollWidth>window.innerWidth+2,
-                      navOverflowX:getComputedStyle(nav).overflowX,
-                      navWidth:rect?.width||0,
-                      viewport:window.innerWidth,
-                      chartWidth:document.getElementById('price-chart')?.getBoundingClientRect().width||0,
-                      workspaceVisible:document.querySelector('.workspace')?.hidden===false
-                    };
-                  """)
-                  if analysis_mobile.get('pageOverflow') or analysis_mobile.get('navOverflowX') not in ('auto','scroll') or not analysis_mobile.get('workspaceVisible') or float(analysis_mobile.get('chartWidth') or 0)<=0:
+                     const nav=document.querySelector('.header nav');
+                     const toggle=document.getElementById('finquery-nav-toggle');
+                     const root=document.documentElement;
+                     const navStyle=nav?getComputedStyle(nav):null;
+                     let navValid=false,navMode='missing';
+                     if(navStyle?.display==='none'&&toggle&&getComputedStyle(toggle).display!=='none'){
+                       // New mobile UX: validate the real expandable menu.
+                       toggle.click();
+                       const links=[...nav.querySelectorAll('a')];
+                       navValid=getComputedStyle(nav).display!=='none'
+                         && links.length>=7
+                         && links.every(a=>{const r=a.getBoundingClientRect();return r.width>0&&r.left>=-2&&r.right<=innerWidth+2;})
+                         && toggle.getAttribute('aria-expanded')==='true';
+                       toggle.click();
+                       navValid=navValid&&toggle.getAttribute('aria-expanded')==='false';
+                       navMode='compact';
+                     }else if(navStyle){
+                       const rect=nav.getBoundingClientRect();
+                       navValid=rect.width>0&&(rect.right<=innerWidth+2
+                         || ['auto','scroll'].includes(navStyle.overflowX));
+                       navMode='horizontal';
+                     }
+                     return {
+                       pageOverflow:root.scrollWidth>window.innerWidth+2,
+                       navMode,navValid,
+                       viewport:window.innerWidth,
+                       chartWidth:document.getElementById('price-chart')?.getBoundingClientRect().width||0,
+                       workspaceVisible:document.querySelector('.workspace')?.hidden===false
+                     };
+                   """)
+                   if analysis_mobile.get('pageOverflow') or not analysis_mobile.get('navValid') or not analysis_mobile.get('workspaceVisible') or float(analysis_mobile.get('chartWidth') or 0)<=0:
                       raise AssertionError(f'Mobile analysis layout failed at {width}x{height}: {analysis_mobile}')
 
                   driver.execute_script("window.FinPlatformViews.openRisk();")
