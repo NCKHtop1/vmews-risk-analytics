@@ -1,112 +1,108 @@
 {
   "version": "VMEWS-LIVE-MONITOR-1.0.0",
-  "generatedAt": "2026-10-30T04:48:31.948750+00:00",
+  "generatedAt": "2026-10-30T16:45:11.696145+00:00",
   "trackingStarted": "2026-08-11",
-  "latestArchivedEod": "2026-10-29",
-  "archivedSnapshots": 35,
+  "latestArchivedEod": "2026-10-30",
+  "archivedSnapshots": 36,
   "horizonSessions": 20,
   "eventDefinition": "20-session forward maximum drawdown <= -12%",
   "currentIntegrity": {
     "status": "PASS",
     "reasons": [],
-    "marketModelDate": "2026-10-29",
-    "pooledModelDate": "2026-10-29",
+    "marketModelDate": "2026-10-30",
+    "pooledModelDate": "2026-10-30",
     "sameCompletedEod": true,
     "policyVersion": "VMEWS-ALERT-POLICY-4.0.0",
     "policyAligned": true,
     "marketVersion": "VMEWS-MARKET-SCAN-4.2.0",
     "pooledVersion": "VMEWS-POOLED-HOSE-1.2.0",
-    "marketContextDate": "2026-10-28",
+    "marketContextDate": "2026-10-29",
     "marketContextStatus": "EXCLUDED_UNAVAILABLE",
     "marketContextImputed": false,
     "pointInTimeReady": true,
     "timeBasis": "LATEST_COMPLETED_EOD_ONLY",
     "watchlistBasis": "SAME_CANONICAL_EOD_AS_MARKET_SCAN",
     "rule": "Archive only aligned market + pooled completed-EOD states. Missing/stale auxiliary context is excluded, never neutral-imputed.",
-    "archiveStatus": "REVISION_DETECTED_PRESERVED_FIRST_ARCHIVE",
-    "revision": {
-      "existingHash": "5ecf4be8a1d3d7e4bf32d2dc39c43a7b627f800fccf91128ec884cabfe570f61",
-      "newHash": "412e111c9efcaa17140c3239568506fb2f9e6390da24176657f6bf6213e48738",
-      "modelDate": "2026-10-29"
-    }
+    "archiveStatus": "CREATED",
+    "revision": null
   },
   "tDayLiveTrack": {
     "status": "LIVE_EVIDENCE_AVAILABLE",
     "bySignalBand": {
       "RED": {
-        "matured": 58,
-        "events": 23,
-        "eventRate": 0.39655172413793105,
-        "medianMaxDrawdown20": -0.09109554325319336,
+        "matured": 62,
+        "events": 26,
+        "eventRate": 0.41935483870967744,
+        "medianMaxDrawdown20": -0.09391408808199803,
         "pending": null
       },
       "YELLOW": {
-        "matured": 278,
-        "events": 109,
-        "eventRate": 0.3920863309352518,
-        "medianMaxDrawdown20": -0.07964785651793527,
+        "matured": 292,
+        "events": 116,
+        "eventRate": 0.3972602739726027,
+        "medianMaxDrawdown20": -0.08152777777777781,
         "pending": null
       }
     },
     "combinedAlerts": {
-      "matured": 336,
-      "events": 132,
-      "eventRate": 0.39285714285714285,
-      "medianMaxDrawdown20": -0.0826067177193115,
-      "liftVsEligibleMarketStates": 1.3800132582035134
+      "matured": 354,
+      "events": 142,
+      "eventRate": 0.4011299435028249,
+      "medianMaxDrawdown20": -0.08406068162926023,
+      "liftVsEligibleMarketStates": 1.4232031621862131
     },
     "eligibleMarketBaseline": {
-      "matured": 4542,
-      "events": 1293,
-      "eventRate": 0.2846763540290621,
-      "medianMaxDrawdown20": -0.0702686095505618
+      "matured": 4843,
+      "events": 1365,
+      "eventRate": 0.28185009291761304,
+      "medianMaxDrawdown20": -0.06976744186046513
     },
-    "maturedSignals": 336,
-    "pendingSignals": 796,
-    "unresolvedSignals": 137,
-    "baselinePending": 7509,
-    "baselineUnresolved": 1094,
+    "maturedSignals": 354,
+    "pendingSignals": 800,
+    "unresolvedSignals": 149,
+    "baselinePending": 7519,
+    "baselineUnresolved": 1166,
     "minimumRecommendedMaturedSignals": 100
   },
   "pooledLiveTrack": {
     "status": "RANKING_LIVE_PASS",
-    "maturedStates": 2842,
-    "events": 854,
-    "baseRate": 0.30049261083743845,
-    "prAuc": 0.40332890407479177,
+    "maturedStates": 3029,
+    "events": 897,
+    "baseRate": 0.296137339055794,
+    "prAuc": 0.39494685205824775,
     "topDecile": {
-      "matured": 548,
-      "events": 222,
-      "eventRate": 0.4051094890510949,
-      "medianMaxDrawdown20": -0.10293390258506235,
-      "liftVsLiveBase": 1.3481512504487256
+      "matured": 633,
+      "events": 248,
+      "eventRate": 0.39178515007898895,
+      "medianMaxDrawdown20": -0.09799999999999998,
+      "liftVsLiveBase": 1.3229846372232525
     },
-    "pendingStates": 3862,
-    "unresolvedStates": 101,
+    "pendingStates": 3870,
+    "unresolvedStates": 105,
     "minimumLiveEvidenceMet": true,
     "rankMonitorPass": true,
     "effect": "Live rank monitoring can trigger review or downgrade. It never auto-promotes a model."
   },
   "calibrationLiveMonitor": {
-    "maturedAuditStates": 2647,
-    "events": 785,
-    "baseRate": 0.2965621458254628,
-    "brier": 0.21703477191210904,
-    "baseRateBrier": 0.20861303948885973,
-    "brierSkill": -0.04037011513702171,
-    "ece10": 0.11957702528689264,
+    "maturedAuditStates": 2834,
+    "events": 828,
+    "baseRate": 0.292166549047283,
+    "brier": 0.21384661527909693,
+    "baseRateBrier": 0.20680525666508456,
+    "brierSkill": -0.034048257416471994,
+    "ece10": 0.11247929030176647,
     "halves": [
       {
         "period": "first",
-        "n": 1323,
-        "events": 469,
-        "brierSkill": -0.12709981118728653
+        "n": 1417,
+        "events": 499,
+        "brierSkill": -0.12236769013727788
       },
       {
         "period": "second",
-        "n": 1324,
-        "events": 316,
-        "brierSkill": 0.03037679384712133
+        "n": 1417,
+        "events": 329,
+        "brierSkill": 0.03723377218510637
       }
     ],
     "minimumLiveEvidenceMet": true,
