@@ -38,6 +38,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Restore frozen research-only model seed from archive
+        # These V12/V13/V20 assets no longer exist on main. SoluTION.AI is an
+        # independent product; its research worker may use the frozen seed
+        # locally but MUST NOT publish it back to FinQuery/main.
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin archive/forecast-core-frozen-20261020
+          test "$(git rev-parse FETCH_HEAD)" = "e84dcdea3637772cee2d6d875666a247ea3000a5"
+          git restore --source=FETCH_HEAD -- \
+            data/forecast-dashboard-v12.json \
+            data/forecast-current-v12.json \
+            data/forecast-market-v13.json \
+            data/forecast-model-v12.json \
+            data/forecast-backtest-v12.json \
+            data/data-audit-v12.json \
+            data/phase-gates-v12.json \
+            data/release-audit-v20.json
 
       - name: Install SoluTION.AI core dependencies
         run: pip install --disable-pip-version-check -q numpy pandas scipy scikit-learn openpyxl tradingview-screener
