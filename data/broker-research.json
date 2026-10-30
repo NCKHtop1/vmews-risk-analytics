@@ -1,8 +1,102 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-30T05:59:45+00:00",
+  "updatedAt": "2026-10-30T13:09:26+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "VNDIRECT-VIB-2026-10-30-6047df49",
+      "symbol": "VIB",
+      "broker": "VNDIRECT",
+      "brokerName": "VNDS",
+      "publishedAt": "2026-10-30",
+      "title": "VIB: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vib-bao-cao-cap-nhat-kqkd-q3-2026-rpid6246.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VNDIRECT có báo cáo VIB ngày 30/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VNDIRECT-PVD-2026-10-30-3a19ae86",
+      "symbol": "PVD",
+      "broker": "VNDIRECT",
+      "brokerName": "VNDS",
+      "publishedAt": "2026-10-30",
+      "title": "PVD: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/pvd-bao-cao-cap-nhat-kqkd-q3-2026-rpid6247.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VNDIRECT có báo cáo PVD ngày 30/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VNDIRECT-DCM-2026-10-30-8e7a0c39",
+      "symbol": "DCM",
+      "broker": "VNDIRECT",
+      "brokerName": "VNDS",
+      "publishedAt": "2026-10-30",
+      "title": "DCM: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/dcm-bao-cao-cap-nhat-kqkd-q3-2026-rpid6237.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VNDIRECT có báo cáo DCM ngày 30/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIX-FRT-2026-10-30-176cd35a",
+      "symbol": "FRT",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2026-10-30",
+      "title": "FRT – Báo cáo cập nhật KQKD Quý III Kính gửi quý khách hàng, Công ty Cổ phần Chứng khoán VIX xin gửi báo cáo cập nhật “FRT – Báo cáo cập nhật KQKD Quý III”. TÓM TẮT:... XEM CHI TIẾT",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
+      "summary": "VIX có báo cáo FRT ngày 30/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-VIX-2026-10-30-001b1c7b",
+      "symbol": "VIX",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-30",
+      "title": "Cập nhật KQKD VIX – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VIX ngày 30/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-TCH-2026-10-30-001b1c7b",
+      "symbol": "TCH",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-30",
+      "title": "Cập nhật KQKD TCH – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo TCH ngày 30/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-STB-2026-10-30-001b1c7b",
+      "symbol": "STB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-10-30",
+      "title": "Cập nhật KQKD STB – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo STB ngày 30/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "NHSV-VPB-2026-10-30-8f924ad6",
+      "symbol": "VPB",
+      "broker": "NHSV",
+      "brokerName": "NHSV",
+      "publishedAt": "2026-10-30",
+      "title": "VPB: Khuyến nghị MUA với giá mục tiêu 28,888 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpb-khuyen-nghi-mua-voi-gia-muc-tieu-28-888-dong-co-phieu-rpid6245.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 28888,
+      "summary": "NHSV có báo cáo VPB ngày 30/10/2026 với khuyến nghị MUA, giá mục tiêu 28.888 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "YUANTA-BWE-2026-10-29-be5b635e",
       "symbol": "BWE",
@@ -51,6 +145,32 @@
       "currency": "VND",
       "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
       "summary": "VIX có báo cáo DGW ngày 29/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "VIETCAP-KBC-2026-10-29-a95a5d2c",
+      "symbol": "KBC",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap",
+      "publishedAt": "2026-10-29",
+      "title": "KBC: Khuyến nghị KHẢ QUAN với giá mục tiêu 31,400 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/kbc-khuyen-nghi-kha-quan-voi-gia-muc-tieu-31-400-dong-co-phieu-rpid6242.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 31400,
+      "summary": "VIETCAP có báo cáo KBC ngày 29/10/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 31.400 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VFS-PHR-2026-10-29-19d65b27",
+      "symbol": "PHR",
+      "broker": "VFS",
+      "brokerName": "VFS",
+      "publishedAt": "2026-10-29",
+      "title": "PHR: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/phr-bao-cao-cap-nhat-kqkd-q3-2026-rpid6248.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VFS có báo cáo PHR ngày 29/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-OCB-2026-10-29-001b1c7b",
@@ -134,6 +254,32 @@
       "recommendation": "MUA",
       "targetPrice": 100000,
       "summary": "MIRAE có báo cáo MWG ngày 29/10/2026 với khuyến nghị MUA, giá mục tiêu 100.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "AGR-PVT-2026-10-29-31f2a0cc",
+      "symbol": "PVT",
+      "broker": "AGR",
+      "brokerName": "AGR",
+      "publishedAt": "2026-10-29",
+      "title": "PVT: Khuyến nghị NẮM GIỮ với giá mục tiêu 23,500 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/pvt-khuyen-nghi-nam-giu-voi-gia-muc-tieu-23-500-dong-co-phieu-rpid6239.html",
+      "dataProvider": "24HMONEY",
+      "targetPrice": 23500,
+      "summary": "AGR có báo cáo PVT ngày 29/10/2026 với giá mục tiêu 23.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "AGR-CTR-2026-10-29-1bf16f27",
+      "symbol": "CTR",
+      "broker": "AGR",
+      "brokerName": "AGR",
+      "publishedAt": "2026-10-29",
+      "title": "CTR: Khuyến nghị NẮM GIỮ với giá mục tiêu 75,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/ctr-khuyen-nghi-nam-giu-voi-gia-muc-tieu-75-000-dong-co-phieu-rpid6240.html",
+      "dataProvider": "24HMONEY",
+      "targetPrice": 75000,
+      "summary": "AGR có báo cáo CTR ngày 29/10/2026 với giá mục tiêu 75.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "YUANTA-VCI-2026-10-28-57a14db2",
@@ -6534,6 +6680,17 @@
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/gmd-bao-cao-cap-nhat-kqkd-q2-2026-rpid5872.html",
       "dataProvider": "24HMONEY",
       "summary": "VIX có báo cáo GMD ngày 19/08/2026. FinQuery lấy metadata từ chỉ mục công khai SMARTCHART và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIX-GMD-2026-08-19-176cd35a",
+      "symbol": "GMD",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2026-08-19",
+      "title": "GMD – Lãi đột biến từ thoái vốn (cập nhật KQKD Q2) Kính gửi quý khách hàng, Công ty cổ phần chứng khoán VIX xin gửi báo cáo phân tích: “GMD – Lãi đột biến từ thoái vốn (cập nhật)”. (Tiếp... XEM CHI TIẾT 1 / 5 1 2 3 ... »",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
+      "summary": "VIX có báo cáo GMD ngày 19/08/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "VIX-GMD-2026-08-19-176cd35a",
