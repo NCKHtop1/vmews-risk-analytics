@@ -644,6 +644,7 @@ RETIRED_MAIN_FORECAST_FILES = (
     "data/forecast-session-v21.json",
     "data/forecast-freshness-audit.json",
     "data/forecast-release-v12.json",
+    "data/current-context-v12.json",
 )
 
 
