@@ -629,6 +629,52 @@ def audit_finquery_vn100(report: Audit, vn100_dir: Path, core_symbols, now):
                    for r in report.results)
 
 
+# These sealed V12/V13/V20 model artifacts and the V21 overlay are preserved
+# only in archive/forecast-core-frozen-20261020. No FinQuery publisher or
+# production bundle may read or recreate them from main/data.
+RETIRED_MAIN_FORECAST_FILES = (
+    "data/forecast-dashboard-v12.json",
+    "data/forecast-current-v12.json",
+    "data/forecast-market-v13.json",
+    "data/forecast-model-v12.json",
+    "data/forecast-backtest-v12.json",
+    "data/data-audit-v12.json",
+    "data/phase-gates-v12.json",
+    "data/release-audit-v20.json",
+    "data/forecast-session-v21.json",
+    "data/forecast-freshness-audit.json",
+    "data/forecast-release-v12.json",
+)
+
+
+def audit_legacy_forecast_isolation(report: Audit, repo_root: Path):
+    present = [name for name in RETIRED_MAIN_FORECAST_FILES
+               if (repo_root / name).is_file()]
+    report.check(not present, "FORECAST_RETIRED_MAIN_ASSETS",
+                 {"unexpectedPublishedLegacyFiles": present})
+    publisher = (repo_root / "scripts" / "finquery_vn100_timeseries.py")
+    text = publisher.read_text(encoding="utf-8") if publisher.is_file() else ""
+    report.check(
+        "forecast-dashboard-v12.json" not in text and "legacy_file" not in text,
+        "FORECAST_VN100_LEGACY_IMPORT_BLOCKED",
+        "VN100 publisher must not inherit historical V12 pricing, research, flow or issuer context",
+    )
+    frontend = (repo_root / "forecast-final-v12.js")
+    browser = frontend.read_text(encoding="utf-8") if frontend.is_file() else ""
+    report.check(
+        "if(!INDEPENDENT_CORE_PAGE&&CORE_ASSETS.has(name))" in browser
+        and "const bundle=await loadVN100();" in browser,
+        "FORECAST_PRODUCTION_ARCHIVE_FETCH_BLOCKED",
+        "FinQuery must reject direct V12 loads even if old files are restored",
+    )
+    for workflow in ("forecast-v13-daily-refresh.yml", "forecast-v21-session-refresh.yml"):
+        report.check(
+            not (repo_root / ".github" / "workflows" / workflow).exists(),
+            "FORECAST_LEGACY_WORKFLOW_DISABLED",
+            workflow,
+        )
+
+
 def production_prefers_solution_core(repo_root: Path):
     """The standalone Pages/CDN page reads only validated independent core assets."""
     try:
@@ -646,184 +692,6 @@ def production_prefers_solution_core(repo_root: Path):
     )
     return all(token in text for token in required)
 
-
-def production_uses_finquery_main_core(repo_root: Path):
-    """FinQuery hosts retain their original main core despite standalone routing."""
-    try:
-        text = (repo_root / "forecast-final-v12.js").read_text(encoding="utf-8")
-    except Exception:
-        return False
-    base = (
-        "financial-market-data/market/quotes.json",
-        'scope:"finquery-market"',
-    )
-    if not all(token in text for token in base):
-        return False
-    if "solution-ai-live-data/solution-ai/live.json" in text:
-        return False
-    if "solution-ai-core-data/data" not in text:
-        # Historic FinQuery-only loader must not unexpectedly fetch another core.
-        return "const roots=[ROOT]" in text
-    # Shared asset must route to independent forecast only on the explicit
-    # standalone Pages/CDN host, keeping FinQuery and context snapshots on main.
-    return all(token in text for token in (
-        "const INDEPENDENT_CORE_PAGE=",
-        "PAGES_HOST||Boolean(CDN_REF)",
-        "const CORE_ROOT=INDEPENDENT_CORE_PAGE?INDEPENDENT_CORE_ROOT:ROOT;",
-        "const isDedicatedCore=INDEPENDENT_CORE_PAGE&&CORE_ASSETS.has(name)",
-        "const roots=[isDedicatedCore?CORE_ROOT:ROOT]",
-        "window.__VMEWS_DATA_ROOT__=ROOT",
-    ))
-
-
-def solution_core_is_authoritative(core_dir: Path, now):
-    """Check the minimum freshness/proof needed before main may be treated as fallback-only."""
-    try:
-        dashboard = load_json(core_dir / "forecast-dashboard-v12.json")
-        market = load_json(core_dir / "forecast-market-v13.json")
-        release = load_json(core_dir / "release-audit-v20.json")
-    except Exception:
-        return False
-    expected = latest_completed_session(now.astimezone(VN_TZ)).isoformat()
-    sources = market.get("sources") or {}
-    bridge = sources.get("postCloseBridge") or {}
-    price_audit = sources.get("priceCrossSource") or {}
-    published = len(dashboard.get("symbols") or {})
-    validation = int(bridge.get("validationUniverseSymbols") or published or 0)
-    return bool(
-        str(dashboard.get("asOf") or "") == expected
-        and release.get("status") == "PASS"
-        and not (release.get("blockers") or [])
-        and str(release.get("asOf") or "") == expected
-        and str(sources.get("marketScanAsOf") or "") == expected
-        and str(sources.get("priceSessionAsOf") or "") == expected
-        and bridge.get("status") in {"PASS", "NOT_APPLICABLE_ALREADY_CURRENT"}
-        and str(bridge.get("sessionDate") or "") == expected
-        and price_audit.get("status") == "PASS"
-        and float(price_audit.get("coverage") or 0) >= float(price_audit.get("requiredCoverage") or 1)
-        and int(price_audit.get("mismatchCount") or 0) == 0
-        and published >= math.ceil(max(1, validation) * .90)
-    )
-
-
-def audit_main_forecast(report: Audit, repo_root: Path, now, authoritative_core_ready=False):
-    """Audit the main-branch forecast as production source or safe fallback.
-
-    Pages deliberately prefers solution-ai-core-data for validated forecast core
-    files. When that dedicated core is current and independently proven, an older
-    main snapshot is a fallback condition, not a production freshness failure.
-    The fallback must still remain structurally valid and the V21 overlay must
-    abstain rather than rank against a stale core.
-    """
-    data = repo_root / "data"
-    names = {
-        "dashboard": "forecast-dashboard-v12.json",
-        "current": "forecast-current-v12.json",
-        "market": "forecast-market-v13.json",
-        "release": "release-audit-v20.json",
-        "session": "forecast-session-v21.json",
-    }
-    docs = {}
-    for key, name in names.items():
-        path = data / name
-        if not report.check(path.exists(), "FORECAST_MAIN_FILE", name):
-            continue
-        try:
-            docs[key] = load_json(path)
-        except Exception as exc:
-            report.check(False, "FORECAST_MAIN_JSON", f"{name}: {exc}")
-    if not all(key in docs for key in ("dashboard", "current", "market", "release")):
-        return
-
-    dashboard = docs["dashboard"]
-    current = docs["current"]
-    market = docs["market"]
-    release = docs["release"]
-    expected = latest_completed_session(now.astimezone(VN_TZ)).isoformat()
-
-    dates = {
-        "dashboard": str(dashboard.get("asOf") or ""),
-        "current": str(current.get("asOf") or ""),
-        "market": str(market.get("asOf") or ""),
-        "release": str(release.get("asOf") or ""),
-    }
-    main_current = all(value == expected for value in dates.values())
-    freshness_check = report.warn if authoritative_core_ready else report.check
-    freshness_check(main_current, "FORECAST_MAIN_SESSION", f"{dates} expected={expected}")
-    report.check(release.get("status") == "PASS" and not (release.get("blockers") or []), "FORECAST_MAIN_RELEASE", {"status": release.get("status"), "blockers": release.get("blockers")})
-
-    dash_symbols = set((dashboard.get("symbols") or {}).keys())
-    current_symbols = set((current.get("symbols") or {}).keys())
-    release_symbols = int((release.get("scope") or {}).get("symbols") or 0)
-    report.check(bool(dash_symbols) and dash_symbols == current_symbols, "FORECAST_MAIN_SYMBOL_ALIGNMENT", f"dashboard={len(dash_symbols)} current={len(current_symbols)}")
-    report.check(len(dash_symbols) == release_symbols, "FORECAST_MAIN_RELEASE_SCOPE", f"published={len(dash_symbols)} release={release_symbols}")
-
-    versions = (market.get("version"), dashboard.get("modelVersion"), current.get("modelVersion"))
-    report.check(bool(versions[0]) and len(set(versions)) == 1, "FORECAST_MAIN_VERSION_ALIGNMENT", versions)
-
-    sources = market.get("sources") or {}
-    freshness_check(str(sources.get("marketScanAsOf") or "") == expected, "FORECAST_MAIN_MARKET_SCAN", sources.get("marketScanAsOf"))
-    freshness_check(str(sources.get("priceSessionAsOf") or "") == expected, "FORECAST_MAIN_PRICE_SESSION", sources.get("priceSessionAsOf"))
-    price_audit = sources.get("priceCrossSource") or {}
-    report.check(price_audit.get("status") == "PASS", "FORECAST_MAIN_PRICE_CROSS_SOURCE", price_audit.get("status"))
-    report.check(float(price_audit.get("coverage") or 0) >= float(price_audit.get("requiredCoverage") or 1), "FORECAST_MAIN_PRICE_COVERAGE", price_audit)
-    report.check(int(price_audit.get("mismatchCount") or 0) == 0, "FORECAST_MAIN_PRICE_MISMATCH", price_audit.get("mismatchCount"))
-
-    if "session" not in docs:
-        return
-    session = docs["session"]
-    alignment = session.get("forecastAlignment") or {}
-    coverage = session.get("coverage") or {}
-    report.check(session.get("status") == "PASS", "FORECAST_V21_STATUS", session.get("status"))
-    report.check(float(coverage.get("coverageRatio") or 0) >= .90, "FORECAST_V21_COVERAGE", coverage)
-    report.check(float(coverage.get("currentCoverageRatio") or 0) >= .70, "FORECAST_V21_CURRENT_COVERAGE", coverage)
-    report.check(float(coverage.get("cutoffFreshCoverageRatio") or 0) >= .70, "FORECAST_V21_CUTOFF_COVERAGE", coverage)
-    preferred = int((dashboard.get("promotion") or {}).get("preferredRankingHorizon") or 0)
-    report.check(preferred > 0 and int(session.get("rankingHorizon") or 0) == preferred, "FORECAST_V21_HORIZON", (session.get("rankingHorizon"), preferred))
-
-    if authoritative_core_ready and not main_current:
-        fallback_safe = (
-            str(session.get("coreAsOf") or "") == str(dashboard.get("asOf") or "")
-            and alignment.get("status") == "STALE_CORE"
-            and alignment.get("rankingEligible") is False
-            and session.get("mode") == "PRICE_ONLY_STALE_CORE"
-            and session.get("coreForecastUnchanged") is True
-            and not (session.get("leaders") or [])
-        )
-        report.check(
-            fallback_safe,
-            "FORECAST_V21_FALLBACK_SAFE",
-            {
-                "coreAsOf": session.get("coreAsOf"),
-                "mainAsOf": dashboard.get("asOf"),
-                "alignment": alignment,
-                "mode": session.get("mode"),
-                "leaders": len(session.get("leaders") or []),
-            },
-        )
-        report.warn(
-            False,
-            "FORECAST_V21_FALLBACK_STALE",
-            {
-                "mainCoreAsOf": dashboard.get("asOf"),
-                "productionCoreExpected": expected,
-                "mode": session.get("mode"),
-                "rankingEligible": alignment.get("rankingEligible"),
-            },
-        )
-        return
-
-    report.check(str(session.get("coreAsOf") or "") == expected, "FORECAST_V21_CORE_SESSION", (session.get("coreAsOf"), expected))
-    report.check(
-        alignment.get("status") == "PASS"
-        and alignment.get("rankingEligible") is True
-        and str(alignment.get("actualCoreAsOf") or "") == expected
-        and str(alignment.get("expectedCoreAsOf") or "") == expected,
-        "FORECAST_V21_ALIGNMENT",
-        alignment,
-    )
-    report.check(session.get("mode") == "FORECAST_ALIGNED" and session.get("coreForecastUnchanged") is True, "FORECAST_V21_MODE", (session.get("mode"), session.get("coreForecastUnchanged")))
-    report.check(len(session.get("leaders") or []) == 10, "FORECAST_V21_LEADERS", len(session.get("leaders") or []))
 
 def audit_solution_live(report: Audit, path: Path, now):
     if not report.check(path.exists(), "SOLUTION_LIVE_MISSING", path):
@@ -890,6 +758,7 @@ def main():
     audit_insights(audit, Path(args.insights_dir), now)
     audit_forecast_monitor(audit, Path(args.repo_root), now)
     repo_root = Path(args.repo_root)
+    audit_legacy_forecast_isolation(audit, repo_root)
     if args.ignore_solution_ai:
         core_route_ok = production_uses_finquery_vn100_core(repo_root)
         audit.check(core_route_ok, "FORECAST_PRODUCTION_CORE_ROUTE",
@@ -898,19 +767,15 @@ def main():
             audit, Path(args.vn100_dir), core, now) if args.vn100_dir else False
         if not args.vn100_dir:
             audit.check(False, "FORECAST_VN100_DIRECTORY_MISSING", "--vn100-dir required for FinQuery production")
-        # Main V12 is not loaded by the FinQuery product. Keep it visible as a
-        # dated, fail-closed legacy fallback: stale => WARN only if the actual
-        # canonical VN100 publisher is verified and the runtime route is safe.
-        audit_main_forecast(audit, repo_root, now,
-                            authoritative_core_ready=bool(core_route_ok and vn100_ready))
+        audit.check(bool(core_route_ok and vn100_ready),
+                    "FORECAST_VN100_PRODUCTION_READY",
+                    "The only authorized FinQuery forecast source must be complete and current")
     else:
         if not args.solution_live or not args.solution_core_dir:
             parser.error("--solution-live and --solution-core-dir are required unless --ignore-solution-ai is set")
         solution_core_dir = Path(args.solution_core_dir)
         core_route_ok = production_prefers_solution_core(repo_root)
         audit.check(core_route_ok, "FORECAST_PRODUCTION_CORE_ROUTE", "Full audit expects dedicated solution-ai-core-data before main fallback")
-        authoritative_core_ready = core_route_ok and solution_core_is_authoritative(solution_core_dir, now)
-        audit_main_forecast(audit, repo_root, now, authoritative_core_ready=authoritative_core_ready)
         audit_solution_live(audit, Path(args.solution_live), now)
         audit_solution_core(audit, solution_core_dir, now)
     category_summary = {}
