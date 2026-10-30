@@ -705,8 +705,8 @@ jobs:
                        chartWidth:document.getElementById('price-chart')?.getBoundingClientRect().width||0,
                        workspaceVisible:document.querySelector('.workspace')?.hidden===false
                      };
-                   """)
-                   if analysis_mobile.get('pageOverflow') or not analysis_mobile.get('navValid') or not analysis_mobile.get('workspaceVisible') or float(analysis_mobile.get('chartWidth') or 0)<=0:
+                  """)
+                  if analysis_mobile.get('pageOverflow') or not analysis_mobile.get('navValid') or not analysis_mobile.get('workspaceVisible') or float(analysis_mobile.get('chartWidth') or 0)<=0:
                       raise AssertionError(f'Mobile analysis layout failed at {width}x{height}: {analysis_mobile}')
 
                   driver.execute_script("window.FinPlatformViews.openRisk();")
