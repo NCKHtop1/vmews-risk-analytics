@@ -6,6 +6,10 @@ on:
       - 'scripts/finquery_vn100_product.py'
       - 'scripts/test_finquery_vn100_product.py'
       - 'scripts/test_finquery_vn100_frontend.cjs'
+      - 'scripts/system_contract_audit.py'
+      - 'scripts/system_contract_audit_test.py'
+      - 'scripts/system_contract_audit.py'
+      - 'scripts/system_contract_audit_test.py'
       - 'forecast-final.html'
       - 'forecast-portfolio-v14.css'
       - 'financial-report/scripts/live_session_publisher.sh'
@@ -57,3 +61,4 @@ jobs:
         run: |
           python -m py_compile scripts/finquery_vn100_timeseries.py scripts/finquery_vn100_product.py
           python -m unittest scripts/test_finquery_vn100_product.py -v
+          cd scripts && FINQUERY_CORE_ONLY=1 python system_contract_audit_test.py
