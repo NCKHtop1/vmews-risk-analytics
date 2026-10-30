@@ -12,10 +12,10 @@ FINQUERY_CORE_ONLY = os.environ.get("FINQUERY_CORE_ONLY", "").strip() == "1"
 
 from system_contract_audit import (
     Audit,
-    audit_main_forecast,
     audit_market_bar_files,
+    audit_legacy_forecast_isolation,
+    RETIRED_MAIN_FORECAST_FILES,
     compute_intraday_session,
-    production_uses_finquery_main_core,
     production_prefers_solution_core,
     risk_eligible_symbols,
     solution_live_freshness,
@@ -123,111 +123,28 @@ class SystemContractAuditTests(unittest.TestCase):
         self.assertTrue(any(row["code"] == "MARKET_HISTORY_OHLC" and row["status"] == "FAIL" for row in audit.results))
 
 
-    def test_production_loader_uses_finquery_main_core_and_market_quotes(self):
+    def test_legacy_core_is_archived_and_not_exposed_in_current_repo(self):
+        from system_contract_audit import ROOT
+        self.assertTrue(production_prefers_solution_core(ROOT))
+        audit = Audit()
+        audit_legacy_forecast_isolation(audit, ROOT)
+        self.assertFalse(audit.errors, audit.errors)
+
+    def test_restore_of_any_retired_data_file_fails_contract(self):
+        from system_contract_audit import ROOT
         with tempfile.TemporaryDirectory() as tmp:
             root = pathlib.Path(tmp)
+            (root / "scripts").mkdir()
+            (root / "data").mkdir()
+            (root / "scripts" / "finquery_vn100_timeseries.py").write_text(
+                (ROOT / "scripts" / "finquery_vn100_timeseries.py").read_text(encoding="utf-8"))
             (root / "forecast-final-v12.js").write_text(
-                'const FINQUERY_LIVE_URL="https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json";\n'
-                'const roots=[ROOT];\n'
-                'window.dispatchEvent(new CustomEvent("vmews:live-quotes-updated",{detail:{scope:"finquery-market"}}));\n',
-                encoding="utf-8",
-            )
-            self.assertTrue(production_uses_finquery_main_core(root))
-
-    def test_shared_forecast_asset_keeps_finquery_main_while_standalone_is_independent(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = pathlib.Path(tmp)
-            source = (
-                'const FINQUERY_LIVE_URL="financial-market-data/market/quotes.json";\n'
-                'const INDEPENDENT_CORE_ROOT="solution-ai-core-data/data";\n'
-                'const INDEPENDENT_CORE_PAGE=/forecast-final/.test(location.pathname)&&(PAGES_HOST||Boolean(CDN_REF));\n'
-                'const CORE_ROOT=INDEPENDENT_CORE_PAGE?INDEPENDENT_CORE_ROOT:ROOT;\n'
-                'const CORE_ASSETS=new Set([]);\n'
-                'const isDedicatedCore=INDEPENDENT_CORE_PAGE&&CORE_ASSETS.has(name);\n'
-                'const roots=[isDedicatedCore?CORE_ROOT:ROOT];\n'
-                'window.__VMEWS_DATA_ROOT__=ROOT;\n'
-                'window.__SOLUTION_AI_CORE_ROOT__=CORE_ROOT;\n'
-                'window.dispatchEvent(new CustomEvent("vmews:live-quotes-updated",{detail:{scope:"finquery-market"}}));\n'
-            )
-            (root / "forecast-final-v12.js").write_text(source, encoding="utf-8")
-            self.assertTrue(production_uses_finquery_main_core(root))
-            self.assertTrue(production_prefers_solution_core(root))
-            (root / "forecast-final-v12.js").write_text(
-                source.replace("const roots=[isDedicatedCore?CORE_ROOT:ROOT];",
-                               "const roots=[INDEPENDENT_CORE_ROOT];"), encoding="utf-8"
-            )
-            self.assertFalse(production_uses_finquery_main_core(root))
-            self.assertFalse(production_prefers_solution_core(root))
-
-    @unittest.skipIf(FINQUERY_CORE_ONLY, "SoluTION.AI is outside the FinQuery system contract")
-    def test_stale_main_becomes_warning_only_when_dedicated_core_is_authoritative_and_fallback_abstains(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            root = pathlib.Path(tmp)
-            data = root / "data"
-            data.mkdir()
-            dashboard = {
-                "asOf": "2026-09-29",
-                "modelVersion": "V",
-                "symbols": {"AAA": {}},
-                "promotion": {"preferredRankingHorizon": 3},
-            }
-            current = {"asOf": "2026-09-29", "modelVersion": "V", "symbols": {"AAA": {}}}
-            market = {
-                "asOf": "2026-09-29",
-                "version": "V",
-                "sources": {
-                    "marketScanAsOf": "2026-09-29",
-                    "priceSessionAsOf": "2026-09-29",
-                    "priceCrossSource": {
-                        "status": "PASS",
-                        "coverage": 1.0,
-                        "requiredCoverage": 0.9,
-                        "mismatchCount": 0,
-                    },
-                },
-            }
-            release = {"asOf": "2026-09-29", "status": "PASS", "blockers": [], "scope": {"symbols": 1}}
-            session = {
-                "status": "PASS",
-                "coreAsOf": "2026-09-29",
-                "coreForecastUnchanged": True,
-                "mode": "PRICE_ONLY_STALE_CORE",
-                "rankingHorizon": 3,
-                "leaders": [],
-                "coverage": {
-                    "coverageRatio": 1.0,
-                    "currentCoverageRatio": 0.8,
-                    "cutoffFreshCoverageRatio": 0.8,
-                },
-                "forecastAlignment": {
-                    "status": "STALE_CORE",
-                    "rankingEligible": False,
-                    "actualCoreAsOf": "2026-09-29",
-                    "expectedCoreAsOf": "2026-10-06",
-                },
-            }
-            for name, payload in {
-                "forecast-dashboard-v12.json": dashboard,
-                "forecast-current-v12.json": current,
-                "forecast-market-v13.json": market,
-                "release-audit-v20.json": release,
-                "forecast-session-v21.json": session,
-            }.items():
-                (data / name).write_text(json.dumps(payload), encoding="utf-8")
-
+                (ROOT / "forecast-final-v12.js").read_text(encoding="utf-8"))
+            (root / RETIRED_MAIN_FORECAST_FILES[0]).write_text('{"asOf":"2026-10-20"}')
             audit = Audit()
-            audit_main_forecast(
-                audit,
-                root,
-                datetime(2026, 10, 7, 8, 0, tzinfo=timezone.utc),
-                authoritative_core_ready=True,
-            )
-
-        self.assertFalse(audit.errors)
-        warning_codes = {row["code"] for row in audit.results if row["status"] == "WARN"}
-        self.assertIn("FORECAST_MAIN_SESSION", warning_codes)
-        self.assertIn("FORECAST_V21_FALLBACK_STALE", warning_codes)
-        self.assertTrue(any(row["code"] == "FORECAST_V21_FALLBACK_SAFE" and row["status"] == "PASS" for row in audit.results))
+            audit_legacy_forecast_isolation(audit, root)
+            self.assertIn("FORECAST_RETIRED_MAIN_ASSETS",
+                          {row["code"] for row in audit.errors})
 
     @unittest.skipIf(FINQUERY_CORE_ONLY, "SoluTION.AI is outside the FinQuery system contract")
     def test_solution_live_active_session_requires_real_source_freshness(self):

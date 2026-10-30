@@ -1,0 +1,63 @@
+name: FinQuery retired forecast archive isolation gate
+
+on:
+  pull_request:
+    paths:
+      - 'data/**'
+      - 'forecast-*.js'
+      - 'scripts/finquery_vn100_*'
+      - 'scripts/system_contract_audit*'
+      - 'scripts/forecast-navigation-test.cjs'
+      - '.github/workflows/**'
+  push:
+    branches: [main]
+    paths:
+      - 'data/**'
+      - 'forecast-*.js'
+      - 'scripts/finquery_vn100_*'
+      - 'scripts/system_contract_audit*'
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  quarantine:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Assert retired forecast files, writers, and legacy imports are absent
+        run: |
+          python - <<'PY'
+          from scripts.system_contract_audit import Audit,ROOT,audit_legacy_forecast_isolation
+          report=Audit()
+          audit_legacy_forecast_isolation(report,ROOT)
+          if report.errors:
+              raise SystemExit(f"RETIRED FORECAST REINTRODUCED: {report.errors}")
+          print("PASS: legacy model artifacts and writers isolated outside production main")
+          PY
+      - name: Verify sealed archive branch matches frozen baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual="$(git ls-remote origin refs/heads/archive/forecast-core-frozen-20261020 | cut -f1)"
+          test "$actual" = "e84dcdea3637772cee2d6d875666a247ea3000a5"
+          echo "PASS: research evidence preserved at immutable pinned baseline"
+      - name: Regression for independent SoluTION.AI and canonical FinQuery routing
+        run: |
+          python -m unittest discover -s scripts -p 'system_contract_audit_test.py' -v
+          node --check forecast-final-v12.js
+          node --check forecast-live-leaders-v14.js
+          node --check forecast-polish-v12.js
+          node scripts/forecast-navigation-test.cjs
+          node --test scripts/test_finquery_vn100_frontend.cjs

@@ -70,18 +70,19 @@ class ForecastFrontendContractTest(unittest.TestCase):
             })
         self.assertFalse(required - self.document.ids)
 
-    def test_browser_smoke_uses_the_current_visible_method_proof_contract(self) -> None:
+    def test_research_labels_survive_while_current_cdn_smoke_uses_isolated_products(self) -> None:
         polish = (ROOT / "forecast-polish-v12.js").read_text(encoding="utf-8")
         smoke = (ROOT / "scripts" / "v12_browser_smoke.mjs").read_text(encoding="utf-8")
-        workflow = (ROOT / ".github" / "workflows" / "forecast-v12-cdn-browser-smoke.yml").read_text(encoding="utf-8")
+        workflow = (ROOT / ".github" / "workflows" / "cdn-smoke.yml").read_text(encoding="utf-8")
         for label in ("Mẫu kiểm định", "Sai số so với giá không đổi", "IC xếp hạng bình quân", "Độ phủ HOSE"):
             self.assertIn(label, polish)
             self.assertIn(label, smoke)
         self.assertNotIn("Nhìn trước tương lai", smoke)
         self.assertNotIn("Sealed holdout", smoke)
-        self.assertIn("'scripts/v12_browser_smoke.mjs'", workflow)
+        self.assertIn("finquery-vn100-data/data/finquery-vn100-status.json", workflow)
+        self.assertIn("solution-ai-core-data/data/release-audit-v20.json", workflow)
         self.assertIn("pull_request:", workflow)
-        self.assertIn("github.event.pull_request.head.sha || github.sha", workflow)
+        self.assertNotIn("main/data/forecast-dashboard-v12.json", workflow)
         for label in ("PHÂN TÍCH BỔ SUNG", "Kỹ thuật · Dòng tiền · Tài chính", "Giá thị trường", "Tài chính doanh nghiệp", "Tín hiệu cộng đồng"):
             self.assertIn(label, smoke)
         for label in ("Giá dự báo (?:của mô hình|trung tâm)", "Vùng tham khảo", "TĂNG", "GIẢM"):

@@ -182,8 +182,11 @@
   }
 
   async function loadSessionOverlay(base) {
+    // VN100 independently reanchors against verified FinQuery market quotes;
+    // the retired V21 overlay must never be fetched on the FinQuery product.
+    if(window.__VMEWS_STANDALONE_CORE_PAGE__!==true)return null;
     try {
-      const root = window.__VMEWS_DATA_ROOT__ || "./data";
+      const root = window.__SOLUTION_AI_CORE_ROOT__;
       const revision = Math.floor(Date.now() / 60000);
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 10000);
