@@ -62,3 +62,56 @@ jobs:
           python -m py_compile scripts/finquery_vn100_timeseries.py scripts/finquery_vn100_product.py
           python -m unittest scripts/test_finquery_vn100_product.py -v
           cd scripts && FINQUERY_CORE_ONLY=1 python system_contract_audit_test.py
+
+  canonical-system-contract-preview:
+    if: github.event_name == 'pull_request'
+    needs: vn100-publisher-and-ui
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/checkout@v4
+        with:
+          ref: financial-market-data
+          path: _market-data
+          sparse-checkout: market
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: financial-report-data
+          path: _financial-data
+          sparse-checkout: data
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: financial-insights-data
+          path: _insight-data
+          sparse-checkout: data
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: finquery-vn100-data
+          path: _vn100-data
+          sparse-checkout: data
+          persist-credentials: false
+      - name: Recompute full FinQuery production contract against canonical VN100 source
+        run: |
+          python scripts/system_contract_audit.py \
+            --market-dir _market-data/market \
+            --financial-dir _financial-data/data \
+            --insights-dir _insight-data/data \
+            --vn100-dir _vn100-data/data \
+            --ignore-solution-ai \
+            --repo-root . \
+            --report-json /tmp/finquery-forecast-contract-preview.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: finquery-forecast-contract-preview
+          path: /tmp/finquery-forecast-contract-preview.json
+          retention-days: 7
