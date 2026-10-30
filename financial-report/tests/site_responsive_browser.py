@@ -169,13 +169,26 @@ def main():
                         "return getComputedStyle(document.getElementById('finquery-nav-toggle')).display"
                     ) == "none"
                 # Open and close one advanced control in its original DOM location.
-                driver.execute_script("document.querySelector('#chart-advanced-tools > summary').click()")
-                assert driver.execute_script("""
+                menu = driver.execute_script("""
                   const d=document.getElementById('chart-advanced-tools');
-                  return d.open && !!d.querySelector('#chart-fit') &&
-                    d.querySelector('#chart-fit').getBoundingClientRect().height>0;
+                  const summary=d.querySelector('summary');
+                  const oldHeight=d.parentElement.getBoundingClientRect().height;
+                  summary.click();
+                  const r=d.querySelector('.chart-advanced-actions').getBoundingClientRect();
+                  return {open:d.open, label:summary.getAttribute('aria-label'),
+                    text:summary.textContent.trim(),width:summary.getBoundingClientRect().width,
+                    oldHeight,newHeight:d.parentElement.getBoundingClientRect().height,
+                    visible:r.width>100 && r.height>100,
+                    fits:r.left>=-2 && r.right<=innerWidth+2};
                 """)
+                assert menu["open"] and menu["visible"] and menu["fits"], (width,menu)
+                assert menu["label"]=="Tùy chọn biểu đồ" and menu["text"]=="⋯", (width,menu)
+                assert menu["width"]<=44 and menu["oldHeight"]==menu["newHeight"], (width,menu)
+                driver.execute_script("document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}))")
+                assert not driver.execute_script("return document.getElementById('chart-advanced-tools').open")
                 driver.execute_script("document.querySelector('#chart-advanced-tools > summary').click()")
+                driver.execute_script("document.getElementById('chart-fit').click()")
+                assert not driver.execute_script("return document.getElementById('chart-advanced-tools').open")
             # Auth pages use independent HTML/CSS: protect mobile sign-in and admin UI.
             for width in (320, 390, 768, 1024):
                 driver.set_window_size(width, 900)

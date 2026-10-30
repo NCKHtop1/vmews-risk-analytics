@@ -141,7 +141,7 @@ def main():
             repaint.get("updated") is True
             and repaint.get("shown")==repaint.get("expected")
             and repaint.get("shown")!=repaint.get("initial")
-            and "Giá nguồn:" in repaint.get("provenance","")
+            and "Giá cập nhật:" in repaint.get("provenance","")
             and "Forecast tính" in repaint.get("modelAt","")
         ), "The verified 5m quote did not repaint the visible VN100 stock price: "+str(repaint)
         errors.append({"fiveMinuteQuoteRepaint": repaint})

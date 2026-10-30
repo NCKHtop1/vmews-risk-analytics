@@ -31,7 +31,11 @@ test('advanced chart controls keep original IDs and are accessible without occup
                     'chart-zoom-in','chart-zoom-out','chart-marker-toggle','chart-fullscreen'])
   assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1,id);
  assert.match(html,/id="chart-advanced-tools" class="chart-advanced-controls"/);
- assert.match(html,/<summary>Công cụ khác<\/summary>/);
+ assert.match(html,/aria-label="Tùy chọn biểu đồ"/);
+ assert.match(html,/aria-hidden="true">⋯/);
+ assert.equal(html.includes('<summary>Công cụ khác</summary>'),false);
+ assert.match(css,/position:absolute/);
+ assert.match(nav,/chartTools\.open=false/);
  assert.match(css,/#chart-advanced-tools:not\(\[open\]\)/);
  assert.match(css,/\.chart-advanced-actions/);
 });
