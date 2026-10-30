@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-29T19:56:54.710379+00:00",
+  "checkedAt": "2026-10-30T19:46:44.711489+00:00",
   "extractorVersion": 2,
   "sourceRegistryVersion": 15,
   "status": "ok",
@@ -14,7 +14,7 @@
     "ACB": {
       "symbol": "ACB",
       "name": "Asia Commercial Bank",
-      "checkedAt": "2026-10-29T19:56:15.169961+00:00",
+      "checkedAt": "2026-10-30T19:46:27.846213+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -494,7 +494,7 @@
     "ANV": {
       "symbol": "ANV",
       "name": "Công ty Cổ phần Nam Việt",
-      "checkedAt": "2026-10-29T19:56:15.170132+00:00",
+      "checkedAt": "2026-10-30T19:46:27.846337+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -525,7 +525,7 @@
     "BAF": {
       "symbol": "BAF",
       "name": "Công ty Cổ phần Nông nghiệp BAF Việt Nam",
-      "checkedAt": "2026-10-29T19:56:15.170142+00:00",
+      "checkedAt": "2026-10-30T19:46:27.846345+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -543,7 +543,7 @@
     "BCM": {
       "symbol": "BCM",
       "name": "Tập đoàn Đầu tư và Phát triển Công nghiệp Becamex - CTCP",
-      "checkedAt": "2026-10-29T19:56:15.170715+00:00",
+      "checkedAt": "2026-10-30T19:46:27.846873+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -745,7 +745,7 @@
     "BID": {
       "symbol": "BID",
       "name": "BIDV",
-      "checkedAt": "2026-10-29T19:56:15.171767+00:00",
+      "checkedAt": "2026-10-30T19:46:27.847797+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -937,7 +937,7 @@
     "BMP": {
       "symbol": "BMP",
       "name": "Công ty Cổ phần Nhựa Bình Minh",
-      "checkedAt": "2026-10-29T19:56:15.172343+00:00",
+      "checkedAt": "2026-10-30T19:46:27.848246+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1091,7 +1091,7 @@
     "BSI": {
       "symbol": "BSI",
       "name": "Công ty Cổ phần Chứng khoán BIDV",
-      "checkedAt": "2026-10-29T19:56:15.172354+00:00",
+      "checkedAt": "2026-10-30T19:46:27.848253+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1109,7 +1109,7 @@
     "BSR": {
       "symbol": "BSR",
       "name": "Công ty Cổ phần - Tổng Công ty Lọc Hoá dầu Việt Nam",
-      "checkedAt": "2026-10-29T19:56:15.172360+00:00",
+      "checkedAt": "2026-10-30T19:46:27.848257+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1127,7 +1127,7 @@
     "BVH": {
       "symbol": "BVH",
       "name": "Tập đoàn Bảo Việt",
-      "checkedAt": "2026-10-29T19:56:15.172898+00:00",
+      "checkedAt": "2026-10-30T19:46:27.848735+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1182,7 +1182,7 @@
     "BWE": {
       "symbol": "BWE",
       "name": "Công ty Cổ phần - Tổng công ty Nước - Môi trường Bình Dương",
-      "checkedAt": "2026-10-29T19:56:15.172908+00:00",
+      "checkedAt": "2026-10-30T19:46:27.848741+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1200,7 +1200,7 @@
     "CII": {
       "symbol": "CII",
       "name": "Công ty Cổ phần Đầu tư Hạ tầng Kỹ thuật Thành phố Hồ Chí Minh",
-      "checkedAt": "2026-10-29T19:56:15.172913+00:00",
+      "checkedAt": "2026-10-30T19:46:27.848746+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -1218,7 +1218,7 @@
     "CMG": {
       "symbol": "CMG",
       "name": "Công ty Cổ phần Tập đoàn Công nghệ CMC",
-      "checkedAt": "2026-10-29T19:56:15.173928+00:00",
+      "checkedAt": "2026-10-30T19:46:27.849642+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -1287,7 +1287,7 @@
     "CTD": {
       "symbol": "CTD",
       "name": "Công ty Cổ phần Xây dựng Coteccons",
-      "checkedAt": "2026-10-29T19:56:15.181146+00:00",
+      "checkedAt": "2026-10-30T19:46:27.856074+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2195,7 +2195,7 @@
     "CTG": {
       "symbol": "CTG",
       "name": "VietinBank",
-      "checkedAt": "2026-10-29T19:56:15.182043+00:00",
+      "checkedAt": "2026-10-30T19:46:27.856861+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -2646,7 +2646,7 @@
     "CTR": {
       "symbol": "CTR",
       "name": "Tổng Công ty Cổ phần Công trình Viettel",
-      "checkedAt": "2026-10-29T19:56:15.182706+00:00",
+      "checkedAt": "2026-10-30T19:46:27.857446+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2859,7 +2859,7 @@
     "CTS": {
       "symbol": "CTS",
       "name": "Công ty Cổ phần Chứng khoán Vietinbank",
-      "checkedAt": "2026-10-29T19:56:15.182714+00:00",
+      "checkedAt": "2026-10-30T19:46:27.857453+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2877,7 +2877,7 @@
     "DBC": {
       "symbol": "DBC",
       "name": "Công ty Cổ phần Tập đoàn Dabaco Việt Nam",
-      "checkedAt": "2026-10-29T19:56:15.182720+00:00",
+      "checkedAt": "2026-10-30T19:46:27.857459+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2895,7 +2895,7 @@
     "DCM": {
       "symbol": "DCM",
       "name": "Công ty Cổ phần - Tổng Công ty Phân bón Dầu Khí Cà Mau",
-      "checkedAt": "2026-10-29T19:56:15.182726+00:00",
+      "checkedAt": "2026-10-30T19:46:27.857463+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2913,7 +2913,7 @@
     "DGW": {
       "symbol": "DGW",
       "name": "Công ty Cổ phần Thế Giới Số",
-      "checkedAt": "2026-10-29T19:56:15.182730+00:00",
+      "checkedAt": "2026-10-30T19:46:27.857468+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2931,7 +2931,7 @@
     "DIG": {
       "symbol": "DIG",
       "name": "Tổng Công ty Cổ phần Đầu tư Phát triển Xây dựng",
-      "checkedAt": "2026-10-29T19:56:15.182735+00:00",
+      "checkedAt": "2026-10-30T19:46:27.857472+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -2949,7 +2949,7 @@
     "DPM": {
       "symbol": "DPM",
       "name": "Tổng Công ty Phân bón và Hóa chất Dầu khí - Công ty Cổ phần",
-      "checkedAt": "2026-10-29T19:56:15.183355+00:00",
+      "checkedAt": "2026-10-30T19:46:27.857998+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -2992,7 +2992,7 @@
     "DSE": {
       "symbol": "DSE",
       "name": "Công ty Cổ phần Chứng khoán DNSE",
-      "checkedAt": "2026-10-29T19:56:15.183364+00:00",
+      "checkedAt": "2026-10-30T19:46:27.858004+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3010,7 +3010,7 @@
     "DXG": {
       "symbol": "DXG",
       "name": "Công ty Cổ phần Bluemarq Group",
-      "checkedAt": "2026-10-29T19:56:15.183369+00:00",
+      "checkedAt": "2026-10-30T19:46:27.858009+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3028,7 +3028,7 @@
     "EIB": {
       "symbol": "EIB",
       "name": "Eximbank",
-      "checkedAt": "2026-10-29T19:56:15.184249+00:00",
+      "checkedAt": "2026-10-30T19:46:27.858739+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -3211,7 +3211,7 @@
     "EVF": {
       "symbol": "EVF",
       "name": "Công ty Tài chính Tổng hợp Cổ phần Điện Lực",
-      "checkedAt": "2026-10-29T19:56:15.184258+00:00",
+      "checkedAt": "2026-10-30T19:46:27.858745+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3229,7 +3229,7 @@
     "FPT": {
       "symbol": "FPT",
       "name": "FPT Corporation",
-      "checkedAt": "2026-10-29T19:56:15.186392+00:00",
+      "checkedAt": "2026-10-30T19:46:27.860516+00:00",
       "entityType": "company",
       "sourcePolicy": "curated-issuer+disclosure-index",
       "documents": [
@@ -3237,7 +3237,7 @@
           "id": "5498b9c4df0ccdbc9927",
           "url": "https://bctn2025.fpt.com/wp-content/uploads/2026/04/BAO-CAO-ESG_VI_02042026.pdf",
           "title": "Báo cáo ESG",
-          "sourcePage": "https://bctn2025.fpt.com/bao-cao-esg/quan-tri-huong-den-phat-trien-ben-vung/",
+          "sourcePage": "https://bctn2025.fpt.com/bao-cao-esg/song-hanh-vi-su-phat-trien-cong-dong/",
           "year": 2026,
           "type": "esg_web_content",
           "contentType": "pdf",
@@ -3309,7 +3309,7 @@
           "id": "b7d4d02407f74a654aa0",
           "url": "https://bctn2025.fpt.com/wp-content/uploads/2026/04/BCTN-2025.pdf",
           "title": "BCTN 2025",
-          "sourcePage": "https://bctn2025.fpt.com/bao-cao-esg/quan-tri-huong-den-phat-trien-ben-vung/",
+          "sourcePage": "https://bctn2025.fpt.com/bao-cao-esg/song-hanh-vi-su-phat-trien-cong-dong/",
           "year": 2025,
           "type": "annual_report",
           "contentType": "pdf",
@@ -3640,7 +3640,7 @@
     "FRT": {
       "symbol": "FRT",
       "name": "Công ty Cổ phần Bán lẻ Kỹ thuật số FPT",
-      "checkedAt": "2026-10-29T19:56:15.186944+00:00",
+      "checkedAt": "2026-10-30T19:46:27.861002+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3732,7 +3732,7 @@
     "FTS": {
       "symbol": "FTS",
       "name": "Công ty Cổ phần Chứng khoán FPT",
-      "checkedAt": "2026-10-29T19:56:15.186952+00:00",
+      "checkedAt": "2026-10-30T19:46:27.861008+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3750,7 +3750,7 @@
     "GAS": {
       "symbol": "GAS",
       "name": "PV GAS",
-      "checkedAt": "2026-10-29T19:56:15.187266+00:00",
+      "checkedAt": "2026-10-30T19:46:27.861266+00:00",
       "entityType": "company",
       "sourcePolicy": "curated-issuer+disclosure-index",
       "documents": [
@@ -3781,7 +3781,7 @@
     "GEE": {
       "symbol": "GEE",
       "name": "Công ty Cổ phần Điện lực Gelex",
-      "checkedAt": "2026-10-29T19:56:15.187275+00:00",
+      "checkedAt": "2026-10-30T19:46:27.861272+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3799,7 +3799,7 @@
     "GEX": {
       "symbol": "GEX",
       "name": "Công ty Cổ phần Tập đoàn Gelex",
-      "checkedAt": "2026-10-29T19:56:15.187280+00:00",
+      "checkedAt": "2026-10-30T19:46:27.861276+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3817,7 +3817,7 @@
     "GMD": {
       "symbol": "GMD",
       "name": "Công ty Cổ phần Tập đoàn Gemadept",
-      "checkedAt": "2026-10-29T19:56:15.187284+00:00",
+      "checkedAt": "2026-10-30T19:46:27.861280+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3835,7 +3835,7 @@
     "GVR": {
       "symbol": "GVR",
       "name": "Tập đoàn Công nghiệp Cao su Việt Nam - Công ty Cổ phần",
-      "checkedAt": "2026-10-29T19:56:15.187829+00:00",
+      "checkedAt": "2026-10-30T19:46:27.861765+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -3894,14 +3894,14 @@
     "HAG": {
       "symbol": "HAG",
       "name": "Công ty Cổ phần Hoàng Anh Gia Lai",
-      "checkedAt": "2026-10-29T19:56:15.189020+00:00",
+      "checkedAt": "2026-10-30T19:46:27.862801+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
         {
           "id": "b624527cca7279b180a9",
           "url": "https://24hmoney.vn/report/790976/announcement",
-          "title": "HAG: Nghị quyết HĐQT thông qua việc thành lập Ủy ban Phát triển Bền vững ESG trực thuộc HĐQT Sự kiện • 7 ngày",
+          "title": "HAG: Nghị quyết HĐQT thông qua việc thành lập Ủy ban Phát triển Bền vững ESG trực thuộc HĐQT Sự kiện • 23/10/2026",
           "sourcePage": "https://24hmoney.vn/stock/hag/report",
           "year": 2026,
           "type": "esg_web_content",
@@ -3961,7 +3961,7 @@
     "HCM": {
       "symbol": "HCM",
       "name": "Công ty Cổ phần Chứng khoán Thành phố Hồ Chí Minh",
-      "checkedAt": "2026-10-29T19:56:15.189029+00:00",
+      "checkedAt": "2026-10-30T19:46:27.862808+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -3979,7 +3979,7 @@
     "HDB": {
       "symbol": "HDB",
       "name": "HDBank",
-      "checkedAt": "2026-10-29T19:56:15.190724+00:00",
+      "checkedAt": "2026-10-30T19:46:27.864240+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -4134,7 +4134,7 @@
     "HDG": {
       "symbol": "HDG",
       "name": "Công ty Cổ phần Tập đoàn Hà Đô",
-      "checkedAt": "2026-10-29T19:56:15.191013+00:00",
+      "checkedAt": "2026-10-30T19:46:27.864471+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4177,7 +4177,7 @@
     "HHV": {
       "symbol": "HHV",
       "name": "Công ty Cổ phần Đầu tư Hạ tầng Giao thông Đèo Cả",
-      "checkedAt": "2026-10-29T19:56:15.191021+00:00",
+      "checkedAt": "2026-10-30T19:46:27.864477+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4195,7 +4195,7 @@
     "HPG": {
       "symbol": "HPG",
       "name": "Hoa Phat Group",
-      "checkedAt": "2026-10-29T19:56:15.194504+00:00",
+      "checkedAt": "2026-10-30T19:46:27.867502+00:00",
       "entityType": "company",
       "sourcePolicy": "curated-issuer+disclosure-index",
       "documents": [
@@ -4288,7 +4288,7 @@
           "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2022/04/bao-cao-thuong-nien-2021.pdf",
           "title": "Download",
           "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
-          "year": 2021,
+          "year": 2022,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "bb755e54d63f790cbbf8892d4a667117cd9e8ad87449360d9f57260fabfb1f21",
@@ -4300,7 +4300,7 @@
           "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2021/04/bctn-2020-online.pdf",
           "title": "Download",
           "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
-          "year": 2020,
+          "year": 2021,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "9d376f81aed96b05c6bcd21aa693411132c66e65f60b4349ac6186d57075a7af",
@@ -4312,7 +4312,7 @@
           "url": "https://file.hoaphat.com.vn/hoaphat-com-vn/2020/04/bao-cao-thuong-nien-hpg-2019.pdf",
           "title": "Download",
           "sourcePage": "https://www.hoaphat.com.vn/quan-he-co-dong/bao-cao-thuong-nien",
-          "year": 2019,
+          "year": 2020,
           "type": "annual_report",
           "contentType": "pdf",
           "contentHash": "4a8dcf8372f9ee9d7b942a3121a34011ed5ab4468544e520b514845648e8cc00",
@@ -4644,7 +4644,7 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2021,
+          "year": 2022,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2022/04/bao-cao-thuong-nien-2021.pdf",
           "sourceTitle": "Download",
           "sourceType": "annual_report",
@@ -4659,7 +4659,7 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2020,
+          "year": 2021,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2021/04/bctn-2020-online.pdf",
           "sourceTitle": "Download",
           "sourceType": "annual_report",
@@ -4674,7 +4674,7 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2019,
+          "year": 2020,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2020/04/bao-cao-thuong-nien-hpg-2019.pdf",
           "sourceTitle": "Download",
           "sourceType": "annual_report",
@@ -4724,7 +4724,7 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2019,
+          "year": 2020,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2020/04/bao-cao-thuong-nien-hpg-2019.pdf",
           "sourceTitle": "Download",
           "sourceType": "annual_report",
@@ -4741,7 +4741,7 @@
           "metricId": "csr_spend",
           "pillar": "S",
           "label": "Chi cho cộng đồng/CSR",
-          "year": 2021,
+          "year": 2022,
           "sourceUrl": "https://file.hoaphat.com.vn/hoaphat-com-vn/2022/04/bao-cao-thuong-nien-2021.pdf",
           "sourceTitle": "Download",
           "sourceType": "annual_report",
@@ -4847,7 +4847,7 @@
     "HSG": {
       "symbol": "HSG",
       "name": "Công ty Cổ phần Tập đoàn Hoa Sen",
-      "checkedAt": "2026-10-29T19:56:15.194516+00:00",
+      "checkedAt": "2026-10-30T19:46:27.867510+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4865,7 +4865,7 @@
     "HT1": {
       "symbol": "HT1",
       "name": "Công ty Cổ phần Xi măng VICEM Hà Tiên",
-      "checkedAt": "2026-10-29T19:56:15.194522+00:00",
+      "checkedAt": "2026-10-30T19:46:27.867515+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -4883,7 +4883,7 @@
     "KBC": {
       "symbol": "KBC",
       "name": "Tổng Công ty Phát triển Đô thị Kinh Bắc - CTCP",
-      "checkedAt": "2026-10-29T19:56:15.194864+00:00",
+      "checkedAt": "2026-10-30T19:46:27.867819+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4926,7 +4926,7 @@
     "KDC": {
       "symbol": "KDC",
       "name": "Công ty Cổ phần Tập đoàn KIDO",
-      "checkedAt": "2026-10-29T19:56:15.195171+00:00",
+      "checkedAt": "2026-10-30T19:46:27.868052+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -4985,7 +4985,7 @@
     "KDH": {
       "symbol": "KDH",
       "name": "Công ty Cổ phần Đầu tư và Kinh doanh nhà Khang Điền",
-      "checkedAt": "2026-10-29T19:56:15.195180+00:00",
+      "checkedAt": "2026-10-30T19:46:27.868058+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -5003,7 +5003,7 @@
     "KOS": {
       "symbol": "KOS",
       "name": "Công ty Cổ phần KOSY",
-      "checkedAt": "2026-10-29T19:56:15.195475+00:00",
+      "checkedAt": "2026-10-30T19:46:27.868299+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -5046,22 +5046,10 @@
     "LPB": {
       "symbol": "LPB",
       "name": "LPBank",
-      "checkedAt": "2026-10-29T19:56:15.196437+00:00",
+      "checkedAt": "2026-10-30T19:46:27.869098+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
-        {
-          "id": "83ae132689391be88eb5",
-          "url": "https://lpbank.com.vn/nha-dau-tu",
-          "title": "LPBank - Ngân hàng Lộc Phát Việt Nam --> Cá nhân Doanh nghiệp Khách hàng ưu tiên Nhà đầu tư Về LPBank Tin tức Tuyển dụng Mạng lưới Tổng đài",
-          "sourcePage": "https://lpbank.com.vn/nha-dau-tu",
-          "year": 2026,
-          "type": "annual_report",
-          "contentType": "html",
-          "contentHash": "53bc1471aa98a3493b97fe817b4fbbf62997008d8724dc691eaa1c413eaf3604",
-          "processedAt": "2026-09-29T00:04:25.831906+00:00",
-          "textLength": 6195
-        },
         {
           "id": "9ae9d25ad802feaed8c1",
           "url": "https://cafef1.mediacdn.vn/download/200426/lpb-bao-cao-thuong-nien-nam-2025-0.pdf",
@@ -5073,6 +5061,18 @@
           "contentHash": "0358de203ca9329b110ff66c781d674c0b30fc1d1d09fd0366d52613e1cad897",
           "processedAt": "2026-09-29T02:58:23.146047+00:00",
           "textLength": 312906
+        },
+        {
+          "id": "83ae132689391be88eb5",
+          "url": "https://lpbank.com.vn/nha-dau-tu",
+          "title": "LPBank - Ngân hàng Lộc Phát Việt Nam Cá nhân Doanh nghiệp Khách hàng ưu tiên Nhà đầu tư Về LPBank Tin tức Tuyển dụng Mạng lưới Tổng đài CSKH",
+          "sourcePage": "https://lpbank.com.vn/nha-dau-tu",
+          "year": 2024,
+          "type": "annual_report",
+          "contentType": "html",
+          "contentHash": "53bc1471aa98a3493b97fe817b4fbbf62997008d8724dc691eaa1c413eaf3604",
+          "processedAt": "2026-09-29T00:04:25.831906+00:00",
+          "textLength": 6195
         },
         {
           "id": "47353c3364c85c24ba5b",
@@ -5182,7 +5182,7 @@
     "MBB": {
       "symbol": "MBB",
       "name": "MB Bank",
-      "checkedAt": "2026-10-29T19:56:15.197109+00:00",
+      "checkedAt": "2026-10-30T19:46:27.869655+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -5398,7 +5398,7 @@
     "MCH": {
       "symbol": "MCH",
       "name": "Công ty Cổ phần Hàng Tiêu Dùng MaSan",
-      "checkedAt": "2026-10-29T19:56:15.197782+00:00",
+      "checkedAt": "2026-10-30T19:46:27.870206+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -5455,7 +5455,7 @@
     "MSB": {
       "symbol": "MSB",
       "name": "MSB",
-      "checkedAt": "2026-10-29T19:56:15.201514+00:00",
+      "checkedAt": "2026-10-30T19:46:27.873445+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -5535,10 +5535,10 @@
           "sourcePage": "https://www.msb.com.vn/en/about-us/sustainability/",
           "year": 2025,
           "type": "esg_web_content",
-          "failedAttempts": 2,
+          "failedAttempts": 3,
           "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-10-28T19:58:48.285672+00:00",
-          "retryAfter": "2026-10-29T19:58:48.285697+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:38.419873+00:00",
+          "retryAfter": "2026-11-06T19:46:38.419898+00:00"
         },
         {
           "id": "ec704a1d17114851dc4c",
@@ -5991,7 +5991,7 @@
     "MSN": {
       "symbol": "MSN",
       "name": "Công ty Cổ phần Tập đoàn Masan",
-      "checkedAt": "2026-10-29T19:56:15.201525+00:00",
+      "checkedAt": "2026-10-30T19:46:27.873454+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -6009,7 +6009,7 @@
     "MWG": {
       "symbol": "MWG",
       "name": "Mobile World Investment Corporation",
-      "checkedAt": "2026-10-29T19:56:15.201872+00:00",
+      "checkedAt": "2026-10-30T19:46:27.873756+00:00",
       "entityType": "company",
       "sourcePolicy": "curated-issuer+disclosure-index",
       "documents": [
@@ -6040,7 +6040,7 @@
     "NAB": {
       "symbol": "NAB",
       "name": "Nam A Bank",
-      "checkedAt": "2026-10-29T19:56:15.206557+00:00",
+      "checkedAt": "2026-10-30T19:46:27.877750+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -6055,18 +6055,6 @@
           "contentHash": "4e78f3c7c80077464e0bc4b849129de80c17ec7e5bd39e767bb2bb2dd427394c",
           "processedAt": "2026-10-07T20:17:40.557894+00:00",
           "textLength": 10431
-        },
-        {
-          "id": "358356aafec4c64c0e15",
-          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
-          "title": "Báo cáo thường niên năm 2025",
-          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
-          "year": 2025,
-          "type": "annual_report",
-          "contentType": "pdf",
-          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
-          "processedAt": "2026-09-29T03:25:01.578252+00:00",
-          "textLength": 336
         },
         {
           "id": "9905202effdd869504d3",
@@ -6115,6 +6103,18 @@
           "contentHash": "46d86ec891f401807fa1802624a0bc89f053f6b9a25e4f6590f38022214c788e",
           "processedAt": "2026-09-29T03:25:01.084606+00:00",
           "textLength": 337
+        },
+        {
+          "id": "358356aafec4c64c0e15",
+          "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
+          "title": "20260318---nab---bao-cao-thuong-nien-nam-2025.pdf",
+          "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
+          "year": 2025,
+          "type": "annual_report",
+          "contentType": "pdf",
+          "contentHash": "7b0bf72658dd58d7207419079b321d302fef8e15480471410d4e14a41b67dab9",
+          "processedAt": "2026-09-29T03:25:01.578252+00:00",
+          "textLength": 336
         },
         {
           "id": "2290a0dd8e19254302c4",
@@ -6227,10 +6227,10 @@
         {
           "id": "0c9ce9572663228d1389",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao%20cao%20thuong%20nien/20250804_ESG%20NAMABANK%202023%20EN.pdf",
-          "title": "20250804_ESG NAMABANK 2023 EN.pdf",
+          "title": "Báo cáo phát triển bền vững năm 2023 tiếng Anh",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2023,
-          "type": "annual_report",
+          "type": "sustainability_report",
           "contentType": "pdf",
           "contentHash": "bc88397feb5aa8ae307420639fdc5e40ffb935c261d4ddadb396cdc04385762d",
           "processedAt": "2026-09-29T03:40:21.817994+00:00",
@@ -6287,10 +6287,10 @@
         {
           "id": "f2f7d0b1b48ff8c4045f",
           "url": "https://www.namabank.com.vn/Data/Sites/1/media/nha-dau-tu/bao-cao-tai-chinh/2018/b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
-          "title": "Báo cáo thường niên năm 2018",
+          "title": "b%C3%A1o-c%C3%A1o-th%C6%B0%E1%BB%9Dng-ni%C3%AAn-n%C4%83m-2018.pdf",
           "sourcePage": "https://www.namabank.com.vn/bao-cao-thuong-nien?pagenumber=1",
           "year": 2018,
-          "type": "annual_report",
+          "type": "esg_other",
           "contentType": "pdf",
           "contentHash": "31d93ca29fbb4ee20b3ec3336e01e3e33a91c5f68994a8f713082035b8a5db38",
           "processedAt": "2026-10-29T19:56:45.447348+00:00",
@@ -7044,7 +7044,7 @@
     "NKG": {
       "symbol": "NKG",
       "name": "Công ty Cổ phần Thép Nam Kim",
-      "checkedAt": "2026-10-29T19:56:15.206570+00:00",
+      "checkedAt": "2026-10-30T19:46:27.877760+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7062,7 +7062,7 @@
     "NLG": {
       "symbol": "NLG",
       "name": "Công ty Cổ phần Đầu tư Nam Long",
-      "checkedAt": "2026-10-29T19:56:15.206575+00:00",
+      "checkedAt": "2026-10-30T19:46:27.877766+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7080,7 +7080,7 @@
     "NT2": {
       "symbol": "NT2",
       "name": "Công ty Cổ phần Điện lực Dầu khí Nhơn Trạch 2",
-      "checkedAt": "2026-10-29T19:56:15.207104+00:00",
+      "checkedAt": "2026-10-30T19:46:27.878209+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -7123,7 +7123,7 @@
     "NVL": {
       "symbol": "NVL",
       "name": "Công ty Cổ phần Tập đoàn Đầu tư Địa ốc No Va",
-      "checkedAt": "2026-10-29T19:56:15.207113+00:00",
+      "checkedAt": "2026-10-30T19:46:27.878214+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -7141,7 +7141,7 @@
     "OCB": {
       "symbol": "OCB",
       "name": "OCB",
-      "checkedAt": "2026-10-29T19:56:15.211658+00:00",
+      "checkedAt": "2026-10-30T19:46:27.880835+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -7152,10 +7152,10 @@
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2025,
           "type": "sustainability_report",
-          "failedAttempts": 2,
+          "failedAttempts": 3,
           "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-10-28T19:58:46.440958+00:00",
-          "retryAfter": "2026-10-29T19:58:46.440970+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:35.615681+00:00",
+          "retryAfter": "2026-11-06T19:46:35.615691+00:00"
         },
         {
           "id": "ef5d26c67b5ad742bf85",
@@ -7188,10 +7188,10 @@
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2025,
           "type": "annual_report",
-          "failedAttempts": 2,
+          "failedAttempts": 3,
           "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-10-28T19:58:46.437341+00:00",
-          "retryAfter": "2026-10-29T19:58:46.437352+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:35.584020+00:00",
+          "retryAfter": "2026-11-06T19:46:35.584043+00:00"
         },
         {
           "id": "88d59fff5e021267b7ac",
@@ -7224,10 +7224,10 @@
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2024,
           "type": "sustainability_report",
-          "failedAttempts": 2,
+          "failedAttempts": 3,
           "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-10-28T19:58:46.429291+00:00",
-          "retryAfter": "2026-10-29T19:58:46.429313+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:35.599022+00:00",
+          "retryAfter": "2026-11-06T19:46:35.599034+00:00"
         },
         {
           "id": "6c8fee76b6ca9bf4702e",
@@ -7236,10 +7236,10 @@
           "sourcePage": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
           "year": 2024,
           "type": "annual_report",
-          "failedAttempts": 2,
+          "failedAttempts": 3,
           "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-10-28T19:58:47.191335+00:00",
-          "retryAfter": "2026-10-29T19:58:47.191362+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:35.603723+00:00",
+          "retryAfter": "2026-11-06T19:46:35.603734+00:00"
         },
         {
           "id": "7dbc12f1505da625cb7b",
@@ -8108,7 +8108,7 @@
     "PAN": {
       "symbol": "PAN",
       "name": "Công ty Cổ phần Tập đoàn PAN",
-      "checkedAt": "2026-10-29T19:56:15.211670+00:00",
+      "checkedAt": "2026-10-30T19:46:27.880844+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8126,7 +8126,7 @@
     "PC1": {
       "symbol": "PC1",
       "name": "Công ty Cổ phần Tập đoàn PC1",
-      "checkedAt": "2026-10-29T19:56:15.211676+00:00",
+      "checkedAt": "2026-10-30T19:46:27.880849+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8144,7 +8144,7 @@
     "PDR": {
       "symbol": "PDR",
       "name": "Công ty Cổ phần Phát triển Bất động sản Phát Đạt",
-      "checkedAt": "2026-10-29T19:56:15.211680+00:00",
+      "checkedAt": "2026-10-30T19:46:27.880853+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8162,7 +8162,7 @@
     "PHR": {
       "symbol": "PHR",
       "name": "Công ty Cổ phần Cao su Phước Hòa",
-      "checkedAt": "2026-10-29T19:56:15.211685+00:00",
+      "checkedAt": "2026-10-30T19:46:27.880858+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8180,7 +8180,7 @@
     "PLX": {
       "symbol": "PLX",
       "name": "Tập đoàn Xăng dầu Việt Nam",
-      "checkedAt": "2026-10-29T19:56:15.213088+00:00",
+      "checkedAt": "2026-10-30T19:46:27.882060+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8353,7 +8353,7 @@
     "PNJ": {
       "symbol": "PNJ",
       "name": "Công ty Cổ phần Vàng bạc Đá quý Phú Nhuận",
-      "checkedAt": "2026-10-29T19:56:15.213099+00:00",
+      "checkedAt": "2026-10-30T19:46:27.882067+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8371,7 +8371,7 @@
     "POW": {
       "symbol": "POW",
       "name": "Tổng Công ty Điện lực Dầu khí Việt Nam - CTCP",
-      "checkedAt": "2026-10-29T19:56:15.213576+00:00",
+      "checkedAt": "2026-10-30T19:46:27.882468+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8414,7 +8414,7 @@
     "PVD": {
       "symbol": "PVD",
       "name": "Tổng Công ty Cổ phần Khoan và Dịch vụ khoan Dầu khí",
-      "checkedAt": "2026-10-29T19:56:15.213584+00:00",
+      "checkedAt": "2026-10-30T19:46:27.882473+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8432,7 +8432,7 @@
     "PVT": {
       "symbol": "PVT",
       "name": "Tổng Công ty Cổ phần Vận tải Dầu khí",
-      "checkedAt": "2026-10-29T19:56:15.213589+00:00",
+      "checkedAt": "2026-10-30T19:46:27.882477+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8450,7 +8450,7 @@
     "REE": {
       "symbol": "REE",
       "name": "Công ty Cổ phần Cơ điện Lạnh",
-      "checkedAt": "2026-10-29T19:56:15.213594+00:00",
+      "checkedAt": "2026-10-30T19:46:27.882481+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8468,7 +8468,7 @@
     "SAB": {
       "symbol": "SAB",
       "name": "Tổng Công ty Cổ phần Bia - Rượu - Nước Giải khát Sài Gòn",
-      "checkedAt": "2026-10-29T19:56:15.214653+00:00",
+      "checkedAt": "2026-10-30T19:46:27.883383+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -8535,7 +8535,7 @@
     "SBT": {
       "symbol": "SBT",
       "name": "Công ty Cổ phần Thành Thành Công - Biên Hòa",
-      "checkedAt": "2026-10-29T19:56:15.214662+00:00",
+      "checkedAt": "2026-10-30T19:46:27.883389+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -8553,7 +8553,7 @@
     "SHB": {
       "symbol": "SHB",
       "name": "SHB",
-      "checkedAt": "2026-10-29T19:56:15.216411+00:00",
+      "checkedAt": "2026-10-30T19:46:27.884804+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -8588,10 +8588,10 @@
           "sourcePage": "https://www.shb.com.vn/category/nha-dau-tu/bao-cao-thuong-nien/",
           "year": 2024,
           "type": "annual_report",
-          "failedAttempts": 2,
+          "failedAttempts": 3,
           "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-10-28T19:58:47.052124+00:00",
-          "retryAfter": "2026-10-29T19:58:47.052142+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:33.580007+00:00",
+          "retryAfter": "2026-11-06T19:46:33.580021+00:00"
         },
         {
           "id": "f1bb7663c0f166602708",
@@ -9334,7 +9334,7 @@
     "SIP": {
       "symbol": "SIP",
       "name": "Công ty Cổ phần Đầu tư Sài Gòn VRG",
-      "checkedAt": "2026-10-29T19:56:15.216928+00:00",
+      "checkedAt": "2026-10-30T19:46:27.885325+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9377,7 +9377,7 @@
     "SJS": {
       "symbol": "SJS",
       "name": "Công ty Cổ phần SJ Group",
-      "checkedAt": "2026-10-29T19:56:15.217904+00:00",
+      "checkedAt": "2026-10-30T19:46:27.885729+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -9432,7 +9432,7 @@
     "SSB": {
       "symbol": "SSB",
       "name": "SeABank",
-      "checkedAt": "2026-10-29T19:56:15.220448+00:00",
+      "checkedAt": "2026-10-30T19:46:27.887658+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -9487,7 +9487,7 @@
         {
           "id": "587f7420903b8f468d01",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
-          "title": "SeABank's Annual Report 2025 01/04/2026",
+          "title": "SeABank's Annual Report 2025 01/04/2026 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-",
           "year": 2025,
           "type": "sustainability_report",
@@ -9527,15 +9527,15 @@
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2024",
           "year": 2024,
           "type": "annual_report",
-          "failedAttempts": 2,
+          "failedAttempts": 3,
           "lastError": "document too large > 36700160 bytes",
-          "lastAttemptAt": "2026-10-28T19:58:47.626765+00:00",
-          "retryAfter": "2026-10-29T19:58:47.626791+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:38.272896+00:00",
+          "retryAfter": "2026-11-06T19:46:38.272918+00:00"
         },
         {
           "id": "63a3abaf8b52f1a85e00",
           "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-phat-trien-ben-vung-2024",
-          "title": "Sustainability Report 2024 05/09/2025",
+          "title": "Sustainability Report 2024 05/09/2025 Read more",
           "sourcePage": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
           "year": 2024,
           "type": "sustainability_report",
@@ -10229,7 +10229,7 @@
     "SSI": {
       "symbol": "SSI",
       "name": "Công ty Cổ phần Chứng khoán SSI",
-      "checkedAt": "2026-10-29T19:56:15.220459+00:00",
+      "checkedAt": "2026-10-30T19:46:27.887666+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -10247,7 +10247,7 @@
     "STB": {
       "symbol": "STB",
       "name": "Sacombank",
-      "checkedAt": "2026-10-29T19:56:15.222178+00:00",
+      "checkedAt": "2026-10-30T19:46:27.889059+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -10418,7 +10418,7 @@
     "TAL": {
       "symbol": "TAL",
       "name": "Công Ty Cổ Phần Đầu Tư Bất Động Sản Taseco",
-      "checkedAt": "2026-10-29T19:56:15.222187+00:00",
+      "checkedAt": "2026-10-30T19:46:27.889067+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -10436,7 +10436,7 @@
     "TCB": {
       "symbol": "TCB",
       "name": "Techcombank",
-      "checkedAt": "2026-10-29T19:56:15.224577+00:00",
+      "checkedAt": "2026-10-30T19:46:27.890897+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -10536,7 +10536,7 @@
         {
           "id": "5f8da544b07832ede0e2",
           "url": "https://techcombank.com/en/about-us/sustainability",
-          "title": "Sustainability",
+          "title": "Overview",
           "sourcePage": "https://techcombank.com/en/about-us/sustainability",
           "year": null,
           "type": "esg_web_content",
@@ -10600,10 +10600,10 @@
           "sourcePage": "https://techcombank.com/en/about-us/sustainability/solutions/sustainable-banking/green-loan",
           "year": null,
           "type": "esg_web_content",
-          "failedAttempts": 6,
+          "failedAttempts": 7,
           "lastError": "HTTP Error 404: Not Found",
-          "lastAttemptAt": "2026-10-23T18:47:28.093308+00:00",
-          "retryAfter": "2026-10-30T18:47:28.093329+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:37.086891+00:00",
+          "retryAfter": "2026-11-06T19:46:37.086917+00:00"
         },
         {
           "id": "df135628ad25b6fd26ba",
@@ -10966,7 +10966,7 @@
     "TCH": {
       "symbol": "TCH",
       "name": "Công ty Cổ phần Đầu tư Dịch vụ Tài chính Hoàng Huy",
-      "checkedAt": "2026-10-29T19:56:15.224587+00:00",
+      "checkedAt": "2026-10-30T19:46:27.890904+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -10984,7 +10984,7 @@
     "TCX": {
       "symbol": "TCX",
       "name": "Công ty Cổ phần Chứng khoán Kỹ Thương",
-      "checkedAt": "2026-10-29T19:56:15.224593+00:00",
+      "checkedAt": "2026-10-30T19:46:27.890910+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11002,7 +11002,7 @@
     "TPB": {
       "symbol": "TPB",
       "name": "TPBank",
-      "checkedAt": "2026-10-29T19:56:15.226524+00:00",
+      "checkedAt": "2026-10-30T19:46:27.892508+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -11255,7 +11255,7 @@
     "VCB": {
       "symbol": "VCB",
       "name": "Vietcombank",
-      "checkedAt": "2026-10-29T19:56:15.227814+00:00",
+      "checkedAt": "2026-10-30T19:46:27.893590+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -11803,7 +11803,7 @@
     "VCG": {
       "symbol": "VCG",
       "name": "Tổng Công ty Cổ phần Xuất nhập khẩu và Xây dựng Việt Nam",
-      "checkedAt": "2026-10-29T19:56:15.227824+00:00",
+      "checkedAt": "2026-10-30T19:46:27.893598+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11821,7 +11821,7 @@
     "VCI": {
       "symbol": "VCI",
       "name": "Công ty Cổ phần Chứng khoán Vietcap",
-      "checkedAt": "2026-10-29T19:56:15.227830+00:00",
+      "checkedAt": "2026-10-30T19:46:27.893603+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11839,7 +11839,7 @@
     "VCK": {
       "symbol": "VCK",
       "name": "Công ty Cổ phần Chứng Khoán VPS",
-      "checkedAt": "2026-10-29T19:56:15.227834+00:00",
+      "checkedAt": "2026-10-30T19:46:27.893607+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11857,7 +11857,7 @@
     "VGC": {
       "symbol": "VGC",
       "name": "Tổng Công ty Viglacera - Công ty Cổ phần",
-      "checkedAt": "2026-10-29T19:56:15.228456+00:00",
+      "checkedAt": "2026-10-30T19:46:27.894150+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11900,7 +11900,7 @@
     "VHC": {
       "symbol": "VHC",
       "name": "Công ty Cổ phần Vĩnh Hoàn",
-      "checkedAt": "2026-10-29T19:56:15.228732+00:00",
+      "checkedAt": "2026-10-30T19:46:27.894374+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -11943,7 +11943,7 @@
     "VHM": {
       "symbol": "VHM",
       "name": "Công ty Cổ phần Vinhomes",
-      "checkedAt": "2026-10-29T19:56:15.228740+00:00",
+      "checkedAt": "2026-10-30T19:46:27.894381+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -11961,7 +11961,7 @@
     "VIB": {
       "symbol": "VIB",
       "name": "VIB",
-      "checkedAt": "2026-10-29T19:56:15.230525+00:00",
+      "checkedAt": "2026-10-30T19:46:27.895945+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -12075,7 +12075,7 @@
     "VIC": {
       "symbol": "VIC",
       "name": "Vingroup",
-      "checkedAt": "2026-10-29T19:56:15.233452+00:00",
+      "checkedAt": "2026-10-30T19:46:27.898494+00:00",
       "entityType": "company",
       "sourcePolicy": "curated-issuer+disclosure-index",
       "documents": [
@@ -12252,8 +12252,12 @@
           "url": "https://ircdn.vingroup.net/storage/Uploads/0_Quan%20he%20co%20dong/0_Vingroup_2021/Sep/2021.09%20-%20Vingroup%20Sustainable%20Finance%20Framework%20Second-Party%20Opinion.pdf",
           "title": "(click for more information)",
           "sourcePage": "https://vingroup.net/en/development",
-          "year": 2021,
-          "type": "sustainable_finance_assessment"
+          "year": 2020,
+          "type": "sustainable_finance_assessment",
+          "contentType": "pdf",
+          "contentHash": "44a8068e28395cea7de451b8157eb0b3e3850975465c5bd933c5c9c7ae43341c",
+          "processedAt": "2026-10-30T19:46:39.771350+00:00",
+          "textLength": 57378
         }
       ],
       "metrics": [
@@ -13218,7 +13222,18 @@
           "confidence": "high"
         }
       ],
-      "externalAssessments": [],
+      "externalAssessments": [
+        {
+          "provider": "Sustainalytics",
+          "assessmentType": "Second Party Opinion",
+          "year": 2020,
+          "value": "Second-Party Opinion",
+          "sourceUrl": "https://ircdn.vingroup.net/storage/Uploads/0_Quan%20he%20co%20dong/0_Vingroup_2021/Sep/2021.09%20-%20Vingroup%20Sustainable%20Finance%20Framework%20Second-Party%20Opinion.pdf",
+          "sourceTitle": "(click for more information)",
+          "snippet": "© Sustainalytics 2021 Second-Party Opinion Vingroup Sustainable Finance Framework Evaluation Summary Sustainalytics is of the opinion that the Vingroup Sustainable Finance Framework is credible and impactful and aligns with the Sustainability Bond Guidelines 20 21, Green Bond Principles 2021, Social Bond Principles 2021, Green Loan Principles 2021, Social Loan Principles 2021, ASEAN Social Bond Standard 2018, ASEAN Green Bond Standard 2018, and ASEAN Sustain",
+          "confidence": "medium"
+        }
+      ],
       "canonicalMetrics": [
         {
           "value": 90.0,
@@ -13520,16 +13535,16 @@
       ],
       "coverage": {
         "documents": 15,
-        "processedDocuments": 14,
+        "processedDocuments": 15,
         "metrics": 64,
         "canonicalMetrics": 19,
-        "externalAssessments": 0
+        "externalAssessments": 1
       }
     },
     "VIX": {
       "symbol": "VIX",
       "name": "Công ty Cổ phần Chứng khoán VIX",
-      "checkedAt": "2026-10-29T19:56:15.233464+00:00",
+      "checkedAt": "2026-10-30T19:46:27.898503+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -13547,7 +13562,7 @@
     "VJC": {
       "symbol": "VJC",
       "name": "Công ty Cổ phần Hàng không Vietjet",
-      "checkedAt": "2026-10-29T19:56:15.234042+00:00",
+      "checkedAt": "2026-10-30T19:46:27.898927+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -13590,7 +13605,7 @@
     "VND": {
       "symbol": "VND",
       "name": "Công ty Cổ phần Chứng khoán VNDIRECT",
-      "checkedAt": "2026-10-29T19:56:15.234563+00:00",
+      "checkedAt": "2026-10-30T19:46:27.899347+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -13633,7 +13648,7 @@
     "VNM": {
       "symbol": "VNM",
       "name": "Vinamilk",
-      "checkedAt": "2026-10-29T19:56:15.239863+00:00",
+      "checkedAt": "2026-10-30T19:46:27.903826+00:00",
       "entityType": "company",
       "sourcePolicy": "curated-issuer+disclosure-index",
       "documents": [
@@ -13656,10 +13671,10 @@
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
           "year": 2025,
           "type": "sustainability_report",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "HTTP Error 403: Forbidden",
-          "lastAttemptAt": "2026-10-29T07:46:55.908515+00:00",
-          "retryAfter": "2026-10-30T07:46:55.908531+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:33.534398+00:00",
+          "retryAfter": "2026-10-31T19:46:33.534406+00:00"
         },
         {
           "id": "9175fe66891921d98474",
@@ -13692,10 +13707,10 @@
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
           "year": 2025,
           "type": "annual_report",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "HTTP Error 403: Forbidden",
-          "lastAttemptAt": "2026-10-29T07:09:21.496850+00:00",
-          "retryAfter": "2026-10-30T07:09:21.496874+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:33.533694+00:00",
+          "retryAfter": "2026-10-31T19:46:33.533710+00:00"
         },
         {
           "id": "53614b18d03b7991a134",
@@ -13716,10 +13731,10 @@
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
           "year": 2024,
           "type": "esg_web_content",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "HTTP Error 403: Forbidden",
-          "lastAttemptAt": "2026-10-29T07:47:24.390512+00:00",
-          "retryAfter": "2026-10-30T07:47:24.390529+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:35.593901+00:00",
+          "retryAfter": "2026-10-31T19:46:35.593911+00:00"
         },
         {
           "id": "6d715d4ec9a7b00ae3a4",
@@ -13728,10 +13743,10 @@
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
           "year": 2023,
           "type": "esg_web_content",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "HTTP Error 403: Forbidden",
-          "lastAttemptAt": "2026-10-29T07:47:24.502423+00:00",
-          "retryAfter": "2026-10-30T07:47:24.502440+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:35.609748+00:00",
+          "retryAfter": "2026-10-31T19:46:35.609758+00:00"
         },
         {
           "id": "1c24997cae458f711465",
@@ -13739,7 +13754,11 @@
           "title": "Sustainable Development Report 2022 01/05/2023",
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2022,
-          "type": "esg_other"
+          "type": "esg_other",
+          "failedAttempts": 1,
+          "lastError": "HTTP Error 403: Forbidden",
+          "lastAttemptAt": "2026-10-30T19:46:39.311399+00:00",
+          "retryAfter": "2026-10-31T19:46:39.311412+00:00"
         },
         {
           "id": "16fddf9bd8fa722e9ea7",
@@ -13747,7 +13766,11 @@
           "title": "Sustainable Development Report 2021 29/06/2022",
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2021,
-          "type": "esg_other"
+          "type": "esg_other",
+          "failedAttempts": 1,
+          "lastError": "HTTP Error 403: Forbidden",
+          "lastAttemptAt": "2026-10-30T19:46:39.381503+00:00",
+          "retryAfter": "2026-10-31T19:46:39.381520+00:00"
         },
         {
           "id": "9716df53301fd6a8eacb",
@@ -13756,10 +13779,10 @@
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
           "year": 2021,
           "type": "annual_report",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "HTTP Error 403: Forbidden",
-          "lastAttemptAt": "2026-10-29T07:47:32.480518+00:00",
-          "retryAfter": "2026-10-30T07:47:32.480538+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:38.430752+00:00",
+          "retryAfter": "2026-10-31T19:46:38.430763+00:00"
         },
         {
           "id": "7ade7cfe131a3537e217",
@@ -13767,7 +13790,11 @@
           "title": "Sustainable Development Report 2020 19/04/2021",
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2020,
-          "type": "esg_other"
+          "type": "esg_other",
+          "failedAttempts": 1,
+          "lastError": "HTTP Error 403: Forbidden",
+          "lastAttemptAt": "2026-10-30T19:46:39.429795+00:00",
+          "retryAfter": "2026-10-31T19:46:39.429809+00:00"
         },
         {
           "id": "e2416f843ad5707457b4",
@@ -13776,10 +13803,10 @@
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/investor/reports/annual",
           "year": 2020,
           "type": "annual_report",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "HTTP Error 403: Forbidden",
-          "lastAttemptAt": "2026-10-29T07:47:32.480549+00:00",
-          "retryAfter": "2026-10-30T07:47:32.480553+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:38.442194+00:00",
+          "retryAfter": "2026-10-31T19:46:38.442217+00:00"
         },
         {
           "id": "5362d83b7694d99d933c",
@@ -13787,7 +13814,11 @@
           "title": "Sustainable Development Report 2019 05/05/2020",
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2019,
-          "type": "esg_other"
+          "type": "esg_other",
+          "failedAttempts": 1,
+          "lastError": "HTTP Error 403: Forbidden",
+          "lastAttemptAt": "2026-10-30T19:46:39.491630+00:00",
+          "retryAfter": "2026-10-31T19:46:39.491647+00:00"
         },
         {
           "id": "75bebeb40f3cb03e0bc6",
@@ -13807,7 +13838,11 @@
           "title": "Sustainable Development Report 2018 12/04/2019",
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2018,
-          "type": "esg_other"
+          "type": "esg_other",
+          "failedAttempts": 1,
+          "lastError": "HTTP Error 403: Forbidden",
+          "lastAttemptAt": "2026-10-30T19:46:39.575194+00:00",
+          "retryAfter": "2026-10-31T19:46:39.575209+00:00"
         },
         {
           "id": "928e24b00d190d3af03a",
@@ -13919,7 +13954,7 @@
           "title": "Sustainability",
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability/reports",
           "year": 2012,
-          "type": "sustainability_report",
+          "type": "esg_web_content",
           "contentType": "html",
           "contentHash": "c04eeca5f80c28a5e58c0a1645b1900c11d250e4e36ac3d3bb8b2f58ce6ff204",
           "processedAt": "2026-10-29T19:56:47.541631+00:00",
@@ -14004,10 +14039,10 @@
           "sourcePage": "https://i04-eshop-vn.apps.vinamilk.tech/en/sustainability",
           "year": null,
           "type": "esg_web_content",
-          "failedAttempts": 1,
+          "failedAttempts": 2,
           "lastError": "HTTP Error 403: Forbidden",
-          "lastAttemptAt": "2026-10-29T07:47:24.693874+00:00",
-          "retryAfter": "2026-10-30T07:47:24.693892+00:00"
+          "lastAttemptAt": "2026-10-30T19:46:35.612827+00:00",
+          "retryAfter": "2026-10-31T19:46:35.612836+00:00"
         }
       ],
       "metrics": [],
@@ -14024,7 +14059,7 @@
     "VPB": {
       "symbol": "VPB",
       "name": "VPBank",
-      "checkedAt": "2026-10-29T19:56:15.240399+00:00",
+      "checkedAt": "2026-10-30T19:46:27.904268+00:00",
       "entityType": "bank",
       "sourcePolicy": "curated-bank+disclosure-index",
       "documents": [
@@ -14307,7 +14342,7 @@
     "VPI": {
       "symbol": "VPI",
       "name": "Công ty Cổ phần Phát triển Bất động sản Văn Phú",
-      "checkedAt": "2026-10-29T19:56:15.240409+00:00",
+      "checkedAt": "2026-10-30T19:46:27.904275+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -14325,7 +14360,7 @@
     "VPL": {
       "symbol": "VPL",
       "name": "Công ty Cổ phần Vinpearl",
-      "checkedAt": "2026-10-29T19:56:15.240943+00:00",
+      "checkedAt": "2026-10-30T19:46:27.904736+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -14522,7 +14557,7 @@
     "VPX": {
       "symbol": "VPX",
       "name": "Công ty Cổ phần Chứng khoán VPBank",
-      "checkedAt": "2026-10-29T19:56:15.240951+00:00",
+      "checkedAt": "2026-10-30T19:46:27.904742+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -14540,7 +14575,7 @@
     "VRE": {
       "symbol": "VRE",
       "name": "Công ty Cổ phần Vincom Retail",
-      "checkedAt": "2026-10-29T19:56:15.241481+00:00",
+      "checkedAt": "2026-10-30T19:46:27.905166+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [
@@ -14644,7 +14679,7 @@
     "VSC": {
       "symbol": "VSC",
       "name": "Công ty Cổ phần Container Việt Nam",
-      "checkedAt": "2026-10-29T19:56:15.241491+00:00",
+      "checkedAt": "2026-10-30T19:46:27.905171+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -14662,7 +14697,7 @@
     "VTP": {
       "symbol": "VTP",
       "name": "Tổng Công ty Cổ phần Bưu chính Viettel",
-      "checkedAt": "2026-10-29T19:56:15.241496+00:00",
+      "checkedAt": "2026-10-30T19:46:27.905176+00:00",
       "entityType": "company",
       "sourcePolicy": "disclosure-index",
       "documents": [],
@@ -14724,7 +14759,7 @@
     {
       "id": "c3ae1e1e5c89eec1b45b",
       "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/03/SUSBA-2023-Report-Final.pdf",
-      "title": "SUSBA-2023-Report-Final.pdf",
+      "title": "2023 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2023,
       "type": "climate_disclosure",
@@ -14732,7 +14767,7 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-10-29T19:56:36.954847+00:00",
+      "processedAt": "2026-10-29T07:47:36.257501+00:00",
       "textLength": 98218
     },
     {
@@ -14746,22 +14781,8 @@
       "externalKind": "bank_assessment",
       "contentType": "pdf",
       "contentHash": "d2db7c424a6ef3338a26cb72086b66a6ad04cbe26630ca2a1a52952bcc263368",
-      "processedAt": "2026-10-29T07:47:36.257501+00:00",
+      "processedAt": "2026-10-30T19:46:43.874579+00:00",
       "textLength": 98218
-    },
-    {
-      "id": "abbe2ce24605a50fc5f0",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
-      "title": "2023 Assessment of Banks' Seafood Sector Policies",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2023,
-      "type": "sustainability_report",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
-      "processedAt": "2026-10-28T19:58:54.418352+00:00",
-      "textLength": 61879
     },
     {
       "id": "abbe2ce24605a50fc5f0",
@@ -14778,14 +14799,18 @@
       "textLength": 61879
     },
     {
-      "id": "952a7cf2c85642395465",
-      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2020.pdf",
-      "title": "report-2020.pdf",
+      "id": "abbe2ce24605a50fc5f0",
+      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2024/04/Above-Board_Final.pdf",
+      "title": "2023 Assessment of Banks' Seafood Sector Policies",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2022,
-      "type": "esg_other",
+      "year": 2023,
+      "type": "sustainability_report",
       "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment"
+      "externalKind": "bank_assessment",
+      "contentType": "pdf",
+      "contentHash": "1087ec6f3ff900ba09ab25b687f5c8b5643c8a4784cb88a86e0290fc0ff80917",
+      "processedAt": "2026-10-30T19:46:40.400374+00:00",
+      "textLength": 61879
     },
     {
       "id": "736d1a258096fff8e0cd",
@@ -14814,20 +14839,6 @@
       "contentHash": "26266fb705f0fe142702d4f5fb1d89284bb5be6a3648119074e673cc949bcd04",
       "processedAt": "2026-09-28T23:58:58.570532+00:00",
       "textLength": 34895
-    },
-    {
-      "id": "6a7e0d05d95a47e318e1",
-      "url": "https://www.wwf.sg/susba/wp-content/uploads/sites/5/2023/01/SUSBA-2021-FINAL.pdf",
-      "title": "SUSBA-2021-FINAL.pdf",
-      "sourcePage": "https://www.wwf.sg/susba/reports/",
-      "year": 2021,
-      "type": "susba",
-      "provider": "WWF SUSBA",
-      "externalKind": "bank_assessment",
-      "contentType": "pdf",
-      "contentHash": "d13a158220109f8ae074db8921c911842dd5c386b8bccba007d5c8483766c238",
-      "processedAt": "2026-10-29T19:56:32.513169+00:00",
-      "textLength": 69470
     },
     {
       "id": "75115a3050a133626083",
@@ -14872,6 +14883,26 @@
       "textLength": 69470
     },
     {
+      "id": "6a7e0d05d95a47e318e1",
+      "url": "http://www.wwf.sg/susba/wp-content/uploads/sites/5/2023/01/SUSBA-2021-FINAL.pdf",
+      "title": "2021 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2021,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
+      "id": "952a7cf2c85642395465",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2020.pdf",
+      "title": "2020 Summary Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2020,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
+    },
+    {
       "id": "952a7cf2c85642395465",
       "url": "https://www.wwf.sg/wp-content/uploads/2022/12/report-2020.pdf",
       "title": "2020 Summary Report",
@@ -14891,7 +14922,7 @@
       "title": "2019 Summary Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2019,
-      "type": "esg_other",
+      "type": "susba",
       "provider": "WWF SUSBA",
       "externalKind": "bank_assessment"
     },
@@ -14908,6 +14939,16 @@
       "contentHash": "1a9bc6752be7be9a2cf60d2053b68d956c2cd41c48a1ae981da2265732333305",
       "processedAt": "2026-10-26T20:14:10.143570+00:00",
       "textLength": 59978
+    },
+    {
+      "id": "5a3092bae6468b8e3d31",
+      "url": "http://www.wwf.sg/wp-content/uploads/2022/12/report-2018-compressed.pdf",
+      "title": "2018 Updated Report",
+      "sourcePage": "https://www.wwf.sg/susba/reports/",
+      "year": 2018,
+      "type": "susba",
+      "provider": "WWF SUSBA",
+      "externalKind": "bank_assessment"
     },
     {
       "id": "5a3092bae6468b8e3d31",
@@ -14929,7 +14970,7 @@
       "title": "2017 Full Report",
       "sourcePage": "https://www.wwf.sg/susba/reports/",
       "year": 2017,
-      "type": "esg_other",
+      "type": "susba",
       "provider": "WWF SUSBA",
       "externalKind": "bank_assessment"
     },
@@ -15670,10 +15711,10 @@
       "type": "esg_web_content",
       "provider": "Morningstar Sustainalytics",
       "externalKind": "second_party_opinion",
-      "failedAttempts": 6,
+      "failedAttempts": 7,
       "lastError": "HTTP Error 404: Not Found",
-      "lastAttemptAt": "2026-10-23T18:47:28.880020+00:00",
-      "retryAfter": "2026-10-30T18:47:28.880042+00:00"
+      "lastAttemptAt": "2026-10-30T19:46:39.269284+00:00",
+      "retryAfter": "2026-11-06T19:46:39.269306+00:00"
     },
     {
       "id": "5278c75be602879a63b2",
@@ -15742,7 +15783,7 @@
     {
       "url": "https://acb.com.vn/nha-dau-tu/bao-cao-thuong-nien-2025",
       "status": "ok",
-      "documents": 0,
+      "documents": 1,
       "symbol": "ACB"
     },
     {
@@ -16287,8 +16328,8 @@
     },
     {
       "url": "https://ocb.com.vn/vi/nha-dau-tu/bao-cao-thuong-nien",
-      "status": "ok",
-      "documents": 18,
+      "status": "error",
+      "error": "The read operation timed out",
       "symbol": "OCB"
     },
     {
@@ -16402,7 +16443,7 @@
     {
       "url": "https://24hmoney.vn/stock/sjs/report",
       "status": "ok",
-      "documents": 3,
+      "documents": 0,
       "symbol": "SJS"
     },
     {
@@ -16414,7 +16455,7 @@
     {
       "url": "https://www.seabank.com.vn/en/nha-dau-tu/bao-cao-thuong-nien/bao-cao-thuong-nien-seabank-2025",
       "status": "ok",
-      "documents": 6,
+      "documents": 4,
       "symbol": "SSB"
     },
     {
@@ -16474,7 +16515,7 @@
     {
       "url": "https://techcombank.com/en/about-us/sustainability",
       "status": "ok",
-      "documents": 6,
+      "documents": 4,
       "symbol": "TCB"
     },
     {
@@ -16775,7 +16816,7 @@
     {
       "url": "https://www.wwf.sg/susba/about/",
       "status": "ok",
-      "documents": 2,
+      "documents": 10,
       "provider": "WWF SUSBA",
       "external": true
     },
@@ -16810,13 +16851,13 @@
   ],
   "run": {
     "mode": "recent",
-    "documentsProcessed": 11,
-    "backlogBeforeRun": 60,
-    "activeBacklogBeforeRun": 3,
-    "backlogRemaining": 0,
-    "eligibleBacklog": 43,
-    "recentBacklog": 3,
-    "historicalBacklog": 34,
+    "documentsProcessed": 3,
+    "backlogBeforeRun": 53,
+    "activeBacklogBeforeRun": 16,
+    "backlogRemaining": 13,
+    "eligibleBacklog": 39,
+    "recentBacklog": 16,
+    "historicalBacklog": 17,
     "skippedBacklog": 6,
     "maxDocumentsPerRun": 24,
     "documentWorkers": 4
