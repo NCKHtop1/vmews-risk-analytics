@@ -30,7 +30,6 @@ SOURCES = {
     # The actual FinQuery UI uses this independently published VN100 product.
     "forecast": f"{ROOT}/finquery-vn100-data/data/finquery-vn100-status.json",
     # Legacy V21 is observed separately; it cannot define FinQuery's live status.
-    "forecast_legacy": f"{ROOT}/main/data/forecast-session-v21.json",
     "live_track": f"{ROOT}/main/data/live-track/track-record.json",
 }
 SEVERITIES = {"OK": 0, "WARNING": 1, "CRITICAL": 2}
@@ -194,32 +193,6 @@ def evaluate(data, now=None, production=None):
              "inputMode": forecast.get("inputMode"),
              "activeQuotes": forecast.get("activeQuotes"), "sessionValid": session_ok,
              "liveSessionValid": live_ok})
-
-    legacy = payload("forecast_legacy")
-    if legacy:
-        legacy_day = day_of(legacy.get("coreAsOf"))
-        completed = day_of(ctx["completedSession"])
-        lag = trading_session_age(legacy_day, completed) if legacy_day and completed else 99
-        alignment = legacy.get("forecastAlignment") or {}
-        stale = lag > 0 or alignment.get("status") == "STALE_CORE"
-        ranking = alignment.get("rankingEligible") is True
-        safely_withheld = (
-            not ranking
-            and legacy.get("mode") == "PRICE_ONLY_STALE_CORE"
-            and not (legacy.get("leaders") or [])
-        )
-        unsafe = stale and not safely_withheld
-        add("FORECAST_LEGACY_V21",
-            "CRITICAL" if unsafe else "WARNING" if stale else "OK",
-            "Mô hình V21 cũ: chỉ lưu lịch sử, tuyệt đối không phát dự báo sai phiên",
-            {"legacyCoreAsOf": str(legacy_day), "expectedCompletedSession": str(completed),
-             "lagSessions": lag, "mode": legacy.get("mode"),
-             "rankingEligible": ranking, "safeAbstention": safely_withheld})
-        add("FORECAST_FAIL_CLOSED",
-            "CRITICAL" if unsafe else "OK",
-            "Dữ liệu dự báo cũ phải ngừng xếp hạng khi sai phiên"
-            if unsafe else "Forecast cũ đã dừng xếp hạng, FinQuery dùng VN100 riêng",
-            {"legacyAsOf": str(legacy_day), "safeAbstention": safely_withheld})
 
     intraday = payload("intraday")
     if intraday:
