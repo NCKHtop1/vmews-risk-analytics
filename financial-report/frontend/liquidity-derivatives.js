@@ -188,7 +188,7 @@ function renderON(p){
  const byDate=new Map();
  for(const x of state.onHistory)byDate.set(x.date,x);
  for(const x of crawled)byDate.set(x.date,x);
- for(const x of state.manual)if(/^\\d{4}-\\d\\d-\\d\\d$/.test(x.date)&&Number.isFinite(x.value)&&x.value>=0&&x.value<=25)byDate.set(x.date,{date:x.date,value:x.value});
+ for(const x of state.manual)if(/^\d{4}-\d\d-\d\d$/.test(x.date)&&Number.isFinite(x.value)&&x.value>=0&&x.value<=25)byDate.set(x.date,{date:x.date,value:x.value});
  const points=[...byDate.values()].sort((a,b)=>a.date.localeCompare(b.date));
  const displayed=filterOnTimeline(points,state.onRange,state.onYear,state.onMonth);
  const last=points.at(-1),prev=points.at(-2);
