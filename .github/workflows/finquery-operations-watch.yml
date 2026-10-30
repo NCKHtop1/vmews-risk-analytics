@@ -91,8 +91,10 @@ jobs:
             gh issue edit "$existing" --repo "$GITHUB_REPOSITORY" \
               --body-file finquery-ops-health.md
           fi
-      - name: Resolve an open incident once everything is healthy
-        if: steps.assess.outputs.level == 'OK'
+      - name: Resolve a critical incident when no critical failure remains
+        # A safely withheld, dated legacy V21 model is a WARNING, not a
+        # persistent critical outage of the canonical FinQuery VN100 publisher.
+        if: steps.assess.outputs.level != 'CRITICAL'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -102,7 +104,7 @@ jobs:
             --label finquery-ops-incident --limit 20 --json number --jq '.[0].number // empty')"
           if [ -n "$existing" ]; then
             gh issue close "$existing" --repo "$GITHUB_REPOSITORY" \
-              --comment "Recovered: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+              --comment "Recovered from CRITICAL: no critical FinQuery production checks remain; non-critical warnings remain visible in $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
           fi
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
