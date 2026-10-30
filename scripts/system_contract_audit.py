@@ -668,7 +668,11 @@ def audit_legacy_forecast_isolation(report: Audit, repo_root: Path):
         "FORECAST_PRODUCTION_ARCHIVE_FETCH_BLOCKED",
         "FinQuery must reject direct V12 loads even if old files are restored",
     )
-    for workflow in ("forecast-v13-daily-refresh.yml", "forecast-v21-session-refresh.yml"):
+    for workflow in (
+        "forecast-v13-daily-refresh.yml", "forecast-v21-session-refresh.yml",
+        "forecast-v12-cdn-smoke.yml", "forecast-v12-cdn-browser-smoke.yml",
+        "forecast-v41-cdn-browser-smoke.yml",
+    ):
         report.check(
             not (repo_root / ".github" / "workflows" / workflow).exists(),
             "FORECAST_LEGACY_WORKFLOW_DISABLED",
