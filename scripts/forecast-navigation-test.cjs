@@ -39,6 +39,9 @@ function context(url) {
   customLink.searchParams.set('symbol','FPT');
   assert.equal(customLink.href,'https://finquery.info.vn/forecast-final.html?symbol=FPT');
   const ctx = context(link.href);
+  const finquery = context(customLink.href);
+  assert.equal(finquery.window.__VMEWS_STANDALONE_CORE_PAGE__, false);
+  assert.equal(ctx.window.__VMEWS_STANDALONE_CORE_PAGE__, true);
   assert.equal(ctx.window.__VMEWS_DATA_ROOT__, 'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/main/data');
   assert.equal(context('http://localhost:8000/forecast-final.html').window.__VMEWS_DATA_ROOT__, './data');
   assert.equal(context('https://cdn.githubraw.com/NCKHtop1/vmews-risk-analytics/abc/forecast-final.html?dataRef=test-branch').window.__VMEWS_DATA_REF__, 'test-branch');
@@ -50,10 +53,13 @@ function context(url) {
     symbols: [{ symbol: 'FPT', liveClose: 64700, quoteCurrent: true, freshForCutoff: true, updateAt: date }] };
   const base = { dash: { asOf: '2026-09-18', promotion: { directPriceHorizons: [3,4,5], preferredRankingHorizon: 3 } } };
   ctx.fetch = async url => {
-    assert.ok(url.startsWith(ctx.window.__VMEWS_DATA_ROOT__ + '/forecast-session-v21.json?refresh='));
+    assert.ok(url.startsWith(ctx.window.__SOLUTION_AI_CORE_ROOT__ + '/forecast-session-v21.json?refresh='));
     return { ok: true, json: async () => session };
   };
   assert.equal(await ctx.window.testSession.loadSessionOverlay(base), session);
+  // FinQuery's former main V21 URL is no longer part of any live fetch path.
+  finquery.fetch=async()=>{throw Error('archived core must not be requested by FinQuery');};
+  assert.equal(await finquery.window.testSession.loadSessionOverlay(base), null);
   const snapshot = { close: 71700, horizons: { '3': { expectedPrice: 71900 } } };
   const view = ctx.window.__VMEWS_APPLY_SESSION_VIEW__('FPT', snapshot, session);
   assert.equal(view.close, 64700);
