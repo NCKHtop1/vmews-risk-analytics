@@ -44,7 +44,7 @@ async function renderMethodProof(){
 }
 
 let research=null,lastSym="",taState={SMA20:true,SMA50:true,EMA20:false,BB:true,RSI:true,MACD:true,OBV:false};
-async function researchData(){if(research)return research;const root=window.__VMEWS_DATA_ROOT__||'./data';const[B,ctx]=await Promise.all([window.__VMEWS_LOAD_BASE__(),fetch(`${root}/current-context-v12.json?refresh=${Math.floor(Date.now()/300000)}`,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null)]);research={dash:B.dash,ctx};return research}
+async function researchData(){if(research)return research;const root=window.__SOLUTION_AI_CORE_ROOT__||'./data';const oldContext=window.__VMEWS_STANDALONE_CORE_PAGE__===true?fetch(`${root}/current-context-v12.json?refresh=${Math.floor(Date.now()/300000)}`,{cache:'no-store'}).then(r=>r.ok?r.json():null).catch(()=>null):Promise.resolve(null);const[B,ctx]=await Promise.all([window.__VMEWS_LOAD_BASE__(),oldContext]);research={dash:B.dash,ctx};return research}
 function currentSymbol(){return (($('#symbol')?.value||new URLSearchParams(location.search).get('symbol')||'FPT')+'').trim().toUpperCase()}
 function sma(a,n){return a.map((_,i)=>i+1<n?null:a.slice(i-n+1,i+1).reduce((x,y)=>x+y,0)/n)}
 function ema(a,n){const k=2/(n+1),o=[];let e=null;for(const v of a){e=e===null?v:v*k+e*(1-k);o.push(e)}return o}
