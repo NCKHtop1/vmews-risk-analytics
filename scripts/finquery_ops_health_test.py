@@ -19,8 +19,13 @@ def fixtures():
                      "symbols": {
                          "MBB": {"tier": "CORE", "barDate": SESSION},
                          "AAA": {"tier": "DISCOVERY", "barDate": SESSION}}},
-        "forecast": {"coreAsOf": SESSION, "forecastAlignment":
-                     {"status": "CURRENT", "rankingEligible": True}},
+        "forecast": {"status": "PASS", "asOf": SESSION, "symbols": 100, "horizons": 500,
+                     "freshHistory": 100, "generatedAt": "2026-10-23T08:00:00+00:00",
+                     "forecastSessionDate": SESSION, "inputMode": "EOD",
+                     "activeQuotes": 0},
+        "forecast_legacy": {"coreAsOf": SESSION, "mode": "FORECAST_ALIGNED",
+                            "leaders": [{"symbol": "MBB"}],
+                            "forecastAlignment": {"status": "PASS", "rankingEligible": True}},
         "intraday": {"success": 111, "expected": 111, "errors": []},
         "financial": {"coverage": {"members": 100, "annual": 100, "quarterly": 100},
                       "updatedAt": "2026-10-23T23:42:00+00:00"},
@@ -47,22 +52,57 @@ class OperationsMonitorTest(unittest.TestCase):
         self.assertEqual(result["overall"], "OK", result)
         self.assertIsNone(next((x for x in result["checks"] if x["code"] == "QUOTE_LAG"), None))
 
-    def test_forecast_stale_is_always_withheld(self):
+    def test_stale_real_vn100_source_is_critical_even_if_old_overlay_reports_current(self):
         data = fixtures()
-        data["forecast"] = {"coreAsOf": "2026-10-20",
-                             "forecastAlignment": {
-                                 "status": "STALE_CORE", "rankingEligible": False}}
+        data["forecast"]["asOf"] = "2026-10-20"
         result = evaluate(data, NOW, prod())
         self.assertEqual(find(result, "FORECAST_CORE")["severity"], "CRITICAL")
         self.assertEqual(find(result, "FORECAST_FAIL_CLOSED")["severity"], "OK")
-        self.assertEqual(find(result, "FORECAST_CORE")["evidence"]["lagSessions"], 3)
 
-    def test_stale_forecast_allowed_to_rank_is_critical(self):
+    def test_legacy_stale_safely_withheld_is_only_warning_when_vn100_is_current(self):
         data = fixtures()
-        data["forecast"]["coreAsOf"] = "2026-10-20"
-        data["forecast"]["forecastAlignment"]["rankingEligible"] = True
+        data["forecast_legacy"] = {
+            "coreAsOf": "2026-10-20", "mode": "PRICE_ONLY_STALE_CORE",
+            "leaders": [], "forecastAlignment": {
+                "status": "STALE_CORE", "rankingEligible": False,
+            },
+        }
+        result = evaluate(data, NOW, prod())
+        self.assertEqual(find(result, "FORECAST_CORE")["severity"], "OK")
+        self.assertEqual(find(result, "FORECAST_LEGACY_V21")["severity"], "WARNING")
+        self.assertEqual(find(result, "FORECAST_FAIL_CLOSED")["severity"], "OK")
+        self.assertEqual(result["overall"], "WARNING")
+
+    def test_stale_legacy_forecast_allowed_to_rank_is_critical(self):
+        data = fixtures()
+        data["forecast_legacy"] = {
+            "coreAsOf": "2026-10-20", "mode": "FORECAST_ALIGNED",
+            "leaders": [{"symbol": "MBB"}], "forecastAlignment": {
+                "status": "STALE_CORE", "rankingEligible": True,
+            },
+        }
         result = evaluate(data, NOW, prod())
         self.assertEqual(find(result, "FORECAST_FAIL_CLOSED")["severity"], "CRITICAL")
+        self.assertEqual(find(result, "FORECAST_LEGACY_V21")["severity"], "CRITICAL")
+
+    def test_live_vn100_heartbeat_and_price_anchor_required(self):
+        now = datetime(2026, 10, 30, 3, 0, tzinfo=timezone.utc)  # Friday 10:00 VN
+        data = fixtures()
+        data["forecast"].update({
+            "asOf": "2026-10-29", "generatedAt": "2026-10-30T02:45:00+00:00",
+            "inputMode": "INTRADAY", "activeQuotes": 100,
+            "forecastSessionDate": "2026-10-30",
+        })
+        fresh = evaluate(data, now, prod())
+        self.assertEqual(find(fresh, "FORECAST_CORE")["severity"], "OK")
+        degraded = copy.deepcopy(data)
+        degraded["forecast"]["activeQuotes"] = 0
+        result = evaluate(degraded, now, prod())
+        self.assertEqual(find(result, "FORECAST_CORE")["severity"], "CRITICAL")
+        stale = copy.deepcopy(data)
+        stale["forecast"]["generatedAt"] = "2026-10-30T01:20:00+00:00"
+        result = evaluate(stale, now, prod())
+        self.assertEqual(find(result, "FORECAST_CORE")["severity"], "CRITICAL")
 
     def test_inconsistent_market_snapshots_fail(self):
         data = fixtures()
