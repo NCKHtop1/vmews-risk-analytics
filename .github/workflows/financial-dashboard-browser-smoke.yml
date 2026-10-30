@@ -183,16 +183,18 @@ jobs:
                   time.sleep(wait_seconds)
                   driver.refresh()
                   wait.until(lambda d:d.execute_script("return document.readyState==='complete';"))
-              # The last completed session remains visible after midnight, but
-              # FinancialMarket.context().quote is deliberately live-only.
+              # The analysis context intentionally hides quote-only updates
+              # until the five-file scanner/risk bundle aligns. The independent
+              # market price widget must still show a fresh, verified live quote.
               vn_open=(local_open.weekday()<5 and (
                   9*3600<=open_seconds<=11*3600+30*60 or
                   13*3600<=open_seconds<=14*3600+45*60
               ))
               if vn_open:
                   wait.until(lambda d:d.execute_script("""
-                    const q=window.FinancialMarket?.context?.()?.quote;
-                    return Boolean(q && Number(q.price)>0);
+                    const price=(document.getElementById('quote-price')?.textContent||'').trim();
+                    const warning=document.getElementById('quote-freshness');
+                    return /[1-9][0-9.,]*[ ]*đ/.test(price) && warning?.hidden===true;
                   """))
               else:
                   wait.until(lambda d:d.execute_script("""
