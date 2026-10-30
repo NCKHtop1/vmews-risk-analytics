@@ -259,5 +259,143 @@ class SystemContractAuditTests(unittest.TestCase):
         self.assertEqual(policy, "SAME_DAY_SESSION")
 
 
+
+class FinQueryCanonicalForecastContractTests(unittest.TestCase):
+    """Reproducible regressions for the actual VN100 production model route."""
+
+    @staticmethod
+    def fixture(now):
+        import hashlib
+        from system_contract_audit import ROOT
+
+        symbols = [f"S{i:03d}" for i in range(100)]
+        horizons = {"1", "2", "3", "4", "5"}
+        stamp = "2026-10-30T09:55:00+07:00"
+        dates = [
+            "2026-10-20", "2026-10-21", "2026-10-22",
+            "2026-10-23", "2026-10-26", "2026-10-27",
+            "2026-10-28", "2026-10-29",
+        ]
+        targets = ["2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06"]
+        forecast_symbols = {}
+        charts = {}
+        for symbol in symbols:
+            forecast_symbols[symbol] = {
+                "historicalAsOf": "2026-10-29",
+                "forecastHistoricalAsOf": "2026-10-29",
+                "forecastSessionDate": "2026-10-30",
+                "forecastAnchorBasis": "INTRADAY_QUOTE",
+                "forecastAnchorAt": "2026-10-30T09:54:00+07:00",
+                "forecastAnchorClose": 10000,
+                "horizons": {h: {
+                    "expectedPrice": 10000 + 100 * int(h),
+                    "q20Price": 9900,
+                    "q80Price": 11000,
+                    "priceValidated": True,
+                    "targetDate": targets[int(h) - 1],
+                } for h in horizons},
+            }
+            charts[symbol] = [{"date": d, "close": 10000, "rawClose": 10000} for d in dates]
+
+        scores = {h: {"metrics": {"n": 120, "executableMAESkill": .05}}
+                  for h in horizons}
+        cases = {h: [{"symbol": symbol} for symbol in symbols] for h in horizons}
+        product = {
+            "status": "PASS", "asOf": "2026-10-29", "generatedAt": stamp,
+            "universe": {"available": 100, "freshHistory": 100, "inputMode": "INTRADAY"},
+            "dashboard": {
+                "asOf": "2026-10-29", "symbols": forecast_symbols, "charts": charts,
+            },
+            "model": {"promotion": {"status": "PASS"}, "horizons": scores},
+            "gates": {"status": "PASS"},
+            "backtest": {"horizons": scores, "cases": cases},
+        }
+        full = {
+            "status": "PASS", "asOf": "2026-10-29", "generatedAt": stamp,
+            "gates": {"status": "PASS"},
+        }
+        status = {
+            "status": "PASS", "asOf": "2026-10-29", "generatedAt": stamp,
+            "symbols": 100, "horizons": 500, "freshHistory": 100,
+            "inputMode": "INTRADAY", "activeQuotes": 100,
+            "forecastSessionDate": "2026-10-30",
+            "backtestCases": {h: len(rows) for h, rows in cases.items()},
+        }
+        return symbols, product, full, status
+
+    @staticmethod
+    def run_audit(symbols, product, full, status, now):
+        import hashlib
+        from system_contract_audit import audit_finquery_vn100
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            product_bytes = json.dumps(product, separators=(",", ":")).encode()
+            full_bytes = json.dumps(full, separators=(",", ":")).encode()
+            status["productBytes"] = len(product_bytes)
+            status["sourceSha256"] = hashlib.sha256(full_bytes).hexdigest()
+            (root / "finquery-vn100-product.json").write_bytes(product_bytes)
+            (root / "finquery-vn100-forecast.json").write_bytes(full_bytes)
+            (root / "finquery-vn100-status.json").write_text(json.dumps(status))
+            report = Audit()
+            ready = audit_finquery_vn100(report, root, set(symbols), now)
+            return ready, report
+
+    def test_actual_production_loader_uses_canonical_vn100_not_old_main(self):
+        from system_contract_audit import ROOT, production_uses_finquery_vn100_core
+
+        self.assertTrue(production_uses_finquery_vn100_core(ROOT))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = pathlib.Path(tmp)
+            source = (ROOT / "forecast-final-v12.js").read_text(encoding="utf-8")
+            (root / "forecast-final-v12.js").write_text(
+                source.replace("const bundle=await loadVN100();",
+                               'const bundle=await json("forecast-dashboard-v12.json");'))
+            self.assertFalse(production_uses_finquery_vn100_core(root))
+
+    def test_valid_complete_verified_vn100_passes_even_when_legacy_is_stale(self):
+        now = datetime(2026, 10, 30, 3, 0, tzinfo=timezone.utc)
+        data = self.fixture(now)
+        ready, report = self.run_audit(*data, now)
+        self.assertTrue(ready, report.errors)
+        self.assertFalse(report.errors)
+
+    def test_stale_vn100_is_not_accepted_by_new_contract(self):
+        now = datetime(2026, 10, 30, 3, 0, tzinfo=timezone.utc)
+        symbols, product, full, status = self.fixture(now)
+        for record in (product, full, status):
+            record["asOf"] = "2026-10-20"
+        ready, report = self.run_audit(symbols, product, full, status, now)
+        self.assertFalse(ready)
+        self.assertIn("FORECAST_VN100_SESSION", {e["code"] for e in report.errors})
+
+    def test_torn_or_partial_snapshot_is_not_mistaken_for_new_run(self):
+        now = datetime(2026, 10, 30, 3, 0, tzinfo=timezone.utc)
+        symbols, product, full, status = self.fixture(now)
+        status["horizons"] = 499
+        ready, report = self.run_audit(symbols, product, full, status, now)
+        self.assertFalse(ready)
+        self.assertIn("FORECAST_VN100_HORIZONS", {e["code"] for e in report.errors})
+
+    def test_source_backtest_skill_is_not_fabricated_as_pass(self):
+        now = datetime(2026, 10, 30, 3, 0, tzinfo=timezone.utc)
+        symbols, product, full, status = self.fixture(now)
+        product["backtest"]["horizons"]["3"]["metrics"]["executableMAESkill"] = -.03
+        ready, report = self.run_audit(symbols, product, full, status, now)
+        self.assertTrue(ready, report.errors)
+        self.assertIn("FORECAST_VN100_SKILL_UNPROVEN_3",
+                      {w["code"] for w in report.warnings})
+
+    def test_missing_live_market_anchor_blocks_canonical_promotion(self):
+        now = datetime(2026, 10, 30, 3, 0, tzinfo=timezone.utc)
+        symbols, product, full, status = self.fixture(now)
+        status["inputMode"] = "EOD"
+        status["activeQuotes"] = 0
+        ready, report = self.run_audit(symbols, product, full, status, now)
+        self.assertFalse(ready)
+        self.assertIn("FORECAST_VN100_INTRADAY_SESSION",
+                      {e["code"] for e in report.errors})
+
+
 if __name__ == "__main__":
     unittest.main()
