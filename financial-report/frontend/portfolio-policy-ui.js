@@ -37,10 +37,10 @@ async function load(){
  state.busy=true;
  try{
   const r=await api('GET');
-  if(!state.dirty&&r.policy){
+  if(r.policy){
    const p=r.policy;
-   state.policy=Q.normalize({preset:p.preset,cashPct:p.cash_pct,driftPct:p.drift_pct});
    state.saved=true;state.revision=Number(p.revision)||0;
+   if(!state.dirty)state.policy=Q.normalize({preset:p.preset,cashPct:p.cash_pct,driftPct:p.drift_pct});
   }
   state.loaded=true;
  }catch(_){
@@ -106,7 +106,8 @@ function render(){
   '<div class="portfolio-review-value">'+t.quantity.toLocaleString('vi-VN')+' cp · '+fmt(t.grossVnd)+'</div>'+
   '<p>Giá '+fmt(t.price)+'/cp · Chi phí ước tính '+fmt(t.estimatedCostVnd)+'</p></article>').join('')+'</div>':
   '<p class="portfolio-plan-message">'+safe(report.why||'Trong ngưỡng mục tiêu, chưa cần điều chỉnh.')+'</p>';
- el('portfolio-plan-result').innerHTML=metrics+cards+
+ const reserveNote=report.targetCashPct>state.policy.cashPct+0.1?'<p class="portfolio-plan-message">Tiền mặt mục tiêu cao hơn mức chọn do giới hạn tỷ trọng mã hoặc ngành đang áp dụng.</p>':'';
+ el('portfolio-plan-result').innerHTML=metrics+cards+reserveNote+
   (report.flags.length?'<p class="portfolio-plan-message">'+safe(report.flags.join(' · '))+'</p>':'');
 }
 function select(id){
