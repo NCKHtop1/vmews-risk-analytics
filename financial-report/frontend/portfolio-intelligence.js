@@ -170,6 +170,7 @@ function renderRotation(){
  const held=new Set(calculate().sectorAllocations.map(x=>x.id));
  const stamp=data?.sourceDate?'Phiên '+data.sourceDate+' · '+(data.benchmark?.eligibleSymbols||0)+' mã đủ chuỗi · '+items.length+' ngành có RS':'Chưa có dữ liệu ngành';
  $('portfolio-sector-stamp').textContent=stamp;
+ const railTitle=root.querySelector('.portfolio-sector-rail-head strong');if(railTitle)railTitle.textContent=items.length+' nhóm ngành';
  $('portfolio-rotation-rows').innerHTML=all.length?all.map(x=>'<tr><td>'+safe(x.label||x.id)+'</td><td>'+formatPct(x.rs5)+'</td><td>'+
   formatPct(x.rs20)+'</td><td>'+safe((x.used??0)+'/'+(x.members??0))+'</td><td>'+safe(Number.isFinite(x.rs5)?rotateStatus(x):'Chưa đủ chuỗi')+'</td></tr>').join(''):
  '<tr><td colspan="5" class="portfolio-empty">Chưa có dữ liệu ngành.</td></tr>';
