@@ -1,0 +1,44 @@
+name: FinQuery Portfolio Intelligence QA
+on:
+  pull_request:
+    paths:
+      - 'financial-report/portfolio.*'
+      - 'financial-report/frontend/index.html'
+      - 'finquery-access/api/index.js'
+      - 'finquery-access/migrations/003_portfolio_ledger.sql'
+      - '.github/workflows/finquery-portfolio-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/portfolio.*'
+      - 'finquery-access/api/index.js'
+      - '.github/workflows/finquery-portfolio-qa.yml'
+permissions:
+  contents: read
+jobs:
+  portfolio-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Syntax check
+        run: |
+          node --check financial-report/portfolio.js
+          node --check finquery-access/api/index.js
+      - name: Contract checks
+        run: |
+          node --test financial-report/tests/portfolio_intelligence.test.cjs
+      - name: Frontend build still includes portfolio navigation
+        run: |
+          python financial-report/scripts/build_cdn.py
+          python - <<'PY'
+          from pathlib import Path
+          page=Path('financial-report/index.html').read_text()
+          assert 'href="portfolio.html"' in page
+          assert Path('financial-report/portfolio.html').exists()
+          assert Path('financial-report/portfolio.js').exists()
+          print('FinQuery portfolio standalone bundle OK')
+          PY

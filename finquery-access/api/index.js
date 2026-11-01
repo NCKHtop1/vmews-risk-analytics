@@ -409,6 +409,57 @@ async function onObservations(req,res,user) {
   await audit(user.email,'on_manual_upsert',body.date,{ratePercent:body.value});
   return json(res,200,{ok:true,date:body.date,value:body.value});
 }
+
+async function userPortfolio(req,res,user) {
+  if (!user || user.status !== 'active') return json(res,401,{error:'Vui lòng đăng nhập để xem danh mục.',code:'LOGIN_REQUIRED'});
+  if (req.method==='GET') {
+    const rows=await db().query(
+      'SELECT event_id,kind,symbol,quantity,unit_price_vnd,fee_vnd,amount_vnd,trade_date,created_at '+
+      'FROM public.finquery_portfolio_transactions WHERE user_id=$1 ORDER BY event_id ASC LIMIT 10000',[user.id]);
+    if(rows.length>=10000)return json(res,409,{error:'Sổ giao dịch vượt giới hạn hiển thị. Cần kết xuất phân trang.',code:'PAGE_REQUIRED'});
+    return json(res,200,{ok:true,events:rows});
+  }
+  if(req.method!=='POST')return json(res,405,{error:'Method not allowed'});
+  if(!originAllowed(req))return json(res,403,{error:'Invalid request origin'});
+  let data;try{data=parseBody(req);}catch(_){return json(res,400,{error:'Dữ liệu không hợp lệ.'});}
+  if(!data || typeof data!=='object')return json(res,400,{error:'Dữ liệu không hợp lệ.'});
+  const kind=String(data.kind||'').toUpperCase();
+  const key=String(data.requestKey||'');
+  const symbol=typeof data.symbol==='string'?data.symbol.trim().toUpperCase():null;
+  const date=String(data.tradeDate||'');
+  const num=(v)=>v===null||v===undefined||v===''?null:Number(v);
+  const q=num(data.quantity),p=num(data.unitPriceVnd),f=num(data.feeVnd??0),amount=num(data.amountVnd);
+  if(!['DEPOSIT','WITHDRAW','BUY','SELL','DIVIDEND'].includes(kind)||
+     !/^[A-Za-z0-9:_-]{16,100}$/.test(key)||!/^\d{4}-\d{2}-\d{2}$/.test(date)||
+     !Number.isFinite(f)||f<0||f>1000000000 ||
+     (['BUY','SELL'].includes(kind) &&
+       (!/^[A-Z0-9]{2,12}$/.test(symbol||'')||!Number.isSafeInteger(q)||q<1||q>1000000000||
+        !Number.isFinite(p)||p<=0||p>1000000000||amount!==null)) ||
+     (['DEPOSIT','WITHDRAW','DIVIDEND'].includes(kind) &&
+       (!Number.isFinite(amount)||amount<=0||amount>1e12||q!==null||p!==null||f!==0)) ||
+     (['DEPOSIT','WITHDRAW'].includes(kind)&&symbol!==null) ||
+     (kind==='DIVIDEND'&&!/^[A-Z0-9]{2,12}$/.test(symbol||''))) {
+       return json(res,400,{error:'Dữ liệu giao dịch không hợp lệ.',code:'INVALID_EVENT'});
+  }
+  try {
+    const result=await db().query(
+      'SELECT event_id,duplicate FROM public.finquery_append_portfolio_event($1::uuid,$2::varchar,$3::varchar,$4::varchar,$5::bigint,$6::numeric,$7::numeric,$8::numeric,$9::date)',
+      [user.id,key,kind,symbol,q,p,f,amount,date]);
+    return json(res,200,{ok:true,eventId:String(result[0].event_id),duplicate:result[0].duplicate});
+  }catch(err){
+    const msg=String(err?.message||'');
+    const errors={FINQUERY_INVALID_EVENT:400,FINQUERY_INVALID_TRADE:400,FINQUERY_INVALID_CASHFLOW:400,
+      FINQUERY_INVALID_DIVIDEND:400,FINQUERY_INSUFFICIENT_CASH:409,FINQUERY_INSUFFICIENT_SHARES:409,
+      FINQUERY_TRADE_DATE_OUT_OF_ORDER:409,FINQUERY_IDEMPOTENCY_CONFLICT:409};
+    const code=Object.keys(errors).find(k=>msg.includes(k));
+    if(code)return json(res,errors[code],{error:({
+      FINQUERY_INSUFFICIENT_CASH:'Số dư tiền mặt không đủ.',FINQUERY_INSUFFICIENT_SHARES:'Số cổ phiếu không đủ.',
+      FINQUERY_TRADE_DATE_OUT_OF_ORDER:'Ngày giao dịch phải theo thứ tự mới nhất.',
+      FINQUERY_IDEMPOTENCY_CONFLICT:'Mã yêu cầu đã được dùng cho nội dung khác.'})[code]||'Giao dịch không hợp lệ.',code});
+    throw err;
+  }
+}
+
 async function gateway(req, res, route, user) {
   if (req.method !== 'GET' && req.method !== 'HEAD') return json(res,405,{error:'Method not allowed'});
   if (!user || user.status !== 'active') {
@@ -498,6 +549,7 @@ module.exports = async function handler(req,res) {
     if (route === 'api/admin/audit') return adminAudit(req,res,user);
     if (route === 'api/admin/user') return adminUpdate(req,res,user);
     if (route === 'api/user/workspace') return userWorkspace(req,res,user);
+    if (route === 'api/user/portfolio') return userPortfolio(req,res,user);
     if (route === 'api/market/on-observations') return onObservations(req,res,user);
     if (route.startsWith('api/')) return json(res,404,{error:'Not found'});
     return gateway(req,res,route,user);
