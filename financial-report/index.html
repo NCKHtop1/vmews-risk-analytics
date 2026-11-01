@@ -1515,6 +1515,34 @@ svg[data-fq-inspect] .fq-chart-cursor{fill:#fff;stroke:#3565c7;stroke-width:2.5}
 .portfolio-market-leaders b{font-weight:750;color:#2e8867}
 .portfolio-market-loading{font-size:11px;color:#8a97aa}
 @media(max-width:680px){.portfolio-market-brief{padding:12px;gap:8px}.portfolio-market-metrics{gap:7px 12px}.portfolio-market-heading{flex-basis:100%}.portfolio-market-leaders{gap:5px}}
+
+
+/* Portfolio usability pass: instructional disclosure, compact hierarchy and mobile chart. */
+.portfolio-page button.portfolio-help-trigger{display:inline-grid;place-items:center;vertical-align:middle;margin-left:5px;padding:0;width:19px;height:19px;min-width:19px;min-height:19px;border-radius:50%;border:1px solid #c9d3e6;background:#fff;color:#566c93;font-size:11px;font-weight:700;line-height:1}
+.portfolio-page button.portfolio-help-trigger:hover,.portfolio-page button.portfolio-help-trigger[aria-expanded="true"]{background:#eaf0fa;border-color:#93a6cd}
+.portfolio-help-popover{position:absolute;z-index:110;width:min(315px,calc(100% - 24px));background:#fff;border:1px solid #dfe6f1;box-shadow:0 12px 34px #253d671f;border-radius:10px;padding:14px 15px;color:#34455f}
+.portfolio-help-popover[hidden]{display:none!important}.portfolio-help-popover strong{font-size:12px}.portfolio-help-popover p{margin:8px 0 12px;font-size:12px;line-height:1.6;color:#64738a}
+.portfolio-page .portfolio-help-close{font-size:11px;min-height:29px;padding:5px 10px}
+.portfolio-page{position:relative}
+.portfolio-plan-settings{align-items:end;gap:14px;padding:15px 16px;margin:15px 0 22px}
+.portfolio-setting{display:grid;gap:10px;flex:1 1 205px;min-width:0}
+.portfolio-setting-heading{display:flex;align-items:center;gap:5px;color:#53667e;font-size:12px}
+.portfolio-setting-heading label{font-weight:700;min-width:0}
+.portfolio-setting-heading strong{font-variant-numeric:tabular-nums;margin-left:auto;white-space:nowrap;font-weight:800;color:#3758b8}
+.portfolio-setting input[type=range]{width:100%;accent-color:#536ed3}
+.portfolio-plan-settings #portfolio-policy-save{margin-left:auto}
+.portfolio-template h3{font-size:15px;letter-spacing:-.15px}
+.portfolio-template p{font-size:11px;min-height:30px}
+.portfolio-rotation-chart{min-height:320px;background:#fcfdff;overflow:hidden}
+.portfolio-rotation-chart svg{width:100%;height:auto;display:block;touch-action:manipulation}
+.portfolio-rot-dot{cursor:pointer;transition:opacity .14s,stroke-width .14s}
+.portfolio-rotation-detail{background:#fff;line-height:1.55}
+@media(max-width:720px){.portfolio-plan-settings{display:grid;grid-template-columns:1fr;gap:16px}.portfolio-plan-settings #portfolio-policy-save{justify-self:end}.portfolio-rotation-chart{min-height:200px}.portfolio-help-popover{max-width:calc(100% - 24px)}}
+
+.portfolio-plan-empty{display:grid;justify-items:start;gap:10px;border:1px dashed #cad5e6;border-radius:12px;background:#fafcff;padding:22px 20px}
+.portfolio-plan-empty strong{font-size:14px;color:#344967}
+.portfolio-plan-empty p{max-width:570px;margin:0;color:#748299;font-size:12px;line-height:1.6}
+.portfolio-plan-empty .portfolio-primary{margin-top:3px}
 </style><style>/*
  * FinQuery responsive system · 2026-10-29
  * One shared layout layer for Market, Scanner, Strategy, Risk, Finance, Macro/ESG.
@@ -1941,15 +1969,15 @@ input,textarea,select{max-width:100%}
       </section>
     </section>
 <section id="portfolio-tab-plan" class="portfolio-tab-panel" data-portfolio-panel="plan" role="tabpanel" hidden>
-      <div class="portfolio-section-title"><div><span>QUẢN LÝ PHÂN BỔ</span><h2>Chọn mẫu quản trị danh mục</h2><p>Mục tiêu áp dụng cho các mã đang nắm giữ. Có thể thay đổi bất cứ lúc nào.</p></div><span class="portfolio-policy-stamp" id="portfolio-policy-stamp">Đang tải cấu hình…</span></div>
+      <div class="portfolio-section-title"><div><span>QUẢN LÝ PHÂN BỔ</span><h2>Chọn mẫu quản trị danh mục <button type="button" class="portfolio-help-trigger" data-portfolio-help="templates" aria-label="Giải thích mẫu quản trị danh mục" aria-expanded="false" aria-controls="portfolio-help-popover" title="Giải thích mẫu quản trị danh mục">i</button></h2><p>Chọn nguyên tắc phân bổ để đối chiếu với các vị thế thực tế.</p></div><span class="portfolio-policy-stamp" id="portfolio-policy-stamp">Đang tải cấu hình…</span></div>
       <div id="portfolio-policy-cards" class="portfolio-template-grid"></div>
       <div class="portfolio-plan-settings">
-        <label>Tiền mặt mục tiêu <span id="portfolio-cash-target-label">10%</span><input id="portfolio-cash-target" type="range" min="0" max="50" step="5" value="10"></label>
-        <label>Ngưỡng lệch tỷ trọng <span id="portfolio-drift-label">5 điểm %</span><input id="portfolio-drift" type="range" min="2" max="15" step="1" value="5"></label>
+        <div class="portfolio-setting"><div class="portfolio-setting-heading"><label for="portfolio-cash-target">Tiền mặt mục tiêu</label><button type="button" class="portfolio-help-trigger" data-portfolio-help="cash" aria-label="Giải thích tiền mặt mục tiêu" aria-expanded="false" aria-controls="portfolio-help-popover" title="Giải thích tiền mặt mục tiêu">i</button><strong id="portfolio-cash-target-label">10%</strong></div><input id="portfolio-cash-target" type="range" min="0" max="50" step="5" value="10" aria-label="Tiền mặt mục tiêu, phần trăm"></div>
+        <div class="portfolio-setting"><div class="portfolio-setting-heading"><label for="portfolio-drift">Ngưỡng lệch tỷ trọng</label><button type="button" class="portfolio-help-trigger" data-portfolio-help="drift" aria-label="Giải thích ngưỡng lệch tỷ trọng" aria-expanded="false" aria-controls="portfolio-help-popover" title="Giải thích ngưỡng lệch tỷ trọng">i</button><strong id="portfolio-drift-label">5 điểm %</strong></div><input id="portfolio-drift" type="range" min="2" max="15" step="1" value="5" aria-label="Ngưỡng lệch tỷ trọng, điểm phần trăm"></div>
         <button id="portfolio-policy-save" type="button" class="portfolio-primary">Lưu kế hoạch</button>
       </div>
       <div class="portfolio-plan-head">
-        <div><span class="portfolio-kicker">BÁO CÁO THEO PHIÊN</span><h2>Đề xuất cân bằng lại</h2><p id="portfolio-plan-date">Đang kiểm tra dữ liệu giá…</p></div>
+        <div><span class="portfolio-kicker">BÁO CÁO THEO PHIÊN</span><h2>Đề xuất cân bằng lại <button type="button" class="portfolio-help-trigger" data-portfolio-help="rebalance" aria-label="Giải thích đề xuất cân bằng lại" aria-expanded="false" aria-controls="portfolio-help-popover" title="Giải thích đề xuất cân bằng lại">i</button></h2><p id="portfolio-plan-date">Đang kiểm tra dữ liệu giá…</p></div>
         <div id="portfolio-plan-status" class="portfolio-plan-status">Đang tính…</div>
       </div>
       <div id="portfolio-plan-result" class="portfolio-plan-result"></div>
@@ -1962,14 +1990,14 @@ input,textarea,select{max-width:100%}
       <p class="portfolio-method-note">Đánh giá mỗi phiên theo độ lệch mục tiêu, giới hạn mã/ngành, tiền mặt và chi phí ước tính. Giá cổ phiếu kiểm tra mỗi 5 phút; đề xuất chỉ thay đổi khi có dữ liệu và điều kiện mới.</p>
     </section>
     <section id="portfolio-tab-rotation" class="portfolio-tab-panel" data-portfolio-panel="rotation" role="tabpanel" hidden>
-      <div class="portfolio-section-title"><div><span>SECTOR ROTATION</span><h2>Sức mạnh tương đối ngành</h2><p id="portfolio-sector-stamp">RS 5 và 20 phiên</p></div><div class="portfolio-switch"><button type="button" data-portfolio-view="chart" class="active" aria-pressed="true">Biểu đồ</button><button type="button" data-portfolio-view="table" aria-pressed="false">Bảng</button></div></div>
+      <div class="portfolio-section-title"><div><span>SECTOR ROTATION</span><h2>Sức mạnh tương đối ngành <button type="button" class="portfolio-help-trigger" data-portfolio-help="rotation" aria-label="Giải thích sức mạnh tương đối ngành" aria-expanded="false" aria-controls="portfolio-help-popover" title="Giải thích sức mạnh tương đối ngành">i</button></h2><p id="portfolio-sector-stamp">RS 5 và 20 phiên</p></div><div class="portfolio-switch"><button type="button" data-portfolio-view="chart" class="active" aria-pressed="true">Biểu đồ</button><button type="button" data-portfolio-view="table" aria-pressed="false">Bảng</button></div></div>
       <div class="portfolio-rotation-layout">
-        <div id="portfolio-rotation-chart" class="portfolio-rotation-chart" role="img" aria-label="Biểu đồ sức mạnh ngành 5 và 20 phiên; chọn một điểm để xem đường di chuyển"></div>
+        <div id="portfolio-rotation-chart" class="portfolio-rotation-chart" role="group" aria-label="Biểu đồ sức mạnh ngành 5 và 20 phiên; chọn một điểm để xem đường di chuyển"></div>
         <aside class="portfolio-sector-rail"><div class="portfolio-sector-rail-head"><strong>13 nhóm ngành</strong><span>RS20</span></div><div id="portfolio-sector-list" class="portfolio-sector-list"></div></aside>
       </div>
       <div id="portfolio-rotation-table" class="portfolio-table-wrap" hidden><table class="portfolio-table"><thead><tr><th>Ngành</th><th>5 phiên</th><th>20 phiên</th><th>Số mã</th><th>Xu hướng</th></tr></thead><tbody id="portfolio-rotation-rows"></tbody></table></div>
-      <div id="portfolio-rotation-detail" class="portfolio-rotation-detail">Chọn một ngành để xem diễn biến 5 phiên. Chỉ hiển thị đường đi của ngành được chọn.</div>
-      <p class="portfolio-method-note" id="portfolio-method-note">So sánh hiệu suất ngành với trung vị các cổ phiếu đủ dữ liệu · Cập nhật theo phiên dữ liệu.</p>
+      <div id="portfolio-rotation-detail" class="portfolio-rotation-detail">Chọn hoặc di chuột vào một ngành để xem diễn biến 5 phiên. Mặc định biểu đồ chỉ hiển thị vị trí hiện tại.</div>
+      <p class="portfolio-method-note" id="portfolio-method-note">RS 5/20 phiên: chênh lệch hiệu suất ngành so với trung vị nhóm cổ phiếu HOSE đủ dữ liệu. Đây không phải chỉ báo RRG hay tín hiệu dự báo.</p>
     </section>
     <section id="portfolio-tab-history" class="portfolio-tab-panel" data-portfolio-panel="history" role="tabpanel" hidden>
       <div class="portfolio-section-title"><div><span>SỔ DANH MỤC</span><h2>Lịch sử giao dịch</h2></div><button type="button" id="portfolio-export">Xuất dữ liệu ↓</button></div>
@@ -4335,7 +4363,7 @@ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const number=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 const method={DEPOSIT:'Nạp tiền',WITHDRAW:'Rút tiền',BUY:'Mua',SELL:'Bán',DIVIDEND:'Cổ tức'};
 const state={loaded:false,loading:false,events:[],quotes:{},risk:null,rotation:null,tab:'overview',chartMode:'chart',sourceTime:null,
- lastLoadedAt:0,lastSectorAt:0,selectedSector:null,saveKey:null,saveFingerprint:null,
+ lastLoadedAt:0,lastSectorAt:0,selectedSector:null,hoverSector:null,trailVisible:false,saveKey:null,saveFingerprint:null,
  policy:Policy.normalize({preset:'balanced'}),policyLoaded:false,policySaved:false,policyRev:0,policyBusy:false,policyDirty:false};
 function status(message,warning=false){const el=$('portfolio-status');if(!el)return;el.hidden=!message;el.textContent=message||'';el.classList.toggle('portfolio-status-warning',warning);}
 function isOpen(){return !root.hidden&&!document.hidden&&!document.body.classList.contains('site-locked');}
@@ -4516,10 +4544,11 @@ function renderRotation(){
   $('portfolio-rotation-detail').textContent='Chưa có dữ liệu ngành.';
   return;
  }
+ if(state.hoverSector&&!items.some(x=>x.id===state.hoverSector))state.hoverSector=null;
  if(!items.some(x=>x.id===state.selectedSector)){
   state.selectedSector=items.find(x=>held.has(x.id))?.id||items[0].id;
  }
- const chosen=items.find(x=>x.id===state.selectedSector);
+ const chosen=items.find(x=>x.id===(state.hoverSector||state.selectedSector));
  const rail=$('portfolio-sector-list');
  for(const btn of rail.querySelectorAll('[data-portfolio-sector]')){
   const on=btn.dataset.portfolioSector===chosen.id;
@@ -4542,24 +4571,24 @@ function renderRotation(){
   '<text x="'+right+'" y="409" text-anchor="middle" fill="#8290a6" font-size="10">+'+mx+'%</text>';
  const circle=x=>{
   const col=x.rs20>=0?(x.rs5>=0?'#3caa72':'#dda84e'):(x.rs5>=0?'#54aebc':'#d96a76');
-  const isSelected=x.id===chosen.id;
-  const r=isSelected?10:6.5;
+  const isSelected=x.id===state.selectedSector; const focused=x.id===chosen.id;
+  const r=isSelected?8.5:focused?8:5.8;
   const hold=held.has(x.id);
   const title=safe(x.label)+' · RS5 '+formatPct(x.rs5)+' · RS20 '+formatPct(x.rs20);
   return '<circle class="portfolio-rot-dot" data-portfolio-sector="'+safe(x.id)+'" cx="'+xx(x.rs20)+'" cy="'+yy(x.rs5)+
-   '" r="'+r+'" role="button" tabindex="0" fill="'+col+'" opacity="'+(x.status==='thin'?'.65':'1')+
-   '" stroke="'+(isSelected?'#273f6a':hold?'#5866a4':'#fff')+'" stroke-width="'+(isSelected?3:hold?2.5:1.4)+
+   '" r="'+r+'" role="button" tabindex="0" fill="'+col+'" opacity="'+(focused?'1':hold?'.85':'.62')+
+   '" stroke="'+(isSelected?'#5065a2':hold?'#7a8cbd':'#fff')+'" stroke-width="'+(isSelected?2:hold?1.7:1.2)+
    '" aria-label="'+title+'"><title>'+title+'</title></circle>';
  };
  const trail=Array.isArray(chosen.trail)?chosen.trail.filter(p=>Number.isFinite(p.rs5)&&Number.isFinite(p.rs20)):[];
  const points=trail.map(p=>xx(p.rs20).toFixed(1)+','+yy(p.rs5).toFixed(1)).join(' ');
- const line=points?'<polyline points="'+points+'" fill="none" stroke="#566fc0" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round" opacity=".83"/>':'';
+ const line=(state.hoverSector||state.trailVisible)&&points?'<polyline points="'+points+'" fill="none" stroke="#6a84bd" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity=".67"/>':'';
  const axis='<line x1="'+zx+'" y1="'+top+'" x2="'+zx+'" y2="'+bottom+'" stroke="#9aaac0" stroke-dasharray="4 5"/>'+
   '<line x1="'+left+'" y1="'+zy+'" x2="'+right+'" y2="'+zy+'" stroke="#9aaac0" stroke-dasharray="4 5"/>';
  const dotSvg=items.filter(x=>x.id!==chosen.id).map(circle).join('')+circle(chosen);
  // Only the selected sector has a trail and a label. Others are accessed by the list or tooltip.
  $('portfolio-rotation-chart').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 457" role="img" aria-label="Biểu đồ sức mạnh ngành, đường di chuyển của '+safe(chosen.label)+'">'+bg+axis+labels+line+dotSvg+
-  '<text x="73" y="27" fill="#415c94" font-size="13" font-weight="700">'+safe(chosen.label)+' · '+formatPct(chosen.rs20)+' / '+formatPct(chosen.rs5)+'</text></svg>';
+  '</svg>';
  const owned=calculate().rows.filter(h=>sectorOf(h.symbol)?.id===chosen.id).map(h=>h.symbol);
  const dates=trail.map(p=>p.date+' ('+formatPct(p.rs20)+' / '+formatPct(p.rs5)+')');
  $('portfolio-rotation-detail').innerHTML='<strong>'+safe(chosen.label)+'</strong> · '+safe(rotateStatus(chosen))+
@@ -4569,7 +4598,7 @@ function renderRotation(){
 }
 function selectSector(id){
  if(!state.rotation?.sectors?.some(x=>x.id===id))return;
- state.selectedSector=id;renderRotation();
+ state.selectedSector=id;state.hoverSector=null;state.trailVisible=true;renderRotation();
 }
 function render(){
  if(!state.loaded)return;
@@ -4697,6 +4726,9 @@ root.addEventListener('click',e=>{
  const sub=e.target.closest('[data-portfolio-subtab]');if(sub){switchTab(sub.dataset.portfolioSubtab);return;}
  const sector=e.target.closest('[data-portfolio-sector]');if(sector)selectSector(sector.dataset.portfolioSector);
 });
+$('portfolio-rotation-chart').addEventListener('pointerover',e=>{const dot=e.target.closest?.('[data-portfolio-sector]');if(dot&&dot.dataset.portfolioSector!==state.hoverSector){state.hoverSector=dot.dataset.portfolioSector;renderRotation();}});
+$('portfolio-rotation-chart').addEventListener('pointerleave',()=>{if(state.hoverSector){state.hoverSector=null;renderRotation();}});
+$('portfolio-rotation-chart').addEventListener('focusin',e=>{const dot=e.target.closest?.('[data-portfolio-sector]');if(dot){state.hoverSector=dot.dataset.portfolioSector;renderRotation();}});
 $('portfolio-rotation-chart').addEventListener('keydown',e=>{
  if(!['Enter',' '].includes(e.key))return;const b=e.target.closest('[data-portfolio-sector]');if(!b)return;e.preventDefault();selectSector(b.dataset.portfolioSector);
 });
@@ -4842,8 +4874,9 @@ function render(){
   '<td>'+safe(Math.abs(t.driftPP)>=state.policy.driftPct?'Vượt ngưỡng':'Theo dõi')+'</td></tr>').join(''):
   '<tr><td colspan="5" class="portfolio-empty">Nhập cổ phiếu để xem mục tiêu phân bổ.</td></tr>';
  if(!hasPositions||!eligible){
-  el('portfolio-plan-result').innerHTML='<p class="portfolio-plan-message">'+safe(!hasPositions?(book.portfolio.cash>0?'Đã có vốn. Ghi nhận cổ phiếu đang nắm giữ để bắt đầu phân tích.':'Chọn mẫu, nạp vốn rồi ghi nhận vị thế để bắt đầu.'):
-   report.blocked?report.why:!state.saved?'Chọn và lưu một mẫu để bật đánh giá theo phiên.':'Lưu cấu hình mới để đánh giá.')+'</p>';
+  el('portfolio-plan-result').innerHTML=!hasPositions?
+   '<div class="portfolio-plan-empty"><strong>Chưa có dữ liệu danh mục</strong><p>Chọn mẫu quản trị, nạp vốn và ghi nhận vị thế để hệ thống theo dõi tỷ trọng và gợi ý cân bằng lại.</p><button type="button" class="portfolio-primary" data-portfolio-empty-add="true">+ Giao dịch</button></div>':
+   '<p class="portfolio-plan-message">'+safe(report.blocked?report.why:!state.saved?'Chọn và lưu một mẫu để bật đánh giá theo phiên.':'Lưu cấu hình mới để đánh giá.')+'</p>';
   return;
  }
  const metrics='<div class="portfolio-review-metrics"><div><small>TIỀN MẶT MỤC TIÊU</small><strong>'+pct(report.targetCashPct)+'</strong></div>'+
@@ -4866,6 +4899,7 @@ function select(id){
 }
 root.addEventListener('click',e=>{
  const b=e.target.closest('[data-portfolio-preset]');if(b){select(b.dataset.portfolioPreset);return;}
+ if(e.target.closest('[data-portfolio-empty-add]')){el('portfolio-add').click();return;}
  if(e.target.closest('#portfolio-start-deposit')){
   const current=getBook();el('portfolio-add').click();el('portfolio-type').value=current?.portfolio?.cash>0?'BUY':'DEPOSIT';
   el('portfolio-type').dispatchEvent(new Event('change'));
@@ -4883,6 +4917,34 @@ document.addEventListener('finquery:portfolio-plan-open',()=>{void load();render
 document.addEventListener('finquery:portfolio-render',render);
 controls();
 if(!root.hidden)void load();
+})();</script><script>/* Portfolio help: compact, accessible, no extra modal dependencies. */
+(()=>{'use strict';
+const root=document.getElementById('portfolio');if(!root)return;
+const copy={
+ templates:['Mẫu quản trị danh mục','Mẫu quản trị là bộ nguyên tắc phân bổ và theo dõi tỷ trọng trong danh mục. Mẫu không tự tạo giao dịch. Hệ thống đối chiếu vị thế thực tế với tỷ trọng mục tiêu khi có dữ liệu phù hợp.'],
+ cash:['Tiền mặt mục tiêu','Tỷ lệ tiền mặt mong muốn duy trì trong danh mục. Mức này được dùng khi tính tỷ trọng mục tiêu và đề xuất cân bằng lại.'],
+ drift:['Ngưỡng lệch tỷ trọng','Mức chênh lệch giữa tỷ trọng hiện tại và tỷ trọng mục tiêu để hệ thống bắt đầu xem xét điều chỉnh. Ngưỡng nhỏ có thể dẫn đến đề xuất thường xuyên hơn.'],
+ rebalance:['Đề xuất cân bằng lại','Hệ thống so sánh tỷ trọng hiện tại với kế hoạch đã lưu khi có dữ liệu giá phù hợp. Nếu chênh lệch vượt ngưỡng và đáp ứng giới hạn giao dịch, hệ thống sẽ hiển thị phương án tham khảo. Không tự đặt lệnh.'],
+ rotation:['Sức mạnh ngành','Biểu đồ hiển thị vị trí tương đối của các ngành theo hiệu suất 5 và 20 phiên so với nhóm cổ phiếu đủ dữ liệu. Rê chuột hoặc chọn một ngành để xem quỹ đạo và số liệu. Đây không phải tín hiệu dự báo.']
+};
+const pop=document.createElement('div');pop.id='portfolio-help-popover';pop.className='portfolio-help-popover';pop.setAttribute('role','dialog');pop.setAttribute('aria-modal','false');pop.setAttribute('aria-labelledby','portfolio-help-title');pop.hidden=true;
+const h=document.createElement('strong');h.id='portfolio-help-title';
+const p=document.createElement('p');
+const close=document.createElement('button');close.type='button';close.className='portfolio-help-close';close.textContent='Đóng';close.setAttribute('aria-label','Đóng giải thích');
+pop.append(h,p,close);root.appendChild(pop);
+let active=null;
+const hide=(restore=false)=>{pop.hidden=true;if(active){active.setAttribute('aria-expanded','false');if(restore)active.focus();}active=null;};
+root.addEventListener('click',e=>{
+ const b=e.target.closest?.('[data-portfolio-help]');
+ if(!b){if(!pop.hidden&&!pop.contains(e.target))hide();return;}
+ const data=copy[b.dataset.portfolioHelp];if(!data)return;
+ if(active===b&&!pop.hidden){hide(true);return;}
+ hide();active=b;h.textContent=data[0];p.textContent=data[1];b.setAttribute('aria-expanded','true');pop.hidden=false;
+ const bounds=b.getBoundingClientRect(),parent=root.getBoundingClientRect();
+ pop.style.top=(bounds.bottom-parent.top+9)+'px';pop.style.left=Math.max(12,Math.min(bounds.left-parent.left-5,Math.max(12,parent.width-335)))+'px';
+});
+close.addEventListener('click',()=>hide(true));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!pop.hidden)hide(true);});
 })();</script><script>(function(){'use strict';
 const $=id=>document.getElementById(id);
 const state={data:null,loading:false,error:'',selectedFundSymbol:null,selectedSectorId:null,selectedBreadthGroup:null};
