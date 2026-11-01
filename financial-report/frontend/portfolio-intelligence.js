@@ -160,7 +160,7 @@ function switchTab(tab,focus=false){
  for(const sec of root.querySelectorAll('[data-portfolio-panel]'))sec.hidden=sec.dataset.portfolioPanel!==tab;
  if(tab==='rotation'&&Date.now()-state.lastSectorAt>SECTOR_RECHECK)refreshSector().catch(()=>{});
  if(tab==='rotation')requestAnimationFrame(()=>renderRotation());
- if(tab==='plan')renderPlan();
+ if(tab==='plan')document.dispatchEvent(new Event('finquery:portfolio-plan-open'));
 }
 function rotateStatus(s){return s.rs20>=0?(s.rs5>=0?'Khỏe':'Đang suy yếu'):(s.rs5>=0?'Hồi phục':'Yếu');}
 function renderRotation(){
@@ -248,6 +248,7 @@ function selectSector(id){
 function render(){
  if(!state.loaded)return;
  const z=calculate();renderKPIs(z);printHoldings(z);renderAllocation(z);renderInsights(z);renderHistory();renderRotation();
+ document.dispatchEvent(new Event('finquery:portfolio-render'));
  $('portfolio-source').textContent=state.sourceTime?'Giá: '+formatDate(state.sourceTime):'Đang đồng bộ giá';
 }
 async function refreshSector(){
@@ -300,7 +301,7 @@ async function refresh({force=false,marketOnly=false}={}){
   status(err?.status===401?'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.':String(err.message||'Chưa tải được danh mục.'),true);
  }finally{state.loading=false;if(button)button.disabled=false;}
 }
-function open(){if(!state.loaded||Date.now()-state.lastLoadedAt>=FIVE_MIN)void refresh({force:true});else render();}
+function open(){document.dispatchEvent(new Event('finquery:portfolio-plan-open'));if(!state.loaded||Date.now()-state.lastLoadedAt>=FIVE_MIN)void refresh({force:true});else render();}
 function openMarket(symbol,view='price'){
  window.FinPlatformViews?.openAnalysis?.();
  if(symbol){
@@ -388,5 +389,5 @@ document.addEventListener('finquery:market-bundle',()=>{if(isOpen()&&!state.load
 document.addEventListener('visibilitychange',()=>{if(isOpen()&&Date.now()-state.lastLoadedAt>FIVE_MIN)void refresh({force:true});});
 window.addEventListener('online',()=>{if(isOpen()){state.lastLoadedAt=0;void refresh({force:true});}});
 setInterval(()=>{if(isOpen()&&Date.now()-state.lastLoadedAt>=FIVE_MIN)void refresh({force:true});},FIVE_MIN);
-window.FinPortfolio={open,refresh:()=>refresh({force:true}),setTab:switchTab,context:()=>({events:state.events,quoteTime:state.sourceTime,rotationTime:state.rotation?.sourceDate||null})};
+window.FinPortfolio={open,refresh:()=>refresh({force:true}),setTab:switchTab,context:()=>({events:state.events,quoteTime:state.sourceTime,rotationTime:state.rotation?.sourceDate||null,ready:state.loaded,snapshot:calculate(),sectors:state.risk?.sectors||[],rotation:state.rotation})};
 })();
