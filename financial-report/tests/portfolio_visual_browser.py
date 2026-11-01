@@ -106,15 +106,13 @@ def main():
                 assert result['templates']==4 and result['onboarding'] and result['emptyCardsHidden'],result
                 assert result['scroll']<=width+3,result
                 # Adopt a template and save it through the actual controller.
-                target=driver.find_element(By.CSS_SELECTOR,'#portfolio-setup-templates [data-portfolio-preset="defensive"]')
-                driver.execute_script("arguments[0].scrollIntoView({block:'center',behavior:'instant'});",target)
-                driver.execute_script("arguments[0].click();",target)
+                driver.execute_script("const e=document.querySelector('#portfolio-setup-templates [data-portfolio-preset=defensive]');e.scrollIntoView({block:'center'});e.click();")
                 WebDriverWait(driver,5).until(lambda d:d.execute_script(
                     "return document.getElementById('portfolio-cash-target').value==='30'"))
-                driver.execute_script("arguments[0].scrollIntoView({block:'center'});arguments[0].click();",driver.find_element(By.ID,'portfolio-policy-save'))
+                driver.execute_script("const e=document.getElementById('portfolio-policy-save');e.scrollIntoView({block:'center'});e.click();")
                 WebDriverWait(driver,7).until(lambda d:d.execute_script(
                     "return window.__fixture.policy?.preset==='defensive'"))
-                driver.execute_script("arguments[0].scrollIntoView({block:'center'});arguments[0].click();",driver.find_element(By.CSS_SELECTOR,'#portfolio-tabs [data-portfolio-tab="rotation"]'))
+                driver.execute_script("const e=document.querySelector('#portfolio-tabs [data-portfolio-tab=rotation]');e.scrollIntoView({block:'center'});e.click();")
                 WebDriverWait(driver,12).until(lambda d:d.execute_script(
                     "return document.querySelectorAll('#portfolio-rotation-chart circle').length===13"))
                 chart=driver.execute_script("""
@@ -126,7 +124,7 @@ def main():
                 """)
                 assert chart['dots']==13 and chart['paths']==1 and chart['options']==13,chart
                 assert chart['texts']<=9,('overlapping labels returned',chart)
-                driver.execute_script("arguments[0].scrollIntoView({block:'center'});arguments[0].click();",driver.find_element(By.CSS_SELECTOR,'#portfolio-sector-list [data-portfolio-sector="tech"]'))
+                driver.execute_script("const e=document.querySelector('#portfolio-sector-list [data-portfolio-sector=tech]');e.scrollIntoView({block:'center'});e.click();")
                 assert 'Công nghệ' in driver.find_element(By.ID,'portfolio-rotation-detail').text
                 # Switch the same mock account from empty to a real valued 2-ticker ledger.
                 driver.execute_script("""
@@ -139,7 +137,7 @@ def main():
                 """)
                 WebDriverWait(driver,15).until(lambda d:d.execute_script(
                     "return document.querySelectorAll('#portfolio-holdings-body tr').length===2"))
-                driver.execute_script("arguments[0].scrollIntoView({block:'center'});arguments[0].click();",driver.find_element(By.CSS_SELECTOR,'#portfolio-tabs [data-portfolio-tab="plan"]'))
+                driver.execute_script("const e=document.querySelector('#portfolio-tabs [data-portfolio-tab=plan]');e.scrollIntoView({block:'center'});e.click();")
                 WebDriverWait(driver,12).until(lambda d:d.execute_script(
                     "return document.querySelectorAll('#portfolio-target-rows tr').length===2"))
                 final=driver.execute_script("""
