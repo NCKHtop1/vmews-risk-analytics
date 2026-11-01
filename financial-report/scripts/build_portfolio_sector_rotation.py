@@ -53,7 +53,7 @@ def build(market_dir):
     all_symbols = set()
     for s in sectors:
         members = sorted({str(row.get("symbol") or "").strip().upper() for row in s.get("memberRows", [])
-                          if isinstance(row, dict) and str(row.get("symbol") or "").isalpha()})
+                          if isinstance(row, dict) and str(row.get("symbol") or "").isalnum() and 2 <= len(str(row.get("symbol") or "")) <= 12})
         if members:
             sector_members[str(s["id"])] = (str(s.get("label", s["id"])), members)
             all_symbols.update(members)
