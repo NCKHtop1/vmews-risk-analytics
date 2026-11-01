@@ -96,12 +96,13 @@ function printHoldings(z){
  }).join(''):'<tr><td colspan="9" class="portfolio-empty">Chưa có mã. Chọn + Giao dịch để bắt đầu theo dõi.</td></tr>';
 }
 function renderKPIs(z){
- $('portfolio-nav').textContent=formatMoney(z.nav);
- $('portfolio-cash').textContent=formatMoney(z.cash);
- $('portfolio-pnl').textContent=formatMoney(z.pnl);
+ const noTransactions=state.events.length===0;
+ $('portfolio-nav').textContent=noTransactions?'—':formatMoney(z.nav);
+ $('portfolio-cash').textContent=noTransactions?'—':formatMoney(z.cash);
+ $('portfolio-pnl').textContent=noTransactions?'—':formatMoney(z.pnl);
  $('portfolio-pnl').className=z.pnl<0?'portfolio-down':z.pnl>0?'portfolio-up':'';
- $('portfolio-nav-note').textContent=z.missing.length?'Thiếu giá: '+z.missing.join(', '):'Cổ phiếu + tiền mặt';
- $('portfolio-pnl-detail').textContent=z.missing.length?'Đang chờ giá đủ mã':'Đã chốt · Chưa chốt · Cổ tức';
+ $('portfolio-nav-note').textContent=noTransactions?'Chưa thiết lập':z.missing.length?'Thiếu giá: '+z.missing.join(', '):'Cổ phiếu + tiền mặt';
+ $('portfolio-pnl-detail').textContent=noTransactions?'Bắt đầu bằng mẫu phân bổ':z.missing.length?'Đang chờ giá đủ mã':'Đã chốt · Chưa chốt · Cổ tức';
  $('portfolio-concentration').textContent=z.rows.length&&z.nav!==null?formatPct(z.concentration):'—';
  $('portfolio-concentration-detail').textContent=z.top?z.top.symbol+' trong giá trị danh mục':'Chưa có mã';
  $('portfolio-cash-detail').textContent=z.rows.length+' mã đang nắm giữ';
