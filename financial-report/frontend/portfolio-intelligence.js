@@ -101,7 +101,7 @@ function renderKPIs(z){
  $('portfolio-pnl').className=z.pnl<0?'portfolio-down':z.pnl>0?'portfolio-up':'';
  $('portfolio-nav-note').textContent=z.missing.length?'Thiếu giá: '+z.missing.join(', '):'Cổ phiếu + tiền mặt';
  $('portfolio-pnl-detail').textContent=z.missing.length?'Đang chờ giá đủ mã':'Đã chốt · Chưa chốt · Cổ tức';
- $('portfolio-concentration').textContent=z.rows.length?formatPct(z.concentration):'—';
+ $('portfolio-concentration').textContent=z.rows.length&&z.nav!==null?formatPct(z.concentration):'—';
  $('portfolio-concentration-detail').textContent=z.top?z.top.symbol+' trong giá trị danh mục':'Chưa có mã';
  $('portfolio-cash-detail').textContent=z.rows.length+' mã đang nắm giữ';
 }
@@ -144,7 +144,7 @@ function renderInsights(z){
 function renderHistory(){
  const events=[...state.events].reverse();
  $('portfolio-history-body').innerHTML=events.length?events.map(e=>
-  '<tr><td>'+safe(e.trade_date||'')+'</td><td>'+safe(method[e.kind]||e.kind)+'</td>'+
+  '<tr><td>'+safe(String(e.trade_date||'').slice(0,10))+'</td><td>'+safe(method[e.kind]||e.kind)+'</td>'+
   '<td>'+safe(e.symbol||'—')+'</td><td>'+((e.quantity===null||e.quantity===undefined)?'—':vnInt.format(number(e.quantity)))+'</td>'+
   '<td>'+formatMoney(['BUY','SELL'].includes(e.kind)?number(e.unit_price_vnd):number(e.amount_vnd))+'</td>'+
   '<td>'+formatMoney(e.fee_vnd)+'</td></tr>').join('')
