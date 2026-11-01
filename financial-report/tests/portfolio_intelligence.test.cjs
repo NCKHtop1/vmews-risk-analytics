@@ -26,7 +26,7 @@ test('native FinQuery layout is shared by source and production CDN build',()=>{
  assert.match(html,/src="portfolio-intelligence.js"/);
  assert.match(bundle,/portfolio-intelligence\.css/);
  assert.match(bundle,/portfolio-intelligence\.js/);
- assert.match(styles,/--/);
+ assert.match(styles,/#e1e7ef/);
  assert.match(styles,/#portfolio/);
  assert.match(styles,/portfolio-page/);
 });
