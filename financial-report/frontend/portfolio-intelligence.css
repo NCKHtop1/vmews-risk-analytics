@@ -189,3 +189,8 @@
 .portfolio-rot-dot{cursor:pointer;transition:opacity .14s,stroke-width .14s}
 .portfolio-rotation-detail{background:#fff;line-height:1.55}
 @media(max-width:720px){.portfolio-plan-settings{display:grid;grid-template-columns:1fr;gap:16px}.portfolio-plan-settings #portfolio-policy-save{justify-self:end}.portfolio-rotation-chart{min-height:200px}.portfolio-help-popover{max-width:calc(100% - 24px)}}
+
+.portfolio-plan-empty{display:grid;justify-items:start;gap:10px;border:1px dashed #cad5e6;border-radius:12px;background:#fafcff;padding:22px 20px}
+.portfolio-plan-empty strong{font-size:14px;color:#344967}
+.portfolio-plan-empty p{max-width:570px;margin:0;color:#748299;font-size:12px;line-height:1.6}
+.portfolio-plan-empty .portfolio-primary{margin-top:3px}
