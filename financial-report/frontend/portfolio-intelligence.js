@@ -11,7 +11,7 @@ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const number=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 const method={DEPOSIT:'Nạp tiền',WITHDRAW:'Rút tiền',BUY:'Mua',SELL:'Bán',DIVIDEND:'Cổ tức'};
 const state={loaded:false,loading:false,events:[],quotes:{},risk:null,rotation:null,tab:'overview',chartMode:'chart',sourceTime:null,
- lastLoadedAt:0,lastSectorAt:0,selectedSector:null,hoverSector:null,saveKey:null,saveFingerprint:null,
+ lastLoadedAt:0,lastSectorAt:0,selectedSector:null,hoverSector:null,trailVisible:false,saveKey:null,saveFingerprint:null,
  policy:Policy.normalize({preset:'balanced'}),policyLoaded:false,policySaved:false,policyRev:0,policyBusy:false,policyDirty:false};
 function status(message,warning=false){const el=$('portfolio-status');if(!el)return;el.hidden=!message;el.textContent=message||'';el.classList.toggle('portfolio-status-warning',warning);}
 function isOpen(){return !root.hidden&&!document.hidden&&!document.body.classList.contains('site-locked');}
@@ -230,7 +230,7 @@ function renderRotation(){
  };
  const trail=Array.isArray(chosen.trail)?chosen.trail.filter(p=>Number.isFinite(p.rs5)&&Number.isFinite(p.rs20)):[];
  const points=trail.map(p=>xx(p.rs20).toFixed(1)+','+yy(p.rs5).toFixed(1)).join(' ');
- const line=(state.hoverSector||state.selectedSector)&&points?'<polyline points="'+points+'" fill="none" stroke="#6a84bd" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity=".67"/>':'';
+ const line=(state.hoverSector||state.trailVisible)&&points?'<polyline points="'+points+'" fill="none" stroke="#6a84bd" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity=".67"/>':'';
  const axis='<line x1="'+zx+'" y1="'+top+'" x2="'+zx+'" y2="'+bottom+'" stroke="#9aaac0" stroke-dasharray="4 5"/>'+
   '<line x1="'+left+'" y1="'+zy+'" x2="'+right+'" y2="'+zy+'" stroke="#9aaac0" stroke-dasharray="4 5"/>';
  const dotSvg=items.filter(x=>x.id!==chosen.id).map(circle).join('')+circle(chosen);
@@ -246,7 +246,7 @@ function renderRotation(){
 }
 function selectSector(id){
  if(!state.rotation?.sectors?.some(x=>x.id===id))return;
- state.selectedSector=id;state.hoverSector=null;renderRotation();
+ state.selectedSector=id;state.hoverSector=null;state.trailVisible=true;renderRotation();
 }
 function render(){
  if(!state.loaded)return;
