@@ -64,6 +64,78 @@ function renderSector(z){
  return '<div class="sector"><span>'+safe(s.label||s.id||'')+'</span><div class="bar"><i style="width:'+Math.max(0,Math.min(100,score||0))+'%;background:'+(high?'#db885c':'#60a5fa')+'"></i></div><b>'+ (Number.isFinite(score)?score.toFixed(0)+'/100':'—')+'</b></div>';
  }).join('')+'<p class="muted small">Điểm căng thẳng từ Risk Monitor FinQuery; điểm cao biểu thị rủi ro tăng, không phải sức mạnh tương đối. Biểu đồ luân chuyển 5/20 phiên được tính riêng từ lịch sử giá.</p>';
 }
+
+function renderRotation(){
+ const data=state.rotation,records=Array.isArray(data?.sectors)?data.sectors:[];
+ const valid=records.filter(s=>Number.isFinite(s.rs5)&&Number.isFinite(s.rs20));
+ $('rotationStatus').textContent=data?.sourceDate?
+  'Phiên '+data.sourceDate+' · '+(data.benchmark?.eligibleSymbols||0)+' mã so sánh · '+valid.length+'/'+records.length+' ngành đủ dữ liệu'
+  :'Chưa có snapshot sức mạnh ngành đồng bộ; không hiển thị điểm mô phỏng.';
+ if(!valid.length){
+  $('rotationChart').innerHTML='<p class="muted">Chưa đủ chuỗi lịch sử để tính sức mạnh ngành 5/20 phiên.</p>';
+  $('rotationRows').innerHTML='<tr><td colspan="5">Chưa đủ dữ liệu ngành.</td></tr>';
+  return;
+ }
+ $('rotationRows').innerHTML=records.map(s=>
+  '<tr><td>'+safe(s.label)+'</td><td>'+pct(s.rs5)+'</td><td>'+pct(s.rs20)+'</td><td>'+
+  safe(s.used+'/'+s.members)+'</td><td>'+safe(s.status==='sufficient'?'Đủ mẫu':'Mẫu mỏng')+'</td></tr>'
+ ).join('');
+ const left=62,right=766,top=34,bottom=335,width=right-left,height=bottom-top;
+ const max=Math.max(5,Math.ceil(Math.max(...valid.flatMap(s=>[Math.abs(s.rs5),Math.abs(s.rs20)]))*1.17));
+ const xpos=v=>left+((v+max)/(2*max))*width;
+ const ypos=v=>bottom-((v+max)/(2*max))*height;
+ const x0=xpos(0),y0=ypos(0);
+ const color=s=>s.rs20>=0?(s.rs5>=0?'#3ad399':'#f4bf56'):(s.rs5>=0?'#65c8dd':'#f47b8b');
+ const rect=(x,y,w,h,fill)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+fill+'" rx="6"/>';
+ const area=rect(left,top,x0-left,y0-top,'#15363d')+rect(x0,top,right-x0,y0-top,'#153b31')+
+            rect(left,y0,x0-left,bottom-y0,'#3a2737')+rect(x0,y0,right-x0,bottom-y0,'#3c3324');
+ const axes='<line x1="'+x0+'" y1="'+top+'" x2="'+x0+'" y2="'+bottom+'" stroke="#8197b4" stroke-dasharray="4 6" opacity=".7"/>'+
+ '<line x1="'+left+'" y1="'+y0+'" x2="'+right+'" y2="'+y0+'" stroke="#8197b4" stroke-dasharray="4 6" opacity=".7"/>';
+ const labels='<text x="'+(left+10)+'" y="'+(top+20)+'" fill="#80c8d7" font-size="12">Đang phục hồi</text>'+
+ '<text x="'+(right-10)+'" y="'+(top+20)+'" fill="#83e9b8" text-anchor="end" font-size="12">Khỏe</text>'+
+ '<text x="'+(left+10)+'" y="'+(bottom-12)+'" fill="#f4afb4" font-size="12">Yếu</text>'+
+ '<text x="'+(right-10)+'" y="'+(bottom-12)+'" fill="#f6cf83" text-anchor="end" font-size="12">Đang suy yếu</text>'+
+ '<text x="'+((left+right)/2)+'" y="381" fill="#a8bdd6" font-size="12" text-anchor="middle">RS 20 phiên so với rổ cổ phiếu →</text>'+
+ '<text x="16" y="'+((top+bottom)/2)+'" fill="#a8bdd6" font-size="12" text-anchor="middle" transform="rotate(-90 16 '+((top+bottom)/2)+')">RS 5 phiên →</text>'+
+ '<text x="'+left+'" y="353" fill="#8199bc" font-size="11" text-anchor="middle">-'+max+'%</text>'+
+ '<text x="'+right+'" y="353" fill="#8199bc" font-size="11" text-anchor="middle">+'+max+'%</text>';
+ const dots=valid.map(s=>{
+  const c=color(s),r=Math.min(11,Math.max(5,4+Math.sqrt(s.used||0)*1.6));
+  const x=xpos(s.rs20),y=ypos(s.rs5);
+  const trail=Array.isArray(s.trail)?s.trail.filter(p=>Number.isFinite(p.rs5)&&Number.isFinite(p.rs20)):[];
+  const points=trail.map(p=>xpos(p.rs20).toFixed(2)+','+ypos(p.rs5).toFixed(2)).join(' ');
+  const detail=s.label+': RS5 '+pct(s.rs5)+', RS20 '+pct(s.rs20)+'. '+s.used+'/'+s.members+' mã.';
+  const rightEdge=x>right-108;
+  const pos=rightEdge?x-r-6:x+r+6,anchor=rightEdge?'end':'start';
+  return (points?'<polyline points="'+points+'" fill="none" stroke="'+c+'" stroke-width="1.5" opacity=".48"/>':'')+
+    '<circle tabindex="0" class="rot-dot" role="button" aria-label="'+safe(detail)+'" data-rotation-id="'+safe(s.id)+'" cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+c+'" stroke="#132238" stroke-width="'+(s.status==='thin'?3:1.5)+'" opacity="'+(s.status==='thin'?.62:1)+'"><title>'+safe(detail)+'</title></circle>'+
+    '<text x="'+pos+'" y="'+(y-9)+'" fill="#ecf4ff" text-anchor="'+anchor+'" font-size="11">'+safe(s.label)+'</text>';
+ }).join('');
+ $('rotationChart').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 810 393" role="img" aria-label="Biểu đồ sức mạnh tương đối ngành 20 và 5 phiên">'+area+axes+labels+dots+'</svg>';
+ $('rotationChart').hidden=state.rotationMode!=='chart';$('rotationTable').hidden=state.rotationMode!=='table';
+ $('rotationChartMode').setAttribute('aria-pressed',state.rotationMode==='chart'?'true':'false');
+ $('rotationTableMode').setAttribute('aria-pressed',state.rotationMode==='table'?'true':'false');
+}
+function chooseSector(id){
+ const sector=state.rotation?.sectors?.find(x=>x.id===id);
+ if(!sector)return;
+ const trajectory=(sector.trail||[]).map(p=>p.date+' ('+pct(p.rs20)+', '+pct(p.rs5)+')').join(' → ');
+ $('rotationSelected').innerHTML='<b>'+safe(sector.label)+'</b> · RS 5 phiên '+pct(sector.rs5)+' · RS 20 phiên '+pct(sector.rs20)+
+ ' · '+safe(sector.used+'/'+sector.members)+' mã có dữ liệu · '+(sector.status==='sufficient'?'Đủ mẫu':'Mẫu mỏng')+
+ '<p class="small muted">'+safe(trajectory)+'</p>';
+}
+$('rotationChart').addEventListener('click',e=>{
+ const target=e.target.closest('[data-rotation-id]');
+ if(target)chooseSector(target.getAttribute('data-rotation-id'));
+});
+$('rotationChart').addEventListener('keydown',e=>{
+ if(e.key!=='Enter'&&e.key!==' ')return;
+ const target=e.target.closest('[data-rotation-id]');
+ if(target){e.preventDefault();chooseSector(target.getAttribute('data-rotation-id'));}
+});
+$('rotationChartMode').addEventListener('click',()=>{state.rotationMode='chart';renderRotation();});
+$('rotationTableMode').addEventListener('click',()=>{state.rotationMode='table';renderRotation();});
+
 async function load(){
  setStatus('Đang xác thực và tải danh mục…'); 
  try{
