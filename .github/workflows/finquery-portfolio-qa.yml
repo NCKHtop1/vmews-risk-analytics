@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'financial-report/portfolio.*'
+      - 'financial-report/scripts/build_portfolio_sector_rotation.py'
+      - 'financial-report/tests/test_portfolio_sector_rotation.py'
       - 'financial-report/frontend/index.html'
       - 'finquery-access/api/index.js'
       - 'finquery-access/migrations/003_portfolio_ledger.sql'
@@ -28,6 +30,8 @@ jobs:
         run: |
           node --check financial-report/portfolio.js
           node --check finquery-access/api/index.js
+      - name: Quant rotation unit tests
+        run: python -m unittest discover -s financial-report/tests -p 'test_portfolio_sector_rotation.py'
       - name: Contract checks
         run: |
           node --test financial-report/tests/portfolio_intelligence.test.cjs
