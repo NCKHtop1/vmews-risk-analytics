@@ -1435,6 +1435,72 @@ svg[data-fq-inspect] .fq-chart-cursor{fill:#fff;stroke:#3565c7;stroke-width:2.5}
 @media(max-width:1080px){.portfolio-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.portfolio-layout{grid-template-columns:1fr}.portfolio-insight-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.portfolio-page{border-radius:12px}.portfolio-head{padding:20px 16px}.portfolio-head h1{font-size:23px}.portfolio-head-actions{justify-items:start}.portfolio-head-stamps,.portfolio-head-buttons{justify-content:flex-start}.portfolio-tabs{padding:9px 14px 0}.portfolio-body{padding:16px}.portfolio-kpi{min-height:110px;padding:13px}.portfolio-kpi strong{font-size:20px}.portfolio-card{padding:14px}.portfolio-insight-list{grid-template-columns:1fr}.portfolio-status{margin:12px 16px 0}.portfolio-rotation-chart{overflow:hidden;min-height:220px}}
 @media(max-width:460px){.portfolio-kpis{gap:8px}.portfolio-kpi{padding:11px}.portfolio-kpi>span{font-size:9px}.portfolio-kpi strong{font-size:17px}#portfolio-entry-form{grid-template-columns:1fr}}
+
+
+/* Portfolio v1.4: decision-first onboarding, disciplined templates and clean chart. */
+.portfolio-onboarding{margin:0 0 20px;padding:22px 24px;border:1px solid #dde6f6;background:linear-gradient(140deg,#fbfcff,#f4f7ff);border-radius:15px}
+.portfolio-onboarding-title{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;margin-bottom:17px}
+.portfolio-onboarding-title h2{font-size:18px;margin:5px 0;color:#293b59}
+.portfolio-onboarding-title p{font-size:12px;margin:0;color:#76849a}
+.portfolio-page.portfolio-no-positions .portfolio-layout,.portfolio-page.portfolio-no-positions .portfolio-market-context,.portfolio-page.portfolio-no-positions #portfolio-plan-preview{display:none!important}
+.portfolio-template-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.portfolio-template{position:relative;padding:16px;border:1px solid #e1e7f0;background:#fff;border-radius:12px;min-width:0;transition:box-shadow .15s,border-color .15s}
+.portfolio-template.is-selected{border-color:#8094e4;background:#f6f8ff;box-shadow:0 0 0 2px #d8e2ff}
+.portfolio-template .portfolio-template-tag{font-size:9px;font-weight:800;letter-spacing:1px;color:#6579aa}
+.portfolio-template h3{margin:9px 0 6px;font-size:14px;color:#31445e}
+.portfolio-template p{min-height:34px;margin:0 0 12px;font-size:11px;color:#8290a2;line-height:1.5}
+.portfolio-template .portfolio-template-facts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.portfolio-template .portfolio-template-facts span{font-size:10px;padding:4px 7px;color:#536a8d;background:#edf2fb;border-radius:5px}
+.portfolio-page .portfolio-template button{width:100%;font-size:11px}
+.portfolio-onboarding-steps{display:flex;flex-wrap:wrap;gap:15px;margin-top:20px;padding-top:15px;border-top:1px solid #e3eaf6;color:#637793;font-size:11px}
+.portfolio-onboarding-steps span{display:inline-flex;align-items:center;gap:6px}.portfolio-onboarding-steps b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#e4ebfa;color:#5269be;font-size:10px}
+.portfolio-plan-preview{margin-bottom:16px}
+.portfolio-plan-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.portfolio-plan-summary>div{background:#f8fafd;padding:13px 14px;border:1px solid #eaf0f7;border-radius:10px}
+.portfolio-plan-summary span{font-size:10px;color:#8290a4;display:block}.portfolio-plan-summary strong{display:block;margin-top:7px;color:#344b67;font-size:14px}
+.portfolio-policy-stamp{font-size:10px;color:#657da7;background:#f1f5ff;padding:8px 10px;border:1px solid #e2e9fb;border-radius:20px}
+.portfolio-plan-settings{display:flex;align-items:end;justify-content:flex-start;gap:22px;flex-wrap:wrap;border:1px solid #e4eaf3;background:#f9fbfe;border-radius:12px;padding:17px 20px;margin:17px 0 26px}
+.portfolio-plan-settings label{display:grid;gap:9px;min-width:180px;flex:1 1 180px;color:#576b85;font-size:12px;font-weight:650}
+.portfolio-plan-settings label>span{display:inline;font-weight:750;color:#3758b8}
+.portfolio-plan-settings input[type=range]{accent-color:#536ed3;width:100%;cursor:pointer}
+.portfolio-plan-settings button{flex:0 0 auto}
+.portfolio-plan-head{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;border-bottom:1px solid #e8edf4;padding-bottom:15px}
+.portfolio-plan-head h2{font-size:17px;color:#293d5a;margin:6px 0}
+.portfolio-plan-head p{font-size:11px;color:#8290a2;margin:0}
+.portfolio-plan-status{font-size:11px;font-weight:750;color:#667794;background:#f5f7fb;border:1px solid #e5eaf3;border-radius:30px;padding:7px 12px}
+.portfolio-plan-status.has-actions{background:#fff8e9;color:#9e753c;border-color:#f1e2b7}
+.portfolio-plan-result{padding:18px 0}
+.portfolio-plan-message{font-size:12px;color:#64758d;line-height:1.6}
+.portfolio-review-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.portfolio-review-metrics div{padding:14px 17px;border-radius:11px;border:1px solid #e6eaf2;background:#fafbfe}
+.portfolio-review-metrics small{display:block;color:#8895a6;font-size:10px}
+.portfolio-review-metrics strong{display:block;color:#354b68;margin-top:7px;font-size:17px;font-variant-numeric:tabular-nums}
+.portfolio-review-trades{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.portfolio-review-trade{background:#fff;border:1px solid #e0e8f3;border-radius:11px;padding:14px 16px}
+.portfolio-review-trade strong{font-size:13px;color:#334b69}
+.portfolio-review-trade .portfolio-review-side{font-size:9px;border-radius:5px;padding:4px 7px;background:#e6f4ee;color:#328c5d;margin-right:8px}
+.portfolio-review-trade .portfolio-review-side.sell{background:#fff0ed;color:#bf6554}
+.portfolio-review-trade p{font-size:11px;margin:9px 0 0;color:#71839b}
+.portfolio-review-trade .portfolio-review-value{font-weight:700;font-size:13px;margin-top:11px;color:#3b526f}
+.portfolio-sector-rail{border:1px solid #e7edf5;background:#fff;border-radius:12px;padding:11px 10px;min-width:0;max-height:490px;overflow-y:auto}
+.portfolio-rotation-layout{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(185px,.85fr);gap:14px;align-items:start}
+.portfolio-rotation-chart{border:1px solid #e4eaf4;background:#fafcff;border-radius:12px;padding:8px;min-height:380px;min-width:0}
+.portfolio-sector-rail-head{display:flex;justify-content:space-between;gap:10px;padding:5px 7px 10px;border-bottom:1px solid #ecf0f6;font-size:11px;color:#6b7c95}
+.portfolio-sector-rail-head span{color:#8e9bb0}
+.portfolio-sector-list{display:grid;gap:3px;padding-top:7px}
+.portfolio-page .portfolio-sector-option{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:10px 9px;min-height:40px;width:100%;border:0;border-radius:8px;background:transparent;text-align:left;font-size:10.5px;color:#445774}
+.portfolio-sector-option .portfolio-sector-option-label{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.portfolio-sector-option .portfolio-sector-option-score{flex:0 0 auto;font-variant-numeric:tabular-nums;font-weight:750}
+.portfolio-page .portfolio-sector-option.is-selected{background:#eaf0ff;color:#3f5ec5}
+.portfolio-page .portfolio-sector-option:hover{background:#f4f7fd}
+.portfolio-sector-dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+.portfolio-sector-option-label-wrap{display:flex;gap:7px;align-items:center;min-width:0}
+.portfolio-rotation-chart .portfolio-rot-dot{transition:stroke-width .15s;outline-offset:3px}
+.portfolio-rotation-chart .portfolio-rot-dot:focus-visible{outline:2px solid #516bd0}
+.portfolio-rotation-detail{font-size:12px}
+@media(max-width:1130px){.portfolio-template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:820px){.portfolio-rotation-layout{grid-template-columns:1fr}.portfolio-sector-rail{max-height:240px}.portfolio-sector-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.portfolio-review-trades{grid-template-columns:1fr}.portfolio-plan-summary,.portfolio-review-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.portfolio-template-grid{grid-template-columns:1fr}.portfolio-onboarding{padding:16px}.portfolio-plan-summary,.portfolio-review-metrics{grid-template-columns:1fr}.portfolio-plan-settings{padding:13px}.portfolio-rotation-chart{min-height:230px}.portfolio-sector-list{grid-template-columns:1fr}}
 </style><style>/*
  * FinQuery responsive system · 2026-10-29
  * One shared layout layer for Market, Scanner, Strategy, Risk, Finance, Macro/ESG.
@@ -1817,6 +1883,7 @@ input,textarea,select{max-width:100%}
   </header>
   <nav id="portfolio-tabs" class="portfolio-tabs" role="tablist" aria-label="Không gian danh mục">
     <button type="button" role="tab" data-portfolio-tab="overview" aria-selected="true" class="active" aria-controls="portfolio-tab-overview">Tổng quan</button>
+    <button type="button" role="tab" data-portfolio-tab="plan" aria-selected="false" aria-controls="portfolio-tab-plan">Kế hoạch</button>
     <button type="button" role="tab" data-portfolio-tab="rotation" aria-selected="false" aria-controls="portfolio-tab-rotation">Sức mạnh ngành</button>
     <button type="button" role="tab" data-portfolio-tab="history" aria-selected="false" aria-controls="portfolio-tab-history">Giao dịch</button>
   </nav>
@@ -1829,6 +1896,11 @@ input,textarea,select{max-width:100%}
         <article class="portfolio-kpi"><span>TIỀN MẶT</span><strong id="portfolio-cash">—</strong><small id="portfolio-cash-detail">Sẵn có</small></article>
         <article class="portfolio-kpi"><span>MỨC TẬP TRUNG</span><strong id="portfolio-concentration">—</strong><small id="portfolio-concentration-detail">Mã có tỷ trọng lớn nhất</small></article>
       </div>
+<section id="portfolio-onboarding" class="portfolio-onboarding" hidden>
+        <div class="portfolio-onboarding-title"><div><span class="portfolio-kicker">KHỞI TẠO DANH MỤC</span><h2>Chọn cách quản lý trước, nhập giao dịch sau</h2><p>Chọn một trong các mẫu mục tiêu. Mẫu không tự thêm cổ phiếu hoặc giao dịch.</p></div><button type="button" id="portfolio-start-deposit" class="portfolio-primary">+ Nhập vốn ban đầu</button></div>
+        <div id="portfolio-setup-templates" class="portfolio-template-grid"></div>
+        <div class="portfolio-onboarding-steps"><span><b>01</b> Chọn mẫu phân bổ</span><span><b>02</b> Ghi nhận tiền và cổ phiếu</span><span><b>03</b> Xem đánh giá theo phiên</span></div>
+      </section>
       <div class="portfolio-layout">
         <section class="portfolio-card portfolio-holdings">
           <div class="portfolio-section-title"><div><span>DANH MỤC CỔ PHIẾU</span><h2>Các mã đang nắm giữ</h2></div><small id="portfolio-count">—</small></div>
@@ -1844,16 +1916,44 @@ input,textarea,select{max-width:100%}
           <div id="portfolio-alerts" class="portfolio-alerts"></div>
         </aside>
       </div>
+<section id="portfolio-plan-preview" class="portfolio-card portfolio-plan-preview" hidden>
+        <div class="portfolio-section-title"><div><span>KẾ HOẠCH PHÂN BỔ</span><h2>Rà soát &amp; rebalance</h2></div><button type="button" data-portfolio-subtab="plan" class="portfolio-text-link">Xem kế hoạch ↗</button></div>
+        <div id="portfolio-plan-summary" class="portfolio-plan-summary"></div>
+      </section>
       <section class="portfolio-card portfolio-market-context">
         <div class="portfolio-section-title"><div><span>GÓC NHÌN ĐỊNH LƯỢNG</span><h2>Diễn biến liên quan đến danh mục</h2></div><button type="button" data-portfolio-subtab="rotation" class="portfolio-text-link">Xem sức mạnh ngành ↗</button></div>
         <div id="portfolio-insights" class="portfolio-insight-list"></div>
       </section>
     </section>
+<section id="portfolio-tab-plan" class="portfolio-tab-panel" data-portfolio-panel="plan" role="tabpanel" hidden>
+      <div class="portfolio-section-title"><div><span>QUẢN LÝ PHÂN BỔ</span><h2>Chọn mẫu quản trị danh mục</h2><p>Mục tiêu áp dụng cho các mã đang nắm giữ. Có thể thay đổi bất cứ lúc nào.</p></div><span class="portfolio-policy-stamp" id="portfolio-policy-stamp">Đang tải cấu hình…</span></div>
+      <div id="portfolio-policy-cards" class="portfolio-template-grid"></div>
+      <div class="portfolio-plan-settings">
+        <label>Tiền mặt mục tiêu <span id="portfolio-cash-target-label">10%</span><input id="portfolio-cash-target" type="range" min="0" max="50" step="5" value="10"></label>
+        <label>Ngưỡng lệch tỷ trọng <span id="portfolio-drift-label">5 điểm %</span><input id="portfolio-drift" type="range" min="2" max="15" step="1" value="5"></label>
+        <button id="portfolio-policy-save" type="button" class="portfolio-primary">Lưu kế hoạch</button>
+      </div>
+      <div class="portfolio-plan-head">
+        <div><span class="portfolio-kicker">BÁO CÁO THEO PHIÊN</span><h2>Đề xuất cân bằng lại</h2><p id="portfolio-plan-date">Đang kiểm tra dữ liệu giá…</p></div>
+        <div id="portfolio-plan-status" class="portfolio-plan-status">Đang tính…</div>
+      </div>
+      <div id="portfolio-plan-result" class="portfolio-plan-result"></div>
+      <div class="portfolio-table-wrap">
+        <table class="portfolio-table portfolio-targets-table">
+          <thead><tr><th>Mã</th><th>Tỷ trọng hiện tại</th><th>Mục tiêu</th><th>Chênh lệch</th><th>Đánh giá</th></tr></thead>
+          <tbody id="portfolio-target-rows"><tr><td colspan="5" class="portfolio-empty">Chưa có dữ liệu phân bổ.</td></tr></tbody>
+        </table>
+      </div>
+      <p class="portfolio-method-note">Đánh giá mỗi phiên theo độ lệch mục tiêu, giới hạn mã/ngành, tiền mặt và chi phí ước tính. Giá cổ phiếu kiểm tra mỗi 5 phút; đề xuất chỉ thay đổi khi có dữ liệu và điều kiện mới.</p>
+    </section>
     <section id="portfolio-tab-rotation" class="portfolio-tab-panel" data-portfolio-panel="rotation" role="tabpanel" hidden>
       <div class="portfolio-section-title"><div><span>SECTOR ROTATION</span><h2>Sức mạnh tương đối ngành</h2><p id="portfolio-sector-stamp">RS 5 và 20 phiên</p></div><div class="portfolio-switch"><button type="button" data-portfolio-view="chart" class="active" aria-pressed="true">Biểu đồ</button><button type="button" data-portfolio-view="table" aria-pressed="false">Bảng</button></div></div>
-      <div id="portfolio-rotation-chart" class="portfolio-rotation-chart" role="img" aria-label="Biểu đồ sức mạnh ngành so với thị trường, 5 và 20 phiên"></div>
+      <div class="portfolio-rotation-layout">
+        <div id="portfolio-rotation-chart" class="portfolio-rotation-chart" role="img" aria-label="Biểu đồ sức mạnh ngành 5 và 20 phiên; chọn một điểm để xem đường di chuyển"></div>
+        <aside class="portfolio-sector-rail"><div class="portfolio-sector-rail-head"><strong>13 nhóm ngành</strong><span>RS20</span></div><div id="portfolio-sector-list" class="portfolio-sector-list"></div></aside>
+      </div>
       <div id="portfolio-rotation-table" class="portfolio-table-wrap" hidden><table class="portfolio-table"><thead><tr><th>Ngành</th><th>5 phiên</th><th>20 phiên</th><th>Số mã</th><th>Xu hướng</th></tr></thead><tbody id="portfolio-rotation-rows"></tbody></table></div>
-      <div id="portfolio-rotation-detail" class="portfolio-rotation-detail">Chọn một ngành để xem diễn biến.</div>
+      <div id="portfolio-rotation-detail" class="portfolio-rotation-detail">Chọn một ngành để xem diễn biến 5 phiên. Chỉ hiển thị đường đi của ngành được chọn.</div>
       <p class="portfolio-method-note" id="portfolio-method-note">So sánh hiệu suất ngành với trung vị các cổ phiếu đủ dữ liệu · Cập nhật theo phiên dữ liệu.</p>
     </section>
     <section id="portfolio-tab-history" class="portfolio-tab-panel" data-portfolio-panel="history" role="tabpanel" hidden>
@@ -4088,11 +4188,130 @@ window.FinAlphaRadar={refresh:load,setData:data=>{state.data=data;state.failed=f
 render();load();
 setInterval(()=>{if(!document.hidden)load();},300000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
-})();</script><script>/* FinQuery Portfolio Intelligence v1.3 — native workspace, shared market source, five-minute review. */
+})();</script><script>/* FinQuery Portfolio — transparent daily allocation review.
+ * Pure computation, independent from DOM and the user's identity.
+ */
+(function(root,factory){
+ const api=factory();
+ if(typeof module==='object'&&module.exports)module.exports=api;
+ if(root)root.FinPortfolioPolicy=api;
+})(typeof window==='object'?window:null,function(){'use strict';
+ const PRESETS=Object.freeze({
+  balanced:Object.freeze({id:'balanced',title:'Cân bằng',subtitle:'Phân tán vừa phải, giữ thanh khoản',cashPct:10,maxStockPct:30,sectorCapPct:45,driftPct:5,minTradeVnd:2000000,feeBps:15,sellTaxBps:10,lot:100}),
+  equal:Object.freeze({id:'equal',title:'Chia đều',subtitle:'Phân bổ đồng đều trên các mã đang có',cashPct:5,maxStockPct:25,sectorCapPct:50,driftPct:4,minTradeVnd:1000000,feeBps:15,sellTaxBps:10,lot:100}),
+  defensive:Object.freeze({id:'defensive',title:'Thận trọng',subtitle:'Giữ tiền mặt và giới hạn tập trung',cashPct:30,maxStockPct:20,sectorCapPct:35,driftPct:4,minTradeVnd:2000000,feeBps:15,sellTaxBps:10,lot:100}),
+  focused:Object.freeze({id:'focused',title:'Tập trung có kiểm soát',subtitle:'Ít mã hơn, biên độ điều chỉnh rộng',cashPct:10,maxStockPct:40,sectorCapPct:65,driftPct:7,minTradeVnd:3000000,feeBps:15,sellTaxBps:10,lot:100})
+ });
+ const N=v=>Number.isFinite(Number(v))?Number(v):NaN;
+ const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
+ function normalize(input){
+  const key=String(input?.preset||input?.id||'balanced');
+  const base=PRESETS[key]||PRESETS.balanced;
+  const cash=N(input?.cashPct??base.cashPct),drift=N(input?.driftPct??base.driftPct);
+  return Object.freeze({...base,cashPct:Number.isFinite(cash)?clamp(Math.round(cash),0,50):base.cashPct,
+   driftPct:Number.isFinite(drift)?clamp(Math.round(drift),2,15):base.driftPct});
+ }
+ function venueDate(sourceTime){
+  const d=new Date(sourceTime||'');
+  if(!Number.isFinite(d.getTime()))return null;
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'})
+   .formatToParts(d);
+  const out=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+  return out.year+'-'+out.month+'-'+out.day;
+ }
+ function review(input){
+  const cfg=normalize(input?.policy),book=input?.portfolio||{},rows=Array.isArray(book.rows)?book.rows:[];
+  const generatedAt=input?.now??Date.now(),sourceTime=input?.sourceTime||null,day=venueDate(sourceTime);
+  const hasPosition=rows.some(r=>N(r.quantity)>0);
+  const base={policy:cfg,sourceDate:day,generatedAt:new Date(generatedAt).toISOString(),targets:[],
+   trades:[],flags:[],blocked:false,why:null,driftMax:0,targetCashPct:100,asOf:sourceTime,
+   estimatedCostVnd:0,estimatedBuyVnd:0,estimatedSellVnd:0,lot:cfg.lot};
+  if(!hasPosition){base.why='Thêm cổ phiếu để lập kế hoạch phân bổ.';return base;}
+  const nav=N(book.nav),cash=N(book.cash);
+  if(!Number.isFinite(nav)||nav<=0||!Number.isFinite(cash)||cash<-.01||
+     rows.some(r=>!(N(r.quantity)>0)||!Number.isFinite(N(r.value))||!(N(r.price)>0))){
+   base.blocked=true;base.why='Thiếu giá hoặc NAV chưa hợp lệ. Kế hoạch tạm dừng.';return base;
+  }
+  if(!day){base.blocked=true;base.why='Chưa xác định được ngày dữ liệu giá.';return base;}
+  const src=new Date(sourceTime).getTime();
+  if(!Number.isFinite(src)||generatedAt-src>5*86400000||src-generatedAt>300000){
+   base.blocked=true;base.why='Giá chưa đủ mới để lập kế hoạch. Cần đồng bộ phiên gần nhất.';return base;
+  }
+  // This is an observation by source session, not an automated trade or forecast.
+  const filtered=rows.filter(r=>N(r.quantity)>0).map(r=>({...r,price:N(r.price),value:N(r.value),quantity:N(r.quantity)}));
+  const baseWeight=Math.min((100-cfg.cashPct)/filtered.length,cfg.maxStockPct);
+  const grouped=new Map();
+  for(const h of filtered){
+   const id=String(h.sectorId||('unknown:'+h.symbol));
+   const g=grouped.get(id)||[];g.push(h);grouped.set(id,g);
+  }
+  const targets=[];
+  for(const [sector,holders] of grouped){
+   const groupTarget=Math.min(baseWeight*holders.length,cfg.sectorCapPct);
+   const each=groupTarget/holders.length;
+   for(const h of holders){
+    const currentPct=100*h.value/nav;
+    const driftPP=each-currentPct;
+    targets.push({symbol:h.symbol,sectorId:sector,quantity:h.quantity,price:h.price,value:h.value,
+     currentPct,targetPct:each,driftPP,deltaVnd:nav*driftPP/100});
+   }
+  }
+  base.targets=targets.sort((a,b)=>Math.abs(b.driftPP)-Math.abs(a.driftPP));
+  base.targetCashPct=clamp(100-targets.reduce((s,h)=>s+h.targetPct,0),0,100);
+  base.driftMax=Math.max(0,...targets.map(h=>Math.abs(h.driftPP)));
+  const estimate=(notional,side)=>notional*(cfg.feeBps+(side==='SELL'?cfg.sellTaxBps:0))/10000;
+  const critical=base.targets.filter(t=>Math.abs(t.driftPP)>=cfg.driftPct&&Math.abs(t.deltaVnd)>=cfg.minTradeVnd);
+  // Sell overweight positions first. Buys cannot spend projected reserve cash.
+  let liquid=cash;
+  const sells=critical.filter(t=>t.deltaVnd<0).sort((a,b)=>a.driftPP-b.driftPP);
+  for(const t of sells){
+   const qty=Math.min(Math.floor(Math.abs(t.deltaVnd)/t.price/cfg.lot)*cfg.lot,
+                      Math.floor(t.quantity/cfg.lot)*cfg.lot);
+   const gross=qty*t.price;
+   if(qty<cfg.lot||gross<cfg.minTradeVnd)continue;
+   const cost=estimate(gross,'SELL');
+   liquid+=gross-cost;
+   base.estimatedCostVnd+=cost;base.estimatedSellVnd+=gross;
+   base.trades.push({symbol:t.symbol,side:'SELL',quantity:qty,price:t.price,
+    grossVnd:gross,estimatedCostVnd:cost,netCashChangeVnd:gross-cost,
+    currentPct:t.currentPct,targetPct:t.targetPct,driftPP:t.driftPP});
+  }
+  const cashReserve=nav*base.targetCashPct/100;
+  let usable=Math.max(0,liquid-cashReserve);
+  const buys=critical.filter(t=>t.deltaVnd>0).sort((a,b)=>b.deltaVnd-a.deltaVnd);
+  for(const t of buys){
+   const desiredQty=Math.floor(t.deltaVnd/t.price/cfg.lot)*cfg.lot;
+   const budgetQty=Math.floor(usable/(t.price*(1+cfg.feeBps/10000))/cfg.lot)*cfg.lot;
+   const qty=Math.min(desiredQty,budgetQty),gross=qty*t.price;
+   if(qty<cfg.lot||gross<cfg.minTradeVnd)continue;
+   const cost=estimate(gross,'BUY');
+   if(gross+cost>usable+0.01)continue;
+   usable-=gross+cost;
+   base.estimatedCostVnd+=cost;base.estimatedBuyVnd+=gross;
+   base.trades.push({symbol:t.symbol,side:'BUY',quantity:qty,price:t.price,
+    grossVnd:gross,estimatedCostVnd:cost,netCashChangeVnd:-(gross+cost),
+    currentPct:t.currentPct,targetPct:t.targetPct,driftPP:t.driftPP});
+  }
+  if(base.trades.length===0){
+   base.why=critical.length?'Chênh lệch đã vượt ngưỡng nhưng chưa đủ điều kiện số tiền, lô hoặc tiền mặt.':
+    'Phân bổ đang trong biên độ theo dõi. Chưa cần cân bằng lại.';
+  }
+  const balance=book.sectorAllocations||[];
+  const excessive=balance.filter(s=>N(s.weight)>=cfg.sectorCapPct);
+  if(excessive.length)base.flags.push('Nhóm ngành vượt mức theo dõi: '+excessive.map(s=>s.name).join(', '));
+  if(rows.some(r=>!r.sectorId))base.flags.push('Một số mã chưa được xác định ngành.');
+  if(!Number.isFinite(base.estimatedCostVnd)||base.trades.some(t=>!Number.isSafeInteger(t.quantity)||t.quantity<0)){
+   base.blocked=true;base.trades=[];base.why='Không thể lượng hóa chi phí hợp lệ.';
+  }
+  return base;
+ }
+ return {PRESETS,normalize,venueDate,review};
+});
+</script><script>/* FinQuery Portfolio Intelligence v1.3 — native workspace, shared market source, five-minute review. */
 (()=>{'use strict';
 const $=id=>document.getElementById(id),root=$('portfolio');
 if(!root)return;
-const FIVE_MIN=300000,SECTOR_RECHECK=3600000;
+const FIVE_MIN=300000,SECTOR_RECHECK=3600000,Policy=window.FinPortfolioPolicy;
 const vnInt=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:0});
 const formatMoney=n=>Number.isFinite(n)?vnInt.format(Math.round(n))+' đ':'—';
 const formatPct=n=>Number.isFinite(n)?(n>0?'+':'')+n.toFixed(2)+'%':'—';
@@ -4101,7 +4320,8 @@ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const number=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 const method={DEPOSIT:'Nạp tiền',WITHDRAW:'Rút tiền',BUY:'Mua',SELL:'Bán',DIVIDEND:'Cổ tức'};
 const state={loaded:false,loading:false,events:[],quotes:{},risk:null,rotation:null,tab:'overview',chartMode:'chart',sourceTime:null,
- lastLoadedAt:0,lastSectorAt:0,selectedSector:null,saveKey:null,saveFingerprint:null};
+ lastLoadedAt:0,lastSectorAt:0,selectedSector:null,saveKey:null,saveFingerprint:null,
+ policy:Policy.normalize({preset:'balanced'}),policyLoaded:false,policySaved:false,policyRev:0,policyBusy:false,policyDirty:false};
 function status(message,warning=false){const el=$('portfolio-status');if(!el)return;el.hidden=!message;el.textContent=message||'';el.classList.toggle('portfolio-status-warning',warning);}
 function isOpen(){return !root.hidden&&!document.hidden&&!document.body.classList.contains('site-locked');}
 async function json(url,options={}){
@@ -4185,12 +4405,13 @@ function printHoldings(z){
  }).join(''):'<tr><td colspan="9" class="portfolio-empty">Chưa có mã. Chọn + Giao dịch để bắt đầu theo dõi.</td></tr>';
 }
 function renderKPIs(z){
- $('portfolio-nav').textContent=formatMoney(z.nav);
- $('portfolio-cash').textContent=formatMoney(z.cash);
- $('portfolio-pnl').textContent=formatMoney(z.pnl);
+ const noTransactions=state.events.length===0;
+ $('portfolio-nav').textContent=noTransactions?'—':formatMoney(z.nav);
+ $('portfolio-cash').textContent=noTransactions?'—':formatMoney(z.cash);
+ $('portfolio-pnl').textContent=noTransactions?'—':formatMoney(z.pnl);
  $('portfolio-pnl').className=z.pnl<0?'portfolio-down':z.pnl>0?'portfolio-up':'';
- $('portfolio-nav-note').textContent=z.missing.length?'Thiếu giá: '+z.missing.join(', '):'Cổ phiếu + tiền mặt';
- $('portfolio-pnl-detail').textContent=z.missing.length?'Đang chờ giá đủ mã':'Đã chốt · Chưa chốt · Cổ tức';
+ $('portfolio-nav-note').textContent=noTransactions?'Chưa thiết lập':z.missing.length?'Thiếu giá: '+z.missing.join(', '):'Cổ phiếu + tiền mặt';
+ $('portfolio-pnl-detail').textContent=noTransactions?'Bắt đầu bằng mẫu phân bổ':z.missing.length?'Đang chờ giá đủ mã':'Đã chốt · Chưa chốt · Cổ tức';
  $('portfolio-concentration').textContent=z.rows.length&&z.nav!==null?formatPct(z.concentration):'—';
  $('portfolio-concentration-detail').textContent=z.top?z.top.symbol+' trong giá trị danh mục':'Chưa có mã';
  $('portfolio-cash-detail').textContent=z.rows.length+' mã đang nắm giữ';
@@ -4241,7 +4462,7 @@ function renderHistory(){
   :'<tr><td colspan="6" class="portfolio-empty">Chưa có giao dịch.</td></tr>';
 }
 function switchTab(tab,focus=false){
- if(!['overview','rotation','history'].includes(tab))return;
+ if(!['overview','plan','rotation','history'].includes(tab))return;
  state.tab=tab;
  for(const b of $('portfolio-tabs').querySelectorAll('[data-portfolio-tab]')){
   const on=b.dataset.portfolioTab===tab;b.classList.toggle('active',on);b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;if(on&&focus)b.focus({preventScroll:true});
@@ -4249,62 +4470,96 @@ function switchTab(tab,focus=false){
  for(const sec of root.querySelectorAll('[data-portfolio-panel]'))sec.hidden=sec.dataset.portfolioPanel!==tab;
  if(tab==='rotation'&&Date.now()-state.lastSectorAt>SECTOR_RECHECK)refreshSector().catch(()=>{});
  if(tab==='rotation')requestAnimationFrame(()=>renderRotation());
+ if(tab==='plan')document.dispatchEvent(new Event('finquery:portfolio-plan-open'));
 }
 function rotateStatus(s){return s.rs20>=0?(s.rs5>=0?'Khỏe':'Đang suy yếu'):(s.rs5>=0?'Hồi phục':'Yếu');}
 function renderRotation(){
- const data=state.rotation,sectors=Array.isArray(data?.sectors)?data.sectors:[],items=sectors.filter(s=>Number.isFinite(s.rs5)&&Number.isFinite(s.rs20));
- $('portfolio-sector-stamp').textContent=data?.sourceDate?'Phiên '+data.sourceDate+' · '+(data.benchmark?.eligibleSymbols||0)+' mã hợp lệ · '+items.length+' ngành có RS':'Đang chờ dữ liệu ngành';
- const rows=$('portfolio-rotation-rows');
- rows.innerHTML=sectors.length?sectors.map(s=>'<tr><td>'+safe(s.label||s.id)+'</td><td>'+formatPct(s.rs5)+'</td><td>'+formatPct(s.rs20)+
- '</td><td>'+safe((s.used??0)+'/'+(s.members??0))+'</td><td>'+safe(Number.isFinite(s.rs5)?rotateStatus(s):'Chưa đủ dữ liệu')+'</td></tr>').join('')
- :'<tr><td colspan="5" class="portfolio-empty">Đang chờ dữ liệu ngành.</td></tr>';
- $('portfolio-rotation-table').hidden=state.chartMode!=='table';
+ const data=state.rotation,all=Array.isArray(data?.sectors)?data.sectors:[],
+   items=all.filter(x=>Number.isFinite(x.rs5)&&Number.isFinite(x.rs20));
+ const held=new Set(calculate().sectorAllocations.map(x=>x.id));
+ const stamp=data?.sourceDate?'Phiên '+data.sourceDate+' · '+(data.benchmark?.eligibleSymbols||0)+' mã đủ chuỗi · '+items.length+' ngành có RS':'Chưa có dữ liệu ngành';
+ $('portfolio-sector-stamp').textContent=stamp;
+ const railTitle=root.querySelector('.portfolio-sector-rail-head strong');if(railTitle)railTitle.textContent=items.length+' nhóm ngành';
+ $('portfolio-rotation-rows').innerHTML=all.length?all.map(x=>'<tr><td>'+safe(x.label||x.id)+'</td><td>'+formatPct(x.rs5)+'</td><td>'+
+  formatPct(x.rs20)+'</td><td>'+safe((x.used??0)+'/'+(x.members??0))+'</td><td>'+safe(Number.isFinite(x.rs5)?rotateStatus(x):'Chưa đủ chuỗi')+'</td></tr>').join(''):
+ '<tr><td colspan="5" class="portfolio-empty">Chưa có dữ liệu ngành.</td></tr>';
  $('portfolio-rotation-chart').hidden=state.chartMode!=='chart';
- for(const b of root.querySelectorAll('[data-portfolio-view]')){const active=b.dataset.portfolioView===state.chartMode;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));}
- const host=$('portfolio-rotation-chart');
- if(!items.length){host.innerHTML='<p class="portfolio-muted">Chưa có chuỗi giá đủ điều kiện.</p>';return;}
- const max=Math.max(5,Math.ceil(Math.max(...items.flatMap(s=>[Math.abs(s.rs20),Math.abs(s.rs5)]))*1.18)),x1=65,x2=855,y1=30,y2=390;
- const xx=n=>x1+(n+max)/(2*max)*(x2-x1),yy=n=>y2-(n+max)/(2*max)*(y2-y1);
- const zeroX=xx(0),zeroY=yy(0),sectorHolding=new Set(calculate().sectorAllocations.map(a=>a.id));
- const rect=(x,y,w,h,c)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="6" fill="'+c+'"/>';
- const zones=rect(x1,y1,zeroX-x1,zeroY-y1,'#eaf6f4')+rect(zeroX,y1,x2-zeroX,zeroY-y1,'#e9f6ef')+
-  rect(x1,zeroY,zeroX-x1,y2-zeroY,'#fcf0f1')+rect(zeroX,zeroY,x2-zeroX,y2-zeroY,'#fff5e8');
- const labels='<text x="'+(x1+12)+'" y="'+(y1+21)+'" font-size="13" fill="#318b91">Hồi phục</text>'+
-  '<text x="'+(x2-12)+'" y="'+(y1+21)+'" text-anchor="end" font-size="13" fill="#287d56">Khỏe</text>'+
-  '<text x="'+(x1+12)+'" y="'+(y2-13)+'" font-size="13" fill="#bb5c65">Yếu</text>'+
-  '<text x="'+(x2-12)+'" y="'+(y2-13)+'" text-anchor="end" font-size="13" fill="#ab803a">Suy yếu</text>'+
-  '<text x="'+((x1+x2)/2)+'" y="432" font-size="12" fill="#6e7c8e" text-anchor="middle">RS 20 phiên →</text>'+
-  '<text x="16" y="'+((y1+y2)/2)+'" font-size="12" fill="#6e7c8e" text-anchor="middle" transform="rotate(-90 16 '+((y1+y2)/2)+')">RS 5 phiên →</text>'+
-  '<text x="'+x1+'" y="410" fill="#8a99ae" font-size="11" text-anchor="middle">-'+max+'%</text>'+
-  '<text x="'+x2+'" y="410" fill="#8a99ae" font-size="11" text-anchor="middle">+'+max+'%</text>';
- const dots=items.map((s,i)=>{
-  const x=xx(s.rs20),y=yy(s.rs5),trend=Array.isArray(s.trail)?s.trail.filter(p=>Number.isFinite(p.rs20)&&Number.isFinite(p.rs5)):[];
-  const color=s.rs20>=0?(s.rs5>=0?'#3caa72':'#dda84e'):(s.rs5>=0?'#54aebc':'#d96a76');
-  const path=trend.map(p=>xx(p.rs20).toFixed(1)+','+yy(p.rs5).toFixed(1)).join(' ');
-  const held=sectorHolding.has(s.id),radius=Math.min(11,5+Math.sqrt(s.used||0));
-  const tooltip=s.label+' · RS5 '+formatPct(s.rs5)+' · RS20 '+formatPct(s.rs20);
-  const lx=x>x2-150?x-radius-8:x+radius+8,anchor=x>x2-150?'end':'start';
-  return (path?'<polyline points="'+path+'" fill="none" stroke="'+color+'" stroke-width="1.6" opacity=".5"/>':'')+
-   '<circle role="button" tabindex="0" data-portfolio-sector="'+safe(s.id)+'" class="portfolio-rot-dot" cx="'+x+'" cy="'+y+'" r="'+radius+'" fill="'+color+'" stroke="'+(held?'#25385f':'#fff')+'" stroke-width="'+(held?3:1.5)+'" opacity="'+(s.status==='thin'?.6:1)+'"><title>'+safe(tooltip)+'</title></circle>'+
-   '<text x="'+lx+'" y="'+(y-8)+'" text-anchor="'+anchor+'" font-size="11" fill="#374c65" font-weight="'+(held?'700':'500')+'">'+safe(s.label)+'</text>';
+ $('portfolio-rotation-table').hidden=state.chartMode!=='table';
+ root.querySelector('.portfolio-sector-rail').hidden=state.chartMode!=='chart';
+ for(const button of root.querySelectorAll('[data-portfolio-view]')){
+  const on=button.dataset.portfolioView===state.chartMode;
+  button.classList.toggle('active',on);button.setAttribute('aria-pressed',String(on));
+ }
+ $('portfolio-sector-list').innerHTML=items.map(x=>{
+  const selected=state.selectedSector===x.id;
+  const color=x.rs20>=0?(x.rs5>=0?'#3caa72':'#dda84e'):(x.rs5>=0?'#54aebc':'#d96a76');
+  return '<button type="button" class="portfolio-sector-option'+(selected?' is-selected':'')+'" data-portfolio-sector="'+safe(x.id)+'" aria-pressed="'+selected+'"><span class="portfolio-sector-option-label-wrap"><i class="portfolio-sector-dot" style="background:'+color+'"></i><span class="portfolio-sector-option-label">'+safe(x.label)+'</span></span>'+
+   '<span class="portfolio-sector-option-score">'+formatPct(x.rs20)+'</span></button>';
  }).join('');
- host.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 455" aria-label="Sức mạnh ngành 20 phiên (ngang) và 5 phiên (dọc)">'+zones+
-  '<line x1="'+zeroX+'" y1="'+y1+'" x2="'+zeroX+'" y2="'+y2+'" stroke="#91a0b2" stroke-dasharray="4 5"/>'+
-  '<line x1="'+x1+'" y1="'+zeroY+'" x2="'+x2+'" y2="'+zeroY+'" stroke="#91a0b2" stroke-dasharray="4 5"/>'+labels+dots+'</svg>';
- if(state.selectedSector)selectSector(state.selectedSector);
+ if(!items.length){
+  $('portfolio-rotation-chart').innerHTML='<p class="portfolio-muted">Chưa có chuỗi giá đủ điều kiện.</p>';
+  $('portfolio-rotation-detail').textContent='Chưa có dữ liệu ngành.';
+  return;
+ }
+ if(!items.some(x=>x.id===state.selectedSector)){
+  state.selectedSector=items.find(x=>held.has(x.id))?.id||items[0].id;
+ }
+ const chosen=items.find(x=>x.id===state.selectedSector);
+ const rail=$('portfolio-sector-list');
+ for(const btn of rail.querySelectorAll('[data-portfolio-sector]')){
+  const on=btn.dataset.portfolioSector===chosen.id;
+  btn.classList.toggle('is-selected',on);btn.setAttribute('aria-pressed',String(on));
+ }
+ const mx=Math.max(4,Math.ceil(Math.max(...items.flatMap(x=>[Math.abs(x.rs5),Math.abs(x.rs20)]))*1.12)),
+  left=59,right=855,top=40,bottom=390,w=right-left,h=bottom-top;
+ const xx=x=>left+(x+mx)/(2*mx)*w,yy=y=>bottom-(y+mx)/(2*mx)*h;
+ const zx=xx(0),zy=yy(0);
+ const rect=(x,y,ww,hh,col)=>'<rect x="'+x+'" y="'+y+'" width="'+ww+'" height="'+hh+'" rx="5" fill="'+col+'"/>';
+ const bg=rect(left,top,zx-left,zy-top,'#e9f6f3')+rect(zx,top,right-zx,zy-top,'#e9f6ee')+
+  rect(left,zy,zx-left,bottom-zy,'#fdf1f2')+rect(zx,zy,right-zx,bottom-zy,'#fff4e7');
+ const labels='<text x="'+(left+10)+'" y="'+(top+19)+'" fill="#368e96" font-size="12">Hồi phục</text>'+
+  '<text x="'+(right-10)+'" y="'+(top+19)+'" fill="#2c8e68" font-size="12" text-anchor="end">Khỏe</text>'+
+  '<text x="'+(left+10)+'" y="'+(bottom-11)+'" fill="#b86168" font-size="12">Yếu</text>'+
+  '<text x="'+(right-10)+'" y="'+(bottom-11)+'" fill="#b0864a" font-size="12" text-anchor="end">Suy yếu</text>'+
+  '<text x="'+((left+right)/2)+'" y="435" fill="#75869c" text-anchor="middle" font-size="12">RS 20 phiên →</text>'+
+  '<text x="17" y="'+((top+bottom)/2)+'" text-anchor="middle" transform="rotate(-90 17 '+((top+bottom)/2)+')" fill="#75869c" font-size="12">RS 5 phiên →</text>'+
+  '<text x="'+left+'" y="409" text-anchor="middle" fill="#8290a6" font-size="10">−'+mx+'%</text>'+
+  '<text x="'+right+'" y="409" text-anchor="middle" fill="#8290a6" font-size="10">+'+mx+'%</text>';
+ const circle=x=>{
+  const col=x.rs20>=0?(x.rs5>=0?'#3caa72':'#dda84e'):(x.rs5>=0?'#54aebc':'#d96a76');
+  const isSelected=x.id===chosen.id;
+  const r=isSelected?10:6.5;
+  const hold=held.has(x.id);
+  const title=safe(x.label)+' · RS5 '+formatPct(x.rs5)+' · RS20 '+formatPct(x.rs20);
+  return '<circle class="portfolio-rot-dot" data-portfolio-sector="'+safe(x.id)+'" cx="'+xx(x.rs20)+'" cy="'+yy(x.rs5)+
+   '" r="'+r+'" role="button" tabindex="0" fill="'+col+'" opacity="'+(x.status==='thin'?'.65':'1')+
+   '" stroke="'+(isSelected?'#273f6a':hold?'#5866a4':'#fff')+'" stroke-width="'+(isSelected?3:hold?2.5:1.4)+
+   '" aria-label="'+title+'"><title>'+title+'</title></circle>';
+ };
+ const trail=Array.isArray(chosen.trail)?chosen.trail.filter(p=>Number.isFinite(p.rs5)&&Number.isFinite(p.rs20)):[];
+ const points=trail.map(p=>xx(p.rs20).toFixed(1)+','+yy(p.rs5).toFixed(1)).join(' ');
+ const line=points?'<polyline points="'+points+'" fill="none" stroke="#566fc0" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round" opacity=".83"/>':'';
+ const axis='<line x1="'+zx+'" y1="'+top+'" x2="'+zx+'" y2="'+bottom+'" stroke="#9aaac0" stroke-dasharray="4 5"/>'+
+  '<line x1="'+left+'" y1="'+zy+'" x2="'+right+'" y2="'+zy+'" stroke="#9aaac0" stroke-dasharray="4 5"/>';
+ const dotSvg=items.filter(x=>x.id!==chosen.id).map(circle).join('')+circle(chosen);
+ // Only the selected sector has a trail and a label. Others are accessed by the list or tooltip.
+ $('portfolio-rotation-chart').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 457" role="img" aria-label="Biểu đồ sức mạnh ngành, đường di chuyển của '+safe(chosen.label)+'">'+bg+axis+labels+line+dotSvg+
+  '<text x="73" y="27" fill="#415c94" font-size="13" font-weight="700">'+safe(chosen.label)+' · '+formatPct(chosen.rs20)+' / '+formatPct(chosen.rs5)+'</text></svg>';
+ const owned=calculate().rows.filter(h=>sectorOf(h.symbol)?.id===chosen.id).map(h=>h.symbol);
+ const dates=trail.map(p=>p.date+' ('+formatPct(p.rs20)+' / '+formatPct(p.rs5)+')');
+ $('portfolio-rotation-detail').innerHTML='<strong>'+safe(chosen.label)+'</strong> · '+safe(rotateStatus(chosen))+
+  ' · RS20 '+formatPct(chosen.rs20)+' · RS5 '+formatPct(chosen.rs5)+' · '+safe(chosen.used+'/'+chosen.members)+' mã'+
+  (owned.length?' · Đang nắm giữ: '+safe(owned.join(', ')):'')+
+  '<div class="portfolio-method-note">Đường đi của ngành đã chọn: '+safe(dates.join(' → '))+'</div>';
 }
 function selectSector(id){
- const s=state.rotation?.sectors?.find(v=>v.id===id);
- if(!s)return;state.selectedSector=id;
- const holdings=calculate().rows.filter(h=>sectorOf(h.symbol)?.id===id).map(h=>h.symbol);
- const trail=Array.isArray(s.trail)?s.trail.map(p=>p.date+' · '+formatPct(p.rs20)+' / '+formatPct(p.rs5)).join(' → '):'';
- $('portfolio-rotation-detail').innerHTML='<strong>'+safe(s.label)+'</strong> · RS5 '+formatPct(s.rs5)+' · RS20 '+formatPct(s.rs20)+
-  ' · '+safe(s.used+'/'+s.members)+' mã'+(holdings.length?' · Danh mục: '+safe(holdings.join(', ')):'')+
-  '<div class="portfolio-method-note">'+safe(trail)+'</div>';
+ if(!state.rotation?.sectors?.some(x=>x.id===id))return;
+ state.selectedSector=id;renderRotation();
 }
 function render(){
  if(!state.loaded)return;
  const z=calculate();renderKPIs(z);printHoldings(z);renderAllocation(z);renderInsights(z);renderHistory();renderRotation();
+ document.dispatchEvent(new Event('finquery:portfolio-render'));
  $('portfolio-source').textContent=state.sourceTime?'Giá: '+formatDate(state.sourceTime):'Đang đồng bộ giá';
 }
 async function refreshSector(){
@@ -4357,7 +4612,7 @@ async function refresh({force=false,marketOnly=false}={}){
   status(err?.status===401?'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.':String(err.message||'Chưa tải được danh mục.'),true);
  }finally{state.loading=false;if(button)button.disabled=false;}
 }
-function open(){if(!state.loaded||Date.now()-state.lastLoadedAt>=FIVE_MIN)void refresh({force:true});else render();}
+function open(){document.dispatchEvent(new Event('finquery:portfolio-plan-open'));if(!state.loaded||Date.now()-state.lastLoadedAt>=FIVE_MIN)void refresh({force:true});else render();}
 function openMarket(symbol,view='price'){
  window.FinPlatformViews?.openAnalysis?.();
  if(symbol){
@@ -4418,7 +4673,7 @@ function exportEvents(){
 $('portfolio-tabs').addEventListener('click',e=>{const b=e.target.closest('[data-portfolio-tab]');if(b)switchTab(b.dataset.portfolioTab);});
 $('portfolio-tabs').addEventListener('keydown',e=>{
  if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;
- const keys=['overview','rotation','history'],i=keys.indexOf(state.tab),n=e.key==='Home'?0:e.key==='End'?2:(i+(e.key==='ArrowRight'?1:2))%3;
+ const keys=['overview','plan','rotation','history'],i=keys.indexOf(state.tab),n=e.key==='Home'?0:e.key==='End'?3:(i+(e.key==='ArrowRight'?1:3))%4;
  e.preventDefault();switchTab(keys[n],true);
 });
 root.addEventListener('click',e=>{
@@ -4445,7 +4700,144 @@ document.addEventListener('finquery:market-bundle',()=>{if(isOpen()&&!state.load
 document.addEventListener('visibilitychange',()=>{if(isOpen()&&Date.now()-state.lastLoadedAt>FIVE_MIN)void refresh({force:true});});
 window.addEventListener('online',()=>{if(isOpen()){state.lastLoadedAt=0;void refresh({force:true});}});
 setInterval(()=>{if(isOpen()&&Date.now()-state.lastLoadedAt>=FIVE_MIN)void refresh({force:true});},FIVE_MIN);
-window.FinPortfolio={open,refresh:()=>refresh({force:true}),setTab:switchTab,context:()=>({events:state.events,quoteTime:state.sourceTime,rotationTime:state.rotation?.sourceDate||null})};
+window.FinPortfolio={open,refresh:()=>refresh({force:true}),setTab:switchTab,context:()=>({events:state.events,quoteTime:state.sourceTime,rotationTime:state.rotation?.sourceDate||null,ready:state.loaded,snapshot:calculate(),sectors:state.risk?.sectors||[],rotation:state.rotation})};
+})();</script><script>/* FinQuery Portfolio: account-scoped template selection and daily rebalancing review. */
+(()=>{'use strict';
+const root=document.getElementById('portfolio'),P=window.FinPortfolio,Q=window.FinPortfolioPolicy;
+if(!root||!P||!Q)return;
+const el=id=>document.getElementById(id),fmt=n=>Number.isFinite(n)?Math.round(n).toLocaleString('vi-VN')+' đ':'—',
+pct=n=>Number.isFinite(n)?(n>0?'+':'')+n.toFixed(1)+'%':'—';
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const state={policy:Q.normalize({preset:'balanced'}),loaded:false,saved:false,dirty:false,busy:false,revision:0};
+function showTemplates(){
+ const html=Object.values(Q.PRESETS).map((p,i)=>{
+  const selected=p.id===state.policy.id;
+  return '<article class="portfolio-template'+(selected?' is-selected':'')+'"><span class="portfolio-template-tag">MẪU '+String(i+1).padStart(2,'0')+'</span>'+
+   '<h3>'+safe(p.title)+'</h3><p>'+safe(p.subtitle)+'</p>'+
+   '<div class="portfolio-template-facts"><span>Tiền '+p.cashPct+'%</span><span>Mã ≤'+p.maxStockPct+'%</span><span>Lệch '+p.driftPct+'đ%</span></div>'+
+   '<button type="button" data-portfolio-preset="'+safe(p.id)+'" aria-pressed="'+selected+'">'+(selected?'Đang chọn':'Chọn mẫu')+'</button></article>';
+ }).join('');
+ el('portfolio-setup-templates').innerHTML=html;
+ el('portfolio-policy-cards').innerHTML=html;
+}
+function controls(){
+ const p=state.policy;
+ el('portfolio-cash-target').value=String(p.cashPct);
+ el('portfolio-drift').value=String(p.driftPct);
+ el('portfolio-cash-target-label').textContent=p.cashPct+'%';
+ el('portfolio-drift-label').textContent=p.driftPct+' điểm %';
+ el('portfolio-policy-stamp').textContent=state.dirty?'Có thay đổi chưa lưu':state.saved?'Đã lưu theo tài khoản':state.loaded?'Chưa lưu kế hoạch':'Đang tải kế hoạch…';
+ el('portfolio-policy-save').disabled=!state.loaded||state.busy;
+ showTemplates();
+}
+async function api(method,body){
+ const r=await fetch('/api/user/portfolio-policy',{method,credentials:'same-origin',cache:'no-store',
+  headers:body?{'Content-Type':'application/json'}:{},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(15000)});
+ const data=await r.json();if(!r.ok)throw Object.assign(Error(data.error||'Lỗi đồng bộ kế hoạch.'),{code:data.code});return data;
+}
+async function load(){
+ if(state.loaded||state.busy)return;
+ state.busy=true;
+ try{
+  const r=await api('GET');
+  if(r.policy){
+   const p=r.policy;
+   state.saved=true;state.revision=Number(p.revision)||0;
+   if(!state.dirty)state.policy=Q.normalize({preset:p.preset,cashPct:p.cash_pct,driftPct:p.drift_pct});
+  }
+  state.loaded=true;
+ }catch(_){
+  el('portfolio-policy-stamp').textContent='Chưa kết nối kế hoạch';
+ }finally{state.busy=false;controls();render();}
+}
+async function save(){
+ if(!state.loaded||state.busy)return;
+ state.busy=true;controls();
+ try{
+  const p=state.policy;
+  const r=await api('PUT',{preset:p.id,cashPct:p.cashPct,driftPct:p.driftPct,revision:state.revision});
+  state.revision=Number(r.policy.revision);
+  state.saved=true;state.dirty=false;
+  el('portfolio-policy-stamp').textContent='Đã lưu theo tài khoản';
+ }catch(e){
+  if(e.code==='POLICY_CONFLICT'){state.loaded=false;state.saved=false;}
+  el('portfolio-policy-stamp').textContent=e.message;
+ }finally{state.busy=false;controls();render();}
+}
+function getBook(){
+ const context=P.context(),snap=context?.snapshot;
+ if(!context?.ready||!snap)return null;
+ const sectors=new Map();
+ for(const sec of context.sectors||[])for(const row of sec.memberRows||[])sectors.set(row.symbol,sec.id);
+ const stocks=context.rotation?.stocks||{};
+ const rows=snap.rows.map(r=>({...r,sectorId:sectors.get(r.symbol)||stocks[r.symbol]?.sectorId||null}));
+ return {portfolio:{...snap,rows},sourceTime:context.quoteTime};
+}
+function render(){
+ const book=getBook();
+ if(!book)return;
+ const count=book.portfolio.rows.length,hasPositions=count>0;
+ root.classList.toggle('portfolio-no-positions',!hasPositions);
+ el('portfolio-onboarding').hidden=hasPositions;
+ el('portfolio-start-deposit').textContent=book.portfolio.cash>0?'+ Ghi nhận cổ phiếu':'+ Nhập vốn ban đầu';
+ el('portfolio-plan-preview').hidden=!hasPositions;
+ const report=Q.review({portfolio:book.portfolio,policy:state.policy,sourceTime:book.sourceTime,now:Date.now()});
+ const eligible=state.saved&&!state.dirty&&!report.blocked;
+ const label=!hasPositions?'Chưa có mã':!state.saved?'Chưa lưu mẫu':state.dirty?'Chưa lưu thay đổi':
+  report.blocked?'Cần đồng bộ':report.trades.length?report.trades.length+' phương án':'Chưa cần đổi';
+ el('portfolio-plan-status').textContent=label;
+ el('portfolio-plan-status').classList.toggle('has-actions',eligible&&report.trades.length>0);
+ el('portfolio-plan-date').textContent=report.sourceDate?'Dữ liệu phiên '+report.sourceDate+' · tự rà soát khi có giá mới':'Chưa có ngày dữ liệu';
+ el('portfolio-plan-summary').innerHTML='<div><span>MẪU PHÂN BỔ</span><strong>'+safe(state.policy.title)+'</strong></div>'+
+  '<div><span>ĐỘ LỆCH LỚN NHẤT</span><strong>'+(!report.blocked&&hasPositions?pct(report.driftMax):'—')+'</strong></div>'+
+  '<div><span>TRẠNG THÁI PHIÊN</span><strong>'+safe(label)+'</strong></div>';
+ el('portfolio-target-rows').innerHTML=report.targets.length?report.targets.map(t=>
+  '<tr><td><button type="button" class="portfolio-symbol" data-portfolio-symbol="'+safe(t.symbol)+'">'+safe(t.symbol)+'</button></td>'+
+  '<td>'+pct(t.currentPct)+'</td><td>'+pct(t.targetPct)+'</td><td>'+pct(t.driftPP)+'</td>'+
+  '<td>'+safe(Math.abs(t.driftPP)>=state.policy.driftPct?'Vượt ngưỡng':'Theo dõi')+'</td></tr>').join(''):
+  '<tr><td colspan="5" class="portfolio-empty">Nhập cổ phiếu để xem mục tiêu phân bổ.</td></tr>';
+ if(!hasPositions||!eligible){
+  el('portfolio-plan-result').innerHTML='<p class="portfolio-plan-message">'+safe(!hasPositions?(book.portfolio.cash>0?'Đã có vốn. Ghi nhận cổ phiếu đang nắm giữ để bắt đầu phân tích.':'Chọn mẫu, nạp vốn rồi ghi nhận vị thế để bắt đầu.'):
+   report.blocked?report.why:!state.saved?'Chọn và lưu một mẫu để bật đánh giá theo phiên.':'Lưu cấu hình mới để đánh giá.')+'</p>';
+  return;
+ }
+ const metrics='<div class="portfolio-review-metrics"><div><small>TIỀN MẶT MỤC TIÊU</small><strong>'+pct(report.targetCashPct)+'</strong></div>'+
+  '<div><small>ĐỘ LỆCH CAO NHẤT</small><strong>'+pct(report.driftMax)+'</strong></div>'+
+  '<div><small>CHI PHÍ DỰ KIẾN</small><strong>'+fmt(report.estimatedCostVnd)+'</strong></div></div>';
+ const cards=report.trades.length?'<div class="portfolio-review-trades">'+report.trades.slice(0,8).map(t=>
+  '<article class="portfolio-review-trade"><div><span class="portfolio-review-side'+(t.side==='SELL'?' sell':'')+'">'+
+  (t.side==='SELL'?'GIẢM':'BỔ SUNG')+'</span><strong>'+safe(t.symbol)+' · '+pct(t.currentPct)+' → '+pct(t.targetPct)+'</strong></div>'+
+  '<div class="portfolio-review-value">'+t.quantity.toLocaleString('vi-VN')+' cp · '+fmt(t.grossVnd)+'</div>'+
+  '<p>Giá '+fmt(t.price)+'/cp · Chi phí ước tính '+fmt(t.estimatedCostVnd)+'</p></article>').join('')+'</div>':
+  '<p class="portfolio-plan-message">'+safe(report.why||'Trong ngưỡng mục tiêu, chưa cần điều chỉnh.')+'</p>';
+ const reserveNote=report.targetCashPct>state.policy.cashPct+0.1?'<p class="portfolio-plan-message">Tiền mặt mục tiêu cao hơn mức chọn do giới hạn tỷ trọng mã hoặc ngành đang áp dụng.</p>':'';
+ el('portfolio-plan-result').innerHTML=metrics+cards+reserveNote+
+  (report.flags.length?'<p class="portfolio-plan-message">'+safe(report.flags.join(' · '))+'</p>':'');
+}
+function select(id){
+ if(!Q.PRESETS[id])return;
+ state.policy=Q.normalize({preset:id});
+ state.dirty=true;controls();render();P.setTab('plan');
+}
+root.addEventListener('click',e=>{
+ const b=e.target.closest('[data-portfolio-preset]');if(b){select(b.dataset.portfolioPreset);return;}
+ if(e.target.closest('#portfolio-start-deposit')){
+  const current=getBook();el('portfolio-add').click();el('portfolio-type').value=current?.portfolio?.cash>0?'BUY':'DEPOSIT';
+  el('portfolio-type').dispatchEvent(new Event('change'));
+ }
+});
+for(const id of ['portfolio-cash-target','portfolio-drift']){
+ el(id).addEventListener('input',()=>{
+  const c=Number(el('portfolio-cash-target').value),d=Number(el('portfolio-drift').value);
+  state.policy=Q.normalize({preset:state.policy.id,cashPct:c,driftPct:d});
+  state.dirty=true;controls();render();
+ });
+}
+el('portfolio-policy-save').addEventListener('click',save);
+document.addEventListener('finquery:portfolio-plan-open',()=>{void load();render();});
+document.addEventListener('finquery:portfolio-render',render);
+controls();
+if(!root.hidden)void load();
 })();</script><script>(function(){'use strict';
 const $=id=>document.getElementById(id);
 const state={data:null,loading:false,error:'',selectedFundSymbol:null,selectedSectorId:null,selectedBreadthGroup:null};
