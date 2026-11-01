@@ -6,6 +6,12 @@ on:
       - 'financial-report/scripts/build_portfolio_sector_rotation.py'
       - 'financial-report/tests/test_portfolio_sector_rotation.py'
       - 'financial-report/frontend/index.html'
+      - 'financial-report/frontend/portfolio-intelligence.js'
+      - 'financial-report/frontend/portfolio-intelligence.css'
+      - 'financial-report/frontend/risk-monitor.js'
+      - 'financial-report/frontend/app.js'
+      - 'financial-report/tests/portfolio_intelligence.test.cjs'
+      - 'financial-report/scripts/build_cdn.py'
       - 'finquery-access/api/index.js'
       - 'finquery-access/migrations/003_portfolio_ledger.sql'
       - '.github/workflows/finquery-portfolio-qa.yml'
@@ -28,7 +34,9 @@ jobs:
           node-version: '22'
       - name: Syntax check
         run: |
-          node --check financial-report/portfolio.js
+          node --check financial-report/frontend/portfolio-intelligence.js
+          node --check financial-report/frontend/risk-monitor.js
+          node --check financial-report/frontend/app.js
           node --check finquery-access/api/index.js
       - name: Quant rotation unit tests
         run: python -m unittest discover -s financial-report/tests -p 'test_portfolio_sector_rotation.py'
@@ -41,8 +49,11 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           page=Path('financial-report/index.html').read_text()
-          assert 'href="portfolio.html"' in page
+          assert 'href="#portfolio" data-platform-view="portfolio"' in page
+          assert 'window.FinPortfolio=' in page
+          assert 'portfolio-entry-form' in page
+          assert 'portfolio-intelligence.css' not in page
           assert Path('financial-report/portfolio.html').exists()
-          assert Path('financial-report/portfolio.js').exists()
-          print('FinQuery portfolio standalone bundle OK')
+          assert 'index.html#portfolio' in Path('financial-report/portfolio.html').read_text()
+          print('FinQuery native Portfolio bundle OK')
           PY
