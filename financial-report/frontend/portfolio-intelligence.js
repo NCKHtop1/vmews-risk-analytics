@@ -299,7 +299,7 @@ function toggleFields(){
  const required=[['portfolio-symbol',hasSymbol],['portfolio-quantity',trade],['portfolio-price',trade],['portfolio-amount',!trade]];
  for(const [id,on] of required)$(id).required=on;
 }
-function today(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
+function today(){const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const p=Object.fromEntries(parts.map(x=>[x.type,x.value]));return p.year+'-'+p.month+'-'+p.day;}
 async function save(event){
  event.preventDefault();
  if(!state.loaded){status('Đang đồng bộ dữ liệu, thử lại sau.',true);return;}
