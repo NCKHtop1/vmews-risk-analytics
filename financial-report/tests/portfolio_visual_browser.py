@@ -106,7 +106,9 @@ def main():
                 assert result['templates']==4 and result['onboarding'] and result['emptyCardsHidden'],result
                 assert result['scroll']<=width+3,result
                 # Adopt a template and save it through the actual controller.
-                driver.find_element(By.CSS_SELECTOR,'#portfolio-setup-templates [data-portfolio-preset="defensive"]').click()
+                target=driver.find_element(By.CSS_SELECTOR,'#portfolio-setup-templates [data-portfolio-preset="defensive"]')
+                driver.execute_script("arguments[0].scrollIntoView({block:'center',behavior:'instant'});",target)
+                driver.execute_script("arguments[0].click();",target)
                 WebDriverWait(driver,5).until(lambda d:d.execute_script(
                     "return document.getElementById('portfolio-cash-target').value==='30'"))
                 driver.find_element(By.ID,'portfolio-policy-save').click()
