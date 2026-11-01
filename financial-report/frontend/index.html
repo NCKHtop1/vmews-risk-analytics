@@ -125,15 +125,15 @@
       </section>
     </section>
 <section id="portfolio-tab-plan" class="portfolio-tab-panel" data-portfolio-panel="plan" role="tabpanel" hidden>
-      <div class="portfolio-section-title"><div><span>QUẢN LÝ PHÂN BỔ</span><h2>Chọn mẫu quản trị danh mục</h2><p>Mục tiêu áp dụng cho các mã đang nắm giữ. Có thể thay đổi bất cứ lúc nào.</p></div><span class="portfolio-policy-stamp" id="portfolio-policy-stamp">Đang tải cấu hình…</span></div>
+      <div class="portfolio-section-title"><div><span>QUẢN LÝ PHÂN BỔ</span><h2>Chọn mẫu quản trị danh mục <button type="button" class="portfolio-help-trigger" data-portfolio-help="templates" aria-label="Giải thích mẫu quản trị danh mục" aria-expanded="false" aria-controls="portfolio-help-popover" title="Giải thích mẫu quản trị danh mục">i</button></h2><p>Chọn nguyên tắc phân bổ để đối chiếu với các vị thế thực tế.</p></div><span class="portfolio-policy-stamp" id="portfolio-policy-stamp">Đang tải cấu hình…</span></div>
       <div id="portfolio-policy-cards" class="portfolio-template-grid"></div>
       <div class="portfolio-plan-settings">
-        <label>Tiền mặt mục tiêu <span id="portfolio-cash-target-label">10%</span><input id="portfolio-cash-target" type="range" min="0" max="50" step="5" value="10"></label>
-        <label>Ngưỡng lệch tỷ trọng <span id="portfolio-drift-label">5 điểm %</span><input id="portfolio-drift" type="range" min="2" max="15" step="1" value="5"></label>
+        <div class="portfolio-setting"><div class="portfolio-setting-heading"><label for="portfolio-cash-target">Tiền mặt mục tiêu</label><button type="button" class="portfolio-help-trigger" data-portfolio-help="cash" aria-label="Giải thích tiền mặt mục tiêu" aria-expanded="false" aria-controls="portfolio-help-popover" title="Giải thích tiền mặt mục tiêu">i</button><strong id="portfolio-cash-target-label">10%</strong></div><input id="portfolio-cash-target" type="range" min="0" max="50" step="5" value="10" aria-label="Tiền mặt mục tiêu, phần trăm"></div>
+        <div class="portfolio-setting"><div class="portfolio-setting-heading"><label for="portfolio-drift">Ngưỡng lệch tỷ trọng</label><button type="button" class="portfolio-help-trigger" data-portfolio-help="drift" aria-label="Giải thích ngưỡng lệch tỷ trọng" aria-expanded="false" aria-controls="portfolio-help-popover" title="Giải thích ngưỡng lệch tỷ trọng">i</button><strong id="portfolio-drift-label">5 điểm %</strong></div><input id="portfolio-drift" type="range" min="2" max="15" step="1" value="5" aria-label="Ngưỡng lệch tỷ trọng, điểm phần trăm"></div>
         <button id="portfolio-policy-save" type="button" class="portfolio-primary">Lưu kế hoạch</button>
       </div>
       <div class="portfolio-plan-head">
-        <div><span class="portfolio-kicker">BÁO CÁO THEO PHIÊN</span><h2>Đề xuất cân bằng lại</h2><p id="portfolio-plan-date">Đang kiểm tra dữ liệu giá…</p></div>
+        <div><span class="portfolio-kicker">BÁO CÁO THEO PHIÊN</span><h2>Đề xuất cân bằng lại <button type="button" class="portfolio-help-trigger" data-portfolio-help="rebalance" aria-label="Giải thích đề xuất cân bằng lại" aria-expanded="false" aria-controls="portfolio-help-popover" title="Giải thích đề xuất cân bằng lại">i</button></h2><p id="portfolio-plan-date">Đang kiểm tra dữ liệu giá…</p></div>
         <div id="portfolio-plan-status" class="portfolio-plan-status">Đang tính…</div>
       </div>
       <div id="portfolio-plan-result" class="portfolio-plan-result"></div>
@@ -146,14 +146,14 @@
       <p class="portfolio-method-note">Đánh giá mỗi phiên theo độ lệch mục tiêu, giới hạn mã/ngành, tiền mặt và chi phí ước tính. Giá cổ phiếu kiểm tra mỗi 5 phút; đề xuất chỉ thay đổi khi có dữ liệu và điều kiện mới.</p>
     </section>
     <section id="portfolio-tab-rotation" class="portfolio-tab-panel" data-portfolio-panel="rotation" role="tabpanel" hidden>
-      <div class="portfolio-section-title"><div><span>SECTOR ROTATION</span><h2>Sức mạnh tương đối ngành</h2><p id="portfolio-sector-stamp">RS 5 và 20 phiên</p></div><div class="portfolio-switch"><button type="button" data-portfolio-view="chart" class="active" aria-pressed="true">Biểu đồ</button><button type="button" data-portfolio-view="table" aria-pressed="false">Bảng</button></div></div>
+      <div class="portfolio-section-title"><div><span>SECTOR ROTATION</span><h2>Sức mạnh tương đối ngành <button type="button" class="portfolio-help-trigger" data-portfolio-help="rotation" aria-label="Giải thích sức mạnh tương đối ngành" aria-expanded="false" aria-controls="portfolio-help-popover" title="Giải thích sức mạnh tương đối ngành">i</button></h2><p id="portfolio-sector-stamp">RS 5 và 20 phiên</p></div><div class="portfolio-switch"><button type="button" data-portfolio-view="chart" class="active" aria-pressed="true">Biểu đồ</button><button type="button" data-portfolio-view="table" aria-pressed="false">Bảng</button></div></div>
       <div class="portfolio-rotation-layout">
-        <div id="portfolio-rotation-chart" class="portfolio-rotation-chart" role="img" aria-label="Biểu đồ sức mạnh ngành 5 và 20 phiên; chọn một điểm để xem đường di chuyển"></div>
+        <div id="portfolio-rotation-chart" class="portfolio-rotation-chart" role="group" aria-label="Biểu đồ sức mạnh ngành 5 và 20 phiên; chọn một điểm để xem đường di chuyển"></div>
         <aside class="portfolio-sector-rail"><div class="portfolio-sector-rail-head"><strong>13 nhóm ngành</strong><span>RS20</span></div><div id="portfolio-sector-list" class="portfolio-sector-list"></div></aside>
       </div>
       <div id="portfolio-rotation-table" class="portfolio-table-wrap" hidden><table class="portfolio-table"><thead><tr><th>Ngành</th><th>5 phiên</th><th>20 phiên</th><th>Số mã</th><th>Xu hướng</th></tr></thead><tbody id="portfolio-rotation-rows"></tbody></table></div>
-      <div id="portfolio-rotation-detail" class="portfolio-rotation-detail">Chọn một ngành để xem diễn biến 5 phiên. Chỉ hiển thị đường đi của ngành được chọn.</div>
-      <p class="portfolio-method-note" id="portfolio-method-note">So sánh hiệu suất ngành với trung vị các cổ phiếu đủ dữ liệu · Cập nhật theo phiên dữ liệu.</p>
+      <div id="portfolio-rotation-detail" class="portfolio-rotation-detail">Chọn hoặc di chuột vào một ngành để xem diễn biến 5 phiên. Mặc định biểu đồ chỉ hiển thị vị trí hiện tại.</div>
+      <p class="portfolio-method-note" id="portfolio-method-note">RS 5/20 phiên: chênh lệch hiệu suất ngành so với trung vị nhóm cổ phiếu HOSE đủ dữ liệu. Đây không phải chỉ báo RRG hay tín hiệu dự báo.</p>
     </section>
     <section id="portfolio-tab-history" class="portfolio-tab-panel" data-portfolio-panel="history" role="tabpanel" hidden>
       <div class="portfolio-section-title"><div><span>SỔ DANH MỤC</span><h2>Lịch sử giao dịch</h2></div><button type="button" id="portfolio-export">Xuất dữ liệu ↓</button></div>
