@@ -3,7 +3,7 @@
 const $=id=>document.getElementById(id),money=n=>Number.isFinite(n)?Math.round(n).toLocaleString('vi-VN')+' ₫':'—',
  pct=n=>Number.isFinite(n)?(n>0?'+':'')+n.toFixed(2)+'%':'—',
  safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
- state={events:[],quotes:{},sourceTime:null,risk:null,lastPrices:null,loaded:false,baseline:false};
+ state={events:[],quotes:{},sourceTime:null,risk:null,rotation:null,rotationMode:'chart',lastPrices:null,loaded:false,baseline:false};
 function setStatus(msg,err){$('status').textContent=msg;$('status').className=err?'bad':'muted';}
 async function getJSON(url,options={}){const r=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(18000),...options});const x=await r.json();if(!r.ok)throw Object.assign(Error(x.error||'Không tải được dữ liệu.'),{code:x.code,status:r.status});return x;}
 const num=v=>Number(v||0),kindName={DEPOSIT:'Nạp tiền',WITHDRAW:'Rút tiền',BUY:'Mua',SELL:'Bán',DIVIDEND:'Cổ tức'};
@@ -49,9 +49,9 @@ function render(){
  if(z.errors.length)alerts.push('Sổ giao dịch phát hiện sai lệch: '+z.errors.join(', '));
  if(z.nav!==null&&z.cash<-.01)alerts.push('Số dư tiền âm, cần đối chiếu.');
  $('alert').innerHTML=alerts.length?alerts.map(x=>'<p>⚠ '+safe(x)+'</p>').join(''):'<p class="good">Không có cảnh báo tập trung hoặc dữ liệu thiếu theo các ngưỡng hiện tại.</p>';
- $('positions').innerHTML=z.rows.length?z.rows.map(h=>'<tr><td><b>'+safe(h.symbol)+'</b></td><td>'+h.quantity.toLocaleString('vi-VN')+'</td><td>'+money(h.quantity?h.cost/h.quantity:null)+'</td><td>'+money(h.price)+'</td><td>'+money(h.value)+'</td><td class="'+(h.unrealized<0?'bad':'good')+'">'+money(h.unrealized)+'</td><td>'+pct(h.weight*100)+'</td></tr>').join(''):'<tr><td colspan="7" class="muted">Chưa có cổ phiếu. Nạp tiền và ghi nhận giao dịch mua để bắt đầu.</td></tr>';
+ $('positions').innerHTML=z.rows.length?z.rows.map(h=>'<tr><td><b>'+safe(h.symbol)+'</b></td><td>'+h.quantity.toLocaleString('vi-VN')+'</td><td>'+money(h.quantity?h.cost/h.quantity:null)+'</td><td>'+money(h.price)+'</td><td>'+money(h.value)+'</td><td class="'+(h.unrealized<0?'bad':'good')+'">'+money(h.unrealized)+'</td><td>'+pct(h.weight===null?null:h.weight*100)+'</td><td>'+(state.rotation?.stocks?.[h.symbol]?pct(state.rotation.stocks[h.symbol].rs20):'—')+'</td><td>'+(state.rotation?.stocks?.[h.symbol]?safe(state.rotation.stocks[h.symbol].rankWithinSector+'/'+state.rotation.stocks[h.symbol].sectorCount):'—')+'</td></tr>').join(''):'<tr><td colspan="9" class="muted">Chưa có cổ phiếu. Nạp tiền và ghi nhận giao dịch mua để bắt đầu.</td></tr>';
  $('trades').innerHTML=state.events.length?state.events.slice().reverse().map(e=>'<tr><td>'+safe(e.trade_date||'')+'</td><td>'+safe(kindName[e.kind]||e.kind)+'</td><td>'+safe(e.symbol||'—')+'</td><td>'+safe(e.quantity??'—')+'</td><td>'+money(num(e.unit_price_vnd)||num(e.amount_vnd))+'</td></tr>').join(''):'<tr><td colspan="5" class="muted">Chưa có giao dịch.</td></tr>';
- renderSector(z);
+ renderSector(z);renderRotation();
 }
 function renderSector(z){
  const r=state.risk;
@@ -62,21 +62,23 @@ function renderSector(z){
  $('sectors').innerHTML=list.slice(0,18).map(s=>{
  const score=Number(s.score),high=Number.isFinite(score)&&score>=75;
  return '<div class="sector"><span>'+safe(s.label||s.id||'')+'</span><div class="bar"><i style="width:'+Math.max(0,Math.min(100,score||0))+'%;background:'+(high?'#db885c':'#60a5fa')+'"></i></div><b>'+ (Number.isFinite(score)?score.toFixed(0)+'/100':'—')+'</b></div>';
- }).join('')+'<p class="muted small">Điểm căng thẳng từ Risk Monitor FinQuery; điểm cao biểu thị rủi ro tăng, không phải sức mạnh tương đối. Biểu đồ luân chuyển 5/20 phiên cần chuỗi giá ngành đủ chuẩn.</p>';
+ }).join('')+'<p class="muted small">Điểm căng thẳng từ Risk Monitor FinQuery; điểm cao biểu thị rủi ro tăng, không phải sức mạnh tương đối. Biểu đồ luân chuyển 5/20 phiên được tính riêng từ lịch sử giá.</p>';
 }
 async function load(){
  setStatus('Đang xác thực và tải danh mục…'); 
  try{
-  const [portfolio,quotes,risk]=await Promise.allSettled([
+  const [portfolio,quotes,risk,rotation]=await Promise.allSettled([
    getJSON('/api/user/portfolio'),
    getJSON('market/quotes.json'),
-   getJSON('market/risk-monitor.json')
+   getJSON('market/risk-monitor.json'),
+   getJSON('market/sector-rotation.json')
   ]);
   if(portfolio.status!=='fulfilled')throw portfolio.reason;
   state.events=portfolio.value.events||[];
   if(quotes.status==='fulfilled'){state.quotes=quotes.value.quotes||{};state.sourceTime=quotes.value.latestSourceTime||quotes.value.checkedAt;}
   else {state.quotes={};state.sourceTime=null;}
   if(risk.status==='fulfilled')state.risk=risk.value;
+  state.rotation=rotation.status==='fulfilled' && (!state.risk?.sourceDate || rotation.value?.sourceDate===state.risk.sourceDate)?rotation.value:null;
   state.loaded=true;render();
   setStatus('Đã đồng bộ sổ giao dịch'+(quotes.status!=='fulfilled'?'; dữ liệu giá chưa khả dụng':'')+'.',quotes.status!=='fulfilled');
  }catch(err){setStatus((err.status===401?'Vui lòng đăng nhập FinQuery để quản lý danh mục.':err.message||'Không thể kết nối.'),true);}
