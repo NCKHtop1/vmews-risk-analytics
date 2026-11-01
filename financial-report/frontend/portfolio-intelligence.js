@@ -2,7 +2,7 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id),root=$('portfolio');
 if(!root)return;
-const FIVE_MIN=300000,SECTOR_RECHECK=3600000;
+const FIVE_MIN=300000,SECTOR_RECHECK=3600000,Policy=window.FinPortfolioPolicy;
 const vnInt=new Intl.NumberFormat('vi-VN',{maximumFractionDigits:0});
 const formatMoney=n=>Number.isFinite(n)?vnInt.format(Math.round(n))+' đ':'—';
 const formatPct=n=>Number.isFinite(n)?(n>0?'+':'')+n.toFixed(2)+'%':'—';
@@ -11,7 +11,8 @@ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const number=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 const method={DEPOSIT:'Nạp tiền',WITHDRAW:'Rút tiền',BUY:'Mua',SELL:'Bán',DIVIDEND:'Cổ tức'};
 const state={loaded:false,loading:false,events:[],quotes:{},risk:null,rotation:null,tab:'overview',chartMode:'chart',sourceTime:null,
- lastLoadedAt:0,lastSectorAt:0,selectedSector:null,saveKey:null,saveFingerprint:null};
+ lastLoadedAt:0,lastSectorAt:0,selectedSector:null,saveKey:null,saveFingerprint:null,
+ policy:Policy.normalize({preset:'balanced'}),policyLoaded:false,policySaved:false,policyRev:0,policyBusy:false,policyDirty:false};
 function status(message,warning=false){const el=$('portfolio-status');if(!el)return;el.hidden=!message;el.textContent=message||'';el.classList.toggle('portfolio-status-warning',warning);}
 function isOpen(){return !root.hidden&&!document.hidden&&!document.body.classList.contains('site-locked');}
 async function json(url,options={}){
@@ -151,7 +152,7 @@ function renderHistory(){
   :'<tr><td colspan="6" class="portfolio-empty">Chưa có giao dịch.</td></tr>';
 }
 function switchTab(tab,focus=false){
- if(!['overview','rotation','history'].includes(tab))return;
+ if(!['overview','plan','rotation','history'].includes(tab))return;
  state.tab=tab;
  for(const b of $('portfolio-tabs').querySelectorAll('[data-portfolio-tab]')){
   const on=b.dataset.portfolioTab===tab;b.classList.toggle('active',on);b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;if(on&&focus)b.focus({preventScroll:true});
@@ -159,6 +160,7 @@ function switchTab(tab,focus=false){
  for(const sec of root.querySelectorAll('[data-portfolio-panel]'))sec.hidden=sec.dataset.portfolioPanel!==tab;
  if(tab==='rotation'&&Date.now()-state.lastSectorAt>SECTOR_RECHECK)refreshSector().catch(()=>{});
  if(tab==='rotation')requestAnimationFrame(()=>renderRotation());
+ if(tab==='plan')renderPlan();
 }
 function rotateStatus(s){return s.rs20>=0?(s.rs5>=0?'Khỏe':'Đang suy yếu'):(s.rs5>=0?'Hồi phục':'Yếu');}
 function renderRotation(){
@@ -328,7 +330,7 @@ function exportEvents(){
 $('portfolio-tabs').addEventListener('click',e=>{const b=e.target.closest('[data-portfolio-tab]');if(b)switchTab(b.dataset.portfolioTab);});
 $('portfolio-tabs').addEventListener('keydown',e=>{
  if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;
- const keys=['overview','rotation','history'],i=keys.indexOf(state.tab),n=e.key==='Home'?0:e.key==='End'?2:(i+(e.key==='ArrowRight'?1:2))%3;
+ const keys=['overview','plan','rotation','history'],i=keys.indexOf(state.tab),n=e.key==='Home'?0:e.key==='End'?3:(i+(e.key==='ArrowRight'?1:3))%4;
  e.preventDefault();switchTab(keys[n],true);
 });
 root.addEventListener('click',e=>{
