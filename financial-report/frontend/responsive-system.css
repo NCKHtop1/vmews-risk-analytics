@@ -303,3 +303,34 @@ input,textarea,select{max-width:100%}
  html{scroll-behavior:auto}
  .finquery-nav-open nav,.chart-advanced-controls *{animation:none!important;transition:none!important}
 }
+
+/* FinQuery Brand Identity 2026 Q-data: brand visuals only; no functionality or component layout changes. */
+:root{
+ --fq-brand-navy:#0A1B3D;
+ --fq-brand-blue:#245BFF;
+ --fq-brand-cyan:#22C7EB;
+ --fq-brand-paper:#F3F6FA;
+ --fq-brand-white:#FFFFFF;
+ --fq-brand-border:#E4EAF3;
+ --blue:var(--fq-brand-blue);
+ --ink:var(--fq-brand-navy);
+}
+.header{background:var(--fq-brand-white);border-bottom-color:var(--fq-brand-border)}
+.header .finquery-brand{gap:11px!important}
+.header .finquery-logo svg.fq-rebrand-mark{display:block;width:42px;height:42px;filter:none}
+.header .brand-copy strong{font-family:'Be Vietnam Pro','Segoe UI',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.65px;color:var(--fq-brand-navy)}
+.header .brand-copy small{display:none}
+.header nav a:hover,.header nav a:focus-visible,.header nav a.active{color:var(--fq-brand-blue)}
+.header-label{border-color:var(--fq-brand-border);color:var(--fq-brand-navy)}
+#finquery-nav-toggle:focus-visible{outline-color:var(--fq-brand-blue)}
+.primary:hover:not(:disabled){background:#164BDF}
+@media(max-width:700px){
+ .header .finquery-brand{gap:7px!important}
+ .header .finquery-logo svg.fq-rebrand-mark{width:36px;height:36px}
+ .header .brand-copy strong{font-size:17px}
+ .header nav[aria-label="Điều hướng nền tảng"] a.active{background:#EFF4FF;color:var(--fq-brand-blue)}
+}
+@media(max-width:340px){
+ .header .finquery-brand{gap:5px!important}
+ .header .finquery-logo svg.fq-rebrand-mark{width:32px;height:32px}
+}
