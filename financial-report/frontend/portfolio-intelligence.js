@@ -164,55 +164,86 @@ function switchTab(tab,focus=false){
 }
 function rotateStatus(s){return s.rs20>=0?(s.rs5>=0?'Khỏe':'Đang suy yếu'):(s.rs5>=0?'Hồi phục':'Yếu');}
 function renderRotation(){
- const data=state.rotation,sectors=Array.isArray(data?.sectors)?data.sectors:[],items=sectors.filter(s=>Number.isFinite(s.rs5)&&Number.isFinite(s.rs20));
- $('portfolio-sector-stamp').textContent=data?.sourceDate?'Phiên '+data.sourceDate+' · '+(data.benchmark?.eligibleSymbols||0)+' mã hợp lệ · '+items.length+' ngành có RS':'Đang chờ dữ liệu ngành';
- const rows=$('portfolio-rotation-rows');
- rows.innerHTML=sectors.length?sectors.map(s=>'<tr><td>'+safe(s.label||s.id)+'</td><td>'+formatPct(s.rs5)+'</td><td>'+formatPct(s.rs20)+
- '</td><td>'+safe((s.used??0)+'/'+(s.members??0))+'</td><td>'+safe(Number.isFinite(s.rs5)?rotateStatus(s):'Chưa đủ dữ liệu')+'</td></tr>').join('')
- :'<tr><td colspan="5" class="portfolio-empty">Đang chờ dữ liệu ngành.</td></tr>';
- $('portfolio-rotation-table').hidden=state.chartMode!=='table';
+ const data=state.rotation,all=Array.isArray(data?.sectors)?data.sectors:[],
+   items=all.filter(x=>Number.isFinite(x.rs5)&&Number.isFinite(x.rs20));
+ const held=new Set(calculate().sectorAllocations.map(x=>x.id));
+ const stamp=data?.sourceDate?'Phiên '+data.sourceDate+' · '+(data.benchmark?.eligibleSymbols||0)+' mã đủ chuỗi · '+items.length+' ngành có RS':'Chưa có dữ liệu ngành';
+ $('portfolio-sector-stamp').textContent=stamp;
+ $('portfolio-rotation-rows').innerHTML=all.length?all.map(x=>'<tr><td>'+safe(x.label||x.id)+'</td><td>'+formatPct(x.rs5)+'</td><td>'+
+  formatPct(x.rs20)+'</td><td>'+safe((x.used??0)+'/'+(x.members??0))+'</td><td>'+safe(Number.isFinite(x.rs5)?rotateStatus(x):'Chưa đủ chuỗi')+'</td></tr>').join(''):
+ '<tr><td colspan="5" class="portfolio-empty">Chưa có dữ liệu ngành.</td></tr>';
  $('portfolio-rotation-chart').hidden=state.chartMode!=='chart';
- for(const b of root.querySelectorAll('[data-portfolio-view]')){const active=b.dataset.portfolioView===state.chartMode;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));}
- const host=$('portfolio-rotation-chart');
- if(!items.length){host.innerHTML='<p class="portfolio-muted">Chưa có chuỗi giá đủ điều kiện.</p>';return;}
- const max=Math.max(5,Math.ceil(Math.max(...items.flatMap(s=>[Math.abs(s.rs20),Math.abs(s.rs5)]))*1.18)),x1=65,x2=855,y1=30,y2=390;
- const xx=n=>x1+(n+max)/(2*max)*(x2-x1),yy=n=>y2-(n+max)/(2*max)*(y2-y1);
- const zeroX=xx(0),zeroY=yy(0),sectorHolding=new Set(calculate().sectorAllocations.map(a=>a.id));
- const rect=(x,y,w,h,c)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="6" fill="'+c+'"/>';
- const zones=rect(x1,y1,zeroX-x1,zeroY-y1,'#eaf6f4')+rect(zeroX,y1,x2-zeroX,zeroY-y1,'#e9f6ef')+
-  rect(x1,zeroY,zeroX-x1,y2-zeroY,'#fcf0f1')+rect(zeroX,zeroY,x2-zeroX,y2-zeroY,'#fff5e8');
- const labels='<text x="'+(x1+12)+'" y="'+(y1+21)+'" font-size="13" fill="#318b91">Hồi phục</text>'+
-  '<text x="'+(x2-12)+'" y="'+(y1+21)+'" text-anchor="end" font-size="13" fill="#287d56">Khỏe</text>'+
-  '<text x="'+(x1+12)+'" y="'+(y2-13)+'" font-size="13" fill="#bb5c65">Yếu</text>'+
-  '<text x="'+(x2-12)+'" y="'+(y2-13)+'" text-anchor="end" font-size="13" fill="#ab803a">Suy yếu</text>'+
-  '<text x="'+((x1+x2)/2)+'" y="432" font-size="12" fill="#6e7c8e" text-anchor="middle">RS 20 phiên →</text>'+
-  '<text x="16" y="'+((y1+y2)/2)+'" font-size="12" fill="#6e7c8e" text-anchor="middle" transform="rotate(-90 16 '+((y1+y2)/2)+')">RS 5 phiên →</text>'+
-  '<text x="'+x1+'" y="410" fill="#8a99ae" font-size="11" text-anchor="middle">-'+max+'%</text>'+
-  '<text x="'+x2+'" y="410" fill="#8a99ae" font-size="11" text-anchor="middle">+'+max+'%</text>';
- const dots=items.map((s,i)=>{
-  const x=xx(s.rs20),y=yy(s.rs5),trend=Array.isArray(s.trail)?s.trail.filter(p=>Number.isFinite(p.rs20)&&Number.isFinite(p.rs5)):[];
-  const color=s.rs20>=0?(s.rs5>=0?'#3caa72':'#dda84e'):(s.rs5>=0?'#54aebc':'#d96a76');
-  const path=trend.map(p=>xx(p.rs20).toFixed(1)+','+yy(p.rs5).toFixed(1)).join(' ');
-  const held=sectorHolding.has(s.id),radius=Math.min(11,5+Math.sqrt(s.used||0));
-  const tooltip=s.label+' · RS5 '+formatPct(s.rs5)+' · RS20 '+formatPct(s.rs20);
-  const lx=x>x2-150?x-radius-8:x+radius+8,anchor=x>x2-150?'end':'start';
-  return (path?'<polyline points="'+path+'" fill="none" stroke="'+color+'" stroke-width="1.6" opacity=".5"/>':'')+
-   '<circle role="button" tabindex="0" data-portfolio-sector="'+safe(s.id)+'" class="portfolio-rot-dot" cx="'+x+'" cy="'+y+'" r="'+radius+'" fill="'+color+'" stroke="'+(held?'#25385f':'#fff')+'" stroke-width="'+(held?3:1.5)+'" opacity="'+(s.status==='thin'?.6:1)+'"><title>'+safe(tooltip)+'</title></circle>'+
-   '<text x="'+lx+'" y="'+(y-8)+'" text-anchor="'+anchor+'" font-size="11" fill="#374c65" font-weight="'+(held?'700':'500')+'">'+safe(s.label)+'</text>';
+ $('portfolio-rotation-table').hidden=state.chartMode!=='table';
+ root.querySelector('.portfolio-sector-rail').hidden=state.chartMode!=='chart';
+ for(const button of root.querySelectorAll('[data-portfolio-view]')){
+  const on=button.dataset.portfolioView===state.chartMode;
+  button.classList.toggle('active',on);button.setAttribute('aria-pressed',String(on));
+ }
+ $('portfolio-sector-list').innerHTML=items.map(x=>{
+  const selected=state.selectedSector===x.id;
+  const color=x.rs20>=0?(x.rs5>=0?'#3caa72':'#dda84e'):(x.rs5>=0?'#54aebc':'#d96a76');
+  return '<button type="button" class="portfolio-sector-option'+(selected?' is-selected':'')+'" data-portfolio-sector="'+safe(x.id)+'" aria-pressed="'+selected+'"><span class="portfolio-sector-option-label-wrap"><i class="portfolio-sector-dot" style="background:'+color+'"></i><span class="portfolio-sector-option-label">'+safe(x.label)+'</span></span>'+
+   '<span class="portfolio-sector-option-score">'+formatPct(x.rs20)+'</span></button>';
  }).join('');
- host.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 455" aria-label="Sức mạnh ngành 20 phiên (ngang) và 5 phiên (dọc)">'+zones+
-  '<line x1="'+zeroX+'" y1="'+y1+'" x2="'+zeroX+'" y2="'+y2+'" stroke="#91a0b2" stroke-dasharray="4 5"/>'+
-  '<line x1="'+x1+'" y1="'+zeroY+'" x2="'+x2+'" y2="'+zeroY+'" stroke="#91a0b2" stroke-dasharray="4 5"/>'+labels+dots+'</svg>';
- if(state.selectedSector)selectSector(state.selectedSector);
+ if(!items.length){
+  $('portfolio-rotation-chart').innerHTML='<p class="portfolio-muted">Chưa có chuỗi giá đủ điều kiện.</p>';
+  $('portfolio-rotation-detail').textContent='Chưa có dữ liệu ngành.';
+  return;
+ }
+ if(!items.some(x=>x.id===state.selectedSector)){
+  state.selectedSector=items.find(x=>held.has(x.id))?.id||items[0].id;
+ }
+ const chosen=items.find(x=>x.id===state.selectedSector);
+ const rail=$('portfolio-sector-list');
+ for(const btn of rail.querySelectorAll('[data-portfolio-sector]')){
+  const on=btn.dataset.portfolioSector===chosen.id;
+  btn.classList.toggle('is-selected',on);btn.setAttribute('aria-pressed',String(on));
+ }
+ const mx=Math.max(4,Math.ceil(Math.max(...items.flatMap(x=>[Math.abs(x.rs5),Math.abs(x.rs20)]))*1.12)),
+  left=59,right=855,top=40,bottom=390,w=right-left,h=bottom-top;
+ const xx=x=>left+(x+mx)/(2*mx)*w,yy=y=>bottom-(y+mx)/(2*mx)*h;
+ const zx=xx(0),zy=yy(0);
+ const rect=(x,y,ww,hh,col)=>'<rect x="'+x+'" y="'+y+'" width="'+ww+'" height="'+hh+'" rx="5" fill="'+col+'"/>';
+ const bg=rect(left,top,zx-left,zy-top,'#e9f6f3')+rect(zx,top,right-zx,zy-top,'#e9f6ee')+
+  rect(left,zy,zx-left,bottom-zy,'#fdf1f2')+rect(zx,zy,right-zx,bottom-zy,'#fff4e7');
+ const labels='<text x="'+(left+10)+'" y="'+(top+19)+'" fill="#368e96" font-size="12">Hồi phục</text>'+
+  '<text x="'+(right-10)+'" y="'+(top+19)+'" fill="#2c8e68" font-size="12" text-anchor="end">Khỏe</text>'+
+  '<text x="'+(left+10)+'" y="'+(bottom-11)+'" fill="#b86168" font-size="12">Yếu</text>'+
+  '<text x="'+(right-10)+'" y="'+(bottom-11)+'" fill="#b0864a" font-size="12" text-anchor="end">Suy yếu</text>'+
+  '<text x="'+((left+right)/2)+'" y="435" fill="#75869c" text-anchor="middle" font-size="12">RS 20 phiên →</text>'+
+  '<text x="17" y="'+((top+bottom)/2)+'" text-anchor="middle" transform="rotate(-90 17 '+((top+bottom)/2)+')" fill="#75869c" font-size="12">RS 5 phiên →</text>'+
+  '<text x="'+left+'" y="409" text-anchor="middle" fill="#8290a6" font-size="10">−'+mx+'%</text>'+
+  '<text x="'+right+'" y="409" text-anchor="middle" fill="#8290a6" font-size="10">+'+mx+'%</text>';
+ const circle=x=>{
+  const col=x.rs20>=0?(x.rs5>=0?'#3caa72':'#dda84e'):(x.rs5>=0?'#54aebc':'#d96a76');
+  const isSelected=x.id===chosen.id;
+  const r=isSelected?10:6.5;
+  const hold=held.has(x.id);
+  const title=safe(x.label)+' · RS5 '+formatPct(x.rs5)+' · RS20 '+formatPct(x.rs20);
+  return '<circle class="portfolio-rot-dot" data-portfolio-sector="'+safe(x.id)+'" cx="'+xx(x.rs20)+'" cy="'+yy(x.rs5)+
+   '" r="'+r+'" role="button" tabindex="0" fill="'+col+'" opacity="'+(x.status==='thin'?'.65':'1')+
+   '" stroke="'+(isSelected?'#273f6a':hold?'#5866a4':'#fff')+'" stroke-width="'+(isSelected?3:hold?2.5:1.4)+
+   '" aria-label="'+title+'"><title>'+title+'</title></circle>';
+ };
+ const trail=Array.isArray(chosen.trail)?chosen.trail.filter(p=>Number.isFinite(p.rs5)&&Number.isFinite(p.rs20)):[];
+ const points=trail.map(p=>xx(p.rs20).toFixed(1)+','+yy(p.rs5).toFixed(1)).join(' ');
+ const line=points?'<polyline points="'+points+'" fill="none" stroke="#566fc0" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round" opacity=".83"/>':'';
+ const axis='<line x1="'+zx+'" y1="'+top+'" x2="'+zx+'" y2="'+bottom+'" stroke="#9aaac0" stroke-dasharray="4 5"/>'+
+  '<line x1="'+left+'" y1="'+zy+'" x2="'+right+'" y2="'+zy+'" stroke="#9aaac0" stroke-dasharray="4 5"/>';
+ const dotSvg=items.filter(x=>x.id!==chosen.id).map(circle).join('')+circle(chosen);
+ // Only the selected sector has a trail and a label. Others are accessed by the list or tooltip.
+ $('portfolio-rotation-chart').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 457" role="img" aria-label="Biểu đồ sức mạnh ngành, đường di chuyển của '+safe(chosen.label)+'">'+bg+axis+labels+line+dotSvg+
+  '<text x="73" y="27" fill="#415c94" font-size="13" font-weight="700">'+safe(chosen.label)+' · '+formatPct(chosen.rs20)+' / '+formatPct(chosen.rs5)+'</text></svg>';
+ const owned=calculate().rows.filter(h=>sectorOf(h.symbol)?.id===chosen.id).map(h=>h.symbol);
+ const dates=trail.map(p=>p.date+' ('+formatPct(p.rs20)+' / '+formatPct(p.rs5)+')');
+ $('portfolio-rotation-detail').innerHTML='<strong>'+safe(chosen.label)+'</strong> · '+safe(rotateStatus(chosen))+
+  ' · RS20 '+formatPct(chosen.rs20)+' · RS5 '+formatPct(chosen.rs5)+' · '+safe(chosen.used+'/'+chosen.members)+' mã'+
+  (owned.length?' · Đang nắm giữ: '+safe(owned.join(', ')):'')+
+  '<div class="portfolio-method-note">Đường đi của ngành đã chọn: '+safe(dates.join(' → '))+'</div>';
 }
 function selectSector(id){
- const s=state.rotation?.sectors?.find(v=>v.id===id);
- if(!s)return;state.selectedSector=id;
- const holdings=calculate().rows.filter(h=>sectorOf(h.symbol)?.id===id).map(h=>h.symbol);
- const trail=Array.isArray(s.trail)?s.trail.map(p=>p.date+' · '+formatPct(p.rs20)+' / '+formatPct(p.rs5)).join(' → '):'';
- $('portfolio-rotation-detail').innerHTML='<strong>'+safe(s.label)+'</strong> · RS5 '+formatPct(s.rs5)+' · RS20 '+formatPct(s.rs20)+
-  ' · '+safe(s.used+'/'+s.members)+' mã'+(holdings.length?' · Danh mục: '+safe(holdings.join(', ')):'')+
-  '<div class="portfolio-method-note">'+safe(trail)+'</div>';
+ if(!state.rotation?.sectors?.some(x=>x.id===id))return;
+ state.selectedSector=id;renderRotation();
 }
 function render(){
  if(!state.loaded)return;
