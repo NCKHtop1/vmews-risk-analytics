@@ -9,6 +9,9 @@ on:
     branches: [main]
     paths:
       - 'financial-report/portfolio.*'
+      - 'financial-report/frontend/portfolio-intelligence.js'
+      - 'financial-report/frontend/portfolio-intelligence.css'
+      - 'financial-report/frontend/index.html'
       - 'finquery-access/api/index.js'
       - '.github/workflows/finquery-portfolio-live-smoke.yml'
 permissions:
@@ -53,10 +56,10 @@ jobs:
               try{return JSON.parse(r.body).authenticated===false;}catch{return false;}
             });
             await check('portfolio-api-private',base+'/api/user/portfolio',r=>r.status===401&&r.body.includes('LOGIN_REQUIRED'));
-            await check('portfolio-page-private',base+'/financial-report/portfolio.html',r=>r.status===307&&r.location.startsWith('/login?next='));
-            await check('portfolio-js-private',base+'/financial-report/portfolio.js',r=>r.status===401);
-            await check('portfolio-pages-html',pages+'/portfolio.html',r=>r.status===200&&r.body.includes('id="rotationChart"'));
-            await check('portfolio-pages-js',pages+'/portfolio.js',r=>r.status===200&&r.body.includes('sector-rotation.json'));
+            await check('native-page-private',base+'/financial-report/index.html',r=>r.status===307&&r.location.startsWith('/login?next='));
+            await check('legacy-page-private',base+'/financial-report/portfolio.html',r=>r.status===307&&r.location.startsWith('/login?next='));
+            await check('pages-native-portfolio',pages+'/index.html',r=>r.status===200&&r.body.includes('href="#portfolio" data-platform-view="portfolio"')&&r.body.includes('window.FinPortfolio=')&&r.body.includes('id="portfolio-tab-rotation"'));
+            await check('pages-legacy-redirect',pages+'/portfolio.html',r=>r.status===200&&r.body.includes('index.html#portfolio'));
             await check('portfolio-pages-rotation',pages+'/market/sector-rotation.json',r=>{
               if(r.status!==200)return false;
               try{const j=JSON.parse(r.body);return j.version==='FINQUERY-SECTOR-RS-1.0'&&j.benchmark?.eligibleSymbols>=10&&j.sectors?.length>=10;}catch{return false;}
