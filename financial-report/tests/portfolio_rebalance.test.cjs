@@ -7,6 +7,7 @@ const book=(rows,cash)=>({rows,cash,nav:cash+rows.reduce((a,x)=>a+x.value,0),sec
 const go=(portfolio,policy={preset:'balanced'})=>core.review({portfolio,policy,sourceTime:time,now});
 test('four real templates and bounded user thresholds',()=>{
  assert.deepEqual(Object.keys(core.PRESETS),['balanced','equal','defensive','focused']);
+ assert.deepEqual(Object.values(core.PRESETS).map(p=>p.title),['Danh mục Golden Gate','Danh mục Equal Edge','Danh mục Safe Harbor','Danh mục Alpha Focus']);
  assert.equal(core.normalize({preset:'defensive'}).cashPct,30);
  assert.equal(core.normalize({preset:'equal',cashPct:100,driftPct:-5}).cashPct,50);
  assert.equal(core.normalize({preset:'equal',cashPct:100,driftPct:-5}).driftPct,2);

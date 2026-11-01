@@ -107,3 +107,19 @@ test('account policy writes use server session, bounded inputs and revision chec
  assert.match(migration,/CHECK\(cash_pct BETWEEN 0 AND 50\)/);
  assert.doesNotMatch(migration,/DROP TABLE/);
 });
+
+test('market-first onboarding displays verified quote coverage and selected template names',()=>{
+ const ui=read('frontend/portfolio-policy-ui.js');
+ const core=read('frontend/portfolio-rebalance-core.js');
+ assert.match(html,/id="portfolio-market-brief"/);
+ assert.match(html,/Kiểm tra giá · 5 phút/);
+ assert.match(ui,/DỮ LIỆU THỊ TRƯỜNG/);
+ assert.match(ui,/RS20 nổi bật/);
+ assert.match(ui,/portfolio\.cash/);
+ assert.match(client,/quoteCount:Object\.keys\(state\.quotes/);
+ assert.match(core,/Danh mục Golden Gate/);
+ assert.match(core,/Danh mục Alpha Focus/);
+ for(const banned of ['không phải khuyến nghị đầu tư','không liên kết tài khoản môi giới']){
+  assert.doesNotMatch(ui,new RegExp(banned,'i'));
+ }
+});

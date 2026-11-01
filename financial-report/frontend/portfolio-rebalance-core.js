@@ -7,10 +7,10 @@
  if(root)root.FinPortfolioPolicy=api;
 })(typeof window==='object'?window:null,function(){'use strict';
  const PRESETS=Object.freeze({
-  balanced:Object.freeze({id:'balanced',title:'Cân bằng',subtitle:'Phân tán vừa phải, giữ thanh khoản',cashPct:10,maxStockPct:30,sectorCapPct:45,driftPct:5,minTradeVnd:2000000,feeBps:15,sellTaxBps:10,lot:100}),
-  equal:Object.freeze({id:'equal',title:'Chia đều',subtitle:'Phân bổ đồng đều trên các mã đang có',cashPct:5,maxStockPct:25,sectorCapPct:50,driftPct:4,minTradeVnd:1000000,feeBps:15,sellTaxBps:10,lot:100}),
-  defensive:Object.freeze({id:'defensive',title:'Thận trọng',subtitle:'Giữ tiền mặt và giới hạn tập trung',cashPct:30,maxStockPct:20,sectorCapPct:35,driftPct:4,minTradeVnd:2000000,feeBps:15,sellTaxBps:10,lot:100}),
-  focused:Object.freeze({id:'focused',title:'Tập trung có kiểm soát',subtitle:'Ít mã hơn, biên độ điều chỉnh rộng',cashPct:10,maxStockPct:40,sectorCapPct:65,driftPct:7,minTradeVnd:3000000,feeBps:15,sellTaxBps:10,lot:100})
+  balanced:Object.freeze({id:'balanced',title:'Danh mục Golden Gate',subtitle:'Tăng trưởng cân bằng · Giữ thanh khoản',cashPct:10,maxStockPct:30,sectorCapPct:45,driftPct:5,minTradeVnd:2000000,feeBps:15,sellTaxBps:10,lot:100}),
+  equal:Object.freeze({id:'equal',title:'Danh mục Equal Edge',subtitle:'Chia đều tỷ trọng · Giảm phụ thuộc một mã',cashPct:5,maxStockPct:25,sectorCapPct:50,driftPct:4,minTradeVnd:1000000,feeBps:15,sellTaxBps:10,lot:100}),
+  defensive:Object.freeze({id:'defensive',title:'Danh mục Safe Harbor',subtitle:'Ưu tiên dự phòng tiền · Hạn chế tập trung',cashPct:30,maxStockPct:20,sectorCapPct:35,driftPct:4,minTradeVnd:2000000,feeBps:15,sellTaxBps:10,lot:100}),
+  focused:Object.freeze({id:'focused',title:'Danh mục Alpha Focus',subtitle:'Tập trung vị thế · Ngưỡng điều chỉnh rộng',cashPct:10,maxStockPct:40,sectorCapPct:65,driftPct:7,minTradeVnd:3000000,feeBps:15,sellTaxBps:10,lot:100})
  });
  const N=v=>Number.isFinite(Number(v))?Number(v):NaN;
  const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));

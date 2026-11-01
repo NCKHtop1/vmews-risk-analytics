@@ -391,5 +391,5 @@ document.addEventListener('finquery:market-bundle',()=>{if(isOpen()&&!state.load
 document.addEventListener('visibilitychange',()=>{if(isOpen()&&Date.now()-state.lastLoadedAt>FIVE_MIN)void refresh({force:true});});
 window.addEventListener('online',()=>{if(isOpen()){state.lastLoadedAt=0;void refresh({force:true});}});
 setInterval(()=>{if(isOpen()&&Date.now()-state.lastLoadedAt>=FIVE_MIN)void refresh({force:true});},FIVE_MIN);
-window.FinPortfolio={open,refresh:()=>refresh({force:true}),setTab:switchTab,context:()=>({events:state.events,quoteTime:state.sourceTime,rotationTime:state.rotation?.sourceDate||null,ready:state.loaded,snapshot:calculate(),sectors:state.risk?.sectors||[],rotation:state.rotation})};
+window.FinPortfolio={open,refresh:()=>refresh({force:true}),setTab:switchTab,context:()=>({events:state.events,quoteTime:state.sourceTime,rotationTime:state.rotation?.sourceDate||null,ready:state.loaded,snapshot:calculate(),sectors:state.risk?.sectors||[],rotation:state.rotation,quoteCount:Object.keys(state.quotes||{}).length})};
 })();
