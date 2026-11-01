@@ -24,7 +24,8 @@ function setSiteAccess(unlocked){
  if(error&&unlocked)error.textContent='';
  if(!unlocked)setTimeout(()=>$('site-access-code')?.focus(),0);
  if(unlocked){
-  if(location.hash==='#risk-monitor')window.FinPlatformViews?.openRisk?.();
+  if(location.hash==='#portfolio')window.FinPlatformViews?.openPortfolio?.();
+   else if(location.hash==='#risk-monitor')window.FinPlatformViews?.openRisk?.();
   else if(location.hash==='#strategy-builder')window.FinPlatformViews?.openStrategy?.();
  }
 }

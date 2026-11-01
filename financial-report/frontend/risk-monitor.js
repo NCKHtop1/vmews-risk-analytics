@@ -248,23 +248,27 @@ async function refresh(){
  }finally{state.loading=false;if(btn)btn.disabled=false;}
 }
 function setPlatformView(view,pushHash=true){
- const risk=$('risk-monitor'),strategy=$('strategy-builder'),intro=document.querySelector('.intro'),workspace=document.querySelector('.workspace');
+ const risk=$('risk-monitor'),strategy=$('strategy-builder'),portfolio=$('portfolio'),intro=document.querySelector('.intro'),workspace=document.querySelector('.workspace');
  if(document.body.classList.contains('site-locked')&&view!=='analysis')view='analysis';
  if(risk)risk.hidden=view!=='risk';
  if(strategy)strategy.hidden=view!=='strategy';
+ if(portfolio)portfolio.hidden=view!=='portfolio';
  if(intro)intro.hidden=view!=='analysis';
  if(workspace)workspace.hidden=view!=='analysis';
  document.body.classList.toggle('risk-monitor-view',view==='risk');
  document.body.classList.toggle('strategy-lab-view',view==='strategy');
+ document.body.classList.toggle('portfolio-view',view==='portfolio');
  document.querySelectorAll('.header nav a').forEach(a=>a.classList.toggle('active',a.dataset.platformView===view));
  if(pushHash){
-  const hash=view==='risk'?'#risk-monitor':view==='strategy'?'#strategy-builder':'#market';
+  const hash=view==='risk'?'#risk-monitor':view==='strategy'?'#strategy-builder':view==='portfolio'?'#portfolio':'#market';
   if(location.hash!==hash)history.pushState(null,'',hash);
  }
  if(view==='risk')refresh();
  if(view==='strategy')window.FinStrategyBuilder?.refresh?.();
+ if(view==='portfolio')window.FinPortfolio?.open?.();
  window.scrollTo({top:0,behavior:'smooth'});
 }
+function showPortfolio(pushHash=true){setPlatformView('portfolio',pushHash);}
 function showRisk(pushHash=true){setPlatformView('risk',pushHash);}
 function showStrategy(pushHash=true){setPlatformView('strategy',pushHash);}
 function showAnalysis(pushHash=false){setPlatformView('analysis',pushHash);}
@@ -278,7 +282,8 @@ function openSymbol(symbol){
 }
 function bind(){
  document.querySelectorAll('.header nav a').forEach(a=>{
-  if(a.dataset.platformView==='risk')a.addEventListener('click',e=>{e.preventDefault();showRisk();});
+  if(a.dataset.platformView==='portfolio')a.addEventListener('click',e=>{e.preventDefault();showPortfolio();});
+   else if(a.dataset.platformView==='risk')a.addEventListener('click',e=>{e.preventDefault();showRisk();});
   else if(a.dataset.platformView==='strategy')a.addEventListener('click',e=>{e.preventDefault();showStrategy();});
   else a.addEventListener('click',()=>showAnalysis());
  });
@@ -290,13 +295,14 @@ function bind(){
  $('risk-fund-detail')?.addEventListener('click',e=>{if(e.target.closest('#risk-fund-detail-close')){state.selectedFundSymbol=null;$('risk-fund-detail').hidden=true;}});
  $('risk-sectors')?.addEventListener('click',e=>{const b=e.target.closest('[data-sector-id]');if(b)renderSectorDetail(b.dataset.sectorId);});
  $('risk-sector-detail')?.addEventListener('click',e=>{const stock=e.target.closest('[data-risk-symbol]');if(stock){openSymbol(stock.dataset.riskSymbol);return;}if(e.target.closest('#risk-sector-detail-close')){state.selectedSectorId=null;$('risk-sector-detail').hidden=true;}});
- window.addEventListener('hashchange',()=>{if(location.hash==='#risk-monitor')showRisk(false);else if(location.hash==='#strategy-builder')showStrategy(false);else showAnalysis(false);});
+ window.addEventListener('hashchange',()=>{if(location.hash==='#portfolio')showPortfolio(false);else if(location.hash==='#portfolio')showPortfolio(false);
+else if(location.hash==='#risk-monitor')showRisk(false);else if(location.hash==='#strategy-builder')showStrategy(false);else showAnalysis(false);});
  document.addEventListener('finquery:market-refresh',()=>{if(!$('risk-monitor')?.hidden)refresh();});
 }
 bind();
 if(location.hash==='#risk-monitor')showRisk(false);
 setInterval(()=>{if(!$('risk-monitor')?.hidden&&!document.hidden)refresh();},300000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('risk-monitor')?.hidden)refresh();});
-window.FinPlatformViews={openRisk:()=>showRisk(),openStrategy:()=>showStrategy(),openAnalysis:()=>showAnalysis()};
+window.FinPlatformViews={openPortfolio:()=>showPortfolio(),openRisk:()=>showRisk(),openStrategy:()=>showStrategy(),openAnalysis:()=>showAnalysis()};
 window.FinRiskMonitor={refresh,open:()=>showRisk(),close:showAnalysis,context:()=>state.data};
 })();
