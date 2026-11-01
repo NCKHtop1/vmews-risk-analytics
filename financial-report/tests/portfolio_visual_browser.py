@@ -111,10 +111,10 @@ def main():
                 driver.execute_script("arguments[0].click();",target)
                 WebDriverWait(driver,5).until(lambda d:d.execute_script(
                     "return document.getElementById('portfolio-cash-target').value==='30'"))
-                driver.find_element(By.ID,'portfolio-policy-save').click()
+                driver.execute_script("arguments[0].scrollIntoView({block:'center'});arguments[0].click();",driver.find_element(By.ID,'portfolio-policy-save'))
                 WebDriverWait(driver,7).until(lambda d:d.execute_script(
                     "return window.__fixture.policy?.preset==='defensive'"))
-                driver.find_element(By.CSS_SELECTOR,'#portfolio-tabs [data-portfolio-tab="rotation"]').click()
+                driver.execute_script("arguments[0].scrollIntoView({block:'center'});arguments[0].click();",driver.find_element(By.CSS_SELECTOR,'#portfolio-tabs [data-portfolio-tab="rotation"]'))
                 WebDriverWait(driver,12).until(lambda d:d.execute_script(
                     "return document.querySelectorAll('#portfolio-rotation-chart circle').length===13"))
                 chart=driver.execute_script("""
@@ -126,7 +126,7 @@ def main():
                 """)
                 assert chart['dots']==13 and chart['paths']==1 and chart['options']==13,chart
                 assert chart['texts']<=9,('overlapping labels returned',chart)
-                driver.find_element(By.CSS_SELECTOR,'#portfolio-sector-list [data-portfolio-sector="tech"]').click()
+                driver.execute_script("arguments[0].scrollIntoView({block:'center'});arguments[0].click();",driver.find_element(By.CSS_SELECTOR,'#portfolio-sector-list [data-portfolio-sector="tech"]'))
                 assert 'Công nghệ' in driver.find_element(By.ID,'portfolio-rotation-detail').text
                 # Switch the same mock account from empty to a real valued 2-ticker ledger.
                 driver.execute_script("""
@@ -139,7 +139,7 @@ def main():
                 """)
                 WebDriverWait(driver,15).until(lambda d:d.execute_script(
                     "return document.querySelectorAll('#portfolio-holdings-body tr').length===2"))
-                driver.find_element(By.CSS_SELECTOR,'#portfolio-tabs [data-portfolio-tab="plan"]').click()
+                driver.execute_script("arguments[0].scrollIntoView({block:'center'});arguments[0].click();",driver.find_element(By.CSS_SELECTOR,'#portfolio-tabs [data-portfolio-tab="plan"]'))
                 WebDriverWait(driver,12).until(lambda d:d.execute_script(
                     "return document.querySelectorAll('#portfolio-target-rows tr').length===2"))
                 final=driver.execute_script("""
