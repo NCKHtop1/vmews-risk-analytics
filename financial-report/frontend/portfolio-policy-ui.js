@@ -68,11 +68,41 @@ function getBook(){
  for(const sec of context.sectors||[])for(const row of sec.memberRows||[])sectors.set(row.symbol,sec.id);
  const stocks=context.rotation?.stocks||{};
  const rows=snap.rows.map(r=>({...r,sectorId:sectors.get(r.symbol)||stocks[r.symbol]?.sectorId||null}));
- return {portfolio:{...snap,rows},sourceTime:context.quoteTime};
+ return {portfolio:{...snap,rows},sourceTime:context.quoteTime,market:{quoteCount:context.quoteCount,rotation:context.rotation,sectors:context.sectors}};
 }
+function renderMarketBrief(market,sourceTime){
+ const host=el('portfolio-market-brief');
+ if(!host)return;
+ const quoteCount=Number(market?.quoteCount||0);
+ const sectors=Array.isArray(market?.rotation?.sectors)?
+  market.rotation.sectors.filter(s=>Number.isFinite(s.rs5)&&Number.isFinite(s.rs20)):[];
+ if(!quoteCount){
+  host.innerHTML='<span class="portfolio-market-loading">Đang đồng bộ dữ liệu thị trường…</span>';
+  return;
+ }
+ const dt=Date.parse(sourceTime||'');
+ const stamp=Number.isFinite(dt)?new Intl.DateTimeFormat('vi-VN',{
+   timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'
+  }).format(new Date(dt)):'Đang xác định phiên';
+ const parts=[
+  '<span class="portfolio-market-metric"><b>'+quoteCount.toLocaleString('vi-VN')+'</b> mã có giá</span>',
+  '<span class="portfolio-market-metric">Phiên <b>'+safe(stamp)+'</b></span>'
+ ];
+ if(sectors.length){
+  parts.push('<span class="portfolio-market-metric"><b>'+sectors.length+'</b> ngành có RS</span>');
+ }
+ const top=sectors.slice().sort((a,b)=>b.rs20-a.rs20).slice(0,3);
+ const topHtml=top.length?'<div class="portfolio-market-leaders"><strong>RS20 nổi bật</strong> '+top.map(s=>
+   '<span>'+safe(s.label||s.id)+' <b>'+(s.rs20>0?'+':'')+s.rs20.toFixed(1)+'%</b></span>'
+ ).join('')+'</div>':'';
+ host.innerHTML='<div class="portfolio-market-metrics"><span class="portfolio-market-heading">DỮ LIỆU THỊ TRƯỜNG</span>'+
+   parts.join('')+'</div>'+topHtml;
+}
+
 function render(){
  const book=getBook();
  if(!book)return;
+ renderMarketBrief(book.market,book.sourceTime);
  const count=book.portfolio.rows.length,hasPositions=count>0;
  root.classList.toggle('portfolio-no-positions',!hasPositions);
  el('portfolio-onboarding').hidden=hasPositions;
