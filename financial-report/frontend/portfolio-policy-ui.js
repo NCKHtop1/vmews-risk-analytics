@@ -76,6 +76,7 @@ function render(){
  const count=book.portfolio.rows.length,hasPositions=count>0;
  root.classList.toggle('portfolio-no-positions',!hasPositions);
  el('portfolio-onboarding').hidden=hasPositions;
+ el('portfolio-start-deposit').textContent=book.portfolio.cash>0?'+ Ghi nhận cổ phiếu':'+ Nhập vốn ban đầu';
  el('portfolio-plan-preview').hidden=!hasPositions;
  const report=Q.review({portfolio:book.portfolio,policy:state.policy,sourceTime:book.sourceTime,now:Date.now()});
  const eligible=state.saved&&!state.dirty&&!report.blocked;
@@ -93,7 +94,7 @@ function render(){
   '<td>'+safe(Math.abs(t.driftPP)>=state.policy.driftPct?'Vượt ngưỡng':'Theo dõi')+'</td></tr>').join(''):
   '<tr><td colspan="5" class="portfolio-empty">Nhập cổ phiếu để xem mục tiêu phân bổ.</td></tr>';
  if(!hasPositions||!eligible){
-  el('portfolio-plan-result').innerHTML='<p class="portfolio-plan-message">'+safe(!hasPositions?'Chọn mẫu, nạp vốn rồi ghi nhận vị thế để bắt đầu.':
+  el('portfolio-plan-result').innerHTML='<p class="portfolio-plan-message">'+safe(!hasPositions?(book.portfolio.cash>0?'Đã có vốn. Ghi nhận cổ phiếu đang nắm giữ để bắt đầu phân tích.':'Chọn mẫu, nạp vốn rồi ghi nhận vị thế để bắt đầu.'):
    report.blocked?report.why:!state.saved?'Chọn và lưu một mẫu để bật đánh giá theo phiên.':'Lưu cấu hình mới để đánh giá.')+'</p>';
   return;
  }
@@ -118,7 +119,7 @@ function select(id){
 root.addEventListener('click',e=>{
  const b=e.target.closest('[data-portfolio-preset]');if(b){select(b.dataset.portfolioPreset);return;}
  if(e.target.closest('#portfolio-start-deposit')){
-  el('portfolio-add').click();el('portfolio-type').value='DEPOSIT';
+  const current=getBook();el('portfolio-add').click();el('portfolio-type').value=current?.portfolio?.cash>0?'BUY':'DEPOSIT';
   el('portfolio-type').dispatchEvent(new Event('change'));
  }
 });
