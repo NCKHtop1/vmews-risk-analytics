@@ -1,0 +1,74 @@
+name: FinQuery Portfolio production HTTP smoke
+on:
+  workflow_run:
+    workflows: [Deploy VMEWS Pages]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/portfolio.*'
+      - 'finquery-access/api/index.js'
+      - '.github/workflows/finquery-portfolio-live-smoke.yml'
+permissions:
+  contents: read
+concurrency:
+  group: finquery-portfolio-live-main
+  cancel-in-progress: true
+jobs:
+  anonymous-prod-contract:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Verify live production domain and published portfolio assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          const base='https://finquery.info.vn';
+          const pages='https://nckhtop1.github.io/vmews-risk-analytics/financial-report';
+          const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+          async function probe(url,options){
+            const r=await fetch(url,{redirect:'manual',cache:'no-store',signal:AbortSignal.timeout(25000),...options});
+            return{status:r.status,location:r.headers.get('location')||'',body:await r.text()};
+          }
+          async function contract(){
+            const errors=[];
+            async function check(name,url,validate){
+              try{
+                const result=await probe(url);
+                const resultOk=validate(result);
+                console.log(name,result.status,resultOk?'PASS':'FAIL');
+                if(!resultOk)errors.push(name+' '+result.status);
+              }catch(err){console.error(name,err.name);errors.push(name+' '+err.name);}
+            }
+            await check('production-health',base+'/healthz',r=>{
+              if(r.status!==200)return false;
+              try{const j=JSON.parse(r.body);return j.ok===true&&j.databaseReachable===true&&j.authConfigured===true;}catch{return false;}
+            });
+            await check('session-anonymous',base+'/api/auth/session',r=>{
+              if(r.status!==200)return false;
+              try{return JSON.parse(r.body).authenticated===false;}catch{return false;}
+            });
+            await check('portfolio-api-private',base+'/api/user/portfolio',r=>r.status===401&&r.body.includes('LOGIN_REQUIRED'));
+            await check('portfolio-page-private',base+'/financial-report/portfolio.html',r=>r.status===307&&r.location.startsWith('/login?next='));
+            await check('portfolio-js-private',base+'/financial-report/portfolio.js',r=>r.status===401);
+            await check('portfolio-pages-html',pages+'/portfolio.html',r=>r.status===200&&r.body.includes('id="rotationChart"'));
+            await check('portfolio-pages-js',pages+'/portfolio.js',r=>r.status===200&&r.body.includes('sector-rotation.json'));
+            await check('portfolio-pages-rotation',pages+'/market/sector-rotation.json',r=>{
+              if(r.status!==200)return false;
+              try{const j=JSON.parse(r.body);return j.version==='FINQUERY-SECTOR-RS-1.0'&&j.benchmark?.eligibleSymbols>=10&&j.sectors?.length>=10;}catch{return false;}
+            });
+            return errors;
+          }
+          let last=[];
+          for(let attempt=1;attempt<=4;attempt++){
+            console.log('FinQuery Portfolio production check attempt',attempt);
+            last=await contract();
+            if(last.length===0){console.log('FINQUERY PORTFOLIO PRODUCTION SMOKE PASS 8/8');break;}
+            if(attempt<4)await delay(12000);
+          }
+          if(last.length){console.error('FINQUERY PORTFOLIO PRODUCTION SMOKE FAIL',last.join(', '));process.exitCode=1;}
+          NODE

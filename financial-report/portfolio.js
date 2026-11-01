@@ -3,7 +3,7 @@
 const $=id=>document.getElementById(id),money=n=>Number.isFinite(n)?Math.round(n).toLocaleString('vi-VN')+' ₫':'—',
  pct=n=>Number.isFinite(n)?(n>0?'+':'')+n.toFixed(2)+'%':'—',
  safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
- state={events:[],quotes:{},sourceTime:null,risk:null,lastPrices:null,loaded:false,baseline:false};
+ state={events:[],quotes:{},sourceTime:null,risk:null,rotation:null,rotationMode:'chart',lastPrices:null,loaded:false,baseline:false};
 function setStatus(msg,err){$('status').textContent=msg;$('status').className=err?'bad':'muted';}
 async function getJSON(url,options={}){const r=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(18000),...options});const x=await r.json();if(!r.ok)throw Object.assign(Error(x.error||'Không tải được dữ liệu.'),{code:x.code,status:r.status});return x;}
 const num=v=>Number(v||0),kindName={DEPOSIT:'Nạp tiền',WITHDRAW:'Rút tiền',BUY:'Mua',SELL:'Bán',DIVIDEND:'Cổ tức'};
@@ -49,9 +49,9 @@ function render(){
  if(z.errors.length)alerts.push('Sổ giao dịch phát hiện sai lệch: '+z.errors.join(', '));
  if(z.nav!==null&&z.cash<-.01)alerts.push('Số dư tiền âm, cần đối chiếu.');
  $('alert').innerHTML=alerts.length?alerts.map(x=>'<p>⚠ '+safe(x)+'</p>').join(''):'<p class="good">Không có cảnh báo tập trung hoặc dữ liệu thiếu theo các ngưỡng hiện tại.</p>';
- $('positions').innerHTML=z.rows.length?z.rows.map(h=>'<tr><td><b>'+safe(h.symbol)+'</b></td><td>'+h.quantity.toLocaleString('vi-VN')+'</td><td>'+money(h.quantity?h.cost/h.quantity:null)+'</td><td>'+money(h.price)+'</td><td>'+money(h.value)+'</td><td class="'+(h.unrealized<0?'bad':'good')+'">'+money(h.unrealized)+'</td><td>'+pct(h.weight*100)+'</td></tr>').join(''):'<tr><td colspan="7" class="muted">Chưa có cổ phiếu. Nạp tiền và ghi nhận giao dịch mua để bắt đầu.</td></tr>';
+ $('positions').innerHTML=z.rows.length?z.rows.map(h=>'<tr><td><b>'+safe(h.symbol)+'</b></td><td>'+h.quantity.toLocaleString('vi-VN')+'</td><td>'+money(h.quantity?h.cost/h.quantity:null)+'</td><td>'+money(h.price)+'</td><td>'+money(h.value)+'</td><td class="'+(h.unrealized<0?'bad':'good')+'">'+money(h.unrealized)+'</td><td>'+pct(h.weight===null?null:h.weight*100)+'</td><td>'+(state.rotation?.stocks?.[h.symbol]?pct(state.rotation.stocks[h.symbol].rs20):'—')+'</td><td>'+(state.rotation?.stocks?.[h.symbol]?safe(state.rotation.stocks[h.symbol].rankWithinSector+'/'+state.rotation.stocks[h.symbol].sectorCount):'—')+'</td></tr>').join(''):'<tr><td colspan="9" class="muted">Chưa có cổ phiếu. Nạp tiền và ghi nhận giao dịch mua để bắt đầu.</td></tr>';
  $('trades').innerHTML=state.events.length?state.events.slice().reverse().map(e=>'<tr><td>'+safe(e.trade_date||'')+'</td><td>'+safe(kindName[e.kind]||e.kind)+'</td><td>'+safe(e.symbol||'—')+'</td><td>'+safe(e.quantity??'—')+'</td><td>'+money(num(e.unit_price_vnd)||num(e.amount_vnd))+'</td></tr>').join(''):'<tr><td colspan="5" class="muted">Chưa có giao dịch.</td></tr>';
- renderSector(z);
+ renderSector(z);renderRotation();
 }
 function renderSector(z){
  const r=state.risk;
@@ -62,21 +62,95 @@ function renderSector(z){
  $('sectors').innerHTML=list.slice(0,18).map(s=>{
  const score=Number(s.score),high=Number.isFinite(score)&&score>=75;
  return '<div class="sector"><span>'+safe(s.label||s.id||'')+'</span><div class="bar"><i style="width:'+Math.max(0,Math.min(100,score||0))+'%;background:'+(high?'#db885c':'#60a5fa')+'"></i></div><b>'+ (Number.isFinite(score)?score.toFixed(0)+'/100':'—')+'</b></div>';
- }).join('')+'<p class="muted small">Điểm căng thẳng từ Risk Monitor FinQuery; điểm cao biểu thị rủi ro tăng, không phải sức mạnh tương đối. Biểu đồ luân chuyển 5/20 phiên cần chuỗi giá ngành đủ chuẩn.</p>';
+ }).join('')+'<p class="muted small">Điểm căng thẳng từ Risk Monitor FinQuery; điểm cao biểu thị rủi ro tăng, không phải sức mạnh tương đối. Biểu đồ luân chuyển 5/20 phiên được tính riêng từ lịch sử giá.</p>';
 }
+
+function renderRotation(){
+ const data=state.rotation,records=Array.isArray(data?.sectors)?data.sectors:[];
+ const valid=records.filter(s=>Number.isFinite(s.rs5)&&Number.isFinite(s.rs20));
+ $('rotationStatus').textContent=data?.sourceDate?
+  'Phiên '+data.sourceDate+' · '+(data.benchmark?.eligibleSymbols||0)+' mã so sánh · '+valid.length+'/'+records.length+' ngành đủ dữ liệu'
+  :'Chưa có snapshot sức mạnh ngành đồng bộ; không hiển thị điểm mô phỏng.';
+ if(!valid.length){
+  $('rotationChart').innerHTML='<p class="muted">Chưa đủ chuỗi lịch sử để tính sức mạnh ngành 5/20 phiên.</p>';
+  $('rotationRows').innerHTML='<tr><td colspan="5">Chưa đủ dữ liệu ngành.</td></tr>';
+  return;
+ }
+ $('rotationRows').innerHTML=records.map(s=>
+  '<tr><td>'+safe(s.label)+'</td><td>'+pct(s.rs5)+'</td><td>'+pct(s.rs20)+'</td><td>'+
+  safe(s.used+'/'+s.members)+'</td><td>'+safe(s.status==='sufficient'?'Đủ mẫu':'Mẫu mỏng')+'</td></tr>'
+ ).join('');
+ const left=62,right=766,top=34,bottom=335,width=right-left,height=bottom-top;
+ const max=Math.max(5,Math.ceil(Math.max(...valid.flatMap(s=>[Math.abs(s.rs5),Math.abs(s.rs20)]))*1.17));
+ const xpos=v=>left+((v+max)/(2*max))*width;
+ const ypos=v=>bottom-((v+max)/(2*max))*height;
+ const x0=xpos(0),y0=ypos(0);
+ const color=s=>s.rs20>=0?(s.rs5>=0?'#3ad399':'#f4bf56'):(s.rs5>=0?'#65c8dd':'#f47b8b');
+ const rect=(x,y,w,h,fill)=>'<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+fill+'" rx="6"/>';
+ const area=rect(left,top,x0-left,y0-top,'#15363d')+rect(x0,top,right-x0,y0-top,'#153b31')+
+            rect(left,y0,x0-left,bottom-y0,'#3a2737')+rect(x0,y0,right-x0,bottom-y0,'#3c3324');
+ const axes='<line x1="'+x0+'" y1="'+top+'" x2="'+x0+'" y2="'+bottom+'" stroke="#8197b4" stroke-dasharray="4 6" opacity=".7"/>'+
+ '<line x1="'+left+'" y1="'+y0+'" x2="'+right+'" y2="'+y0+'" stroke="#8197b4" stroke-dasharray="4 6" opacity=".7"/>';
+ const labels='<text x="'+(left+10)+'" y="'+(top+20)+'" fill="#80c8d7" font-size="12">Đang phục hồi</text>'+
+ '<text x="'+(right-10)+'" y="'+(top+20)+'" fill="#83e9b8" text-anchor="end" font-size="12">Khỏe</text>'+
+ '<text x="'+(left+10)+'" y="'+(bottom-12)+'" fill="#f4afb4" font-size="12">Yếu</text>'+
+ '<text x="'+(right-10)+'" y="'+(bottom-12)+'" fill="#f6cf83" text-anchor="end" font-size="12">Đang suy yếu</text>'+
+ '<text x="'+((left+right)/2)+'" y="381" fill="#a8bdd6" font-size="12" text-anchor="middle">RS 20 phiên so với rổ cổ phiếu →</text>'+
+ '<text x="16" y="'+((top+bottom)/2)+'" fill="#a8bdd6" font-size="12" text-anchor="middle" transform="rotate(-90 16 '+((top+bottom)/2)+')">RS 5 phiên →</text>'+
+ '<text x="'+left+'" y="353" fill="#8199bc" font-size="11" text-anchor="middle">-'+max+'%</text>'+
+ '<text x="'+right+'" y="353" fill="#8199bc" font-size="11" text-anchor="middle">+'+max+'%</text>';
+ const dots=valid.map(s=>{
+  const c=color(s),r=Math.min(11,Math.max(5,4+Math.sqrt(s.used||0)*1.6));
+  const x=xpos(s.rs20),y=ypos(s.rs5);
+  const trail=Array.isArray(s.trail)?s.trail.filter(p=>Number.isFinite(p.rs5)&&Number.isFinite(p.rs20)):[];
+  const points=trail.map(p=>xpos(p.rs20).toFixed(2)+','+ypos(p.rs5).toFixed(2)).join(' ');
+  const detail=s.label+': RS5 '+pct(s.rs5)+', RS20 '+pct(s.rs20)+'. '+s.used+'/'+s.members+' mã.';
+  const rightEdge=x>right-108;
+  const pos=rightEdge?x-r-6:x+r+6,anchor=rightEdge?'end':'start';
+  return (points?'<polyline points="'+points+'" fill="none" stroke="'+c+'" stroke-width="1.5" opacity=".48"/>':'')+
+    '<circle tabindex="0" class="rot-dot" role="button" aria-label="'+safe(detail)+'" data-rotation-id="'+safe(s.id)+'" cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+c+'" stroke="#132238" stroke-width="'+(s.status==='thin'?3:1.5)+'" opacity="'+(s.status==='thin'?.62:1)+'"><title>'+safe(detail)+'</title></circle>'+
+    '<text x="'+pos+'" y="'+(y-9)+'" fill="#ecf4ff" text-anchor="'+anchor+'" font-size="11">'+safe(s.label)+'</text>';
+ }).join('');
+ $('rotationChart').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 810 393" role="img" aria-label="Biểu đồ sức mạnh tương đối ngành 20 và 5 phiên">'+area+axes+labels+dots+'</svg>';
+ $('rotationChart').hidden=state.rotationMode!=='chart';$('rotationTable').hidden=state.rotationMode!=='table';
+ $('rotationChartMode').setAttribute('aria-pressed',state.rotationMode==='chart'?'true':'false');
+ $('rotationTableMode').setAttribute('aria-pressed',state.rotationMode==='table'?'true':'false');
+}
+function chooseSector(id){
+ const sector=state.rotation?.sectors?.find(x=>x.id===id);
+ if(!sector)return;
+ const trajectory=(sector.trail||[]).map(p=>p.date+' ('+pct(p.rs20)+', '+pct(p.rs5)+')').join(' → ');
+ $('rotationSelected').innerHTML='<b>'+safe(sector.label)+'</b> · RS 5 phiên '+pct(sector.rs5)+' · RS 20 phiên '+pct(sector.rs20)+
+ ' · '+safe(sector.used+'/'+sector.members)+' mã có dữ liệu · '+(sector.status==='sufficient'?'Đủ mẫu':'Mẫu mỏng')+
+ '<p class="small muted">'+safe(trajectory)+'</p>';
+}
+$('rotationChart').addEventListener('click',e=>{
+ const target=e.target.closest('[data-rotation-id]');
+ if(target)chooseSector(target.getAttribute('data-rotation-id'));
+});
+$('rotationChart').addEventListener('keydown',e=>{
+ if(e.key!=='Enter'&&e.key!==' ')return;
+ const target=e.target.closest('[data-rotation-id]');
+ if(target){e.preventDefault();chooseSector(target.getAttribute('data-rotation-id'));}
+});
+$('rotationChartMode').addEventListener('click',()=>{state.rotationMode='chart';renderRotation();});
+$('rotationTableMode').addEventListener('click',()=>{state.rotationMode='table';renderRotation();});
+
 async function load(){
  setStatus('Đang xác thực và tải danh mục…'); 
  try{
-  const [portfolio,quotes,risk]=await Promise.allSettled([
+  const [portfolio,quotes,risk,rotation]=await Promise.allSettled([
    getJSON('/api/user/portfolio'),
    getJSON('market/quotes.json'),
-   getJSON('market/risk-monitor.json')
+   getJSON('market/risk-monitor.json'),
+   getJSON('market/sector-rotation.json')
   ]);
   if(portfolio.status!=='fulfilled')throw portfolio.reason;
   state.events=portfolio.value.events||[];
   if(quotes.status==='fulfilled'){state.quotes=quotes.value.quotes||{};state.sourceTime=quotes.value.latestSourceTime||quotes.value.checkedAt;}
   else {state.quotes={};state.sourceTime=null;}
   if(risk.status==='fulfilled')state.risk=risk.value;
+  state.rotation=rotation.status==='fulfilled' && (!state.risk?.sourceDate || rotation.value?.sourceDate===state.risk.sourceDate)?rotation.value:null;
   state.loaded=true;render();
   setStatus('Đã đồng bộ sổ giao dịch'+(quotes.status!=='fulfilled'?'; dữ liệu giá chưa khả dụng':'')+'.',quotes.status!=='fulfilled');
  }catch(err){setStatus((err.status===401?'Vui lòng đăng nhập FinQuery để quản lý danh mục.':err.message||'Không thể kết nối.'),true);}
