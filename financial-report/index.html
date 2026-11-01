@@ -1848,6 +1848,37 @@ input,textarea,select{max-width:100%}
  html{scroll-behavior:auto}
  .finquery-nav-open nav,.chart-advanced-controls *{animation:none!important;transition:none!important}
 }
+
+/* FinQuery Brand Identity 2026 Q-data: brand visuals only; no functionality or component layout changes. */
+:root{
+ --fq-brand-navy:#0A1B3D;
+ --fq-brand-blue:#245BFF;
+ --fq-brand-cyan:#22C7EB;
+ --fq-brand-paper:#F3F6FA;
+ --fq-brand-white:#FFFFFF;
+ --fq-brand-border:#E4EAF3;
+ --blue:var(--fq-brand-blue);
+ --ink:var(--fq-brand-navy);
+}
+.header{background:var(--fq-brand-white);border-bottom-color:var(--fq-brand-border)}
+.header .finquery-brand{gap:11px!important}
+.header .finquery-logo svg.fq-rebrand-mark{display:block;width:42px;height:42px;filter:none}
+.header .brand-copy strong{font-family:'Be Vietnam Pro','Segoe UI',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.65px;color:var(--fq-brand-navy)}
+.header .brand-copy small{display:none}
+.header nav a:hover,.header nav a:focus-visible,.header nav a.active{color:var(--fq-brand-blue)}
+.header-label{border-color:var(--fq-brand-border);color:var(--fq-brand-navy)}
+#finquery-nav-toggle:focus-visible{outline-color:var(--fq-brand-blue)}
+.primary:hover:not(:disabled){background:#164BDF}
+@media(max-width:700px){
+ .header .finquery-brand{gap:7px!important}
+ .header .finquery-logo svg.fq-rebrand-mark{width:36px;height:36px}
+ .header .brand-copy strong{font-size:17px}
+ .header nav[aria-label="Điều hướng nền tảng"] a.active{background:#EFF4FF;color:var(--fq-brand-blue)}
+}
+@media(max-width:340px){
+ .header .finquery-brand{gap:5px!important}
+ .header .finquery-logo svg.fq-rebrand-mark{width:32px;height:32px}
+}
 </style>
 
 <style id="finquery-google-signin-style">
@@ -1873,7 +1904,7 @@ input,textarea,select{max-width:100%}
 </style>
 </head>
 <body class="site-locked">
-<header class="header"><a class="brand finquery-brand" href="index.html" aria-label="FinQuery Phân tích tài chính"><span class="finquery-logo" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><defs><linearGradient id="fq-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop stop-color="#4ea8ff"/><stop offset=".55" stop-color="#376de8"/><stop offset="1" stop-color="#7548d8"/></linearGradient></defs><rect x="4" y="4" width="56" height="56" rx="18" fill="url(#fq-gradient)"/><path d="M18 19h25v7H27v7h13v7H27v10h-9V19Z" fill="white"/><path d="M43 37c4.9 0 8.8 3.9 8.8 8.8 0 1.6-.4 3.1-1.1 4.4l4.1 4.1-4.9 4.9-4-4c-.9.3-1.9.5-2.9.5-4.9 0-8.8-3.9-8.8-8.8S38.1 37 43 37Zm0 6.2a3.6 3.6 0 1 0 0 7.2 3.6 3.6 0 0 0 0-7.2Z" fill="#dff5ff"/></svg></span><span class="brand-copy"><strong>FinQuery</strong><small>Phân tích tài chính</small></span></a><button id="finquery-nav-toggle" type="button" aria-expanded="false" aria-controls="finquery-primary-navigation" aria-label="Mở danh mục FinQuery"><span class="finquery-menu-bars" aria-hidden="true"><i></i><i></i><i></i></span>Danh mục</button><nav id="finquery-primary-navigation" aria-label="Điều hướng nền tảng"><a href="#market" data-platform-view="analysis">Giám sát thị trường</a><a href="#portfolio" data-platform-view="portfolio">Danh mục đầu tư</a><a href="#risk-monitor" data-platform-view="risk">Giám sát rủi ro <span id="risk-nav-badge" class="risk-nav-badge" hidden aria-label="Số cảnh báo cần chú ý"></span></a><a href="#strategy-builder" data-platform-view="strategy" class="strategy-agent-nav"><span class="strategy-agent-dot" aria-hidden="true"></span>Trợ lý chiến lược</a><a href="#research-ai">Phân tích</a><a href="#macro">Vĩ mô &amp; ESG</a><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">HOSE <span>Nhóm chính · Thanh khoản · Mở rộng</span></div></header>
+<header class="header"><a class="brand finquery-brand" href="index.html" aria-label="FinQuery Phân tích tài chính"><span class="finquery-logo" aria-hidden="true"><svg class="fq-rebrand-mark" viewBox="0 0 80 80" focusable="false" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="fq-brand-arc" x1="50" y1="10" x2="26" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#245BFF"/><stop offset=".50" stop-color="#1650F5"/><stop offset="1" stop-color="#08C8EB"/></linearGradient></defs><path d="M48.8 12.7C44.3 10.2 39.4 9 34.4 9 20.1 9 9.8 20.9 9.8 35.7c0 14.6 10.8 26.7 24.7 26.7 6.9 0 12.6-2.2 17.8-6.8" fill="none" stroke="url(#fq-brand-arc)" stroke-width="12.2" stroke-linecap="round"/><path d="M45 47.2h12.8L73 66.9H60.2Z" fill="#245BFF"/><rect x="57.5" y="7.7" width="10.1" height="10.1" rx="2.5" fill="#10C9EB"/><rect x="48.1" y="23.8" width="9.2" height="9.2" rx="2.2" fill="#245BFF"/><rect x="61.1" y="29.1" width="11.1" height="11.1" rx="2.7" fill="#22C5EB"/></svg></span><span class="brand-copy"><strong>FinQuery</strong><small>Phân tích tài chính</small></span></a><button id="finquery-nav-toggle" type="button" aria-expanded="false" aria-controls="finquery-primary-navigation" aria-label="Mở danh mục FinQuery"><span class="finquery-menu-bars" aria-hidden="true"><i></i><i></i><i></i></span>Danh mục</button><nav id="finquery-primary-navigation" aria-label="Điều hướng nền tảng"><a href="#market" data-platform-view="analysis">Giám sát thị trường</a><a href="#portfolio" data-platform-view="portfolio">Danh mục đầu tư</a><a href="#risk-monitor" data-platform-view="risk">Giám sát rủi ro <span id="risk-nav-badge" class="risk-nav-badge" hidden aria-label="Số cảnh báo cần chú ý"></span></a><a href="#strategy-builder" data-platform-view="strategy" class="strategy-agent-nav"><span class="strategy-agent-dot" aria-hidden="true"></span>Trợ lý chiến lược</a><a href="#research-ai">Phân tích</a><a href="#macro">Vĩ mô &amp; ESG</a><a href="#overview">Tổng quan</a><a href="#report-detail">Bảng số liệu</a></nav><div class="header-label">HOSE <span>Nhóm chính · Thanh khoản · Mở rộng</span></div></header>
 <main>
 <div class="intro"><div><h1>Giám sát thị trường chứng khoán Việt Nam</h1></div><div class="finquery-google-account" id="finquery-google-account" hidden>
   <div class="finquery-google-signin" id="finquery-google-signin"></div>
