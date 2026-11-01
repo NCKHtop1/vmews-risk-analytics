@@ -395,9 +395,10 @@ jobs:
           curl -fsSL --max-time 20 "$BASE/market/risk-monitor.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/risk.json
           curl -fsSL --max-time 20 "$BASE/market/sector-rotation.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/sector-rotation.json
           curl -fsSL --max-time 20 "$BASE/portfolio.html?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/portfolio.html
-          curl -fsSL --max-time 20 "$BASE/portfolio.js?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/portfolio.js
-          grep -q 'id="rotationChart"' /tmp/portfolio.html
-          grep -q 'sector-rotation.json' /tmp/portfolio.js
+          grep -q 'index.html#portfolio' /tmp/portfolio.html
+          grep -q 'href="#portfolio" data-platform-view="portfolio"' /tmp/page.html
+          grep -q 'id="portfolio-tab-rotation"' /tmp/page.html
+          grep -q 'window.FinPortfolio=' /tmp/page.html
           curl -fsSL --max-time 20 "$BASE/market/market-risk-calibration.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/market-risk-calibration.json
           curl -fsSL --max-time 20 "$BASE/market/watch-today.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/watch.json
           curl -fsSL --max-time 20 "$BASE/market/universe.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/universe.json
