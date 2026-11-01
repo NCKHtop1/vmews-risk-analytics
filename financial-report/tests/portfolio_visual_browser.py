@@ -105,6 +105,11 @@ def main():
                 """)
                 assert result['templates']==4 and result['onboarding'] and result['emptyCardsHidden'],result
                 assert result['scroll']<=width+3,result
+                WebDriverWait(driver,10).until(lambda d:d.execute_script(
+                    "return document.getElementById('portfolio-market-brief').textContent.includes('2 mã có giá')"))
+                WebDriverWait(driver,10).until(lambda d:d.execute_script(
+                    "return document.getElementById('portfolio-market-brief').textContent.includes('RS20 nổi bật')"))
+                assert driver.find_element(By.CSS_SELECTOR,'#portfolio-setup-templates .portfolio-template').text.find('Golden Gate')>=0
                 # Adopt a template and save it through the actual controller.
                 driver.execute_script("const e=document.querySelector('#portfolio-setup-templates [data-portfolio-preset=defensive]');e.scrollIntoView({block:'center'});e.click();")
                 WebDriverWait(driver,5).until(lambda d:d.execute_script(
