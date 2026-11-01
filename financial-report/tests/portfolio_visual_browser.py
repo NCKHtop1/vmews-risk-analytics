@@ -19,7 +19,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 FRONT = Path(__file__).resolve().parents[1] / 'frontend'
 ASSETS = ['style.css','market.css','risk-monitor.css','portfolio-intelligence.css',
           'responsive-system.css','fonts.css','portfolio-rebalance-core.js',
-          'portfolio-intelligence.js','portfolio-policy-ui.js']
+          'portfolio-intelligence.js','portfolio-policy-ui.js','portfolio-help.js']
 JS = ['portfolio-rebalance-core.js','portfolio-intelligence.js','portfolio-policy-ui.js']
 FIX = r"""
 window.__fixture = {events:[], policy:null};
@@ -127,10 +127,11 @@ def main():
                     texts:svg.querySelectorAll('text').length,
                     options:document.querySelectorAll('#portfolio-sector-list button').length};
                 """)
-                assert chart['dots']==13 and chart['paths']==1 and chart['options']==13,chart
+                assert chart['dots']==13 and chart['paths']==0 and chart['options']==13,chart
                 assert chart['texts']<=9,('overlapping labels returned',chart)
                 driver.execute_script("const e=document.querySelector('#portfolio-sector-list [data-portfolio-sector=tech]');e.scrollIntoView({block:'center'});e.click();")
                 assert 'Công nghệ' in driver.find_element(By.ID,'portfolio-rotation-detail').text
+                assert driver.execute_script("return document.querySelectorAll('#portfolio-rotation-chart polyline').length") == 1
                 # Switch the same mock account from empty to a real valued 2-ticker ledger.
                 driver.execute_script("""
                   window.__fixture.events=[

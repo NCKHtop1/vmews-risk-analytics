@@ -90,7 +90,7 @@ test('four template cards and daily plan live inside the existing Portfolio tab'
  assert.doesNotMatch(ui,/Math\.random\(|không phải khuyến nghị đầu tư/i);
 });
 test('sector chart is selection-focused and avoids rendering thirteen trajectories and labels',()=>{
- assert.match(client,/const line=points\?/);
+ assert.match(client,/const line=\(state\.hoverSector\|\|state\.trailVisible\)\&\&points\?/);
  assert.match(client,/const dotSvg=items\.filter\(x=>x\.id!==chosen\.id\)/);
  assert.match(client,/Only the selected sector has a trail/);
  assert.match(client,/portfolio-sector-list/);

@@ -11,7 +11,7 @@ const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'
 const number=v=>{const n=Number(v);return Number.isFinite(n)?n:0};
 const method={DEPOSIT:'Nạp tiền',WITHDRAW:'Rút tiền',BUY:'Mua',SELL:'Bán',DIVIDEND:'Cổ tức'};
 const state={loaded:false,loading:false,events:[],quotes:{},risk:null,rotation:null,tab:'overview',chartMode:'chart',sourceTime:null,
- lastLoadedAt:0,lastSectorAt:0,selectedSector:null,saveKey:null,saveFingerprint:null,
+ lastLoadedAt:0,lastSectorAt:0,selectedSector:null,hoverSector:null,trailVisible:false,saveKey:null,saveFingerprint:null,
  policy:Policy.normalize({preset:'balanced'}),policyLoaded:false,policySaved:false,policyRev:0,policyBusy:false,policyDirty:false};
 function status(message,warning=false){const el=$('portfolio-status');if(!el)return;el.hidden=!message;el.textContent=message||'';el.classList.toggle('portfolio-status-warning',warning);}
 function isOpen(){return !root.hidden&&!document.hidden&&!document.body.classList.contains('site-locked');}
@@ -192,10 +192,11 @@ function renderRotation(){
   $('portfolio-rotation-detail').textContent='Chưa có dữ liệu ngành.';
   return;
  }
+ if(state.hoverSector&&!items.some(x=>x.id===state.hoverSector))state.hoverSector=null;
  if(!items.some(x=>x.id===state.selectedSector)){
   state.selectedSector=items.find(x=>held.has(x.id))?.id||items[0].id;
  }
- const chosen=items.find(x=>x.id===state.selectedSector);
+ const chosen=items.find(x=>x.id===(state.hoverSector||state.selectedSector));
  const rail=$('portfolio-sector-list');
  for(const btn of rail.querySelectorAll('[data-portfolio-sector]')){
   const on=btn.dataset.portfolioSector===chosen.id;
@@ -218,24 +219,24 @@ function renderRotation(){
   '<text x="'+right+'" y="409" text-anchor="middle" fill="#8290a6" font-size="10">+'+mx+'%</text>';
  const circle=x=>{
   const col=x.rs20>=0?(x.rs5>=0?'#3caa72':'#dda84e'):(x.rs5>=0?'#54aebc':'#d96a76');
-  const isSelected=x.id===chosen.id;
-  const r=isSelected?10:6.5;
+  const isSelected=x.id===state.selectedSector; const focused=x.id===chosen.id;
+  const r=isSelected?8.5:focused?8:5.8;
   const hold=held.has(x.id);
   const title=safe(x.label)+' · RS5 '+formatPct(x.rs5)+' · RS20 '+formatPct(x.rs20);
   return '<circle class="portfolio-rot-dot" data-portfolio-sector="'+safe(x.id)+'" cx="'+xx(x.rs20)+'" cy="'+yy(x.rs5)+
-   '" r="'+r+'" role="button" tabindex="0" fill="'+col+'" opacity="'+(x.status==='thin'?'.65':'1')+
-   '" stroke="'+(isSelected?'#273f6a':hold?'#5866a4':'#fff')+'" stroke-width="'+(isSelected?3:hold?2.5:1.4)+
+   '" r="'+r+'" role="button" tabindex="0" fill="'+col+'" opacity="'+(focused?'1':hold?'.85':'.62')+
+   '" stroke="'+(isSelected?'#5065a2':hold?'#7a8cbd':'#fff')+'" stroke-width="'+(isSelected?2:hold?1.7:1.2)+
    '" aria-label="'+title+'"><title>'+title+'</title></circle>';
  };
  const trail=Array.isArray(chosen.trail)?chosen.trail.filter(p=>Number.isFinite(p.rs5)&&Number.isFinite(p.rs20)):[];
  const points=trail.map(p=>xx(p.rs20).toFixed(1)+','+yy(p.rs5).toFixed(1)).join(' ');
- const line=points?'<polyline points="'+points+'" fill="none" stroke="#566fc0" stroke-width="2.7" stroke-linejoin="round" stroke-linecap="round" opacity=".83"/>':'';
+ const line=(state.hoverSector||state.trailVisible)&&points?'<polyline points="'+points+'" fill="none" stroke="#6a84bd" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity=".67"/>':'';
  const axis='<line x1="'+zx+'" y1="'+top+'" x2="'+zx+'" y2="'+bottom+'" stroke="#9aaac0" stroke-dasharray="4 5"/>'+
   '<line x1="'+left+'" y1="'+zy+'" x2="'+right+'" y2="'+zy+'" stroke="#9aaac0" stroke-dasharray="4 5"/>';
  const dotSvg=items.filter(x=>x.id!==chosen.id).map(circle).join('')+circle(chosen);
  // Only the selected sector has a trail and a label. Others are accessed by the list or tooltip.
  $('portfolio-rotation-chart').innerHTML='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 457" role="img" aria-label="Biểu đồ sức mạnh ngành, đường di chuyển của '+safe(chosen.label)+'">'+bg+axis+labels+line+dotSvg+
-  '<text x="73" y="27" fill="#415c94" font-size="13" font-weight="700">'+safe(chosen.label)+' · '+formatPct(chosen.rs20)+' / '+formatPct(chosen.rs5)+'</text></svg>';
+  '</svg>';
  const owned=calculate().rows.filter(h=>sectorOf(h.symbol)?.id===chosen.id).map(h=>h.symbol);
  const dates=trail.map(p=>p.date+' ('+formatPct(p.rs20)+' / '+formatPct(p.rs5)+')');
  $('portfolio-rotation-detail').innerHTML='<strong>'+safe(chosen.label)+'</strong> · '+safe(rotateStatus(chosen))+
@@ -245,7 +246,7 @@ function renderRotation(){
 }
 function selectSector(id){
  if(!state.rotation?.sectors?.some(x=>x.id===id))return;
- state.selectedSector=id;renderRotation();
+ state.selectedSector=id;state.hoverSector=null;state.trailVisible=true;renderRotation();
 }
 function render(){
  if(!state.loaded)return;
@@ -373,6 +374,9 @@ root.addEventListener('click',e=>{
  const sub=e.target.closest('[data-portfolio-subtab]');if(sub){switchTab(sub.dataset.portfolioSubtab);return;}
  const sector=e.target.closest('[data-portfolio-sector]');if(sector)selectSector(sector.dataset.portfolioSector);
 });
+$('portfolio-rotation-chart').addEventListener('pointerover',e=>{const dot=e.target.closest?.('[data-portfolio-sector]');if(dot&&dot.dataset.portfolioSector!==state.hoverSector){state.hoverSector=dot.dataset.portfolioSector;renderRotation();}});
+$('portfolio-rotation-chart').addEventListener('pointerleave',()=>{if(state.hoverSector){state.hoverSector=null;renderRotation();}});
+$('portfolio-rotation-chart').addEventListener('focusin',e=>{const dot=e.target.closest?.('[data-portfolio-sector]');if(dot){state.hoverSector=dot.dataset.portfolioSector;renderRotation();}});
 $('portfolio-rotation-chart').addEventListener('keydown',e=>{
  if(!['Enter',' '].includes(e.key))return;const b=e.target.closest('[data-portfolio-sector]');if(!b)return;e.preventDefault();selectSector(b.dataset.portfolioSector);
 });
