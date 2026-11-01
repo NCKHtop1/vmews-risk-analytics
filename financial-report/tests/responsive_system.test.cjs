@@ -10,14 +10,15 @@ const css=read('frontend/responsive-system.css');
 const nav=read('frontend/responsive-navigation.js');
 const build=read('scripts/build_cdn.py');
 
-test('one navigable mobile menu uses the original seven platform links',()=>{
+test('one navigable mobile menu includes Portfolio among the eight integrated links',()=>{
  assert.equal((html.match(/id="finquery-nav-toggle"/g)||[]).length,1);
  assert.equal((html.match(/id="finquery-primary-navigation"/g)||[]).length,1);
  assert.match(html,/aria-controls="finquery-primary-navigation"/);
  assert.match(html,/aria-label="Điều hướng nền tảng"/);
- assert.equal((html.match(/data-platform-view=/g)||[]).length,3);
- for(const hash of ['#market','#risk-monitor','#strategy-builder','#research-ai','#macro','#overview','#report-detail'])
+ assert.equal((html.match(/data-platform-view=/g)||[]).length,4);
+ for(const hash of ['#market','#portfolio','#risk-monitor','#strategy-builder','#research-ai','#macro','#overview','#report-detail'])
   assert.match(html,new RegExp('href="'+hash+'"'));
+ assert.match(html,/href="#portfolio" data-platform-view="portfolio"/);
  assert.match(nav,/aria-expanded/);
  assert.match(nav,/Escape/);
  assert.match(nav,/pointerdown/);
