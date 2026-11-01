@@ -78,3 +78,32 @@ test('ledger remains append-only and idempotent',()=>{
 test('frontend, router and app are valid JavaScript',()=>{
  new vm.Script(client);new vm.Script(router);new vm.Script(app);
 });
+
+test('four template cards and daily plan live inside the existing Portfolio tab',()=>{
+ for(const id of ['portfolio-onboarding','portfolio-policy-cards','portfolio-tab-plan','portfolio-plan-result','portfolio-target-rows','portfolio-sector-list'])
+  assert.match(html,new RegExp('id="'+id+'"'));
+ assert.match(html,/data-portfolio-tab="plan"/);
+ const ui=read('frontend/portfolio-policy-ui.js');
+ assert.match(ui,/portfolio-plan-result/);
+ assert.match(ui,/portfolio-onboarding/);
+ assert.match(ui,/\/api\/user\/portfolio-policy/);
+ assert.doesNotMatch(ui,/Math\.random\(|không phải khuyến nghị đầu tư/i);
+});
+test('sector chart is selection-focused and avoids rendering thirteen trajectories and labels',()=>{
+ assert.match(client,/const line=points\?/);
+ assert.match(client,/const dotSvg=items\.filter\(x=>x\.id!==chosen\.id\)/);
+ assert.match(client,/Only the selected sector has a trail/);
+ assert.match(client,/portfolio-sector-list/);
+ const ux=read('frontend/portfolio-intelligence.css');
+ assert.match(ux,/portfolio-rotation-layout/);
+ assert.match(ux,/portfolio-sector-rail/);
+});
+test('account policy writes use server session, bounded inputs and revision checks',()=>{
+ assert.match(server,/userPortfolioPolicy\(req,res,user\)/);
+ assert.match(server,/POLICY_CONFLICT/);
+ assert.match(server,/WHERE public\.finquery_portfolio_policies\.revision=\$5/);
+ const migration=fs.readFileSync(path.join(repo,'finquery-access/migrations/004_portfolio_policy.sql'),'utf8');
+ assert.match(migration,/PRIMARY KEY REFERENCES public\.finquery_users/);
+ assert.match(migration,/CHECK\(cash_pct BETWEEN 0 AND 50\)/);
+ assert.doesNotMatch(migration,/DROP TABLE/);
+});

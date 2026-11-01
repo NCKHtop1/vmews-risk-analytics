@@ -460,6 +460,38 @@ async function userPortfolio(req,res,user) {
   }
 }
 
+
+async function userPortfolioPolicy(req,res,user){
+  if(!user||user.status!=='active')return json(res,401,{error:'Vui lòng đăng nhập.',code:'LOGIN_REQUIRED'});
+  if(req.method==='GET'){
+    const rows=await db().query('SELECT preset,cash_pct,drift_pct,revision,updated_at FROM public.finquery_portfolio_policies WHERE user_id=$1 LIMIT 1',[user.id]);
+    return json(res,200,{ok:true,policy:rows[0]||null});
+  }
+  if(req.method!=='PUT')return json(res,405,{error:'Method not allowed'});
+  if(!originAllowed(req))return json(res,403,{error:'Yêu cầu không hợp lệ.'});
+  let data;try{data=parseBody(req);}catch(_){return json(res,400,{error:'Dữ liệu không hợp lệ.'});}
+  const preset=String(data?.preset||'');
+  const cash=Number(data?.cashPct),drift=Number(data?.driftPct),revision=Number(data?.revision);
+  if(!['balanced','equal','defensive','focused'].includes(preset)||
+      !Number.isSafeInteger(cash)||cash<0||cash>50||
+      !Number.isSafeInteger(drift)||drift<2||drift>15||
+      !Number.isSafeInteger(revision)||revision<0||revision>1000000000){
+    return json(res,400,{error:'Thông số phân bổ chưa hợp lệ.',code:'INVALID_POLICY'});
+  }
+  const sql='INSERT INTO public.finquery_portfolio_policies(user_id,preset,cash_pct,drift_pct,revision) '+
+    'VALUES($1,$2,$3,$4,1) ON CONFLICT(user_id) DO UPDATE SET preset=EXCLUDED.preset,'+
+    'cash_pct=EXCLUDED.cash_pct,drift_pct=EXCLUDED.drift_pct,'+
+    'revision=public.finquery_portfolio_policies.revision+1,updated_at=now() '+
+    'WHERE public.finquery_portfolio_policies.revision=$5 '+
+    'RETURNING preset,cash_pct,drift_pct,revision,updated_at';
+  const rows=await db().query(sql,[user.id,preset,cash,drift,revision]);
+  if(!rows.length){
+    const latest=await db().query('SELECT preset,cash_pct,drift_pct,revision,updated_at FROM public.finquery_portfolio_policies WHERE user_id=$1 LIMIT 1',[user.id]);
+    return json(res,409,{error:'Cấu hình vừa thay đổi trên thiết bị khác. Hãy tải lại.',code:'POLICY_CONFLICT',policy:latest[0]||null});
+  }
+  return json(res,200,{ok:true,policy:rows[0]});
+}
+
 async function gateway(req, res, route, user) {
   if (req.method !== 'GET' && req.method !== 'HEAD') return json(res,405,{error:'Method not allowed'});
   if (!user || user.status !== 'active') {
@@ -550,6 +582,7 @@ module.exports = async function handler(req,res) {
     if (route === 'api/admin/user') return adminUpdate(req,res,user);
     if (route === 'api/user/workspace') return userWorkspace(req,res,user);
     if (route === 'api/user/portfolio') return userPortfolio(req,res,user);
+    if (route === 'api/user/portfolio-policy') return userPortfolioPolicy(req,res,user);
     if (route === 'api/market/on-observations') return onObservations(req,res,user);
     if (route.startsWith('api/')) return json(res,404,{error:'Not found'});
     return gateway(req,res,route,user);

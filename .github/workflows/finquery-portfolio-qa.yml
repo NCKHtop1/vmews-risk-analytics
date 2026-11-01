@@ -7,6 +7,11 @@ on:
       - 'financial-report/tests/test_portfolio_sector_rotation.py'
       - 'financial-report/frontend/index.html'
       - 'financial-report/frontend/portfolio-intelligence.js'
+      - 'financial-report/frontend/portfolio-rebalance-core.js'
+      - 'financial-report/frontend/portfolio-policy-ui.js'
+      - 'financial-report/tests/portfolio_rebalance.test.cjs'
+      - 'financial-report/tests/portfolio_visual_browser.py'
+      - 'finquery-access/migrations/004_portfolio_policy.sql'
       - 'financial-report/frontend/portfolio-intelligence.css'
       - 'financial-report/frontend/risk-monitor.js'
       - 'financial-report/frontend/app.js'
@@ -34,6 +39,8 @@ jobs:
           node-version: '22'
       - name: Syntax check
         run: |
+          node --check financial-report/frontend/portfolio-rebalance-core.js
+          node --check financial-report/frontend/portfolio-policy-ui.js
           node --check financial-report/frontend/portfolio-intelligence.js
           node --check financial-report/frontend/risk-monitor.js
           node --check financial-report/frontend/app.js
@@ -43,6 +50,7 @@ jobs:
       - name: Contract checks
         run: |
           node --test financial-report/tests/portfolio_intelligence.test.cjs
+          node --test financial-report/tests/portfolio_rebalance.test.cjs
       - name: Frontend build still includes portfolio navigation
         run: |
           python financial-report/scripts/build_cdn.py
@@ -52,6 +60,9 @@ jobs:
           assert 'href="#portfolio" data-platform-view="portfolio"' in page
           assert 'window.FinPortfolio=' in page
           assert 'portfolio-entry-form' in page
+          assert 'id="portfolio-policy-cards"' in page
+          assert 'FinPortfolioPolicy=' in page
+          assert 'finquery:portfolio-render' in page
           assert 'portfolio-intelligence.css' not in page
           assert Path('financial-report/portfolio.html').exists()
           assert 'index.html#portfolio' in Path('financial-report/portfolio.html').read_text()

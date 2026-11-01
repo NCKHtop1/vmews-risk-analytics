@@ -5,7 +5,7 @@
 <title>FinQuery · Giám sát Thị trường Chứng khoán Việt Nam</title>
 <meta name="description" content="Nền tảng giám sát thị trường chứng khoán Việt Nam: giá, kỹ thuật, rủi ro, cảnh báo, tài chính doanh nghiệp, tin tức và vĩ mô."><meta name="finquery-google-client-id" content="216957728290-6h80djpq7ouk2cmd5jgjr08j6233voes.apps.googleusercontent.com"><meta name="author" content="ngochailuong">
 <link rel="icon" href="favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="fonts.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="market.css"><link rel="stylesheet" href="risk-monitor.css"><link rel="stylesheet" href="portfolio-intelligence.css"><link rel="stylesheet" href="responsive-system.css">
-<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="chart-inspect.js"></script><script defer src="dashboard.js"></script><script defer src="vendor/lightweight-charts-5.0.9.js"></script><script defer src="chart-math.js"></script><script defer src="market-data.js"></script><script defer src="chart-engine.js"></script><script defer src="market.js"></script><script defer src="technical-scanner.js"></script><script defer src="strategy-engine.js"></script><script defer src="strategy-intelligence-core.js"></script><script defer src="alert-center.js"></script><script defer src="strategy-intelligence.js"></script><script defer src="alpha-radar.js"></script><script defer src="portfolio-intelligence.js"></script><script defer src="risk-monitor.js"></script><script defer src="section-collapse.js"></script><script defer src="workspace-tabs.js"></script><script defer src="insights.js"></script><script defer src="macro-dashboard.js"></script><script defer src="macro.js"></script><script defer src="liquidity-derivatives.js"></script><script defer src="derivatives-market.js"></script><script defer src="ownership-intelligence.js"></script><script defer src="knowledge-base.js"></script><script defer src="question-policy.js"></script><script defer src="research-agent.js"></script><script defer src="research-ai.js"></script><script defer src="app.js"></script><script defer src="google-signin.js"></script><script defer src="responsive-navigation.js"></script>
+<script defer src="xlsx.js"></script><script defer src="metrics.js"></script><script defer src="chart-inspect.js"></script><script defer src="dashboard.js"></script><script defer src="vendor/lightweight-charts-5.0.9.js"></script><script defer src="chart-math.js"></script><script defer src="market-data.js"></script><script defer src="chart-engine.js"></script><script defer src="market.js"></script><script defer src="technical-scanner.js"></script><script defer src="strategy-engine.js"></script><script defer src="strategy-intelligence-core.js"></script><script defer src="alert-center.js"></script><script defer src="strategy-intelligence.js"></script><script defer src="alpha-radar.js"></script><script defer src="portfolio-rebalance-core.js"></script><script defer src="portfolio-intelligence.js"></script><script defer src="portfolio-policy-ui.js"></script><script defer src="risk-monitor.js"></script><script defer src="section-collapse.js"></script><script defer src="workspace-tabs.js"></script><script defer src="insights.js"></script><script defer src="macro-dashboard.js"></script><script defer src="macro.js"></script><script defer src="liquidity-derivatives.js"></script><script defer src="derivatives-market.js"></script><script defer src="ownership-intelligence.js"></script><script defer src="knowledge-base.js"></script><script defer src="question-policy.js"></script><script defer src="research-agent.js"></script><script defer src="research-ai.js"></script><script defer src="app.js"></script><script defer src="google-signin.js"></script><script defer src="responsive-navigation.js"></script>
 <style id="finquery-google-signin-style">
 /* Minimal Google identity: greeting + avatar only, never a dropdown. */
 .finquery-google-account{display:flex;align-items:center;justify-content:flex-end;flex:0 1 auto;min-width:0;margin:0 12px 0 auto}
@@ -81,6 +81,7 @@
   </header>
   <nav id="portfolio-tabs" class="portfolio-tabs" role="tablist" aria-label="Không gian danh mục">
     <button type="button" role="tab" data-portfolio-tab="overview" aria-selected="true" class="active" aria-controls="portfolio-tab-overview">Tổng quan</button>
+    <button type="button" role="tab" data-portfolio-tab="plan" aria-selected="false" aria-controls="portfolio-tab-plan">Kế hoạch</button>
     <button type="button" role="tab" data-portfolio-tab="rotation" aria-selected="false" aria-controls="portfolio-tab-rotation">Sức mạnh ngành</button>
     <button type="button" role="tab" data-portfolio-tab="history" aria-selected="false" aria-controls="portfolio-tab-history">Giao dịch</button>
   </nav>
@@ -93,6 +94,11 @@
         <article class="portfolio-kpi"><span>TIỀN MẶT</span><strong id="portfolio-cash">—</strong><small id="portfolio-cash-detail">Sẵn có</small></article>
         <article class="portfolio-kpi"><span>MỨC TẬP TRUNG</span><strong id="portfolio-concentration">—</strong><small id="portfolio-concentration-detail">Mã có tỷ trọng lớn nhất</small></article>
       </div>
+<section id="portfolio-onboarding" class="portfolio-onboarding" hidden>
+        <div class="portfolio-onboarding-title"><div><span class="portfolio-kicker">KHỞI TẠO DANH MỤC</span><h2>Chọn cách quản lý trước, nhập giao dịch sau</h2><p>Chọn một trong các mẫu mục tiêu. Mẫu không tự thêm cổ phiếu hoặc giao dịch.</p></div><button type="button" id="portfolio-start-deposit" class="portfolio-primary">+ Nhập vốn ban đầu</button></div>
+        <div id="portfolio-setup-templates" class="portfolio-template-grid"></div>
+        <div class="portfolio-onboarding-steps"><span><b>01</b> Chọn mẫu phân bổ</span><span><b>02</b> Ghi nhận tiền và cổ phiếu</span><span><b>03</b> Xem đánh giá theo phiên</span></div>
+      </section>
       <div class="portfolio-layout">
         <section class="portfolio-card portfolio-holdings">
           <div class="portfolio-section-title"><div><span>DANH MỤC CỔ PHIẾU</span><h2>Các mã đang nắm giữ</h2></div><small id="portfolio-count">—</small></div>
@@ -108,16 +114,44 @@
           <div id="portfolio-alerts" class="portfolio-alerts"></div>
         </aside>
       </div>
+<section id="portfolio-plan-preview" class="portfolio-card portfolio-plan-preview" hidden>
+        <div class="portfolio-section-title"><div><span>KẾ HOẠCH PHÂN BỔ</span><h2>Rà soát &amp; rebalance</h2></div><button type="button" data-portfolio-subtab="plan" class="portfolio-text-link">Xem kế hoạch ↗</button></div>
+        <div id="portfolio-plan-summary" class="portfolio-plan-summary"></div>
+      </section>
       <section class="portfolio-card portfolio-market-context">
         <div class="portfolio-section-title"><div><span>GÓC NHÌN ĐỊNH LƯỢNG</span><h2>Diễn biến liên quan đến danh mục</h2></div><button type="button" data-portfolio-subtab="rotation" class="portfolio-text-link">Xem sức mạnh ngành ↗</button></div>
         <div id="portfolio-insights" class="portfolio-insight-list"></div>
       </section>
     </section>
+<section id="portfolio-tab-plan" class="portfolio-tab-panel" data-portfolio-panel="plan" role="tabpanel" hidden>
+      <div class="portfolio-section-title"><div><span>QUẢN LÝ PHÂN BỔ</span><h2>Chọn mẫu quản trị danh mục</h2><p>Mục tiêu áp dụng cho các mã đang nắm giữ. Có thể thay đổi bất cứ lúc nào.</p></div><span class="portfolio-policy-stamp" id="portfolio-policy-stamp">Đang tải cấu hình…</span></div>
+      <div id="portfolio-policy-cards" class="portfolio-template-grid"></div>
+      <div class="portfolio-plan-settings">
+        <label>Tiền mặt mục tiêu <span id="portfolio-cash-target-label">10%</span><input id="portfolio-cash-target" type="range" min="0" max="50" step="5" value="10"></label>
+        <label>Ngưỡng lệch tỷ trọng <span id="portfolio-drift-label">5 điểm %</span><input id="portfolio-drift" type="range" min="2" max="15" step="1" value="5"></label>
+        <button id="portfolio-policy-save" type="button" class="portfolio-primary">Lưu kế hoạch</button>
+      </div>
+      <div class="portfolio-plan-head">
+        <div><span class="portfolio-kicker">BÁO CÁO THEO PHIÊN</span><h2>Đề xuất cân bằng lại</h2><p id="portfolio-plan-date">Đang kiểm tra dữ liệu giá…</p></div>
+        <div id="portfolio-plan-status" class="portfolio-plan-status">Đang tính…</div>
+      </div>
+      <div id="portfolio-plan-result" class="portfolio-plan-result"></div>
+      <div class="portfolio-table-wrap">
+        <table class="portfolio-table portfolio-targets-table">
+          <thead><tr><th>Mã</th><th>Tỷ trọng hiện tại</th><th>Mục tiêu</th><th>Chênh lệch</th><th>Đánh giá</th></tr></thead>
+          <tbody id="portfolio-target-rows"><tr><td colspan="5" class="portfolio-empty">Chưa có dữ liệu phân bổ.</td></tr></tbody>
+        </table>
+      </div>
+      <p class="portfolio-method-note">Đánh giá mỗi phiên theo độ lệch mục tiêu, giới hạn mã/ngành, tiền mặt và chi phí ước tính. Giá cổ phiếu kiểm tra mỗi 5 phút; đề xuất chỉ thay đổi khi có dữ liệu và điều kiện mới.</p>
+    </section>
     <section id="portfolio-tab-rotation" class="portfolio-tab-panel" data-portfolio-panel="rotation" role="tabpanel" hidden>
       <div class="portfolio-section-title"><div><span>SECTOR ROTATION</span><h2>Sức mạnh tương đối ngành</h2><p id="portfolio-sector-stamp">RS 5 và 20 phiên</p></div><div class="portfolio-switch"><button type="button" data-portfolio-view="chart" class="active" aria-pressed="true">Biểu đồ</button><button type="button" data-portfolio-view="table" aria-pressed="false">Bảng</button></div></div>
-      <div id="portfolio-rotation-chart" class="portfolio-rotation-chart" role="img" aria-label="Biểu đồ sức mạnh ngành so với thị trường, 5 và 20 phiên"></div>
+      <div class="portfolio-rotation-layout">
+        <div id="portfolio-rotation-chart" class="portfolio-rotation-chart" role="img" aria-label="Biểu đồ sức mạnh ngành 5 và 20 phiên; chọn một điểm để xem đường di chuyển"></div>
+        <aside class="portfolio-sector-rail"><div class="portfolio-sector-rail-head"><strong>13 nhóm ngành</strong><span>RS20</span></div><div id="portfolio-sector-list" class="portfolio-sector-list"></div></aside>
+      </div>
       <div id="portfolio-rotation-table" class="portfolio-table-wrap" hidden><table class="portfolio-table"><thead><tr><th>Ngành</th><th>5 phiên</th><th>20 phiên</th><th>Số mã</th><th>Xu hướng</th></tr></thead><tbody id="portfolio-rotation-rows"></tbody></table></div>
-      <div id="portfolio-rotation-detail" class="portfolio-rotation-detail">Chọn một ngành để xem diễn biến.</div>
+      <div id="portfolio-rotation-detail" class="portfolio-rotation-detail">Chọn một ngành để xem diễn biến 5 phiên. Chỉ hiển thị đường đi của ngành được chọn.</div>
       <p class="portfolio-method-note" id="portfolio-method-note">So sánh hiệu suất ngành với trung vị các cổ phiếu đủ dữ liệu · Cập nhật theo phiên dữ liệu.</p>
     </section>
     <section id="portfolio-tab-history" class="portfolio-tab-panel" data-portfolio-panel="history" role="tabpanel" hidden>

@@ -86,3 +86,69 @@
 @media(max-width:1080px){.portfolio-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.portfolio-layout{grid-template-columns:1fr}.portfolio-insight-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.portfolio-page{border-radius:12px}.portfolio-head{padding:20px 16px}.portfolio-head h1{font-size:23px}.portfolio-head-actions{justify-items:start}.portfolio-head-stamps,.portfolio-head-buttons{justify-content:flex-start}.portfolio-tabs{padding:9px 14px 0}.portfolio-body{padding:16px}.portfolio-kpi{min-height:110px;padding:13px}.portfolio-kpi strong{font-size:20px}.portfolio-card{padding:14px}.portfolio-insight-list{grid-template-columns:1fr}.portfolio-status{margin:12px 16px 0}.portfolio-rotation-chart{overflow:hidden;min-height:220px}}
 @media(max-width:460px){.portfolio-kpis{gap:8px}.portfolio-kpi{padding:11px}.portfolio-kpi>span{font-size:9px}.portfolio-kpi strong{font-size:17px}#portfolio-entry-form{grid-template-columns:1fr}}
+
+
+/* Portfolio v1.4: decision-first onboarding, disciplined templates and clean chart. */
+.portfolio-onboarding{margin:0 0 20px;padding:22px 24px;border:1px solid #dde6f6;background:linear-gradient(140deg,#fbfcff,#f4f7ff);border-radius:15px}
+.portfolio-onboarding-title{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;margin-bottom:17px}
+.portfolio-onboarding-title h2{font-size:18px;margin:5px 0;color:#293b59}
+.portfolio-onboarding-title p{font-size:12px;margin:0;color:#76849a}
+.portfolio-page.portfolio-no-positions .portfolio-layout,.portfolio-page.portfolio-no-positions .portfolio-market-context,.portfolio-page.portfolio-no-positions #portfolio-plan-preview{display:none!important}
+.portfolio-template-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.portfolio-template{position:relative;padding:16px;border:1px solid #e1e7f0;background:#fff;border-radius:12px;min-width:0;transition:box-shadow .15s,border-color .15s}
+.portfolio-template.is-selected{border-color:#8094e4;background:#f6f8ff;box-shadow:0 0 0 2px #d8e2ff}
+.portfolio-template .portfolio-template-tag{font-size:9px;font-weight:800;letter-spacing:1px;color:#6579aa}
+.portfolio-template h3{margin:9px 0 6px;font-size:14px;color:#31445e}
+.portfolio-template p{min-height:34px;margin:0 0 12px;font-size:11px;color:#8290a2;line-height:1.5}
+.portfolio-template .portfolio-template-facts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.portfolio-template .portfolio-template-facts span{font-size:10px;padding:4px 7px;color:#536a8d;background:#edf2fb;border-radius:5px}
+.portfolio-page .portfolio-template button{width:100%;font-size:11px}
+.portfolio-onboarding-steps{display:flex;flex-wrap:wrap;gap:15px;margin-top:20px;padding-top:15px;border-top:1px solid #e3eaf6;color:#637793;font-size:11px}
+.portfolio-onboarding-steps span{display:inline-flex;align-items:center;gap:6px}.portfolio-onboarding-steps b{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#e4ebfa;color:#5269be;font-size:10px}
+.portfolio-plan-preview{margin-bottom:16px}
+.portfolio-plan-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.portfolio-plan-summary>div{background:#f8fafd;padding:13px 14px;border:1px solid #eaf0f7;border-radius:10px}
+.portfolio-plan-summary span{font-size:10px;color:#8290a4;display:block}.portfolio-plan-summary strong{display:block;margin-top:7px;color:#344b67;font-size:14px}
+.portfolio-policy-stamp{font-size:10px;color:#657da7;background:#f1f5ff;padding:8px 10px;border:1px solid #e2e9fb;border-radius:20px}
+.portfolio-plan-settings{display:flex;align-items:end;justify-content:flex-start;gap:22px;flex-wrap:wrap;border:1px solid #e4eaf3;background:#f9fbfe;border-radius:12px;padding:17px 20px;margin:17px 0 26px}
+.portfolio-plan-settings label{display:grid;gap:9px;min-width:180px;flex:1 1 180px;color:#576b85;font-size:12px;font-weight:650}
+.portfolio-plan-settings label>span{display:inline;font-weight:750;color:#3758b8}
+.portfolio-plan-settings input[type=range]{accent-color:#536ed3;width:100%;cursor:pointer}
+.portfolio-plan-settings button{flex:0 0 auto}
+.portfolio-plan-head{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap;border-bottom:1px solid #e8edf4;padding-bottom:15px}
+.portfolio-plan-head h2{font-size:17px;color:#293d5a;margin:6px 0}
+.portfolio-plan-head p{font-size:11px;color:#8290a2;margin:0}
+.portfolio-plan-status{font-size:11px;font-weight:750;color:#667794;background:#f5f7fb;border:1px solid #e5eaf3;border-radius:30px;padding:7px 12px}
+.portfolio-plan-status.has-actions{background:#fff8e9;color:#9e753c;border-color:#f1e2b7}
+.portfolio-plan-result{padding:18px 0}
+.portfolio-plan-message{font-size:12px;color:#64758d;line-height:1.6}
+.portfolio-review-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.portfolio-review-metrics div{padding:14px 17px;border-radius:11px;border:1px solid #e6eaf2;background:#fafbfe}
+.portfolio-review-metrics small{display:block;color:#8895a6;font-size:10px}
+.portfolio-review-metrics strong{display:block;color:#354b68;margin-top:7px;font-size:17px;font-variant-numeric:tabular-nums}
+.portfolio-review-trades{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.portfolio-review-trade{background:#fff;border:1px solid #e0e8f3;border-radius:11px;padding:14px 16px}
+.portfolio-review-trade strong{font-size:13px;color:#334b69}
+.portfolio-review-trade .portfolio-review-side{font-size:9px;border-radius:5px;padding:4px 7px;background:#e6f4ee;color:#328c5d;margin-right:8px}
+.portfolio-review-trade .portfolio-review-side.sell{background:#fff0ed;color:#bf6554}
+.portfolio-review-trade p{font-size:11px;margin:9px 0 0;color:#71839b}
+.portfolio-review-trade .portfolio-review-value{font-weight:700;font-size:13px;margin-top:11px;color:#3b526f}
+.portfolio-sector-rail{border:1px solid #e7edf5;background:#fff;border-radius:12px;padding:11px 10px;min-width:0;max-height:490px;overflow-y:auto}
+.portfolio-rotation-layout{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(185px,.85fr);gap:14px;align-items:start}
+.portfolio-rotation-chart{border:1px solid #e4eaf4;background:#fafcff;border-radius:12px;padding:8px;min-height:380px;min-width:0}
+.portfolio-sector-rail-head{display:flex;justify-content:space-between;gap:10px;padding:5px 7px 10px;border-bottom:1px solid #ecf0f6;font-size:11px;color:#6b7c95}
+.portfolio-sector-rail-head span{color:#8e9bb0}
+.portfolio-sector-list{display:grid;gap:3px;padding-top:7px}
+.portfolio-page .portfolio-sector-option{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:10px 9px;min-height:40px;width:100%;border:0;border-radius:8px;background:transparent;text-align:left;font-size:10.5px;color:#445774}
+.portfolio-sector-option .portfolio-sector-option-label{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.portfolio-sector-option .portfolio-sector-option-score{flex:0 0 auto;font-variant-numeric:tabular-nums;font-weight:750}
+.portfolio-page .portfolio-sector-option.is-selected{background:#eaf0ff;color:#3f5ec5}
+.portfolio-page .portfolio-sector-option:hover{background:#f4f7fd}
+.portfolio-sector-dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+.portfolio-sector-option-label-wrap{display:flex;gap:7px;align-items:center;min-width:0}
+.portfolio-rotation-chart .portfolio-rot-dot{transition:stroke-width .15s;outline-offset:3px}
+.portfolio-rotation-chart .portfolio-rot-dot:focus-visible{outline:2px solid #516bd0}
+.portfolio-rotation-detail{font-size:12px}
+@media(max-width:1130px){.portfolio-template-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:820px){.portfolio-rotation-layout{grid-template-columns:1fr}.portfolio-sector-rail{max-height:240px}.portfolio-sector-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.portfolio-review-trades{grid-template-columns:1fr}.portfolio-plan-summary,.portfolio-review-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.portfolio-template-grid{grid-template-columns:1fr}.portfolio-onboarding{padding:16px}.portfolio-plan-summary,.portfolio-review-metrics{grid-template-columns:1fr}.portfolio-plan-settings{padding:13px}.portfolio-rotation-chart{min-height:230px}.portfolio-sector-list{grid-template-columns:1fr}}

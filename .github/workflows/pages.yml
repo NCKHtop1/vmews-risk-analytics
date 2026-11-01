@@ -398,6 +398,9 @@ jobs:
           grep -q 'index.html#portfolio' /tmp/portfolio.html
           grep -q 'href="#portfolio" data-platform-view="portfolio"' /tmp/page.html
           grep -q 'id="portfolio-tab-rotation"' /tmp/page.html
+          grep -q 'id="portfolio-tab-plan"' /tmp/page.html
+          grep -q 'id="portfolio-policy-cards"' /tmp/page.html
+          grep -q 'window.FinPortfolioPolicy=' /tmp/page.html
           grep -q 'window.FinPortfolio=' /tmp/page.html
           curl -fsSL --max-time 20 "$BASE/market/market-risk-calibration.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/market-risk-calibration.json
           curl -fsSL --max-time 20 "$BASE/market/watch-today.json?verify=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" -o /tmp/watch.json

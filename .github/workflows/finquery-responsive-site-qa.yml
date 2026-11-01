@@ -50,6 +50,8 @@ jobs:
         run: |
           pip install --disable-pip-version-check -q selenium==4.36.0
           python financial-report/tests/site_responsive_browser.py
+      - name: Portfolio visual layout, empty state and rebalance journey (Chrome)
+        run: python financial-report/tests/portfolio_visual_browser.py
       - name: Verify production single-file responsive bundle
         run: |
           python financial-report/scripts/build_cdn.py
