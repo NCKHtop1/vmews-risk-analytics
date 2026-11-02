@@ -530,8 +530,15 @@ body{background:var(--fq-ui-paper);color:var(--fq-ui-ink)}
   .header{padding:9px 12px}
   .header .finquery-logo svg.fq-rebrand-mark{width:36px;height:36px}
   .header .finquery-brand .brand-copy strong{font-size:17px}
+  /* Preserve the existing mobile menu display state and two-column grid.
+     Do not let desktop flex styling leak into mobile navigation. */
   .header nav[aria-label="Điều hướng nền tảng"]{
+    display:none;
     background:transparent;border-top-color:var(--fq-ui-line);
+  }
+  .header.finquery-nav-open nav[aria-label="Điều hướng nền tảng"]{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    width:100%;max-width:100%;min-width:0;
   }
   .header nav[aria-label="Điều hướng nền tảng"] a{
     color:#26466E;background:#F2F6FC;border:1px solid #E0E8F3;
