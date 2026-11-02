@@ -36,6 +36,23 @@ jobs:
           node --check financial-report/frontend/strategy-intelligence-core.js
           node --test financial-report/tests/portfolio_advisor_research.test.cjs
           node --test financial-report/tests/portfolio_advisor_ui.test.cjs
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: financial-market-data
+          path: _advisor-market-fixture
+          sparse-checkout: market
+          persist-credentials: false
+      - name: Historical market integration, no publishing
+        run: |
+          node financial-report/scripts/build_portfolio_advisor.cjs _advisor-market-fixture/market
+          node - <<'NODE'
+          const f=require('node:fs');
+          const p=JSON.parse(f.readFileSync('_advisor-market-fixture/market/portfolio-advisor.json'));
+          if(p.orderExecutionEnabled!==false||p.personalizedRecommendation!==false)throw Error('execution guard');
+          if(!['RESEARCH_ONLY','BLOCKED'].includes(p.status))throw Error('unsupported status');
+          if(p.status==='RESEARCH_ONLY'&&!p.quality?.completeEodOnly)throw Error('EOD quality');
+          console.log('Real-market Advisor QA',p.status,p.reason||'',p.asOf,p.coverage);
+          NODE
       - name: Existing strategy and Portfolio regression
         run: |
           node financial-report/scripts/test_strategy_intelligence.cjs
