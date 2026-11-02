@@ -1,19 +1,19 @@
 {
-  "checkedAt": "2026-10-31T08:58:43.249938+00:00",
+  "checkedAt": "2026-11-02T22:58:43.757452+00:00",
   "status": "ok",
   "companies": 100,
   "banks": 18,
   "coreUniverse": 100,
   "companiesWithMetrics": 28,
-  "sourcesOk": 174,
-  "sourcesTotal": 193,
+  "sourcesOk": 172,
+  "sourcesTotal": 185,
   "documents": 335,
   "metrics": 396,
   "canonicalMetrics": 160,
   "externalAssessments": 17,
-  "mode": "history",
-  "documentsProcessedThisRun": 0,
-  "backlogRemaining": 23,
-  "recentBacklog": 9,
-  "historicalBacklog": 23
+  "mode": "recent",
+  "documentsProcessedThisRun": 3,
+  "backlogRemaining": 12,
+  "recentBacklog": 15,
+  "historicalBacklog": 29
 }
