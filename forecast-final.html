@@ -23,7 +23,7 @@
     .catch(()=>{});
 })();
 </script>
-<link rel="icon" href="data:,">
+<link rel="icon" href="./financial-report/frontend/favicon.svg" type="image/svg+xml"><meta name="theme-color" content="#0A1B3D">
 <style>
 :root{--bg:#061018;--bg2:#08151f;--panel:rgba(12,26,37,.88);--panel2:#0a1721;--line:#193747;--line2:#285365;--text:#edf5f7;--muted:#8da4ae;--muted2:#6f8792;--cyan:#6ed3d8;--green:#73d2a0;--amber:#f0bd63;--red:#ed8080;--violet:#baa2ef;--shadow:0 20px 55px rgba(0,0,0,.24);--radius:16px;--ease:cubic-bezier(.2,.8,.2,1)}
 *{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--bg)}body{margin:0;min-height:100vh;color:var(--text);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:radial-gradient(900px 480px at 14% -6%,rgba(110,211,216,.09),transparent 62%),radial-gradient(700px 430px at 90% 4%,rgba(186,162,239,.055),transparent 65%),linear-gradient(180deg,#061018 0%,#07121a 58%,#061018 100%)}
@@ -40,7 +40,7 @@ button,input{font:inherit}button{color:inherit}.top{position:sticky;top:0;z-inde
 <body>
 <div class="portfolioProgress" aria-hidden="true"></div>
 <header class="top">
-  <div class="brand"><span class="brandDot"></span>VMEWS <span class="brandSlash">/</span> PHÂN TÍCH THỊ TRƯỜNG</div>
+  <div class="brand"><span class="fq-forecast-symbol"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" class="fq-forecast-mark" aria-hidden="true" focusable="false"><defs><linearGradient id="fqArc" x1="50" y1="10" x2="26" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#245BFF"/><stop offset=".5" stop-color="#1650F5"/><stop offset="1" stop-color="#08C8EB"/></linearGradient></defs><path d="M48.8 12.7C44.3 10.2 39.4 9 34.4 9 20.1 9 9.8 20.9 9.8 35.7c0 14.6 10.8 26.7 24.7 26.7 6.9 0 12.6-2.2 17.8-6.8" fill="none" stroke="url(#fqArc)" stroke-width="12.2" stroke-linecap="round"/><path d="M45 47.2h12.8L73 66.9H60.2Z" fill="#245BFF"/><rect x="57.5" y="7.7" width="10.1" height="10.1" rx="2.5" fill="#10C9EB"/><rect x="48.1" y="23.8" width="9.2" height="9.2" rx="2.2" fill="#245BFF"/><rect x="61.1" y="29.1" width="11.1" height="11.1" rx="2.7" fill="#22C5EB"/></svg></span><span class="fq-forecast-name">FinQuery</span><span class="brandSlash">/</span><span class="fq-forecast-descriptor">DỰ BÁO VN100</span></div>
   <div class="topMeta"><button id="solutionAiTop" class="solutionAiTop" type="button" aria-controls="solutionAiPanel"><i aria-hidden="true"></i> SoluTION.AI</button><span id="modelBadge" class="badge">Đang tải dữ liệu…</span></div>
 </header>
 <nav class="sectionNav" aria-label="Điều hướng dashboard">
