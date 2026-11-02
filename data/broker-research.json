@@ -1,8 +1,20 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-02T06:23:56+00:00",
+  "updatedAt": "2026-11-02T18:31:13+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "MBS-VPB-2026-11-02-bf4f52cd",
+      "symbol": "VPB",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-11-02",
+      "title": "VPB – BCPT – Báo cáo gặp gỡ nhà đầu tư Tháng 10/2026: Cập nhật KQKD Q3/2026 & Triển vọng kinh doanh",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/vpb-bcpt-bao-cao-gap-go-nha-dau-tu-thang-10-2026-cap-nhat-kqkd-q3-2026-trien-vong-kinh-doanh/",
+      "recommendation": "KHẢ QUAN",
+      "summary": "MBS công bố báo cáo ngày 02/11/2026 với khuyến nghị KHẢ QUAN. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
     {
       "id": "VPX-STB-2026-10-30-8ab7d42a",
       "symbol": "STB",
