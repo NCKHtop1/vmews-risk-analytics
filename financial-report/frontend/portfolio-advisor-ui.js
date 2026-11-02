@@ -43,7 +43,7 @@ function render(){
  const gate=data.status==='RESEARCH_ONLY',m=gate?data.models?.[state.profile]:null;
  const date=safe(data.asOf),stamp=iso(data.generatedAt),code=safe(data.source?.marketRevision?.slice(0,8)||'—');
  $('advisor-meta').textContent='Phiên '+date+' · Xuất bản '+stamp+' · Mã dữ liệu '+code;
- const method=state.frequency==='weekly'?'thứ Sáu hoặc phiên cuối tuần':'phiên cuối tháng';
+ const method=state.frequency==='daily'?'mỗi phiên để quan sát (không tái cân bằng)':state.frequency==='weekly'?'thứ Sáu hoặc phiên cuối tuần':'phiên cuối tháng';
  const evalRow=data.researchEvaluation||{};
  const evidence=evalRow.status==='RESEARCH_PROXY_NOT_VALIDATED'?
   'Đã chạy '+fmt(evalRow.windows)+' khoảng kiểm định tiến về trước trên tập mã hiện có. Kết quả chỉ là proxy, chưa loại bỏ thiên lệch danh sách mã và điều chỉnh giá.':
@@ -87,13 +87,13 @@ async function load(force=false){
  state.busy=true;const btn=$('advisor-refresh');if(btn)btn.disabled=true;
  status('Đang đối chiếu snapshot nghiên cứu…');
  try{
-  const url=RAW+'portfolio-advisor-'+state.frequency+'.json';
+  const url=RAW+(state.frequency==='daily'?'portfolio-advisor.json':'portfolio-advisor-'+state.frequency+'.json');
   const r=await fetch(url,{cache:'no-store',redirect:'follow',signal:AbortSignal.timeout(12000)});
-  if(!r.ok)throw Error(r.status===404?'Chưa có bản nghiên cứu theo chu kỳ đã chọn. Hệ thống xuất bản sau phiên cuối tuần/tháng.':'Không lấy được bản nghiên cứu ('+r.status+').');
+  if(!r.ok)throw Error(r.status===404?'Chưa có bản nghiên cứu theo chu kỳ đã chọn. Có thể chọn Theo phiên để xem nghiên cứu gần nhất khi EOD đã hoàn tất.':'Không lấy được bản nghiên cứu ('+r.status+').');
   const data=await r.json();
   if(!verified(data))throw Error('Cấu trúc dữ liệu chưa đạt kiểm tra.');
   const date=Date.parse(data.asOf+'T00:00:00Z');
-  const limit=state.frequency==='weekly'?12:42;
+  const limit=state.frequency==='daily'?6:state.frequency==='weekly'?12:42;
   if(date>Date.now()+86400000||Date.now()-date>limit*86400000)throw Error('Snapshot đã cũ; không hiển thị danh mục.');
   state.data=data;state.lastFetched=Date.now();render();
  }catch(error){
@@ -104,7 +104,7 @@ async function load(force=false){
 root.addEventListener('change',e=>{
  const p=e.target.closest?.('#advisor-profile'),c=e.target.closest?.('#advisor-frequency');
  if(p&&PROFILE.has(p.value)){state.profile=p.value;render();}
- if(c&&['weekly','monthly'].includes(c.value)){state.frequency=c.value;state.data=null;void load(true);}
+ if(c&&['daily','weekly','monthly'].includes(c.value)){state.frequency=c.value;state.data=null;void load(true);}
 });
 root.addEventListener('click',e=>{
  if(e.target.closest?.('#advisor-refresh')){void load(true);return;}
