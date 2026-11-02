@@ -644,3 +644,38 @@ body{background:var(--fq-ui-paper);color:var(--fq-ui-ink)}
   color:#4E6480;
 }
 #ai-fab .ai-fab-copy small{color:#526783}
+
+
+/* Explicit specificity repair for legacy light-surface captions.
+   These targets are labels, placeholders or help text only. */
+.chart-panel .chart-heading span,
+.configuration .period-switch label span,
+.configuration #company-form>label,
+.configuration #company-form label[for="ticker"],
+.strategy-builder-section .strategy-presets>span,
+.strategy-builder-section .strategy-config-bar label,
+.market-section .market-table thead th,
+.portfolio-page .portfolio-table td.portfolio-empty,
+.portfolio-page .portfolio-head-stamps #portfolio-source,
+.portfolio-page .portfolio-tabs button:not(.active),
+.risk-monitor-page .term-info-button,
+.strategy-builder-section .term-info-button{
+  color:var(--fq-ui-secondary-readable);
+}
+.strategy-builder-section .sai-section-title span,
+.strategy-builder-section .strategy-panel-title span,
+.strategy-builder-section .strategy-section-title span,
+.portfolio-page .portfolio-section-title span{
+  color:#2355B9;
+}
+.bottom-line .finquery-footer-main,
+.bottom-line .finquery-footer-feedback,
+.bottom-line .finquery-visit-count,
+.bottom-line .finquery-visit-count strong,
+.bottom-line .finquery-footer-feedback a,
+.bottom-line .finquery-footer-main strong{
+  color:var(--fq-ui-secondary-readable);
+}
+#ai-fab .ai-fab-copy small{
+  color:var(--fq-ui-secondary-readable)!important;
+}
