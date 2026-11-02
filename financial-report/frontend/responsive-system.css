@@ -496,7 +496,8 @@ body{background:var(--fq-ui-paper);color:var(--fq-ui-ink)}
   border-color:#CEDFFD;
   background:linear-gradient(110deg,#EDF4FF,#FBFCFF);
 }
-.forecast-card a{color:#1648C8}
+.forecast-action a{background:var(--fq-ui-blue);color:#FFFFFF}
+.forecast-action a:hover{background:var(--fq-ui-blue-deep);color:#FFFFFF}
 .research-ai.ai-drawer{
   border-color:var(--fq-ui-line)!important;
   box-shadow:0 22px 60px rgba(10,27,61,.16)!important;
