@@ -1,8 +1,20 @@
 {
   "version": 2,
-  "updatedAt": "2026-10-30T13:09:26+00:00",
+  "updatedAt": "2026-11-02T06:23:56+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "VPX-STB-2026-10-30-8ab7d42a",
+      "symbol": "STB",
+      "broker": "VPX",
+      "brokerName": "VPX",
+      "publishedAt": "2026-10-30",
+      "title": "STB: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/stb-bao-cao-cap-nhat-kqkd-q3-2026-rpid6251.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VPX có báo cáo STB ngày 30/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "VNDIRECT-VIB-2026-10-30-6047df49",
       "symbol": "VIB",
@@ -96,6 +108,32 @@
       "recommendation": "MUA",
       "targetPrice": 28888,
       "summary": "NHSV có báo cáo VPB ngày 30/10/2026 với khuyến nghị MUA, giá mục tiêu 28.888 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "KIS-HPG-2026-10-30-e645f201",
+      "symbol": "HPG",
+      "broker": "KIS",
+      "brokerName": "KIS",
+      "publishedAt": "2026-10-30",
+      "title": "HPG: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-bao-cao-cap-nhat-kqkd-q3-2026-rpid6254.html",
+      "dataProvider": "24HMONEY",
+      "summary": "KIS có báo cáo HPG ngày 30/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "BETA-HPG-2026-10-30-7a89b744",
+      "symbol": "HPG",
+      "broker": "BETA",
+      "brokerName": "BETA",
+      "publishedAt": "2026-10-30",
+      "title": "HPG: Khuyến nghị MUA với giá mục tiêu 31,700 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-khuyen-nghi-mua-voi-gia-muc-tieu-31-700-dong-co-phieu-rpid6253.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 31700,
+      "summary": "BETA có báo cáo HPG ngày 30/10/2026 với khuyến nghị MUA, giá mục tiêu 31.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "YUANTA-BWE-2026-10-29-be5b635e",
@@ -15103,9 +15141,9 @@
       "currency": "VND",
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-khuyen-nghi-mua-voi-gia-muc-tieu-35-000-dong-co-phieu-rpid5305.html",
       "dataProvider": "24HMONEY",
+      "summary": "MIRAE có báo cáo HPG ngày 08/05/2026 với khuyến nghị MUA, giá mục tiêu 35.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành.",
       "recommendation": "MUA",
-      "targetPrice": 35000,
-      "summary": "MIRAE có báo cáo HPG ngày 08/05/2026 với khuyến nghị MUA, giá mục tiêu 35.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+      "targetPrice": 35000
     },
     {
       "id": "BSC-KBC-2026-05-08-988c121b",
