@@ -504,11 +504,15 @@ body{background:var(--fq-ui-paper);color:var(--fq-ui-ink)}
   color:var(--fq-ui-ink);
 }
 /* Assistant heading remains light to match its navy gradient. */
-.research-ai .research-ai-head{
-  background:linear-gradient(105deg,#0A1B3D,#1B4372);
+/* AI drawer uses the same white card as the rest of FinQuery.
+   Legacy .research-ai.ai-drawer .research-ai-head is white; V2 dark
+   text-on-white collision is fixed by aligning the entire block. */
+.research-ai.ai-drawer .research-ai-head{
+  background:#FFFFFF;
+  border-bottom:1px solid var(--fq-ui-line);
 }
-.research-ai .research-ai-head h3,
-.research-ai .research-ai-head .research-ai-label{color:#FFFFFF}
+.research-ai.ai-drawer .research-ai-head h3{color:var(--fq-ui-navy)}
+.research-ai.ai-drawer .research-ai-head .research-ai-label{color:#174ACF}
 .market-section input:focus-visible,.market-section select:focus-visible,
 .configuration input:focus-visible,.configuration select:focus-visible,
 .portfolio-page input:focus-visible,.portfolio-page select:focus-visible,
