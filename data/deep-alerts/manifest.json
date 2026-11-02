@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-10-30T16:21:18.744815+00:00",
+  "generatedAt": "2026-11-02T02:45:24.589008+00:00",
   "marketModelDate": "2026-10-30",
   "requested": 34,
-  "reused": 31,
-  "fetched": 3,
+  "reused": 34,
+  "fetched": 0,
   "cached": 34,
   "symbols": {
     "PPT": {
@@ -102,6 +102,11 @@
       "modelAsOf": "2026-09-14",
       "source": "Yahoo Finance"
     },
+    "SBB": {
+      "rows": 681,
+      "modelAsOf": "2026-10-30",
+      "source": "Vnstock"
+    },
     "FTS": {
       "rows": 1800,
       "modelAsOf": "2026-08-13",
@@ -110,6 +115,11 @@
     "THD": {
       "rows": 1571,
       "modelAsOf": "2026-10-05",
+      "source": "Vnstock"
+    },
+    "VVS": {
+      "rows": 643,
+      "modelAsOf": "2026-10-30",
       "source": "Vnstock"
     },
     "VIW": {
@@ -160,16 +170,6 @@
     "PVX": {
       "rows": 732,
       "modelAsOf": "2026-10-02",
-      "source": "Vnstock"
-    },
-    "SBB": {
-      "rows": 681,
-      "modelAsOf": "2026-10-30",
-      "source": "Vnstock"
-    },
-    "VVS": {
-      "rows": 643,
-      "modelAsOf": "2026-10-30",
       "source": "Vnstock"
     },
     "DGT": {
