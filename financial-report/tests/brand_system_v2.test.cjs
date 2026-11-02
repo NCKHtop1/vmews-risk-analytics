@@ -1,5 +1,5 @@
 'use strict';
-/* Visual-only release guard for FinQuery Q-Data V2. Does not mock or change business logic. */
+/* Visual-only release guard for FinQuery Q-Data V3 contrast-corrected shell. Does not mock or change business logic. */
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -13,7 +13,7 @@ const forecastCss=read('forecast-portfolio-v14.css');
 const login=read('finquery-access/login.html');
 const admin=read('finquery-access/admin.html');
 const dataHub=read('financial-report/data-hub.html');
-const mainBrand=mainCss.split('FinQuery Q-Data Design System V2 | 2026-11-02')[1];
+const mainBrand=mainCss.split('FinQuery Q-Data V3 | Coherent light workspace | visual-only.')[1];
 const forecastBrand=forecastCss.split('FinQuery Forecast Q-Data V2 visual layer.')[1];
 test('all five active FinQuery surfaces use Q-Data identity and icon',()=>{
  assert.ok(mainBrand&&forecastBrand,'missing shared brand layers');
@@ -31,8 +31,11 @@ test('all five active FinQuery surfaces use Q-Data identity and icon',()=>{
 });
 test('shared Q-Data tokens and per-module selectors are present',()=>{
  for(const hex of ['#0A1B3D','#245BFF','#22C7EB','#F3F6FA'])assert.ok(mainBrand.includes(hex)||mainCss.includes(hex),hex);
- for(const token of ['--fq-v2-navy','--fq-v2-blue','--fq-v2-cyan','--fq-v2-paper','--fq-v2-line'])assert.ok(mainBrand.includes(token),token);
- for(const selector of ['#market .finquery-workspace-tabs button.active','.strategy-builder-section','.portfolio-tabs button.active','.risk-summary-card','.macro-section','.research-ai.ai-drawer','#chart-terminal'])assert.ok(mainBrand.includes(selector),selector);
+ for(const token of ['--fq-ui-navy','--fq-ui-blue','--fq-ui-cyan','--fq-ui-paper','--fq-ui-line'])assert.ok(mainBrand.includes(token),token);
+ for(const selector of ['#market .finquery-workspace-tabs button.active','.strategy-builder-section','.portfolio-tabs button.active','.risk-summary-card','.macro-section','.research-ai.ai-drawer','.header nav'])assert.ok(mainBrand.includes(selector),selector);
+ assert.match(mainBrand,/\.header\{/);
+ assert.match(mainBrand,/background:linear-gradient\(180deg,#FFFFFF,#F9FBFF\)/);
+ assert.match(mainBrand,/\.header \.finquery-brand \.brand-copy strong\{/);
  assert.match(forecastBrand,/\.marketCommand/);
  assert.match(forecastBrand,/\.sectionNav a\.active/);
  assert.match(forecastBrand,/\.forecastCard\.active/);

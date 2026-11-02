@@ -1285,3 +1285,15 @@ body{
 @media(prefers-reduced-motion:reduce){
  .sectionNav a,.quick button,.btn{transition:none}
 }
+
+
+/* FinQuery Q-Data contrast correction: research headline is cyan on navy.
+   Remove legacy lime text-gradient (background-clip:text) so the actual
+   foreground/background pairing is readable and brand-consistent. */
+.marketCommand .leadersHeader h2 > span{
+  background:none;
+  background-clip:initial;
+  -webkit-background-clip:initial;
+  -webkit-text-fill-color:currentColor;
+  color:#7BE3FF;
+}
