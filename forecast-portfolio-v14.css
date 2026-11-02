@@ -1136,3 +1136,152 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 
 /* Distinct intraday forecast clock; not the completed historical EOD clock. */
 .forecastSyncMeta{display:block;min-height:14px;margin:1px 0 12px;color:#b6caa6;font:10px/1.5 "SFMono-Regular",Consolas,monospace;letter-spacing:.015em;overflow-wrap:anywhere}
+
+
+/* ============================================================
+   FinQuery Forecast Q-Data V2 visual layer.
+   Theme only; does not change signals, probabilities, ordering,
+   backtests, forecasts, event semantics or chart data.
+   Positive / negative / risk colors intentionally remain distinct.
+   ============================================================ */
+:root{
+ --bg:#07152D;--bg2:#091B37;
+ --panel:#0D2341;--panel2:#0C1D39;
+ --line:#29486C;--line2:#355F8D;
+ --text:#F2F7FF;--muted:#AAC0DC;--muted2:#8AA6C4;
+ --cyan:#22C7EB;
+ --fq-forecast-brand-blue:#245BFF;
+ --fq-forecast-brand-cyan:#22C7EB;
+ --fq-forecast-brand-navy:#0A1B3D;
+ --shadow:0 18px 54px rgba(2,10,27,.23);
+ --radius:12px;
+}
+html{background:#07152D}
+body{
+ background-color:#07152D;
+ background-image:
+   linear-gradient(rgba(100,151,215,.037) 1px,transparent 1px),
+   linear-gradient(90deg,rgba(100,151,215,.037) 1px,transparent 1px),
+   radial-gradient(ellipse at 86% -10%,rgba(34,199,235,.12),transparent 44%);
+ background-size:76px 76px,76px 76px,auto;
+ color:#F2F7FF;font-family:'Be Vietnam Pro','Segoe UI',system-ui,sans-serif;
+}
+.portfolioProgress{background:linear-gradient(90deg,#245BFF,#22C7EB)}
+.top{
+ background:linear-gradient(105deg,rgba(7,21,45,.97),rgba(10,33,67,.98));
+ border-bottom-color:rgba(103,165,230,.27);
+}
+.brand{font-size:14px;letter-spacing:-.02em;gap:9px;font-weight:750;color:#fff}
+.brandDot{background:#22C7EB;box-shadow:0 0 16px rgba(34,199,235,.3)}
+.brandSlash{color:#7AA9D8;font-size:13px}
+.fq-forecast-symbol{display:inline-grid;place-items:center;flex:0 0 34px}
+.fq-forecast-mark{width:34px;height:34px;display:block}
+.fq-forecast-name{font-size:19px;font-weight:800;letter-spacing:-.055em;color:#fff}
+.fq-forecast-descriptor{font-size:10px;font-weight:680;letter-spacing:.11em;color:#BBD5F0;white-space:nowrap}
+.badge{
+ border-color:rgba(102,164,228,.31);
+ border-radius:8px;background:rgba(16,48,87,.85);color:#CCE8FF;
+}
+.sectionNav{
+ background:rgba(7,21,45,.94);border-bottom-color:rgba(89,151,217,.22);
+}
+.sectionNav a{color:#ADC5E1}
+.sectionNav a.active,
+.sectionNav a:hover{color:#E8FBFF;background:rgba(36,91,255,.19)}
+.sectionNav a.active{box-shadow:inset 0 -2px 0 #22C7EB}
+.sectionNavHint{color:#A7BCD7}
+.sectionNavHint kbd{border-color:#426082;color:#E4F4FF}
+.heroIndex,.eyebrow,.commandIndex{color:#69DFFF}
+.hero h1 em{color:#65DCFF}
+.heroSignal{color:#A5BFDE}
+.heroSignal i{background:#22C7EB;box-shadow:0 0 12px rgba(34,199,235,.35)}
+.search input{
+ border-color:#34587E;background:#071B35;border-radius:9px;color:#F1F7FF;
+}
+.search input:focus{
+ border-color:#22C7EB;box-shadow:0 0 0 3px rgba(34,199,235,.15);
+}
+.btn{
+ border-color:#245BFF;border-radius:9px;background:#245BFF;color:#fff;
+ font-weight:750;box-shadow:0 7px 18px rgba(36,91,255,.24);
+}
+.btn:hover{border-color:#326BFF;background:#326BFF}
+.quick button{
+ border-color:#27486E;border-radius:7px;background:#0C2240;
+ color:#C2D4EC;font-size:11px;
+}
+.quick button:hover{border-color:#4A8BD0;color:#fff}
+.panel{
+ border-color:#29476E;border-radius:13px;
+ background:linear-gradient(155deg,rgba(15,39,73,.97),rgba(8,23,47,.97));
+ box-shadow:var(--shadow);
+}
+.panel:before{background:linear-gradient(90deg,transparent,rgba(34,199,235,.30),transparent)}
+.panel h2{color:#EFF7FF}
+.summary,.sub{color:#B0C6E1}
+.stat,.metric,.driver,.forecastCard,.sourceCard,.proofCard,
+.newsItem,.btDetail{
+ border-color:#28486D;border-radius:9px;background:#0B203D;
+}
+.stat span,.metric span,.driver span,.forecastCard span,
+.sourceCard span,.proofCard span{color:#ADC1D9;font-size:10px}
+.panelHead .meta,.metric small,.sourceCard small,.proofCard small,
+.driver small{color:#9BB4D0}
+.driver:hover,.forecastCard:hover,.sourceCard:hover,
+.proofCard:hover{border-color:#3D80C7;background:#123258}
+.chartWrap{
+ border-color:#28486E;border-radius:10px;background:#081A33;
+}
+.tooltip{border-color:#41658E;border-radius:9px;background:rgba(8,25,49,.98)}
+.tooltip hr{border-top-color:#2A4B70}
+.forecastCard:hover,.forecastCard.active{border-color:#388CDE}
+.forecastCard.active{background:linear-gradient(155deg,#143B70,#0C2549)}
+.marketCommand{
+ border-color:#2B507B;
+ background:
+   radial-gradient(ellipse at 57% 30%,rgba(36,91,255,.20),transparent 46%),
+   linear-gradient(155deg,rgba(15,41,76,.97),rgba(6,22,47,.98));
+}
+.marketCommand::after{border-color:rgba(34,199,235,.18)}
+.marketTape{
+ border-color:rgba(84,154,226,.25);
+ background:rgba(6,24,49,.74);
+}
+.marketTapeLabel{color:#CEECFF}
+.commandIndex{font-weight:740}
+.snapshotBadge{color:#7DE2FF}
+.filterChip{
+ border-color:rgba(115,160,213,.24);
+ background:#10294A;color:#BFD0E6;
+}
+.filterChip.active{
+ border-color:rgba(34,199,235,.67);
+ background:rgba(34,199,235,.13);color:#A4F0FF;
+}
+.navAi,.cardAction{color:#A0EAFF}
+.cardAction{
+ border-color:rgba(34,199,235,.40);
+ background:rgba(34,199,235,.085);border-radius:9px;
+}
+.cardAction:hover{background:rgba(36,91,255,.22);border-color:#3E9AE3}
+.signalCard{
+ border-color:rgba(77,151,222,.37);
+ background:
+  radial-gradient(ellipse at 85% 10%,rgba(34,199,235,.12),transparent 45%),
+  linear-gradient(150deg,#102B50,#081B36);
+}
+.forecastSyncMeta{color:#9FD7EF}
+:focus-visible{outline:2px solid #62DFFF;outline-offset:3px}
+@media(max-width:780px){
+ .fq-forecast-symbol{flex-basis:28px}
+ .fq-forecast-mark{width:28px;height:28px}
+ .fq-forecast-name{font-size:16px}
+ .fq-forecast-descriptor{font-size:9px;letter-spacing:.05em}
+ .brand{gap:6px}
+}
+@media(max-width:430px){
+ .fq-forecast-descriptor{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ .sectionNav a,.quick button,.btn{transition:none}
+}
