@@ -198,8 +198,17 @@ def run():
                                              "ratio":item["ratio"],"text":item["text"],
                                              "colors":[item["color"],item["background"]]})
                     if page in ("index.html","forecast-final.html"):
-                        image=f"finquery-{page.split('.')[0]}-{width}.png"
-                        driver.save_screenshot(str(folder/image))
+                        # Static screenshot uses the normal route layout, without
+                        # forcing hidden modules visible for contrast diagnostics.
+                        driver.get(f"http://127.0.0.1:{server.server_port}/{page}")
+                        driver.execute_script("window.scrollTo(0,0)")
+                        jpg=driver.execute_cdp_cmd("Page.captureScreenshot",{
+                            "format":"jpeg","quality":59,"captureBeyondViewport":False
+                        })["data"]
+                        name=page.replace(".html","")+"-"+str(width)
+                        for offset in range(0,len(jpg),4500):
+                            print("FINQUERY_QA_JPEG",name,offset//4500,
+                                  jpg[offset:offset+4500],flush=True)
             print("FINQUERY_CONTRAST_FAILURES",json.dumps(failures,ensure_ascii=False),flush=True)
             if failures:
                 raise AssertionError(f"{len(failures)} computed contrast violations (WCAG AA 4.5:1)")
