@@ -48,7 +48,7 @@ jobs:
           set -euo pipefail
           while IFS= read -r changed; do
             case "$changed" in
-              financial-report/frontend/index.html|financial-report/frontend/responsive-system.css|forecast-final.html|forecast-portfolio-v14.css|financial-report/data-hub.html|finquery-access/login.html|finquery-access/admin.html|financial-report/tests/brand_system_v2.test.cjs|financial-report/docs/FINQUERY_BRAND_V2_RELEASE.md|.github/workflows/finquery-brand-system-v2.yml)
+              financial-report/frontend/index.html|financial-report/frontend/responsive-system.css|forecast-final.html|forecast-portfolio-v14.css|financial-report/data-hub.html|finquery-access/login.html|finquery-access/admin.html|financial-report/tests/brand_system_v2.test.cjs|financial-report/tests/brand_contrast_browser.py|.github/workflows/finquery-contrast-browser.yml|financial-report/docs/FINQUERY_BRAND_V2_RELEASE.md|.github/workflows/finquery-brand-system-v2.yml)
                 echo "Allowed brand-only file: $changed" ;;
               *)
                 echo "::error::Out-of-scope modification: $changed"
