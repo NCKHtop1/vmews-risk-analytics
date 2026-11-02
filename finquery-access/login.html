@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>Đăng nhập | FinQuery</title>
+<link rel="icon" type="image/svg+xml" href="/financial-report/frontend/favicon.svg"><meta name="theme-color" content="#0A1B3D">
 <style>
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px;background:#f5f7fa;color:#172d52;font:15px/1.65 system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
@@ -17,11 +18,44 @@ p{margin:22px 0 16px;color:#586d8e}
 #status{min-height:40px;margin:15px auto 0;border-radius:10px;padding:9px 13px;background:#f1f5fb;color:#4b6484;font-size:13px}
 #switch-account{display:none;margin:16px auto 0;padding:7px 14px;border:1px solid #ced9ec;border-radius:9px;background:#fff;color:#3556a3;font-weight:600;cursor:pointer}
 @media(max-width:420px){body{padding:10px}main{padding:25px 16px;border-radius:12px}h1{font-size:26px}#signin{max-width:100%;min-width:0}#signin iframe{max-width:100%}#status{font-size:12px;padding:9px}#switch-account{min-height:42px}}
+
+/* FinQuery Q-Data V2 login identity; Google auth and control IDs unchanged. */
+:root{--fq-navy:#0A1B3D;--fq-blue:#245BFF;--fq-cyan:#22C7EB}
+body{
+ background:
+  radial-gradient(circle at 17% 8%,rgba(34,199,235,.16),transparent 35%),
+  linear-gradient(135deg,#ECF3FF,#F7FAFD 66%,#E8F5FA);
+ color:var(--fq-navy);
+ font-family:'Be Vietnam Pro','Segoe UI',system-ui,sans-serif;
+}
+main{
+ position:relative;padding:41px 34px 36px;border:1px solid #D9E5F4;
+ border-radius:22px;background:#fff;
+ box-shadow:0 24px 72px rgba(10,27,61,.12),0 1px 0 rgba(255,255,255,.8) inset;
+}
+main::before{
+ content:"";position:absolute;top:0;left:22%;right:22%;height:3px;
+ background:linear-gradient(90deg,#245BFF,#22C7EB);border-radius:0 0 6px 6px;
+}
+.mark{width:72px;height:72px;margin:0 auto 12px;border-radius:0;
+ background:transparent;color:inherit;box-shadow:none;letter-spacing:normal;
+}
+.mark .fq-auth-mark{display:block;width:72px;height:72px}
+h1{color:var(--fq-navy);font-size:33px;letter-spacing:-1.3px;font-weight:800}
+.subtitle{color:#245BFF;font-size:12px;letter-spacing:.045em;font-weight:750}
+p{color:#60728A;line-height:1.7}
+#signin{min-height:45px}
+#status{background:#EEF4FF;color:#365577;border:1px solid #E1EAF7}
+#switch-account{color:#1748B7;border-color:#B9CFFB;border-radius:10px;min-height:42px}
+#switch-account:hover{background:#EEF4FF}
+button:focus-visible{outline:2px solid var(--fq-blue);outline-offset:3px}
+@media(max-width:420px){main{padding:29px 17px;border-radius:16px}.mark,.mark .fq-auth-mark{width:60px;height:60px}h1{font-size:29px}}
+
 </style>
 </head>
 <body>
 <main>
-  <div class="mark" aria-hidden="true">F</div>
+  <div class="mark" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" class="fq-auth-mark" aria-hidden="true" focusable="false"><defs><linearGradient id="fqArc" x1="50" y1="10" x2="26" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#245BFF"/><stop offset=".5" stop-color="#1650F5"/><stop offset="1" stop-color="#08C8EB"/></linearGradient></defs><path d="M48.8 12.7C44.3 10.2 39.4 9 34.4 9 20.1 9 9.8 20.9 9.8 35.7c0 14.6 10.8 26.7 24.7 26.7 6.9 0 12.6-2.2 17.8-6.8" fill="none" stroke="url(#fqArc)" stroke-width="12.2" stroke-linecap="round"/><path d="M45 47.2h12.8L73 66.9H60.2Z" fill="#245BFF"/><rect x="57.5" y="7.7" width="10.1" height="10.1" rx="2.5" fill="#10C9EB"/><rect x="48.1" y="23.8" width="9.2" height="9.2" rx="2.2" fill="#245BFF"/><rect x="61.1" y="29.1" width="11.1" height="11.1" rx="2.7" fill="#22C5EB"/></svg></div>
   <h1>FinQuery</h1>
   <div class="subtitle">Financial Intelligence</div>
   <p>Đăng nhập bằng Google để tiếp tục sử dụng FinQuery.</p>

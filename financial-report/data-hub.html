@@ -6,7 +6,7 @@
 <meta http-equiv="refresh" content="0; url=/financial-report/index.html#macro">
 
 <meta name="description" content="FinQuery Data Hub: dữ liệu phái sinh, vĩ mô, thanh khoản và trái phiếu.">
-<title>FinQuery · Kho dữ liệu</title>
+<title>FinQuery · Kho dữ liệu</title><link rel="icon" type="image/svg+xml" href="/financial-report/frontend/favicon.svg"><meta name="theme-color" content="#0A1B3D">
 <style>
 :root{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#193052;background:#f4f7fc;font-synthesis:none}
 *{box-sizing:border-box}body{margin:0}a{color:#2458b9}button{font:inherit}
@@ -52,11 +52,36 @@ tbody tr:last-child td{border-bottom:0}
 footer{font-size:12px;color:#8797af;margin-top:30px;padding-top:15px;border-top:1px solid #dee7f3}
 @media(max-width:900px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.source-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:620px){.header-inner{padding:13px 15px}main{padding:18px 14px 40px}.summary,.grid2,.source-list{grid-template-columns:1fr}.card{min-height:106px}.hero{gap:15px}.pane{padding:16px}nav a{padding:7px 8px;font-size:12px}}
+
+/* FinQuery Q-Data V2 Data Hub; data sources, redirect, JS unchanged. */
+:root{font-family:'Be Vietnam Pro','Segoe UI',system-ui,sans-serif;color:#142A49;background:#F3F6FA}
+body{background:#F3F6FA}
+header{background:linear-gradient(105deg,#07152D,#0A1B3D 80%,#143C6A);border-bottom-color:rgba(144,197,241,.24);box-shadow:0 6px 24px rgba(8,24,52,.11)}
+.header-inner{min-height:75px}
+.brand{display:inline-flex;align-items:center;gap:11px;color:#fff;font-weight:800;letter-spacing:-.7px}
+.fq-data-symbol,.fq-data-mark{display:block;width:42px;height:42px}
+.fq-data-wordmark{display:block;line-height:1.1}
+.brand small{color:#B8D4EC;font-weight:640;letter-spacing:.2px;margin-top:5px;font-size:10px}
+nav a{color:#C8D9EF;border:1px solid transparent}
+nav a:hover{background:rgba(255,255,255,.1);color:#fff}
+nav a[aria-current="page"]{background:rgba(36,91,255,.34);border-color:rgba(89,206,252,.38);color:#fff}
+main h1,main h2{color:#0A1B3D}
+.eyebrow{color:#245BFF}
+.btn{background:#245BFF;color:#fff;box-shadow:0 5px 16px rgba(36,91,255,.17)}
+.btn:hover:not(:disabled){background:#1648D9}
+.card,.pane,.source,.table-wrap{border-color:#DEE7F3;box-shadow:0 4px 20px rgba(10,27,61,.04)}
+.card:first-child{background:#EEF4FF;border-color:#CFE0FF}
+.card strong{color:#0A1B3D}
+th{background:#EDF3FC;color:#385172}
+.footnote{border-left-color:#245BFF;background:#EDF4FF}
+a:focus-visible,button:focus-visible{outline:2px solid #245BFF;outline-offset:3px}
+@media(max-width:620px){.header-inner{min-height:60px}.fq-data-symbol,.fq-data-mark{width:34px;height:34px}.brand{font-size:17px}.brand small{font-size:9px}}
+
 </style>
 <style>[hidden]{display:none!important}</style></head>
 <body>
 <header><div class="header-inner">
-<a class="brand" href="/financial-report/index.html">FinQuery <small>Financial Intelligence</small></a>
+<a class="brand" href="/financial-report/index.html"><span class="fq-data-symbol" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" class="fq-data-mark" aria-hidden="true" focusable="false"><defs><linearGradient id="fqArc" x1="50" y1="10" x2="26" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#245BFF"/><stop offset=".5" stop-color="#1650F5"/><stop offset="1" stop-color="#08C8EB"/></linearGradient></defs><path d="M48.8 12.7C44.3 10.2 39.4 9 34.4 9 20.1 9 9.8 20.9 9.8 35.7c0 14.6 10.8 26.7 24.7 26.7 6.9 0 12.6-2.2 17.8-6.8" fill="none" stroke="url(#fqArc)" stroke-width="12.2" stroke-linecap="round"/><path d="M45 47.2h12.8L73 66.9H60.2Z" fill="#245BFF"/><rect x="57.5" y="7.7" width="10.1" height="10.1" rx="2.5" fill="#10C9EB"/><rect x="48.1" y="23.8" width="9.2" height="9.2" rx="2.2" fill="#245BFF"/><rect x="61.1" y="29.1" width="11.1" height="11.1" rx="2.7" fill="#22C5EB"/></svg></span><span class="fq-data-wordmark">FinQuery <small>Financial Intelligence</small></span></a>
 <nav aria-label="Điều hướng FinQuery">
 <a href="/financial-report/index.html">Bảng điều khiển</a>
 <a href="/financial-report/data-hub.html" aria-current="page">Kho dữ liệu</a>
