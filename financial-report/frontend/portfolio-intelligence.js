@@ -153,7 +153,7 @@ function renderHistory(){
   :'<tr><td colspan="6" class="portfolio-empty">Chưa có giao dịch.</td></tr>';
 }
 function switchTab(tab,focus=false){
- if(!['overview','plan','rotation','history'].includes(tab))return;
+ if(!['overview','plan','advisor','rotation','history'].includes(tab))return;
  state.tab=tab;
  for(const b of $('portfolio-tabs').querySelectorAll('[data-portfolio-tab]')){
   const on=b.dataset.portfolioTab===tab;b.classList.toggle('active',on);b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;if(on&&focus)b.focus({preventScroll:true});
@@ -162,6 +162,7 @@ function switchTab(tab,focus=false){
  if(tab==='rotation'&&Date.now()-state.lastSectorAt>SECTOR_RECHECK)refreshSector().catch(()=>{});
  if(tab==='rotation')requestAnimationFrame(()=>renderRotation());
  if(tab==='plan')document.dispatchEvent(new Event('finquery:portfolio-plan-open'));
+ if(tab==='advisor')document.dispatchEvent(new Event('finquery:portfolio-advisor-open'));
 }
 function rotateStatus(s){return s.rs20>=0?(s.rs5>=0?'Khỏe':'Đang suy yếu'):(s.rs5>=0?'Hồi phục':'Yếu');}
 function renderRotation(){
@@ -365,7 +366,7 @@ function exportEvents(){
 $('portfolio-tabs').addEventListener('click',e=>{const b=e.target.closest('[data-portfolio-tab]');if(b)switchTab(b.dataset.portfolioTab);});
 $('portfolio-tabs').addEventListener('keydown',e=>{
  if(!['ArrowRight','ArrowLeft','Home','End'].includes(e.key))return;
- const keys=['overview','plan','rotation','history'],i=keys.indexOf(state.tab),n=e.key==='Home'?0:e.key==='End'?3:(i+(e.key==='ArrowRight'?1:3))%4;
+ const keys=['overview','plan','advisor','rotation','history'],i=keys.indexOf(state.tab),n=e.key==='Home'?0:e.key==='End'?keys.length-1:(i+(e.key==='ArrowRight'?1:keys.length-1))%keys.length;
  e.preventDefault();switchTab(keys[n],true);
 });
 root.addEventListener('click',e=>{

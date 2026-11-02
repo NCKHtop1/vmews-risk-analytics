@@ -1,0 +1,80 @@
+name: FinQuery Portfolio Advisor EOD research
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '45 10 * * 1-5' # 17:45 VN, after latest completed EOD histories
+permissions:
+  contents: write
+concurrency:
+  group: portfolio-advisor-eod-publisher
+  cancel-in-progress: false
+jobs:
+  research:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Run point-in-time and portfolio-risk unit gates
+        run: |
+          node --test financial-report/tests/portfolio_advisor_research.test.cjs
+          node --test financial-report/tests/portfolio_advisor_ui.test.cjs
+          node --check financial-report/scripts/build_portfolio_advisor.cjs
+      - name: Checkout canonical market snapshots, isolated from user accounts
+        run: |
+          git fetch --no-tags origin financial-market-data
+          git worktree add --detach /tmp/finquery-advisor-data origin/financial-market-data
+          git -C /tmp/finquery-advisor-data sparse-checkout set market
+      - name: Build deterministic completed-session research snapshot
+        run: |
+          set -euo pipefail
+          node financial-report/scripts/build_portfolio_advisor.cjs /tmp/finquery-advisor-data/market
+          node - <<'NODE'
+          const fs=require('node:fs');
+          const file='/tmp/finquery-advisor-data/market/portfolio-advisor.json';
+          const x=JSON.parse(fs.readFileSync(file,'utf8'));
+          if(x.version!=='FINQUERY-PORTFOLIO-ADVISOR-RESEARCH-1.0')throw Error('version');
+          if(x.orderExecutionEnabled!==false||x.personalizedRecommendation!==false)throw Error('not research-only');
+          if(!['BLOCKED','RESEARCH_ONLY'].includes(x.status))throw Error('invalid state');
+          if(x.status==='RESEARCH_ONLY'){
+            if(x.quality?.completeEodOnly!==true)throw Error('not completed EOD');
+            for(const m of Object.values(x.models||{})){
+              if(m.status!=='RESEARCH_ONLY')continue;
+              const sum=m.positions.reduce((a,p)=>a+p.weightPct,0)+m.cashPct;
+              if(Math.abs(sum-100)>.05)throw Error('weight total');
+              if(!m.positions.length)throw Error('empty advertised model');
+            }
+          }else if(!x.reason)throw Error('blocked state without reason');
+          console.log('Portfolio Advisor research publication integrity: PASS',x.status,x.asOf);
+          NODE
+      - name: Publish public anonymous snapshot and dated audit only
+        run: |
+          set -euo pipefail
+          cd /tmp/finquery-advisor-data
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add market/portfolio-advisor.json market/portfolio-advisor-audit
+          for cadence in weekly monthly; do
+            if [ -f "market/portfolio-advisor-${cadence}.json" ]; then git add "market/portfolio-advisor-${cadence}.json"; fi
+          done
+          if git diff --cached --quiet; then
+            echo 'Research snapshot unchanged'
+            exit 0
+          fi
+          git commit -m 'Publish Portfolio Advisor EOD research snapshot [research-only]'
+          for attempt in 1 2 3; do
+            git fetch origin financial-market-data
+            git rebase FETCH_HEAD
+            if git push origin HEAD:financial-market-data; then
+              echo "Portfolio Advisor snapshot published, attempt=$attempt"
+              exit 0
+            fi
+            sleep 4
+          done
+          echo 'Publish blocked by concurrent writer' >&2
+          exit 1

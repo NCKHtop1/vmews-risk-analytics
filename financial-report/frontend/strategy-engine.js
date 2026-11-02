@@ -84,7 +84,7 @@ const PRESETS={
   {left:'macdHistogram',op:'cross_up',rightType:'value',rightValue:0}
  ]}
 };
-function finite(v){return Number.isFinite(Number(v))?Number(v):null;}
+function finite(v){return v===null||v===undefined||v===''?null:(Number.isFinite(Number(v))?Number(v):null);}
 function condition(left){const d=DEFAULTS[left]||{op:'gt',rightType:'value',rightValue:0};return{id:'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),left,...d};}
 function normalizeCondition(c){return{...condition(c?.left||'rsi14'),...c,id:c?.id||('c'+Math.random().toString(36).slice(2))};}
 function scopeMatches(row,scope){const tier=String(row?.tier||'').toUpperCase();return scope==='ALL'||!scope||(scope==='LIVE'&&tier!=='DISCOVERY')||tier===scope;}

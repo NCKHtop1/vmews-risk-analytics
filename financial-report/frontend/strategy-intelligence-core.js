@@ -23,7 +23,7 @@
   DOWNTREND:'Nghiêng giảm',
   STRESS:'Rủi ro cao'
  };
- const finite=v=>Number.isFinite(Number(v))?Number(v):null;
+ const finite=v=>v===null||v===undefined||v===''?null:(Number.isFinite(Number(v))?Number(v):null);
  const clamp=(v,a=0,b=100)=>Math.max(a,Math.min(b,Number(v)||0));
  const mean=a=>{const x=a.filter(Number.isFinite);return x.length?x.reduce((s,v)=>s+v,0)/x.length:null;};
  const liveRows=snapshot=>Object.values(snapshot?.symbols||{}).filter(r=>{
