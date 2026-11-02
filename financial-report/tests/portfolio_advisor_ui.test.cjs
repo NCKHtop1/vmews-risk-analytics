@@ -24,6 +24,9 @@ test('Research UI never contains an order path or changes the ledger',()=>{
  assert.match(ui,/orderExecutionEnabled!==false/);
  assert.match(ui,/personalizedRecommendation!==false/);
  assert.match(ui,/RESEARCH_ONLY/);
+ assert.match(ui,/portfolio-advisor-'\+state\.frequency\+'\.json/);
+ assert.match(ui,/state\.data=null;void load\(true\)/);
+ assert.match(flow,/portfolio-advisor-\$\{cadence\}\.json/);
  assert.match(ui,/Chưa đủ điều kiện/);
  assert.doesNotMatch(ui,/fetch\(['"]\/api\/user\/portfolio/);
  assert.doesNotMatch(ui,/\/api\/order|\/api\/trade|\/api\/broker/);
