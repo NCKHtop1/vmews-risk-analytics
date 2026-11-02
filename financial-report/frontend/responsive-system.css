@@ -549,3 +549,91 @@ body{background:var(--fq-ui-paper);color:var(--fq-ui-ink)}
 @media(prefers-reduced-motion:reduce){
   .header nav[aria-label="Điều hướng nền tảng"] a{transition:none}
 }
+
+
+/* FinQuery V3 readable information hierarchy.
+   Scoped to informational copy on light surfaces. Never target
+   up/down, P&L, alert severity, conditional chart fills or badges. */
+:root{--fq-ui-secondary-readable:#526783}
+.preview-footer #row-count,
+.preview-footer #updated-at,
+.preview-toolbar #unit-caption,
+.detail-heading>span,
+.today-watch-head #today-watch-status,
+.quick-tickers-loading,
+.native-chart-heading>span,
+.signal-feed>p,
+.company-meta,
+#company-meta,
+#company-description,
+#company-name,
+#availability,
+#unit-caption,
+#strategy-result-meta,
+#strategy-status,
+#sai-status,
+#insight-status,
+#alpha-radar-status,
+#risk-source-status,
+#portfolio-count,
+#portfolio-nav-note,
+#portfolio-pnl-detail,
+#portfolio-cash-detail,
+#portfolio-concentration-detail,
+#summary,
+#clear-years,
+.sai-empty,
+.portfolio-page .portfolio-muted,
+.portfolio-page .portfolio-empty,
+.portfolio-page .portfolio-kpi>span,
+.overview-compare-panel label,
+.risk-heat-legend>span,
+.strategy-builder-divider>span,
+.news-filter-row label,
+.strategy-builder-section .strategy-section-title small,
+.portfolio-section-title small,
+.finquery-footer-main,
+.finquery-footer-feedback,
+.finquery-visit-count,
+.configuration .muted,
+.market-section .muted,
+.preview .muted{
+  color:var(--fq-ui-secondary-readable);
+}
+.preview .eyebrow,
+.configuration .eyebrow,
+.market-section .eyebrow,
+.strategy-builder-section .eyebrow,
+.portfolio-page .eyebrow,
+.risk-monitor-page .eyebrow{
+  color:#2454C6;
+}
+.portfolio-page thead th,
+.risk-monitor-page thead th,
+.strategy-builder-section thead th,
+.market-section thead th,
+.preview thead th{
+  color:#526783;
+}
+.portfolio-page .portfolio-kpi>small,
+.portfolio-page .portfolio-kpi small,
+.portfolio-page .portfolio-kpi>span{
+  color:var(--fq-ui-secondary-readable);
+}
+.market-section .native-chart-heading span,
+.market-section .signal-feed p,
+.market-section .today-watch-head small{
+  color:var(--fq-ui-secondary-readable);
+}
+.strategy-builder-section .sai-empty,
+.strategy-builder-section #sai-status{
+  color:var(--fq-ui-secondary-readable);
+}
+.preview .step,
+.configuration .step{
+  color:#4F6685;background:#EAF1FC;
+}
+#data-state.status-badge{
+  color:#4E6480;
+}
+#ai-fab .ai-fab-copy small{color:#526783}
