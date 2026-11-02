@@ -6,7 +6,7 @@
 const root=document.getElementById('portfolio');
 if(!root)return;
 const $=id=>document.getElementById(id);
-const RAW='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/portfolio-advisor.json';
+const RAW='https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/';
 const PROFILE=new Set(['defensive','balanced','growth']);
 const LABELS={breakout_volume:'Phá vỡ + thanh khoản',ema_adx:'EMA + ADX',macd_rsi:'MACD + RSI',momentum_recovery:'Động lượng hồi phục',bollinger_rebound:'Bollinger hồi phục'};
 const ERRORS={SESSION_NOT_CLOSED:'Dữ liệu phiên chưa đóng. Hệ thống chỉ tính sau khi nến ngày hoàn tất.',
@@ -87,12 +87,14 @@ async function load(force=false){
  state.busy=true;const btn=$('advisor-refresh');if(btn)btn.disabled=true;
  status('Đang đối chiếu snapshot nghiên cứu…');
  try{
-  const r=await fetch(RAW,{cache:'no-store',redirect:'follow',signal:AbortSignal.timeout(12000)});
-  if(!r.ok)throw Error('Không lấy được bản nghiên cứu ('+r.status+').');
+  const url=RAW+'portfolio-advisor-'+state.frequency+'.json';
+  const r=await fetch(url,{cache:'no-store',redirect:'follow',signal:AbortSignal.timeout(12000)});
+  if(!r.ok)throw Error(r.status===404?'Chưa có bản nghiên cứu theo chu kỳ đã chọn. Hệ thống xuất bản sau phiên cuối tuần/tháng.':'Không lấy được bản nghiên cứu ('+r.status+').');
   const data=await r.json();
   if(!verified(data))throw Error('Cấu trúc dữ liệu chưa đạt kiểm tra.');
   const date=Date.parse(data.asOf+'T00:00:00Z');
-  if(date>Date.now()+86400000||Date.now()-date>6*86400000)throw Error('Snapshot đã cũ; không hiển thị danh mục.');
+  const limit=state.frequency==='weekly'?12:42;
+  if(date>Date.now()+86400000||Date.now()-date>limit*86400000)throw Error('Snapshot đã cũ; không hiển thị danh mục.');
   state.data=data;state.lastFetched=Date.now();render();
  }catch(error){
   state.data=null;render();
@@ -102,7 +104,7 @@ async function load(force=false){
 root.addEventListener('change',e=>{
  const p=e.target.closest?.('#advisor-profile'),c=e.target.closest?.('#advisor-frequency');
  if(p&&PROFILE.has(p.value)){state.profile=p.value;render();}
- if(c&&['weekly','monthly'].includes(c.value)){state.frequency=c.value;render();}
+ if(c&&['weekly','monthly'].includes(c.value)){state.frequency=c.value;state.data=null;void load(true);}
 });
 root.addEventListener('click',e=>{
  if(e.target.closest?.('#advisor-refresh')){void load(true);return;}
