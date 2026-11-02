@@ -40,11 +40,12 @@ function main(){
  const marketRisk=risk.overall?.score===null||risk.overall?.score===undefined?NaN:Number(risk.overall.score);
  const requiredQuotes=Math.ceil(Math.max(1,Number(quotes.expected)||0)*.90);
  const sourceQuality=quotes.status==='ok'&&risk.status==='ok'&&Number(quotes.coverage)>=requiredQuotes&&Number.isFinite(marketRisk);
- if(!sourceQuality){
+ const eodPassed=result.status==='RESEARCH_ONLY'||result.reason==='NO_DIVERSIFIED_MODEL';
+ if(eodPassed&&!sourceQuality){
   result={...result,status:'BLOCKED',reason:'MARKET_SOURCE_QUALITY',models:{},
    warnings:[...(result.warnings||[]),'Market data quality/coverage/risk status gate failed.']};
  }
- if(sourceQuality&&marketRisk>=85){
+ if(eodPassed&&sourceQuality&&marketRisk>=85){
   result={...result,status:'BLOCKED',reason:'MARKET_STRESS_GATE',models:{},
    warnings:[...(result.warnings||[]),'Risk Monitor threshold >=85/100; new model allocation suppressed.']};
  }
