@@ -336,230 +336,211 @@ input,textarea,select{max-width:100%}
 }
 
 
-/* ============================================================
-   FinQuery Q-Data Design System V2 | 2026-11-02
-   VISUAL ONLY. This layer does not touch routes, application
-   actions, DOM IDs, chart series, trading directions, risk
-   statuses, API, Google sign-in or portfolio calculations.
-   ============================================================ */
+/* ===============================================================
+   FinQuery Q-Data V3 | Coherent light workspace | visual-only.
+   Rationale: the business app is structurally light, so the
+   header, navigation, controls, panels and reports share a
+   light surface with accessible navy text. No functional
+   selectors, chart semantic colors or data logic are changed.
+   =============================================================== */
 :root{
-  --fq-v2-navy:#0A1B3D;--fq-v2-midnight:#07152D;
-  --fq-v2-blue:#245BFF;--fq-v2-blue-hover:#1648D9;
-  --fq-v2-cyan:#22C7EB;--fq-v2-sky:#ECF9FE;
-  --fq-v2-surface:#FFFFFF;--fq-v2-paper:#F3F6FA;
-  --fq-v2-soft:#EEF4FF;--fq-v2-line:#DEE7F3;
-  --fq-v2-ink:#142A49;--fq-v2-muted:#65778F;
-  --fq-v2-focus:#245BFF;
-  --fq-v2-elevation:0 5px 22px rgba(10,27,61,.055);
-  --blue:var(--fq-v2-blue);--ink:var(--fq-v2-ink);
-  --line:var(--fq-v2-line);--muted:var(--fq-v2-muted);
-  color:var(--fq-v2-ink);background:var(--fq-v2-paper);
+  --fq-ui-navy:#0A1B3D;--fq-ui-ink:#182F4F;
+  --fq-ui-blue:#245BFF;--fq-ui-blue-deep:#174ACF;
+  --fq-ui-cyan:#22C7EB;--fq-ui-muted:#536985;
+  --fq-ui-paper:#F3F6FA;--fq-ui-white:#FFFFFF;
+  --fq-ui-soft:#EEF4FF;--fq-ui-line:#DCE5F1;
+  --fq-ui-focus:#245BFF;
+  --fq-ui-shadow:0 4px 22px rgba(10,27,61,.05);
+  --blue:var(--fq-ui-blue);--ink:var(--fq-ui-ink);
+  --line:var(--fq-ui-line);
 }
-body{background:var(--fq-v2-paper);color:var(--fq-v2-ink)}
-main{max-width:1560px}
-h1,.intro h1,.market-top h2,.strategy-builder-head h2,
-.macro-head h2,.portfolio-head h1,.risk-page-head h1{
-  color:var(--fq-v2-navy);letter-spacing:-.035em;
-}
+html{color-scheme:light}
+body{background:var(--fq-ui-paper);color:var(--fq-ui-ink)}
+/* A continuous light product shell prevents dark-on-dark labels. */
 .header{
-  background:linear-gradient(108deg,#07152D 0%,#0A1B3D 72%,#123A68 100%);
-  border-bottom:1px solid rgba(110,186,255,.22);
-  gap:clamp(12px,1.5vw,25px);padding-inline:clamp(12px,2vw,30px);
-  box-shadow:0 7px 24px rgba(8,26,55,.12);
+  background:linear-gradient(180deg,#FFFFFF,#F9FBFF);
+  border-bottom:1px solid #DCE5F1;
+  box-shadow:0 3px 16px rgba(10,27,61,.055);
+  gap:clamp(12px,1.5vw,25px);
+  padding-inline:clamp(12px,2vw,30px);
+  position:relative;
 }
-.header .finquery-brand{gap:10px!important;flex-shrink:0}
+.header:before{
+  content:"";height:3px;position:absolute;inset:0 0 auto;
+  background:linear-gradient(90deg,#245BFF 0%,#22C7EB 74%,#E0F9FF 100%);
+  pointer-events:none;
+}
+.header .finquery-brand{
+  gap:10px!important;flex-shrink:0;
+  color:var(--fq-ui-navy);
+}
 .header .finquery-logo svg.fq-rebrand-mark{
-  width:43px;height:43px;filter:drop-shadow(0 2px 7px rgba(36,91,255,.16));
+  display:block;width:42px;height:42px;
+  filter:none;
 }
 .header .finquery-brand .brand-copy strong{
-  color:#fff;font-weight:800;font-size:21px;letter-spacing:-.055em;
+  color:var(--fq-ui-navy);font-size:20px;
+  font-weight:800;letter-spacing:-.05em;
 }
 .header .finquery-brand .brand-copy small{display:none}
 .header nav[aria-label="Điều hướng nền tảng"]{
-  gap:clamp(5px,.75vw,13px);align-items:center;
-  color:#C5D7F0;font-size:12px;
+  display:flex;align-items:center;gap:clamp(5px,.7vw,12px);
 }
 .header nav[aria-label="Điều hướng nền tảng"] a{
-  color:#C8D7EC;border-radius:8px;padding:9px 5px;
-  font-weight:630;transition:color .18s ease,background-color .18s ease;
+  color:#344F72;
+  background:transparent;
+  border-radius:8px;padding:9px 6px;
+  font-weight:650;font-size:12px;line-height:1.3;
+  box-shadow:none;
+  transition:color .14s ease,background-color .14s ease;
 }
 .header nav[aria-label="Điều hướng nền tảng"] a:hover,
-.header nav[aria-label="Điều hướng nền tảng"] a:focus-visible,
+.header nav[aria-label="Điều hướng nền tảng"] a:focus-visible{
+  color:#1548C9;background:var(--fq-ui-soft);
+  box-shadow:none;
+}
 .header nav[aria-label="Điều hướng nền tảng"] a.active{
-  color:#fff;background:rgba(44,151,240,.15);
-  box-shadow:inset 0 -2px 0 var(--fq-v2-cyan);
+  color:#1548C9;background:var(--fq-ui-soft);
+  box-shadow:inset 0 -2px 0 var(--fq-ui-blue);
 }
-.header .header-label{
-  color:#E9F4FF;background:rgba(255,255,255,.055);
-  border-color:rgba(153,201,252,.24);font-size:11px;
+.header-label{
+  background:#F1F5FC;border-color:var(--fq-ui-line);
+  color:#385171;font-weight:650;
 }
-.header .header-label span{
-  border-left-color:rgba(153,201,252,.22);color:#B2C9E6;
+.header-label span{color:#4E6686;border-left-color:#D4DFEF}
+#finquery-nav-toggle{
+  background:var(--fq-ui-white);border-color:#C8D6E8;
+  color:var(--fq-ui-navy);box-shadow:none;
 }
-.header .risk-nav-badge{outline-color:#0A1B3D}
-#finquery-nav-toggle{background:#183962;border-color:rgba(153,201,252,.36);color:#fff}
-#finquery-nav-toggle:focus-visible{outline:2px solid #93DEFF;outline-offset:2px}
-.intro{padding:5px 0 3px}
-.intro h1{font-weight:750}
-.finquery-google-greeting{color:var(--fq-v2-ink)!important}
-.finquery-google-avatar{background:linear-gradient(135deg,#245BFF,#22C7EB)}
-#site-unlock-form .site-access-row button{
-  background:var(--fq-v2-blue);border-color:var(--fq-v2-blue);color:#fff;
+#finquery-nav-toggle:focus-visible{outline:2px solid var(--fq-ui-focus);outline-offset:2px}
+.intro h1,.market-top h2,.strategy-builder-head h2,
+.macro-head h2,.portfolio-head h1,.risk-page-head h1{
+  color:var(--fq-ui-navy);letter-spacing:-.03em;
 }
-#site-unlock-form .site-access-row button:hover{background:var(--fq-v2-blue-hover)}
-.configuration,.preview,#market,.market-section,.strategy-builder-section,
-.macro-section,.portfolio-page,.risk-monitor-page{
-  border-color:var(--fq-v2-line);border-radius:16px;
-  box-shadow:var(--fq-v2-elevation);
+.intro p,.market-subtitle,.strategy-builder-head p,
+.macro-head p,.portfolio-head p,.risk-page-head p{
+  color:var(--fq-ui-muted);
 }
-.configuration,.preview,#market,.market-section,.strategy-builder-section,
-.macro-section,.portfolio-page,.risk-monitor-page{
-  background-color:var(--fq-v2-surface);
+.finquery-google-greeting{color:var(--fq-ui-navy)}
+/* Preserve existing module grids, overflow, chart canvases and nav state. */
+.configuration,.preview,#market,.market-section,
+.strategy-builder-section,.macro-section,.portfolio-page,
+.risk-monitor-page{
+  border-color:var(--fq-ui-line);
+  border-radius:16px;
+  background-color:var(--fq-ui-white);
+  box-shadow:var(--fq-ui-shadow);
 }
-.config-section,.portfolio-head,.risk-page-head{
-  border-bottom-color:var(--fq-v2-line);
+.preview,.configuration{color:var(--fq-ui-ink)}
+.kpi-card,.chart-panel,.risk-summary-card,.risk-panel,
+.portfolio-card,.sai-panel,.macro-viz-card{
+  background-color:var(--fq-ui-white);
+  border-color:var(--fq-ui-line);
+  border-radius:12px;
 }
-.config-section h2,.section-heading h3,.chart-heading h3,
-.market-asset-head h3,.risk-panel h3{color:var(--fq-v2-ink);font-weight:750}
-.kpi-card,.chart-panel,.risk-summary-card,.risk-panel,.portfolio-card,
-.sai-panel,.macro-viz-card,.research-case{
-  border-color:var(--fq-v2-line);
-  border-radius:13px;background-color:var(--fq-v2-surface);
-}
-.kpi-card:first-child{background:var(--fq-v2-soft);border-color:#D2E1FF}
-.kpi-value,.portfolio-kpi strong,.preview-heading h2{color:var(--fq-v2-navy)}
-.kpi-label,.portfolio-kicker,.portfolio-head p,.market-subtitle,
-.macro-head p,.strategy-builder-head p{color:var(--fq-v2-muted)}
-.primary,
-.market-section button.primary,.configuration button.primary{
-  background:var(--fq-v2-blue);border-color:var(--fq-v2-blue);
-  color:#fff;box-shadow:0 5px 15px rgba(36,91,255,.16);
+.kpi-card:first-child{background:var(--fq-ui-soft);border-color:#C9DDFC}
+.kpi-value,.portfolio-kpi strong,.preview-heading h2,
+.risk-summary-card>span{color:var(--fq-ui-navy)}
+.config-section h2,.chart-heading h3,.risk-panel h3,
+.market-asset-head h3{color:var(--fq-ui-ink)}
+.kpi-label,.portfolio-head p,.risk-panel-sub,
+.strategy-builder-head p{color:var(--fq-ui-muted)}
+/* Unified actions; never recolor profit/loss or risk-status indicators. */
+.primary,.market-section button.primary,.configuration button.primary{
+  background:var(--fq-ui-blue);color:#FFFFFF;
+  border-color:var(--fq-ui-blue);
+  box-shadow:0 4px 13px rgba(36,91,255,.13);
 }
 .primary:hover:not(:disabled),
 .market-section button.primary:hover:not(:disabled){
-  background:var(--fq-v2-blue-hover);border-color:var(--fq-v2-blue-hover);
+  background:var(--fq-ui-blue-deep);
+  border-color:var(--fq-ui-blue-deep);
 }
-.search-line:focus-within{border-color:var(--fq-v2-blue);outline-color:#DCE7FF}
-.search-button,.quick-tickers button.active{color:var(--fq-v2-blue)}
-.quick-tickers button.active{border-color:#B7CBFF;background:var(--fq-v2-soft)}
-.year-option input:checked+span,
-.period-switch input:checked+span{color:var(--fq-v2-blue)}
-.year-option input:checked+span{background:var(--fq-v2-soft);border-color:#AFC8FF}
-#report-tabs button.active,.report-tabs button.active{color:var(--fq-v2-blue)}
-.market-top,.market-asset-head,.portfolio-head,.risk-page-head{
-  border-color:var(--fq-v2-line);
+#site-unlock-form .site-access-row button{
+  background:var(--fq-ui-blue);border-color:var(--fq-ui-blue);color:#fff;
 }
+#site-unlock-form .site-access-row button:hover{background:var(--fq-ui-blue-deep)}
+.finquery-workspace-tabs button,
+.market-section .market-controls button,
+.portfolio-tabs button{
+  border-radius:9px;
+}
+.finquery-workspace-tabs button{
+  background:#F4F7FD;border-color:var(--fq-ui-line);color:#3C5476;
+}
+.finquery-workspace-tabs button:hover{
+  background:var(--fq-ui-soft);color:#174ACF;border-color:#ADC8FF;
+}
+.finquery-workspace-tabs button.active,
+#market .finquery-workspace-tabs button.active,
+#macro .finquery-workspace-tabs button.active{
+  color:#FFFFFF;background:var(--fq-ui-blue);
+  border-color:var(--fq-ui-blue);
+  box-shadow:0 3px 11px rgba(36,91,255,.16);
+}
+.portfolio-head,.risk-page-head{
+  background:linear-gradient(180deg,#FFFFFF,#F7FAFF);
+  border-bottom-color:var(--fq-ui-line);
+}
+.portfolio-head h1,.risk-page-head h1{color:var(--fq-ui-navy)}
+.portfolio-kicker,.risk-page-kicker{color:#174ACF}
+.portfolio-tabs button.active{
+  color:#1643B8;background:var(--fq-ui-soft);
+}
+.portfolio-tabs button.active:after{background:var(--fq-ui-blue)}
+.strategy-builder-section{
+  background:linear-gradient(180deg,#FFFFFF,#FBFCFF);
+}
+.macro-section,.risk-monitor-page,.portfolio-page{color:var(--fq-ui-ink)}
+.forecast-card{
+  border-color:#CEDFFD;
+  background:linear-gradient(110deg,#EDF4FF,#FBFCFF);
+}
+.forecast-card a{color:#1648C8}
+.research-ai.ai-drawer{
+  border-color:var(--fq-ui-line)!important;
+  box-shadow:0 22px 60px rgba(10,27,61,.16)!important;
+  background:#fff!important;
+  color:var(--fq-ui-ink);
+}
+/* Assistant heading remains light to match its navy gradient. */
+.research-ai .research-ai-head{
+  background:linear-gradient(105deg,#0A1B3D,#1B4372);
+}
+.research-ai .research-ai-head h3,
+.research-ai .research-ai-head .research-ai-label{color:#FFFFFF}
 .market-section input:focus-visible,.market-section select:focus-visible,
 .configuration input:focus-visible,.configuration select:focus-visible,
 .portfolio-page input:focus-visible,.portfolio-page select:focus-visible,
-.strategy-builder-section input:focus-visible,.strategy-builder-section select:focus-visible{
-  outline:2px solid var(--fq-v2-focus);outline-offset:2px;
-}
-.finquery-workspace-tabs button{
-  background:#F4F7FC;border-color:var(--fq-v2-line);
-  color:#526985;border-radius:10px;
-}
-.finquery-workspace-tabs button:hover{
-  background:var(--fq-v2-soft);border-color:#B8CCF9;color:#1746A8;
-}
-#market .finquery-workspace-tabs button.active,
-.finquery-workspace-tabs button.active{
-  background:var(--fq-v2-blue);border-color:var(--fq-v2-blue);
-  color:#fff;box-shadow:0 4px 13px rgba(36,91,255,.16);
-}
-#macro .finquery-workspace-tabs button.active{
-  background:var(--fq-v2-soft);border-color:#B7CBF9;
-  color:#163EA1;box-shadow:none;
-}
-.market-section .market-toolbar input,.market-section .market-controls select,
-.market-section .market-controls input[type=search]{
-  border-color:var(--fq-v2-line);border-radius:9px;
-}
-.market-section .market-toolbar button:not(.price-up):not(.price-down){
-  border-radius:9px;
-}
-.forecast-card{
-  border-color:#D1E1FF;
-  background:linear-gradient(118deg,#EDF4FF,#F7FCFF);
-}
-.forecast-card a{
-  color:var(--fq-v2-blue);font-weight:750;
-}
-.strategy-builder-section{
-  background:linear-gradient(180deg,#fff,#F9FBFE);
-}
-.strategy-builder-head,.sai-section-title,.strategy-panel-title{
-  color:var(--fq-v2-ink);
-}
-.strategy-builder-section .sai-panel,
-.strategy-builder-section .strategy-workbench,
-.strategy-builder-section .strategy-library-panel{
-  border-color:var(--fq-v2-line);
-}
-.strategy-builder-section .strategy-indicator-chip{
-  border-radius:9px;
-}
-.portfolio-head,.risk-page-head{
-  background:linear-gradient(115deg,#FFFFFF 0%,#F2F7FF 100%);
-}
-.portfolio-head h1,.risk-page-head h1{color:var(--fq-v2-navy)}
-.portfolio-kicker,.risk-page-kicker{color:var(--fq-v2-blue)}
-.portfolio-tabs button.active{
-  color:#1745B9;background:var(--fq-v2-soft);
-}
-.portfolio-tabs button.active:after{background:var(--fq-v2-blue)}
+.strategy-builder-section input:focus-visible,
+.strategy-builder-section select:focus-visible,
 .portfolio-page button:focus-visible,.risk-monitor-page button:focus-visible{
-  outline:2px solid var(--fq-v2-focus);outline-offset:2px;
+  outline:2px solid var(--fq-ui-focus);outline-offset:2px;
 }
-.risk-summary-card,.risk-panel,.portfolio-card{box-shadow:0 2px 13px rgba(10,27,61,.025)}
-.risk-page-tools button{border-color:var(--fq-v2-line);color:var(--fq-v2-ink)}
-.risk-page-tools button:hover{background:var(--fq-v2-soft)}
-#macro .macro-viz-card{border-color:var(--fq-v2-line)}
-.macro-section{background:var(--fq-v2-surface)}
-.macro-head h2,.macro-dashboard-head h3{color:var(--fq-v2-navy)}
-.macro-section .finquery-workspace-tabs{scrollbar-color:#BDD0E8 transparent}
-.research-ai.ai-drawer{
-  border-color:var(--fq-v2-line)!important;
-  box-shadow:0 25px 80px rgba(10,27,61,.22)!important;
-}
-.research-ai .research-ai-head{
-  background:linear-gradient(105deg,#0A1B3D,#173C6B);
-}
-.research-ai .research-ai-head h3,
-.research-ai .research-ai-head .research-ai-label{color:#fff}
-#chart-terminal,.chart-panel,#price-chart{outline-color:var(--fq-v2-blue)}
-#chart-terminal .chart-advanced-controls>summary:focus-visible{
-  outline-color:var(--fq-v2-blue);
-}
-.bottom-line{color:#7888A0;border-top-color:var(--fq-v2-line)}
-/* Contrast: cyan is decorative, never text on white (2.01:1).
-   Keep original semantic up/down colors, charts, heatmaps and risk alerts. */
+.bottom-line{color:#526782;border-top-color:var(--fq-ui-line)}
 @media(max-width:1050px){
- .header{gap:10px 16px}
- .header nav[aria-label="Điều hướng nền tảng"]{gap:8px}
- .header nav[aria-label="Điều hướng nền tảng"] a{padding:8px 7px}
+  .header{gap:8px 15px}
 }
 @media(max-width:850px){
- .header{padding:9px 12px;box-shadow:0 4px 16px rgba(8,26,55,.12)}
- .header .finquery-brand .brand-copy strong{font-size:17px}
- .header .finquery-logo svg.fq-rebrand-mark{width:36px;height:36px}
- .header nav[aria-label="Điều hướng nền tảng"]{
-   border-top-color:rgba(146,195,250,.23);background:transparent;
- }
- .header nav[aria-label="Điều hướng nền tảng"] a{
-   color:#D9EAFF;background:rgba(255,255,255,.075);
-   border:1px solid rgba(150,190,235,.1);
- }
- .header nav[aria-label="Điều hướng nền tảng"] a.active,
- .header nav[aria-label="Điều hướng nền tảng"] a:hover{
-   color:#fff;background:rgba(36,91,255,.40);border-color:rgba(146,212,255,.35);
- }
- .configuration,.preview,#market,.strategy-builder-section,
- .macro-section,.portfolio-page,.risk-monitor-page{border-radius:12px}
+  .header{padding:9px 12px}
+  .header .finquery-logo svg.fq-rebrand-mark{width:36px;height:36px}
+  .header .finquery-brand .brand-copy strong{font-size:17px}
+  .header nav[aria-label="Điều hướng nền tảng"]{
+    background:transparent;border-top-color:var(--fq-ui-line);
+  }
+  .header nav[aria-label="Điều hướng nền tảng"] a{
+    color:#26466E;background:#F2F6FC;border:1px solid #E0E8F3;
+    min-height:44px;padding:10px 9px;
+  }
+  .header nav[aria-label="Điều hướng nền tảng"] a:hover,
+  .header nav[aria-label="Điều hướng nền tảng"] a.active{
+    color:#1548C9;background:#E9F1FF;border-color:#C3D7FF;
+    box-shadow:inset 0 -2px 0 var(--fq-ui-blue);
+  }
 }
 @media(max-width:390px){
- .header .finquery-brand .brand-copy strong{font-size:16px}
+  .header .finquery-brand .brand-copy strong{font-size:16px}
 }
 @media(prefers-reduced-motion:reduce){
- .header nav[aria-label="Điều hướng nền tảng"] a{transition:none}
+  .header nav[aria-label="Điều hướng nền tảng"] a{transition:none}
 }
