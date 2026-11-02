@@ -14,10 +14,11 @@ const ERRORS={SESSION_NOT_CLOSED:'Dữ liệu phiên chưa đóng. Hệ thống 
  SOURCE_DATE_MISMATCH:'Ngày dữ liệu giá và rủi ro chưa đồng bộ.',
  INSUFFICIENT_COMPLETE_HISTORY:'Không đủ mã có lịch sử giá đầy đủ.',
  MARKET_STRESS_GATE:'Rủi ro thị trường đang cao. Chưa tạo đề xuất phân bổ cổ phiếu mới.',
+ MARKET_SOURCE_QUALITY:'Dữ liệu thị trường chưa đủ độ phủ hoặc trạng thái rủi ro chưa hợp lệ.',
  NO_DIVERSIFIED_MODEL:'Chưa đủ tín hiệu hợp lệ để xây danh mục đa dạng.'};
 const fmt=n=>Number.isFinite(Number(n))?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:1}).format(Number(n)):'—';
 const money=n=>Number.isFinite(Number(n))?new Intl.NumberFormat('vi-VN',{maximumFractionDigits:0}).format(Number(n))+' đ':'—';
-const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&quot;',"'":'&#39;'}[c]));
+const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;' ,'"':'&quot;',"'":'&#39;'}[c]));
 const state={data:null,profile:'balanced',frequency:'weekly',lastFetched:0,busy:false};
 const status=(message)=>{$('advisor-status').textContent=message;};
 const iso=string=>Number.isFinite(Date.parse(string||''))?new Date(string).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',dateStyle:'short',timeStyle:'short'}):'—';
