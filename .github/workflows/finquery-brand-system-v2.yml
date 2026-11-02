@@ -1,0 +1,66 @@
+name: FinQuery Q-Data V2 visual-only release gate
+
+on:
+  pull_request:
+    paths:
+      - 'financial-report/frontend/index.html'
+      - 'financial-report/frontend/responsive-system.css'
+      - 'forecast-final.html'
+      - 'forecast-portfolio-v14.css'
+      - 'financial-report/data-hub.html'
+      - 'finquery-access/login.html'
+      - 'finquery-access/admin.html'
+      - 'financial-report/tests/brand_system_v2.test.cjs'
+      - '.github/workflows/finquery-brand-system-v2.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'financial-report/frontend/**'
+      - 'forecast-final.html'
+      - 'forecast-portfolio-v14.css'
+      - 'financial-report/data-hub.html'
+      - 'finquery-access/login.html'
+      - 'finquery-access/admin.html'
+      - 'financial-report/tests/brand_system_v2.test.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  brand-v2-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: PR scope guard - reject non-visual files
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r changed; do
+            case "$changed" in
+              financial-report/frontend/index.html|financial-report/frontend/responsive-system.css|forecast-final.html|forecast-portfolio-v14.css|financial-report/data-hub.html|finquery-access/login.html|finquery-access/admin.html|financial-report/tests/brand_system_v2.test.cjs|financial-report/docs/FINQUERY_BRAND_V2_RELEASE.md|.github/workflows/finquery-brand-system-v2.yml)
+                echo "Allowed brand-only file: $changed" ;;
+              *)
+                echo "::error::Out-of-scope modification: $changed"
+                exit 1 ;;
+            esac
+          done < <(git diff --name-only "$BASE_SHA" HEAD)
+      - name: Q-Data identity, accessibility, route and semantic guards
+        run: node --test financial-report/tests/brand_system_v2.test.cjs
+      - name: Existing responsive, workspace and portfolio contracts
+        run: |
+          node --test financial-report/tests/responsive_system.test.cjs
+          node --test financial-report/tests/workspace_tabs.test.cjs
+          node --test financial-report/tests/portfolio_ux_handoff.test.cjs
+      - name: Forecast navigation contract
+        run: node scripts/forecast-navigation-test.cjs
