@@ -59,6 +59,17 @@ function main(){
  result.updatedOn='AFTER_VALIDATED_EOD';
  const target=path.join(dir,'portfolio-advisor.json');
  fs.writeFileSync(target,JSON.stringify(result,null,2)+'\n');
+ // Separate cadence snapshots prevent a "monthly" choice from silently changing daily.
+ // VN holiday handling is conservative: publish on Friday / last weekday only,
+ // never synthesize a trading session for a holiday.
+ const session=new Date(asOf+'T12:00:00Z'),dow=session.getUTCDay();
+ const next=new Date(session);next.setUTCDate(next.getUTCDate()+1);
+ while([0,6].includes(next.getUTCDay()))next.setUTCDate(next.getUTCDate()+1);
+ const complete=Number.isFinite(session.getTime())&&date===asOf&&
+  Core.vnDate(now).hour>=16&&!['SESSION_NOT_CLOSED','SOURCE_DATE_MISMATCH','STALE_EOD','MARKET_SOURCE_QUALITY','INSUFFICIENT_COMPLETE_HISTORY'].includes(result.reason);
+ if(complete&&dow===5)fs.writeFileSync(path.join(dir,'portfolio-advisor-weekly.json'),JSON.stringify(result,null,2)+'\n');
+ if(complete&&next.toISOString().slice(0,7)!==asOf.slice(0,7))
+  fs.writeFileSync(path.join(dir,'portfolio-advisor-monthly.json'),JSON.stringify(result,null,2)+'\n');
  const audit=path.join(dir,'portfolio-advisor-audit');
  fs.mkdirSync(audit,{recursive:true});
  fs.writeFileSync(path.join(audit,asOf+'.json'),JSON.stringify(result,null,2)+'\n');
