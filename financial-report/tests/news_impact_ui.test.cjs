@@ -54,6 +54,7 @@ assert.match(html,/data-news-tab="all"[^>]*>Mới nhất/);
 assert.match(html,/data-news-tab="impact"[^>]*>Tin đáng chú ý/);
 assert.match(html,/id="news-list"/);
 assert.doesNotMatch(css,/\.news-impact-reviewed-panel/);
+assert.match(css,/@media\(max-width:850px\)/);
 assert.match(bundleScript,/news-impact-reviewed\.js/);
 
 assert.doesNotMatch(js,/Phản ứng giá:/);
