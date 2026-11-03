@@ -103,6 +103,18 @@ class ShadowResearchTests(unittest.TestCase):
         self.assertTrue(all(group["group"][0] in ("EVENT", "TICKER")
                             for group in report["groups"]))
 
+    def test_statistical_association_with_pretrend_is_explicitly_flagged(self):
+        rows = [make_record(i) for i in range(110)]
+        for r in rows:
+            r["preAbnormalReturn"]["2"] = .020
+        report = m.run(package(rows), SECTOR)
+        self.assertGreaterEqual(report["oosAssociationGroups"], 1)
+        self.assertEqual(report["pretrendFlaggedOOSGroups"],
+                         report["oosAssociationGroups"])
+        self.assertEqual(report["oosGroupsWithoutLargePretrend"], 0)
+        self.assertTrue(all(g["liveNotificationEligible"] is False
+                            for g in report["groups"]))
+
     def test_cluster_p_and_fdr_deterministic(self):
         values = [0.011, 0.010, .009, .012] * 7
         one = m.cluster_test(values, 23, 399)
