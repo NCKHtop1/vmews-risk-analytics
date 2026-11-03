@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "asOf": "2026-10-29",
   "publishedAt": "2026-10-23T18:18:00+07:00",
-  "lastCheckedAt": "2026-11-02T20:27:02+00:00",
+  "lastCheckedAt": "2026-11-03T17:56:53+00:00",
   "mode": "SOURCE_REFERENCE",
   "title": "Interbank VND & HNX futures; VBMA FX swap curve if verified",
   "disclaimer": "Public observation archive, no investment signals, no invented observations.",
@@ -134,36 +134,36 @@
     "instrument": "USD/VND FX Swap",
     "measurement": "FX Swap implied yield curve",
     "unit": "%/năm",
-    "asOf": "2026-11-02",
+    "asOf": "2026-11-03",
     "status": "verified",
     "points": [
       {
         "tenor": "SPOT",
-        "value": 1.067
+        "value": 0.533
       },
       {
         "tenor": "ON",
-        "value": 1.117
+        "value": 0.53
       },
       {
         "tenor": "1W",
-        "value": 0.95
+        "value": 0.543
       },
       {
         "tenor": "2W",
-        "value": 1.0
+        "value": 0.67
       },
       {
         "tenor": "3W",
-        "value": 1.147
+        "value": 0.853
       },
       {
         "tenor": "1M",
-        "value": 1.269
+        "value": 1.064
       },
       {
         "tenor": "2M",
-        "value": 2.2
+        "value": 2.15
       },
       {
         "tenor": "3M",
@@ -171,15 +171,15 @@
       },
       {
         "tenor": "6M",
-        "value": 2.6
+        "value": 2.605
       },
       {
         "tenor": "9M",
-        "value": 2.673
+        "value": 2.666
       },
       {
         "tenor": "1Y",
-        "value": 2.672
+        "value": 2.665
       }
     ],
     "licenseStatus": "source_attributed",
@@ -197,7 +197,7 @@
   "vbmaCurves": {
     "swap": {
       "status": "verified",
-      "asOf": "2026-11-02",
+      "asOf": "2026-11-03",
       "unit": "%/năm",
       "measurement": "FX Swap implied yield curve",
       "dateLayout": "MM/DD/YYYY",
@@ -205,31 +205,31 @@
       "points": [
         {
           "tenor": "SPOT",
-          "value": 1.067
+          "value": 0.533
         },
         {
           "tenor": "ON",
-          "value": 1.117
+          "value": 0.53
         },
         {
           "tenor": "1W",
-          "value": 0.95
+          "value": 0.543
         },
         {
           "tenor": "2W",
-          "value": 1.0
+          "value": 0.67
         },
         {
           "tenor": "3W",
-          "value": 1.147
+          "value": 0.853
         },
         {
           "tenor": "1M",
-          "value": 1.269
+          "value": 1.064
         },
         {
           "tenor": "2M",
-          "value": 2.2
+          "value": 2.15
         },
         {
           "tenor": "3M",
@@ -237,15 +237,15 @@
         },
         {
           "tenor": "6M",
-          "value": 2.6
+          "value": 2.605
         },
         {
           "tenor": "9M",
-          "value": 2.673
+          "value": 2.666
         },
         {
           "tenor": "1Y",
-          "value": 2.672
+          "value": 2.665
         }
       ],
       "source": "https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv",
@@ -261,7 +261,7 @@
     },
     "gov_bond": {
       "status": "verified",
-      "asOf": "2026-11-02",
+      "asOf": "2026-11-03",
       "unit": "%/năm",
       "measurement": "Government Bond Yield",
       "dateLayout": "MM/DD/YYYY",
@@ -289,11 +289,11 @@
         },
         {
           "tenor": "7Y",
-          "value": 4.337
+          "value": 4.339
         },
         {
           "tenor": "10Y",
-          "value": 4.465
+          "value": 4.467
         },
         {
           "tenor": "15Y",
