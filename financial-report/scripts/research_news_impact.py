@@ -188,6 +188,8 @@ def ingest_news(path, histories):
         last_event[cooldown_key] = e["index"]
         accepted.append(e)
     counters["independent_proxy_events"] = len(accepted)
+    counters["archive_news_rows_total"] = counters["all_news_rows"] + counters["no_price_symbol_articles"]
+    counters["proxy_year_distribution"] = {str(y): sum(e["day"].startswith(str(y)) for e in accepted) for y in range(2019, 2027)}
     return accepted, counters
 
 
@@ -312,11 +314,28 @@ def archive_info(path):
         return {"available": False}
     try:
         o = json.loads(path.read_text(encoding="utf-8"))
+        rows = o.get("records")
+        if isinstance(rows, dict):
+            example = next(iter(rows.values()), {})
+            record_count = len(rows)
+        elif isinstance(rows, list):
+            example = rows[0] if rows else {}
+            record_count = len(rows)
+        else:
+            example = {}
+            record_count = 0
+        pit = o.get("pointInTimePolicy") or o.get("pointInTime") or {}
+        sector_pit = o.get("sectorPITStatus") or {}
         return {
             "available": True, "bytes": path.stat().st_size,
             "version": o.get("version"), "generatedAt": o.get("generatedAt"),
             "events": o.get("events"), "topLevelKeys": sorted(list(o))[:25],
-            "warning": o.get("warning") or o.get("pointInTime") or "",
+            "historicalRecordCount": record_count,
+            "recordSchema": sorted(example)[:30] if isinstance(example, dict) else [],
+            "pointInTimePolicy": str(pit)[:1200],
+            "sectorPITStatus": str(sector_pit)[:1200],
+            "summaryKeys": sorted((o.get("summary") or {}).keys())[:25] if isinstance(o.get("summary"), dict) else [],
+            "warning": o.get("warning") or "",
         }
     except (OSError, ValueError, TypeError):
         return {"available": True, "unreadable": True}
