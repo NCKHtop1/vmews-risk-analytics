@@ -8,7 +8,7 @@ const pipeline=fs.readFileSync(path.join(root,'scripts/refresh_market.py'),'utf8
 const news=fs.readFileSync(path.join(root,'scripts/news_intelligence.py'),'utf8');
 assert.doesNotMatch(js,/function exposureExplanation\(r\)/);
 assert.doesNotMatch(js,/\+exposureExplanation\(r\)/);
-assert.match(html,/Tiêu chí kiểm chứng/);
+assert.doesNotMatch(html,/Tiêu chí kiểm chứng/);
 assert.match(html,/data-news-tab="impact"[^>]*>Tin đáng chú ý/);
 assert.match(pipeline,/nit\.attach_collector_receipts\(rows, retained, current\)/);
 assert.match(pipeline,/nit\.exposure_hypothesis\(row\)/);
@@ -35,7 +35,7 @@ const dummyShadow={
 const clock=Date.parse('2026-11-03T10:00:00Z');
 assert.equal(reviewModule.inspectShadow(dummyShadow,clock).classifiedEventStories,60);
 assert.equal(reviewModule.inspectShadow({...dummyShadow,counts:{...dummyShadow.counts,prospectiveLedgerRecords:17}},clock).prospectiveLedgerRecords,17);
-assert.match(js,/Sổ nghiên cứu tiến cứu/);
+assert.doesNotMatch(js,/Sổ nghiên cứu tiến cứu/);
 assert.equal(reviewModule.inspectShadow({...dummyShadow,counts:{...dummyShadow.counts,eligibleNotifications:1}},clock),null);
 assert.equal(reviewModule.inspectShadow({...dummyShadow,publicationPolicy:{...dummyShadow.publicationPolicy,killSwitch:'OPEN'}},clock),null);
 assert.equal(reviewModule.inspectShadow({...dummyShadow,checkedAt:'2026-11-03T06:00:00Z'},clock),null);
@@ -43,18 +43,21 @@ assert.deepEqual(reviewModule.reviewedImpacts(),[]);
 assert.equal(reviewModule.inspectRelease({...manifest,status:'PRODUCTION_APPROVED'}),null);
 assert.equal(reviewModule.inspectRelease({...manifest,notificationsEnabled:true}),null);
 assert.equal(reviewModule.inspectRelease({...manifest,verifiedImpacts:[{symbol:'FPT',status:'CONFIRMED'}]}),null);
+assert.match(js,/storedNewsMode==='verified'\?'all'/);
 assert.match(js,/state\.newsMode==='verified'/);
-assert.match(js,/Chưa có sự kiện đạt chuẩn tác động/);
+assert.doesNotMatch(js,/Chưa có sự kiện đạt chuẩn tác động|0 tác động đạt chuẩn|Sổ nghiên cứu tiến cứu/);
 assert.doesNotMatch(js,/new Notification\('FinQuery · Tin mới Watchlist'/);
 assert.match(js,/function newsAlertsEnabled\(\)\{return false;/);
-assert.match(html,/data-news-tab="verified"/);
-assert.match(html,/id="news-impact-reviewed-panel"/);
-assert.match(html,/id="news-alert-toggle"[^>]*disabled hidden/);
-assert.match(css,/\.news-impact-reviewed-panel/);
-assert.match(css,/@media\(max-width:760px\)/);
+assert.doesNotMatch(html,/data-news-tab="verified"|value="verified"|id="news-impact-reviewed-panel"|id="news-impact-summary"|id="news-alert-toggle"/);
+assert.doesNotMatch(html,/BẰNG CHỨNG THỰC CHỨNG|Tiêu chí kiểm chứng|Sổ nghiên cứu tiến cứu/);
+assert.match(html,/data-news-tab="all"[^>]*>Mới nhất/);
+assert.match(html,/data-news-tab="impact"[^>]*>Tin đáng chú ý/);
+assert.match(html,/id="news-list"/);
+assert.doesNotMatch(css,/\.news-impact-reviewed-panel/);
 assert.match(bundleScript,/news-impact-reviewed\.js/);
 
 assert.doesNotMatch(js,/Phản ứng giá:/);
-assert.match(js,/ƯU TIÊN TIN/);
+assert.doesNotMatch(js,/ƯU TIÊN TIN/);
 
-assert.match(js,/0 tác động đạt chuẩn/);
+assert.doesNotMatch(js,/0 tác động đạt chuẩn/);
+assert.doesNotMatch(js,/reviewed\?\.status==='RESEARCH_ONLY'/);
