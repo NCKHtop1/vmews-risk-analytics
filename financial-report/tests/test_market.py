@@ -1343,7 +1343,7 @@ class MarketTests(unittest.TestCase):
         self.assertNotIn('forecast-session-v21.json?heartbeat=',session)
         self.assertNotIn('gh workflow run forecast-v21-session-refresh.yml --repo "$GH_REPO" --ref main',session)
         self.assertIn("cron: '7,22,37,52 * * * *'",news)
-        self.assertIn('group: market-news-live',news)
+        self.assertIn('group: market-news-hybrid-v2',news)
         self.assertIn('cancel-in-progress: false',news)
         self.assertIn('restore --worktree market/drivers.json',news)
         self.assertIn('add --sparse market/news.json market/news-latest.json',news)
