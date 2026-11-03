@@ -331,7 +331,18 @@ def archive_info(path):
             "version": o.get("version"), "generatedAt": o.get("generatedAt"),
             "events": o.get("events"), "topLevelKeys": sorted(list(o))[:25],
             "historicalRecordCount": record_count,
-            "recordSchema": sorted(example)[:30] if isinstance(example, dict) else [],
+            "recordSchema": sorted(example) if isinstance(example, dict) else [],
+            "sampleRecordTypes": {k: type(v).__name__ for k, v in example.items()} if isinstance(example, dict) else {},
+            "sampleValueShapes": {k: (sorted(v)[:12] if isinstance(v, dict) else
+                                       len(v) if isinstance(v, list) else
+                                       str(v)[:120]) for k, v in example.items()
+                                  if k in ("eventType", "label", "availableDate", "sector",
+                                           "abnormalReturn", "cumulativeAbnormalReturn",
+                                           "benchmark", "matureDate", "publishedAt",
+                                           "sourceClass", "sentiment", "firstSeenAt")} if isinstance(example, dict) else {},
+            "summaryMetrics": {k: v for k, v in (o.get("summary") or {}).items()
+                               if isinstance(v, (int, float, str, bool))}
+                              if isinstance(o.get("summary"), dict) else {},
             "pointInTimePolicy": str(pit)[:1200],
             "sectorPITStatus": str(sector_pit)[:1200],
             "summaryKeys": sorted((o.get("summary") or {}).keys())[:25] if isinstance(o.get("summary"), dict) else [],
