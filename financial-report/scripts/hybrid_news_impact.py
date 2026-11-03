@@ -220,7 +220,13 @@ def analyze_snapshot(items, companies, finance_dir, registry_path, collected_at)
         if not receipt or receipt > observed:
             early += 1
             receipt = None
-        matched = _mechanism_facts(family, row, valid_facts)
+        # Re-check each disclosure at the news collector's actual receipt time:
+        # a valid fact today may have been unpublished when the story arrived.
+        facts_at_event = ([x for f in facts if (x := source_fact_asof(f, receipt, known))]
+                          if receipt else [])
+        if invalid_facts:
+            facts_at_event = []
+        matched = _mechanism_facts(family, row, facts_at_event)
         # Only a direct issuer mention can become a firm-specific research
         # candidate; macro mechanism alone never creates ticker exposure.
         firm_facts = [f for f in matched if f["issuerSymbol"] in mention]

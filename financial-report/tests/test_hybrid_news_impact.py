@@ -76,6 +76,21 @@ class HybridEngineTests(unittest.TestCase):
         self.assertEqual(out["counts"]["verifiedImpactRelations"],0)
         self.assertEqual(out["counts"]["eligibleNotifications"],0)
 
+    def test_disclosure_not_public_when_news_first_seen_is_rejected(self):
+        event=[{"title":"Tỷ giá USD/VND tăng mạnh", "storyId":"early_news",
+                "entityMentions":[{"symbol":"FPT","confidence":.99}],
+                "collectorFirstSeenBasis":"COLLECTOR_RECEIPT",
+                "collectorFirstSeenAt":"2026-11-03T07:00:00Z"}]
+        later=example_fact(sourcePublishedAt="2026-11-03T08:00:00Z",
+                           validFrom="2026-11-03T08:00:00Z")
+        with tempfile.TemporaryDirectory() as folder:
+            d=Path(folder);(d/"reports").mkdir()
+            (d/"facts.json").write_text(json.dumps({"schema":h.EXPOSURE_SCHEMA,"facts":[later]}))
+            out=h.analyze_snapshot(event,COMPANIES,d/"reports",d/"facts.json",NOW.isoformat())
+        self.assertEqual(out["counts"]["reviewedSourceFacts"],1)
+        self.assertEqual(out["counts"]["storiesWithEligibleBusinessFacts"],0)
+        self.assertEqual(out["counts"]["eligibleNotifications"],0)
+
     def test_jurisdictionless_tariff_never_assigns_issuer(self):
         raw=[{"storyId":"tariff_test","title":"Thuế quan nhập khẩu tăng mạnh",
               "entityMentions":[{"symbol":"FPT","confidence":.99}]}]
