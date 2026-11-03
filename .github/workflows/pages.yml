@@ -322,9 +322,25 @@ jobs:
             token="${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${attempt}"
             if curl -fsSL --max-time 20 "$BASE/?symbol=FPT&mode=year&verify=$token#market" -o /tmp/page.html \
               && curl -fsSL --max-time 20 "$BASE/deployment.json?verify=$token" -o /tmp/deployment.json; then
-              deployed_code="$(python -c "import json; print(json.load(open('/tmp/deployment.json')).get('code',''))" 2>/dev/null || true)"
-              echo "pages-verify attempt=$attempt deployed=$deployed_code expected=$EXPECTED_CODE_SHA"
-              if [ "$deployed_code" = "$EXPECTED_CODE_SHA" ]; then
+              # The code SHA can remain identical across several market-only
+              # Pages releases. Do not accept a previous market snapshot while
+              # the newest one is still propagating through the Pages CDN.
+              if python - <<'PY'
+          import json, os
+          from pathlib import Path
+          found=json.loads(Path('/tmp/deployment.json').read_text(encoding='utf-8'))
+          expected={
+              'code': os.environ['EXPECTED_CODE_SHA'],
+              'financialData': os.environ['EXPECTED_FINANCIAL_SHA'],
+              'insightData': os.environ['EXPECTED_INSIGHT_SHA'],
+              'marketData': os.environ['EXPECTED_MARKET_SHA'],
+          }
+          missing={key:{'got':found.get(key),'expected':value}
+                   for key,value in expected.items() if found.get(key)!=value}
+          print('Pages revision quartet check',{'ready':not missing,'mismatched':missing})
+          raise SystemExit(1 if missing else 0)
+          PY
+              then
                 ready=1
                 break
               fi
