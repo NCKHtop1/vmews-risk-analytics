@@ -17,6 +17,9 @@ on:
       - '.github/workflows/finquery-news-parser-ci.yml'
       - '.github/workflows/finquery-bundle-sync.yml'
       - '.github/workflows/market-news-live.yml'
+      - '.github/workflows/market-price-live.yml'
+      - 'financial-report/scripts/price_session_policy.py'
+      - 'financial-report/tests/test_market_freshness_handoff.py'
       - '.github/workflows/market-realtime-guard.yml'
       - '.github/workflows/pages.yml'
       - '.github/workflows/financial-dashboard-browser-smoke.yml'
@@ -31,6 +34,9 @@ on:
       - '.github/workflows/finquery-news-parser-ci.yml'
       - '.github/workflows/finquery-bundle-sync.yml'
       - '.github/workflows/market-news-live.yml'
+      - '.github/workflows/market-price-live.yml'
+      - 'financial-report/scripts/price_session_policy.py'
+      - 'financial-report/tests/test_market_freshness_handoff.py'
       - '.github/workflows/market-realtime-guard.yml'
       - '.github/workflows/pages.yml'
       - '.github/workflows/financial-dashboard-browser-smoke.yml'
@@ -54,6 +60,7 @@ jobs:
         run: |
           python financial-report/tests/test_news_parser.py
           python financial-report/tests/test_news_intelligence.py
+          python financial-report/tests/test_market_freshness_handoff.py
           node --check financial-report/frontend/market.js
           node --check financial-report/frontend/insights.js
           node --check financial-report/frontend/research-agent.js

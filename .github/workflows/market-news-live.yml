@@ -10,10 +10,11 @@ on:
       - 'financial-report/scripts/refresh_market.py'
       - 'financial-report/scripts/news_intelligence.py'
   schedule:
-    # Bootstrap a long-lived publisher every hour. Each run keeps publishing for
-    # more than one hour, so a delayed/skipped cron does not immediately create
-    # a multi-hour news gap. market-realtime-guard remains an independent recovery.
-    - cron: '7 * * * *'
+    # Redundant quarter-hour triggers enqueue the next collector while the
+    # current 5-hour heartbeat remains active. Do NOT cancel an active publisher
+    # just because a scheduled event arrived; that caused a noon data gap.
+    # The independent market-realtime-guard still checks the actual snapshots.
+    - cron: '7,22,37,52 * * * *'
 
 permissions:
   contents: write
@@ -21,9 +22,10 @@ permissions:
 
 concurrency:
   group: market-news-live
-  # The next hourly bootstrap cleanly takes ownership of the heartbeat. If that
-  # bootstrap is delayed, the current run keeps publishing until its own limit.
-  cancel-in-progress: true
+  # Let the active publisher complete; keep a queued successor ready.
+  # GitHub concurrency permits one pending run and replaces older pending
+  # triggers, so repeated cron events cannot create an unbounded queue.
+  cancel-in-progress: false
 
 jobs:
   news:
