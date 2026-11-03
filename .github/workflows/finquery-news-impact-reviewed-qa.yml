@@ -52,6 +52,8 @@ jobs:
           PY
       - name: Verify reviewed-impact UX contract
         run: node financial-report/tests/news_impact_ui.test.cjs
+      - name: Verify existing Q-Data brand invariants (without brand-only scope restriction)
+        run: node --test financial-report/tests/brand_system_v2.test.cjs
       - name: Install Chrome DOM QA dependencies
         run: pip install --disable-pip-version-check -q selenium==4.36.0
       - name: Review evidence-only panel at 320-1440px in Chrome
