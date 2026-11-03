@@ -7,7 +7,9 @@ import sys
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "scripts"))
+if not (ROOT / 'scripts/news_impact_publication_gate.py').exists():
+    raise unittest.SkipTest('Full-data publication gate omitted by sparse checkout')
+sys.path.insert(0, str(ROOT / 'scripts'))
 import news_impact_publication_gate as m
 
 class ReleaseGateTests(unittest.TestCase):
@@ -17,7 +19,7 @@ class ReleaseGateTests(unittest.TestCase):
             "inputRecords": 12785, "filteredIndependentEvents": 1625,
             "directTickerGroups": 0, "pooledEventGroups": 2,
             "policy": {"notificationsEnabled": False},
-            "groups": [{"liveNotificationEligible": False}],
+            "groups": [{"group": ["EVENT", "REGULATORY", "NEG"], "researchEvidence": "UNCONFIRMED", "preNewsTrendFlagged": False, "liveNotificationEligible": False}],
             "splitCounts": {"train": 601, "validation": 306, "holdout": 709},
             "oosAssociationGroups": 1, "pretrendFlaggedOOSGroups": 1,
             "oosGroupsWithoutLargePretrend": 0,
