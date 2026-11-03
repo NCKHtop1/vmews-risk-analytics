@@ -1,0 +1,146 @@
+name: FinQuery Hybrid News Impact V2 - Quant, Data and Systems QA
+
+on:
+  pull_request:
+    paths:
+      - 'financial-report/scripts/hybrid_news_impact.py'
+      - 'financial-report/scripts/news_impact_prospective.py'
+      - 'financial-report/tests/test_news_impact_prospective.py'
+      - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/scripts/news_impact_taxonomy.py'
+      - 'financial-report/data/news-economic-exposure-registry.json'
+      - 'financial-report/frontend/news-impact-reviewed.js'
+      - 'financial-report/frontend/market.js'
+      - 'financial-report/tests/test_hybrid_news_impact.py'
+      - 'financial-report/tests/news_impact_ui.test.cjs'
+      - '.github/workflows/market-news-live.yml'
+      - '.github/workflows/finquery-hybrid-news-impact-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  research-and-engine-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+      - name: Validate Python and JavaScript syntax
+        run: |
+          python -m py_compile financial-report/scripts/hybrid_news_impact.py financial-report/scripts/refresh_market.py
+          node --check financial-report/frontend/news-impact-reviewed.js
+          node --check financial-report/frontend/market.js
+      - name: Source-fact, no-leakage and no-false-alert unit tests
+        run: |
+          python financial-report/tests/test_hybrid_news_impact.py
+          python financial-report/tests/test_news_impact_prospective.py
+          python financial-report/tests/test_news_impact_taxonomy.py
+          python financial-report/tests/test_news_intelligence.py
+          node financial-report/tests/news_impact_ui.test.cjs
+      - name: Validate frozen V12 publication and counterfactual caveats
+        run: |
+          python financial-report/tests/test_news_impact_publication_gate.py
+          python scripts/news_impact_publication_gate.py --out /tmp/hybrid-v2-v12-study.json
+          python - <<'PY'
+          import json
+          s=json.load(open('/tmp/hybrid-v2-v12-study.json'))
+          assert s['status']=='RESEARCH_ONLY' and s['notificationsEligible']==0
+          assert s['verifiedRelations']==0
+          print('HYBRID_V2_QUANT_RELEASE_GATE_PASS',s['frozenStudy'])
+          PY
+      - name: Verify standalone bundle still inlines updated UI
+        run: |
+          python financial-report/scripts/build_cdn.py
+          python - <<'PY'
+          from pathlib import Path
+          page=Path('financial-report/index.html').read_text(encoding='utf-8')
+          for marker in ('SHADOW_SCHEMA','Tác động đã kiểm chứng','finquery:news-impact-review-ready'):
+              assert marker in page,marker
+          assert '<script defer src="news-impact-reviewed.js">' not in page
+          print('HYBRID_V2_STANDALONE_UI_PASS',len(page))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hybrid-news-impact-v2-v12-evidence
+          path: /tmp/hybrid-v2-v12-study.json
+          retention-days: 30
+
+  real-news-replay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Obtain real published news from market branch
+        run: |
+          git fetch --depth=1 origin financial-market-data
+          git show FETCH_HEAD:market/news-latest.json > /tmp/hybrid-news-latest.json
+      - name: Replay real fresh news without publishing misleading alerts
+        run: |
+          python - <<'PY'
+          import json,sys
+          from pathlib import Path
+          from datetime import datetime,timezone
+          sys.path.insert(0,'financial-report/scripts')
+          import hybrid_news_impact as h
+          import news_impact_prospective as p
+          payload=json.load(open('/tmp/hybrid-news-latest.json'))
+          assert isinstance(payload.get('items'),list) and payload['items'], 'Real latest news missing'
+          companies=json.loads(Path('financial-report/data/companies.json').read_text())
+          now=datetime.now(timezone.utc).isoformat()
+          result=h.analyze_snapshot(payload['items'],companies,'financial-report/data',
+                      'financial-report/data/news-economic-exposure-registry.json',now)
+          assert result['schema']==h.SCHEMA
+          assert result['status']=='SHADOW_ONLY'
+          assert result['counts']['eligibleNotifications']==0
+          assert result['counts']['verifiedImpactRelations']==0
+          assert all(not r['notificationEligible'] and not r['validatedAffectedTickers']
+                     for r in result['researchCandidates'])
+          assert result['counts']['invalidSourceFacts']==0
+          ledger=p.merge({},result,now)
+          assert ledger['status']=='PROSPECTIVE_COLLECTION_ONLY'
+          assert ledger['notificationsEnabled'] is False
+          assert ledger['eventCount']<=result['counts']['classifiedEventStories']
+          assert all(e['certification']=='COLLECTOR_RECEIPT' for e in ledger['events'])
+          Path('/tmp/hybrid-v2-real-news-replay.json').write_text(
+               json.dumps(result,ensure_ascii=False,indent=2))
+          print('HYBRID_V2_REAL_NEWS_REPLAY_PASS',result['counts'],result['financialCoverage'],'prospectiveLedger',ledger['eventCount'])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hybrid-news-impact-v2-real-news-replay
+          path: /tmp/hybrid-v2-real-news-replay.json
+          retention-days: 30
+
+  responsive-ux-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
+      - name: Review 320 to 1440 pixel evidence-only UX in Chrome
+        run: |
+          pip install --disable-pip-version-check -q selenium==4.36.0
+          python financial-report/tests/news_impact_review_browser.py
+      - name: Re-check existing brand and accessibility standards
+        run: |
+          node --test financial-report/tests/brand_system_v2.test.cjs
+          node --test financial-report/tests/responsive_system.test.cjs

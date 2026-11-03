@@ -439,6 +439,8 @@ def cluster_stories(rows, threshold=0.48, hours=18):
             copy = dict(m)
             copy.update({
                 'storyId':cluster['id'],
+                'storyCollectorFirstSeenAt':story['firstSeenAt'],
+                'storyCollectorFirstSeenBasis':story['firstSeenBasis'],
                 'sourceCount':independent,
                 'storyMemberCount':len(members),
                 'canonicalSource':canonical.get('source'),

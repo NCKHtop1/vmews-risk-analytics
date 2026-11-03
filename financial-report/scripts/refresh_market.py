@@ -22,6 +22,8 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 import news_intelligence as ni
 import news_impact_taxonomy as nit
+import hybrid_news_impact as hni
+import news_impact_prospective as nip
 
 ROOT = Path(__file__).resolve().parents[1]
 VN = timezone(timedelta(hours=7))
@@ -3187,6 +3189,35 @@ def news(out, companies):
     empty = sum(source.get('status') == 'empty' for source in sources)
     ok = healthy > 0
     checked_at = now()
+    try:
+        impact_shadow = hni.analyze_snapshot(
+            items, companies, ROOT / 'data',
+            ROOT / 'data/news-economic-exposure-registry.json', checked_at)
+    except Exception as exc:
+        # Shadow failure MUST NOT stop the ordinary news feed; fail closed.
+        impact_shadow = {
+            'schema':hni.SCHEMA, 'version':hni.VERSION,
+            'status':'UNAVAILABLE', 'checkedAt':checked_at,
+            'counts':{'verifiedImpactRelations':0,'eligibleNotifications':0},
+            'publicationPolicy':{'verifiedTickerAlerts':False,
+                                 'verifiedSectorAlerts':False,
+                                 'killSwitch':'LOCKED_OFF'},
+            'errorClass':type(exc).__name__,
+        }
+        print('::warning::Hybrid News Impact shadow unavailable: '+type(exc).__name__,flush=True)
+    if impact_shadow.get('status') == 'SHADOW_ONLY':
+        prior_ledger = read(out / 'news-impact-prospective-ledger-v2.json', {})
+        try:
+            ledger = nip.merge(prior_ledger, impact_shadow, checked_at)
+        except (ValueError, TypeError) as exc:
+            # A corrupt existing ledger must never be silently replaced.
+            print('::warning::Prospective evidence ledger quarantined: '+type(exc).__name__,flush=True)
+            ledger = None
+        if ledger is not None:
+            impact_shadow['counts']['prospectiveLedgerRecords'] = ledger['eventCount']
+            impact_shadow['counts']['prospectiveNewEvents'] = ledger['newEvents']
+            write(out / 'news-impact-prospective-ledger-v2.json', ledger)
+    write(out / 'news-impact-shadow-v2.json', impact_shadow)
     health = {'healthy': healthy, 'empty': empty, 'error': len(sources) - healthy - empty, 'total': len(sources)}
     payload = {
         'checkedAt': checked_at, 'lastSuccessAt': checked_at if ok else previous.get('lastSuccessAt'),
