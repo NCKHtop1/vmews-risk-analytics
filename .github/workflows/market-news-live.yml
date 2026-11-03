@@ -24,7 +24,10 @@ permissions:
   actions: write
 
 concurrency:
-  group: market-news-live
+  # Isolate Hybrid V2 from a superseded five-hour publisher. The prior
+  # runner exits on its next main-code check; this group starts the new
+  # receipt-aware collector immediately instead of waiting behind that run.
+  group: market-news-hybrid-v2
   # Let the active publisher complete; keep a queued successor ready.
   # GitHub concurrency permits one pending run and replaces older pending
   # triggers, so repeated cron events cannot create an unbounded queue.
