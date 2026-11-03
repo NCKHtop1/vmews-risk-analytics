@@ -1160,7 +1160,10 @@ class MarketTests(unittest.TestCase):
             self.assertEqual(set(data['symbols']),{'FPT'})
 
     def test_forecast_publisher_does_not_own_market_universe(self):
-        workflow=(pathlib.Path(__file__).resolve().parents[2]/'.github'/'workflows'/'forecast-v13-daily-refresh.yml').read_text(encoding='utf-8')
+        archived=pathlib.Path(__file__).resolve().parents[2]/'.github'/'workflows'/'forecast-v13-daily-refresh.yml'
+        if not archived.exists():
+            self.skipTest('Legacy forecast-v13 workflow has been retired from this repository')
+        workflow=archived.read_text(encoding='utf-8')
         self.assertNotIn('- name: Build tiered HOSE universe',workflow)
         self.assertNotIn('financial-report/data/universe.json',workflow)
 
@@ -1300,12 +1303,13 @@ class MarketTests(unittest.TestCase):
         self.assertIn("cron: '55 1 * * 1-5'",price)
         self.assertIn("cron: '0 2 * * 1-5'",price)
         self.assertIn("cron: '55 5 * * 1-5'",price)
-        self.assertIn('[ "$hhmm" -ge 0855 ]',price)
+        self.assertIn('python financial-report/scripts/price_session_policy.py',price)
+        self.assertIn('needs.prices.outputs.bridge_afternoon',price)
         self.assertIn("cron: '5,20,35,50 2-8 * * 1-5'",price)
         self.assertNotIn("Forecast V20.1 immutable-price audit and market intelligence",price)
         self.assertNotIn("Forecast V21 guarded session overlay",price)
         self.assertIn("workflows:\n      - Refresh market news stream",price)
-        self.assertIn('github.event_name }}" = "workflow_dispatch"',price)
+        self.assertIn('EVENT_NAME: ${{ github.event_name }}',price)
         self.assertNotIn('github.event_name }}" != "schedule"',price)
         self.assertIn('live_session_publisher.sh',price)
         self.assertIn("MARKET_REQUIRE_TODAY=1",session)
@@ -2361,7 +2365,8 @@ class MarketTests(unittest.TestCase):
         price=(root/'.github/workflows/market-price-live.yml').read_text() if (root/'.github/workflows/market-price-live.yml').exists() else pathlib.Path('.github/workflows/market-price-live.yml').read_text()
         session=(ROOT/'scripts/live_session_publisher.sh').read_text()
         pages=(root/'.github/workflows/pages.yml').read_text() if (root/'.github/workflows/pages.yml').exists() else pathlib.Path('.github/workflows/pages.yml').read_text()
-        forecast=(root/'.github/workflows/forecast-v13-daily-refresh.yml').read_text() if (root/'.github/workflows/forecast-v13-daily-refresh.yml').exists() else pathlib.Path('.github/workflows/forecast-v13-daily-refresh.yml').read_text()
+        forecast_path=root/'.github/workflows/forecast-v13-daily-refresh.yml'
+        forecast=forecast_path.read_text() if forecast_path.exists() else None
         self.assertIn('load_market_companies',script)
         self.assertIn("    if args.mode in {'prices', 'history', 'intraday', 'all'}:",script)
         self.assertIn("        sync_market_universe(args.output, universe)",script)
@@ -2371,8 +2376,9 @@ class MarketTests(unittest.TestCase):
         self.assertIn("market/universe.json",session)
         self.assertIn("financial-report/data/universe.json",price)
         self.assertIn("math.ceil(expected*.90)",session)
-        self.assertIn("financial-report/scripts/build_hose_universe.py",forecast)
-        self.assertNotIn("financial-report/data/universe.json",forecast)
+        if forecast is not None:
+            self.assertIn("financial-report/scripts/build_hose_universe.py",forecast)
+            self.assertNotIn("financial-report/data/universe.json",forecast)
         self.assertIn("universe = load_market_universe(out)",script)
         self.assertIn("market/universe.json",pages)
         self.assertIn('id="market-universe-filter"',html)
@@ -2699,6 +2705,8 @@ class MarketTests(unittest.TestCase):
         path=root/'.github/workflows/forecast-v21-session-refresh.yml'
         if not path.exists():
             path=pathlib.Path('.github/workflows/forecast-v21-session-refresh.yml')
+        if not path.exists():
+            self.skipTest('Legacy forecast-v21 workflow has been retired from this repository')
         flow=path.read_text()
         self.assertIn('Refresh market news stream',flow)
         self.assertIn('Gate workflow heartbeat to Vietnam live session',flow)
