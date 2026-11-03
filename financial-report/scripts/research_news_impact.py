@@ -352,6 +352,193 @@ def archive_info(path):
         return {"available": True, "unreadable": True}
 
 
+
+def _finite_outcome(row, horizon):
+    label = str(horizon)
+    if row.get("benchmarkAvailable", {}).get(label) is not True:
+        return None
+    mature = str((row.get("matureDate") or {}).get(label) or "")[:10]
+    if not re.fullmatch(r"\d{4}-\d\d-\d\d", mature):
+        return None
+    raw = (row.get("cumulativeAbnormalReturn") or {}).get(label)
+    if not isinstance(raw, (int, float)) or not math.isfinite(raw):
+        return None
+    return float(raw), mature
+
+
+def _cluster_daily(rows):
+    by_day = defaultdict(list)
+    for row in rows:
+        by_day[row[0]].append(row[1])
+    return [(day, statistics.mean(vals)) for day, vals in sorted(by_day.items())]
+
+
+def _week_bootstrap(values, direction, seed=42):
+    import random
+    buckets = defaultdict(list)
+    for day, val in values:
+        iso = date.fromisoformat(day).isocalendar()
+        buckets[f"{iso.year}-{iso.week:02d}"].append(val)
+    keys = sorted(buckets)
+    if len(keys) < 10:
+        return None
+    r = random.Random(seed)
+    means = []
+    for _ in range(450):
+        weeks = [r.choice(keys) for _ in keys]
+        obs = [v * direction for key in weeks for v in buckets[key]]
+        means.append(statistics.mean(obs))
+    means.sort()
+    return (round(means[int(len(means) * .025)] * 10000, 1),
+            round(means[int(len(means) * .975)] * 10000, 1))
+
+
+def analyze_v12_events(path):
+    """Independent 2018–2026 descriptive audit; no point-in-time forward tape."""
+    if not path.exists():
+        return {"status": "NO_ARCHIVE", "groups": []}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    records = data.get("records")
+    if isinstance(records, dict):
+        records = list(records.values())
+    if not isinstance(records, list):
+        return {"status": "UNSUPPORTED_SCHEMA", "groups": []}
+    eligible = []
+    reasons = Counter()
+    for e in records:
+        if not isinstance(e, dict):
+            reasons["not_mapping"] += 1
+            continue
+        day = str(e.get("availableDate") or "")[:10]
+        if not re.fullmatch(r"\d{4}-\d\d-\d\d", day):
+            reasons["no_valid_available_day"] += 1
+            continue
+        symbol = str(e.get("ticker") or "").upper()
+        family = str(e.get("eventType") or "GENERAL").upper()
+        tone = str(e.get("sentimentLabel") or "UNKNOWN").upper()
+        if not re.fullmatch(r"[A-Z]{3}", symbol) or not issuer_identity(symbol, e.get("title")):
+            reasons["issuer_ambiguous"] += 1
+            continue
+        if str(e.get("sourceClass") or "").upper() == "RUMOR_UNVERIFIED":
+            reasons["rumor"] += 1
+            continue
+        if tone not in {"POS", "NEG"} or family in {"GENERAL", "MARKET_FLOW"}:
+            reasons["no_directional_hypothesis"] += 1
+            continue
+        eligible.append(e)
+    # Collapse news bursts about the same event and issuer (issuer/event/tone,
+    # five-day cooldown); NEVER count multiple identical syndicated articles
+    # as independent outcome labels.
+    eligible.sort(key=lambda z: (str(z.get("availableDate")), str(z.get("ticker"))))
+    last_by_key = {}
+    dedup = []
+    for e in eligible:
+        day = str(e["availableDate"])[:10]
+        key = (e["ticker"], e["eventType"], e["sentimentLabel"])
+        prev = last_by_key.get(key)
+        if prev and (date.fromisoformat(day) - date.fromisoformat(prev)).days < 7:
+            reasons["burst_deduped"] += 1
+            continue
+        last_by_key[key] = day
+        dedup.append(e)
+    # Fixed pre-registered chronological windows; outcomes only from events
+    # maturing INSIDE their own window. 2024 serves as validation, not tuning.
+    periods = (
+        ("train", "2018-01-01", "2023-12-15", "2023-12-31"),
+        ("validation", "2024-01-15", "2024-12-15", "2024-12-31"),
+        ("holdout", "2025-01-15", "2026-07-31", "2026-08-18"),
+    )
+    observations = defaultdict(lambda: defaultdict(list))
+    groups_meta = defaultdict(lambda: {"tickers": set(), "sources": set()})
+    for e in dedup:
+        day = str(e["availableDate"])[:10]
+        family, tone, sym = e["eventType"], e["sentimentLabel"], e["ticker"]
+        keys = [("EVENT", family, tone), ("TICKER", sym, family, tone)]
+        for period, first, last, mature_by in periods:
+            if not first <= day <= last:
+                continue
+            for h in HORIZONS:
+                outcome = _finite_outcome(e, h)
+                if outcome is None or not first <= outcome[1] <= mature_by:
+                    reasons["missing_or_unmatured_benchmark"] += 1
+                    continue
+                value = outcome[0]
+                if abs(value) > .50:
+                    reasons["extreme_outcome_excluded"] += 1
+                    continue
+                for key in keys:
+                    observations[(key, h)][period].append((day, value))
+                    groups_meta[(key, h)]["tickers"].add(sym)
+                    groups_meta[(key, h)]["sources"].add(e.get("source") or "")
+    candidates = []
+    pvals = []
+    for (key, horizon), period_obs in observations.items():
+        tr = _cluster_daily(period_obs.get("train", []))
+        va = _cluster_daily(period_obs.get("validation", []))
+        te = _cluster_daily(period_obs.get("holdout", []))
+        if not tr or not te:
+            continue
+        train_med = statistics.median(v for _, v in tr)
+        direction = 1 if train_med >= 0 else -1
+        te_vals = [v for _, v in te]
+        hit = sum(v * direction > 0 for v in te_vals) / len(te_vals)
+        ci = _week_bootstrap(te, direction, seed=abs(sum(ord(c) for c in repr(key))) + horizon)
+        src_count = len(groups_meta[(key, horizon)]["sources"])
+        ticker_count = len(groups_meta[(key, horizon)]["tickers"])
+        result = {
+            "group": "|".join(key), "horizon": horizon,
+            "trainIndependentDays": len(tr), "validationIndependentDays": len(va),
+            "holdoutIndependentDays": len(te),
+            "holdoutMonths": len(set(day[:7] for day, _ in te)),
+            "uniqueTickers": ticker_count, "uniqueSources": src_count,
+            "trainSign": "UP" if direction > 0 else "DOWN",
+            "trainMedianARbps": round(train_med * 10000, 1),
+            "validationDirectionalMeanARbps": round(statistics.mean(v * direction for _, v in va) * 10000, 1) if va else None,
+            "holdoutDirectionalMeanARbps": round(statistics.mean(v * direction for v in te_vals) * 10000, 1),
+            "holdoutHitRate": round(hit, 3), "weekBootstrap95CIbps": ci,
+            "pExploratory": one_sided_sign_p(te_vals, direction),
+        }
+        result["minimumSample"] = (
+            len(tr) >= 50 and len(va) >= 15 and len(te) >= 30
+            and result["holdoutMonths"] >= 6
+            and src_count >= 3
+            and (ticker_count >= 8 if key[0] == "EVENT" else True)
+        )
+        candidates.append(result)
+        pvals.append(result["pExploratory"])
+    qvals = benjamini_hochberg(pvals)
+    for result, q in zip(candidates, qvals):
+        result["qExploratory"] = round(q, 6)
+        ci = result["weekBootstrap95CIbps"]
+        result["descriptiveCandidate"] = bool(
+            result["minimumSample"] and q <= 0.10
+            and result["holdoutHitRate"] >= 0.60
+            and ci and ci[0] > 0
+            and (result["validationDirectionalMeanARbps"] or 0) > 0
+            and result["holdoutDirectionalMeanARbps"] >= 30
+        )
+        result["productionEligible"] = False
+        result["pExploratory"] = round(result["pExploratory"], 6)
+    candidates.sort(key=lambda r: (-r["holdoutIndependentDays"], r["group"], r["horizon"]))
+    return {
+        "status": "RETROSPECTIVE_ONLY_NOT_TRADEABLE",
+        "records": len(records), "eligibleUnclustered": len(eligible),
+        "deduplicatedEvents": len(dedup),
+        "excludedReasons": dict(reasons),
+        "chronologicalWindows": [list(z) for z in periods],
+        "groupsTested": len(candidates),
+        "minimumSampleGroups": sum(x["minimumSample"] for x in candidates),
+        "descriptiveCandidates": sum(x["descriptiveCandidate"] for x in candidates),
+        "productionReadyGroups": 0,
+        "topGroups": candidates[:30],
+        "notes": ["Results use retrospective publishedAt/availableDate rather than verified news collector firstSeenAt",
+                  "No historically dated sector membership: only event-family and issuer-level exploratory groups",
+                  "Weekly block bootstrap and sign test approximate dependence but do not replace event-cluster/placebo research",
+                  "No trade-cost, execution, investment-value or prospective alpha certification"],
+    }
+
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--news", type=Path, required=True)
@@ -376,6 +563,7 @@ def main():
             "eventIntelligenceV12": archive_info(args.event_intelligence),
         },
         "backtest": stats,
+        "v12HistoricalAudit": analyze_v12_events(args.event_intelligence),
         "limits": [
             "No verified historical firstSeenAt; retrospective RSS is NOT a tradable point-in-time news tape",
             "Latest sector map is not an historical point-in-time classification",
@@ -398,6 +586,8 @@ def main():
         "status": report["status"], "quality": report["quality"],
         "priceHistories": report["input"]["histories"], "sectorMapped": len(sectors),
         "backtest": {k: v for k, v in stats.items() if k != "groups"},
+        "v12HistoricalAudit": {k: v for k, v in report["v12HistoricalAudit"].items() if k != "topGroups"},
+        "v12TopGroups": report["v12HistoricalAudit"].get("topGroups", [])[:6],
         "largestExploratoryGroups": stats.get("groups", [])[:8],
         "archiveAudit": report["archiveAudit"],
         "productionAlerts": False
