@@ -7,7 +7,7 @@ const date=s=>s&&Number.isFinite(Date.parse(s))?new Date(s).toLocaleString('vi-V
 const safeURL=u=>{try{const p=new URL(u);return p.protocol==='https:'&&!p.username&&!p.password&&['vnexpress.net','baodautu.vn','vietnamnet.vn','cafef.vn','vneconomy.vn','24hmoney.vn','federalreserve.gov','ecb.europa.eu','sbv.gov.vn','news.google.com','luatvietnam.vn','baochinhphu.vn','vanban.chinhphu.vn','hsx.vn','staticfile.hsx.vn','hnx.vn','ssc.gov.vn'].some(h=>p.hostname===h||p.hostname.endsWith('.'+h))?p.href:'';}catch{return '';}};
 let watch=[];try{const v=JSON.parse(localStorage.getItem('finquery-watchlist')||'[]');if(Array.isArray(v))watch=v.filter(s=>/^[A-Z]{3}$/.test(s));}catch{}
 
-const savedNewsMode=localStorage.getItem('finquery-news-mode')||'company';const state={symbol:'',companies:[],coreCompanies:[],universe:null,universeLoadedAt:0,universeFilter:'all',quotes:{},quoteBundleSourceTime:null,quoteBundleCheckedAt:null,drivers:{symbols:{}},news:null,bars:[],sourceBars:[],interval:'day',chartType:'candles',history:null,count:120,end:0,request:0,watchOnly:false,sort:'symbol',newsMode:savedNewsMode,newsTab:savedNewsMode,driverOpen:'',priceOnlyMode:false,refreshing:false,initialized:false,marketView:'price',quoteRetryTimer:null,quoteRetryAttempt:0};
+const storedNewsMode=localStorage.getItem('finquery-news-mode')||'company';const savedNewsMode=storedNewsMode==='verified'?'all':storedNewsMode;if(storedNewsMode==='verified')localStorage.setItem('finquery-news-mode',savedNewsMode);const state={symbol:'',companies:[],coreCompanies:[],universe:null,universeLoadedAt:0,universeFilter:'all',quotes:{},quoteBundleSourceTime:null,quoteBundleCheckedAt:null,drivers:{symbols:{}},news:null,bars:[],sourceBars:[],interval:'day',chartType:'candles',history:null,count:120,end:0,request:0,watchOnly:false,sort:'symbol',newsMode:savedNewsMode,newsTab:savedNewsMode,driverOpen:'',priceOnlyMode:false,refreshing:false,initialized:false,marketView:'price',quoteRetryTimer:null,quoteRetryAttempt:0};
 const compareCache=new Map();
 const companyLogoUrl=symbol=>'https://storage.googleapis.com/cdn-entrade/company/'+encodeURIComponent(symbol);
 const companyLogoFallback=symbol=>'https://cdn.simplize.vn/simplizevn/logo/'+encodeURIComponent(symbol)+'.jpeg';
@@ -200,7 +200,7 @@ function syncNewsAlertButton(){
 }
 function renderBreakingTicker(){
  const box=$('breaking-news-ticker'),track=$('breaking-news-track'),stamp=$('breaking-news-updated');if(!box||!track)return;
- if(state.newsMode==='verified'){box.hidden=true;return;}const rows=breakingRows();if(!rows.length){box.hidden=true;return;}box.hidden=false;
+ const rows=breakingRows();if(!rows.length){box.hidden=true;return;}box.hidden=false;
  const pieces=rows.map(r=>{const url=safeURL(r.url),tag=impactTag(r),score=impactScore(r),urgent=score>=80?' breaking-urgent':'';return '<a class="breaking-link'+urgent+'" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer"><b>'+(score>=80?'⚠ ':'')+esc(tag)+'</b> '+esc(r.title)+' <em>'+esc(shortAge(r))+'</em></a>';});
  track.innerHTML=(pieces.concat(pieces)).join('<span class="breaking-dot">●</span>');
  if(stamp)stamp.textContent=state.news?.checkedAt?date(state.news.checkedAt):'';
@@ -234,30 +234,8 @@ function renderNewsIntelligenceSummary(){
  root.innerHTML=sections.join('');
 }
 function news(){
+ if(state.newsMode==='verified'){state.newsMode='all';localStorage.setItem('finquery-news-mode','all');}
  const data=state.news,items=data?.items||[];let rows;
- const isReviewed=state.newsMode==='verified';
- const reviewed=window.FinNewsImpactReview?.summary?.();
- const marker=$('news-impact-summary');if(marker)marker.textContent=reviewed?.status==='RESEARCH_ONLY'?'0 tác động đạt chuẩn':'Đang xác minh tác động';
- const panel=$('news-impact-reviewed-panel'),list=$('news-list'),intelligence=$('news-intelligence-summary'),filter=document.querySelector('.market-news .news-filter-row');
- if(panel)panel.hidden=!isReviewed;
- if(list)list.hidden=isReviewed;
- if(intelligence)intelligence.hidden=isReviewed;
- if(filter)filter.hidden=isReviewed;
- if(isReviewed){
-  const audit=window.FinNewsImpactReview?.summary?.()||{status:'UNAVAILABLE',eligibleCount:0};
-  $('news-title').textContent='Tác động đã kiểm chứng';
-  const ready=audit.status==='RESEARCH_ONLY';
-  const asOf=$('news-reviewed-asof'),note=$('news-reviewed-note'),head=$('news-reviewed-headline');
-  if(asOf)asOf.textContent=ready?'Thẩm định: '+String(audit.reviewAsOf||'').split('-').reverse().join('/')+(audit.shadow?' · Dữ liệu tin: '+date(audit.shadow.checkedAt):' · Chưa có ảnh chụp nghiên cứu mới'):'';
-  if(head)head.textContent=ready?'Chưa có sự kiện đạt chuẩn tác động':'Chưa xác minh được dữ liệu kiểm chứng';
-  if(note){
-   const s=audit.shadow;
-   const descriptor=s?'Đã phân loại '+s.classifiedEventStories+' sự kiện; '+s.storiesWithEligibleBusinessFacts+' trường hợp có dữ kiện tiếp xúc kinh tế nguồn đã kiểm tra. '+(s.prospectiveLedgerRecords!==null?'Sổ nghiên cứu tiến cứu: '+s.prospectiveLedgerRecords+' sự kiện đã ghi thời điểm nhận tin. ':''):'Dữ liệu nghiên cứu tiếp xúc kinh tế đang chờ đồng bộ. ';
-   note.textContent=ready?descriptor+'Chưa có quan hệ nào vượt kiểm định thực chứng độc lập. Không phát thông báo tác động.':'Dữ liệu kiểm chứng chưa sẵn sàng hoặc chưa hợp lệ. FinQuery không phát cảnh báo tác động khi chưa xác minh được dữ liệu.';
- }
-  $('news-status').textContent=ready?'0 sự kiện được xác nhận · Không phát thông báo tác động':'Không có thông báo tác động khi dữ liệu kiểm chứng không hợp lệ.';
-  syncNewsTabs();syncNewsAlertButton();renderBreakingTicker();return;
- }
  if(state.newsMode==='company')rows=strictCompanyNews(items,state.symbol,50);
  else rows=items.filter(r=>matchesNewsMode(r,state.newsMode));
  rows.sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt));
@@ -265,7 +243,7 @@ function news(){
  $('news-status').textContent=data?(newsStale(data)?'Tin tức chậm cập nhật · Kiểm tra ':'Kiểm tra ')+date(data.checkedAt)+' · '+rows.length+' bài phù hợp'+(data.status==='retained'?' · Đang dùng tin đã lưu':''):'Chưa tải được tin tức.';
  renderNewsIntelligenceSummary();
  const limit=state.newsMode==='company'?50:80;
- $('news-list').innerHTML=rows.slice(0,limit).map(r=>{const url=safeURL(r.url),score=Number(r.newsPriority??impactScore(r)),origin=newsOrigin(r),impact=score>=65?'CAO':score>=45?'ĐÁNG CHÚ Ý':'',badge=score>=45?impactTag(r):(isSBVNews(r)?'NHNN':origin==='global'?'QUỐC TẾ':state.newsMode==='company'?'DOANH NGHIỆP':'VIỆT NAM'),sources=Number(r.sourceCount||1),reaction=r.observedReaction||{},reactionBits=[['15m',reaction.return15mPct],['60m',reaction.return60mPct],['EOD',reaction.returnEodPct]].filter(x=>Number.isFinite(Number(x[1]))).map(x=>x[0]+' '+(Number(x[1])>0?'+':'')+Number(x[1]).toLocaleString('vi-VN',{maximumFractionDigits:2})+'%').join(' · ');return url?'<article class="news-item"><p><b class="news-origin-badge">'+badge+'</b> <span>· '+esc(newsTimeLabel(r))+'</span>'+(impact?' <em class="news-impact news-impact-'+(score>=65?'high':'medium')+'">ƯU TIÊN TIN · '+score+'</em>':'')+'</p><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(r.title)+' <span aria-hidden="true">↗</span></a>'+'</article>':'';}).join('')||(state.newsMode==='company'?'<p class="market-empty">Chưa có tin doanh nghiệp '+esc(state.symbol)+' đủ mức liên quan hiện tại.</p>':'<p class="market-empty">Chưa tìm thấy tin phù hợp trong 30 ngày gần đây.</p>');
+ $('news-list').innerHTML=rows.slice(0,limit).map(r=>{const url=safeURL(r.url),origin=newsOrigin(r),badge=isSBVNews(r)?'NHNN':origin==='global'?'QUỐC TẾ':state.newsMode==='company'?'DOANH NGHIỆP':'VIỆT NAM';return url?'<article class="news-item"><p><b class="news-origin-badge">'+badge+'</b> <span>· '+esc(newsTimeLabel(r))+'</span></p><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(r.title)+' <span aria-hidden="true">↗</span></a></article>':'';}).join('')||(state.newsMode==='company'?'<p class="market-empty">Chưa có tin doanh nghiệp '+esc(state.symbol)+' đủ mức liên quan hiện tại.</p>':'<p class="market-empty">Chưa tìm thấy tin phù hợp trong 30 ngày gần đây.</p>');
  if(rows.length)localStorage.setItem('finquery-news-last-seen',String(Math.max(Date.now(),...rows.map(x=>Date.parse(x.publishedAt)||0))));
 }
 async function refresh(){
@@ -357,7 +335,7 @@ function openMarketChart(symbol,companies){
 window.FinancialMarket={refresh,select:selectMarketSymbol,openChart:openMarketChart,context(){const all=(state.news?.items||[]).slice().sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)),items=strictCompanyNews(all,state.symbol,15),marketNews=sectorNews(all,state.symbol,40),quote=(state.priceOnlyMode||quoteStale(state.quotes[state.symbol]))?null:(state.quotes[state.symbol]||null),scan=window.FinTechnicalScanner?.context?.()||null;return{symbol:state.symbol,universeTier:tierFor(state.symbol),quote,quoteBundleSourceTime:state.quoteBundleSourceTime||null,quoteBundleCheckedAt:state.quoteBundleCheckedAt||null,driver:state.drivers?.symbols?.[state.symbol]||null,market:{generatedAt:state.drivers?.generatedAt||null,medianChangePct:state.drivers?.marketMedianChangePct??null},technical:chartController?.technicalContext?.()||null,scanner:scan&&(!state.quoteBundleSourceTime||String(scan.sourceTime)===String(state.quoteBundleSourceTime))?scan:null,news:items,sectorNews:marketNews,marketNews,dailyBrief:state.news?.dailyBrief||null,viewpointSentiment:state.news?.viewpointSentiment||null,newsCheckedAt:state.news?.checkedAt||null,newsLiveFallback:Boolean(state.news?.liveFallback)};},alertContext(){return{symbol:state.symbol,companies:state.companies.map(c=>({symbol:c.symbol,name:c.name,tier:c.tier})),quotes:state.quotes,watch:[...watch]};},registerInsights(api){api?.attachChart?.(chartController);api?.select?.(state.symbol);},newsScore:(item,symbol)=>companyNewsScore(item,symbol||state.symbol)};
 document.querySelectorAll('[data-market-view]').forEach(btn=>btn.addEventListener('click',()=>setMarketView(btn.dataset.marketView)));
 $('watch-toggle').addEventListener('click',()=>toggleWatch(state.symbol));$('market-rows').addEventListener('error',e=>{const img=e.target;if(img.tagName!=='IMG'||!img.closest('.ticker-logo'))return;const stage=Number(img.dataset.logoStage||0);if(stage===0&&img.dataset.logoAlt){img.dataset.logoStage='1';img.src=img.dataset.logoAlt;return;}if(stage===1&&img.dataset.logoAlt2){img.dataset.logoStage='2';img.src=img.dataset.logoAlt2;return;}if(stage<=2&&img.dataset.logoPlaceholder){img.dataset.logoStage='3';img.src=img.dataset.logoPlaceholder;return;}img.hidden=true;},true);$('market-rows').addEventListener('click',e=>{const star=e.target.closest('[data-watch]'),ticker=e.target.closest('[data-market-symbol]'),driver=e.target.closest('[data-driver]');if(star)toggleWatch(star.dataset.watch);if(driver){state.driverOpen=state.driverOpen===driver.dataset.driver?'':driver.dataset.driver;board();return;}if(ticker){const symbol=ticker.dataset.marketSymbol,company=state.companies.find(x=>x.symbol===symbol);if(company?.tier&&company.tier!=='CORE'){openForecastSymbol(symbol);return;}$('ticker').value=symbol;$('company-form').requestSubmit();}});$('market-filter').addEventListener('input',board);$('market-universe-filter')?.addEventListener('change',e=>{state.universeFilter=e.target.value;board();});$('watch-only').addEventListener('change',e=>{state.watchOnly=e.target.checked;board();});$('market-sort').addEventListener('change',e=>{state.sort=e.target.value;board();});$('market-refresh')?.addEventListener('click',()=>{refresh();window.FinInsights?.reload?.();window.FinTechnicalScanner?.refresh?.();if(state.symbol)chartController.load(true);});$('news-mode').addEventListener('change',e=>{state.newsMode=e.target.value;localStorage.setItem('finquery-news-mode',state.newsMode);news();});document.querySelectorAll('[data-news-tab]').forEach(btn=>btn.addEventListener('click',()=>{state.newsMode=btn.dataset.newsTab;localStorage.setItem('finquery-news-mode',state.newsMode);news();}));syncNewsAlertButton();
-document.addEventListener('finquery:news-impact-review-ready',()=>{news();syncNewsAlertButton();});
+
 const chartController=window.FinChart.create(BASE,q=>{const previous=state.quotes[q.symbol];if(window.FinMarketData.stamp(q.sourceTime)===null)return;if(previous?.sourceTime&&window.FinMarketData.stamp(previous.sourceTime)!==null&&Date.parse(previous.sourceTime)>Date.parse(q.sourceTime))return;state.quotes[q.symbol]={...previous,...q,changePct:Number.isFinite(q.changePct)?q.changePct:(q.reference||previous?.reference)>0?(q.price/(q.reference||previous.reference)-1)*100:null,unit:'VND',source:'WebSocket',status:'ok',collectedAt:new Date().toISOString()};showQuote();board();});
 setMarketView('price');refresh();setInterval(()=>{if(!document.hidden)refresh();},300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
 })();
