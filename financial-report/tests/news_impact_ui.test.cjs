@@ -37,3 +37,6 @@ assert.match(html,/id="news-alert-toggle"[^>]*disabled hidden/);
 assert.match(css,/\.news-impact-reviewed-panel/);
 assert.match(css,/@media\(max-width:760px\)/);
 assert.match(bundleScript,/news-impact-reviewed\.js/);
+
+assert.doesNotMatch(js,/Phản ứng giá:/);
+assert.match(js,/ƯU TIÊN TIN/);
