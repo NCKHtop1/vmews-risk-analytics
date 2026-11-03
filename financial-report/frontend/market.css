@@ -1145,4 +1145,4 @@ svg[data-fq-inspect] .fq-chart-cursor{fill:#fff;stroke:#3565c7;stroke-width:2.5}
 #news-alert-toggle:disabled{opacity:.56;cursor:not-allowed}
 @media(max-width:760px){.news-primary-tabs{scrollbar-width:thin;overscroll-behavior-x:contain}.news-primary-tabs button{flex-shrink:0;min-height:34px}.news-impact-reviewed-panel{padding:15px 13px}.news-reviewed-main{grid-template-columns:38px minmax(0,1fr);gap:10px}.news-reviewed-zero{height:38px;min-width:38px;font-size:21px}.news-reviewed-asof{margin-left:48px}}
 
-@media(max-width:760px){.news-reviewed-criteria summary{min-height:40px;padding:8px 0}.news-primary-tabs button{min-height:40px}}
+@media(max-width:850px){.news-reviewed-criteria summary{min-height:40px;padding:8px 0}.news-primary-tabs button{min-height:40px!important}}
