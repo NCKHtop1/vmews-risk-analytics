@@ -46,6 +46,7 @@ class ShadowResearchTests(unittest.TestCase):
         one = make_record()
         two = make_record(1)
         two["availableDate"] = (date(2020, 1, 1) + timedelta(days=2)).isoformat()
+        two["publishedAt"] = "2020-01-03T10:00:00+07:00"
         two["matureDate"]["2"] = "2020-01-05"
         three = make_record(2)
         rows, errors = m.clean_records([one, two, three])
