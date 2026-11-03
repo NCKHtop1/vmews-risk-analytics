@@ -106,9 +106,9 @@ jobs:
                 test -s /tmp/market-news/market/news-company-latest.json
                 test -s /tmp/market-news/market/news-stories.json
                 test -s /tmp/market-news/market/news-semantic-health.json
-                test -s /tmp/market-news/market/news-impact-shadow-v2.json
-                test -s /tmp/market-news/market/news-impact-prospective-ledger-v2.json
-                python - <<'PY'
+                test -s /tmp/market-news/market/news-impact-shadow-v2.json || { echo '::warning::Impact research shadow missing'; continue; }
+                test -s /tmp/market-news/market/news-impact-prospective-ledger-v2.json || { echo '::warning::Prospective evidence ledger missing'; continue; }
+                if ! python - <<'PY'; then
           import json
           from pathlib import Path
           x=json.loads(Path('/tmp/market-news/market/news-impact-shadow-v2.json').read_text())
@@ -125,6 +125,9 @@ jobs:
               raise SystemExit('Hybrid shadow/ledger snapshots misaligned')
           print('HYBRID NEWS SHADOW FAIL-CLOSED',x.get('status'),(x.get('counts') or {}).get('classifiedEventStories',0),'ledger',ledger.get('eventCount'))
           PY
+                  echo '::warning::Hybrid News shadow contract rejected; no data publication'
+                  continue
+                fi
                 test -s /tmp/market-news/market/news-daily-brief.json
                 test -s /tmp/market-news/market/news-viewpoint-sentiment.json
                 git -C /tmp/market-news add --sparse market/news.json market/news-latest.json market/news-company-latest.json market/news-stories.json market/news-semantic-health.json market/news-impact-shadow-v2.json market/news-impact-prospective-ledger-v2.json market/news-daily-brief.json market/news-viewpoint-sentiment.json
