@@ -76,3 +76,48 @@ The outcome does not prove absence of news impact. It proves this archive, issue
 - Release owner: alert launch only after PIT forward validation report and user-level false alert audit. No existing business logic changes.
 
 Method references: MacKinlay (1997) Event Studies in Economics and Finance; Heston and Sinha (2016) News versus Sentiment (Federal Reserve); Brière et al. (2023) Stock Market Reaction to News; Vietnam sectoral EVFTA event-study (2024). They support research methods, not a FinQuery alpha claim.
+
+
+## Follow-up audit: separate frozen V12 T+2, 03 Nov 2026
+
+This is a **different, narrower experiment** from the earlier 339-hypothesis
+T+1/T+3/T+5 pilot above. Do NOT combine p-values, event counts or threshold
+pass rates across the two research protocols.
+
+- Source: `data/event-intelligence-v12.json`, 12,785 retrospective records.
+- Clean issuer/date/event/sentiment duplicates and overlap purge through each
+  prior ticker episode's T+5 maturity: 1,625 independent episodes. Strict
+  60%/20%/20% date boundaries and actual maturity embargo leave 601 training,
+  306 validation and 709 holdout episodes (the remaining observations are
+  intentionally purged at fold boundaries).
+- Only **two pooled** event/sentiment hypotheses have sufficient train,
+  validation and holdout samples. **Zero issuer-specific ticker hypotheses**
+  have enough independent evidence for a defensible price-direction alert.
+- REGULATORY + NEG: the holdout has 54 episodes over 48 event days, signed
+  VNINDEX-relative T+2 day-cluster mean +197 bps *in the negative direction*,
+  74.1% hit rate, day-bootstrap 95% interval [+104,+306] bps and exploratory
+  BH q=0.001 within this *small validation-selected family*. **BUT** the
+  validation fold already had a prior two-day same-direction excess move of
+  +245 bps BEFORE the news. That pretrend is material confounding; classify
+  as `OOS_ASSOCIATION_WITH_PRETREND`, **not an approved causal or actionable
+  signal**.
+- EARNINGS + POS is also directionally unstable/weak: the training direction
+  is counterintuitively negative, holdout 265 episodes / 108 days with 52.1%
+  hit rate and q=0.065, **below** the predeclared 55% hit floor.
+- A BH q-value is not a cure for retrospective search-selection, first-seen
+  uncertainty, multiple prior study iterations or news-following-price
+  confounding. The frozen 2018–2026 data were already examined in prior
+  experiments, so the newest “holdout” should be treated as a **reused
+  retrospective evaluation**, not a genuinely untouched future test.
+
+**Release decision: RESEARCH_ONLY.** `notificationsEnabled=false`,
+`tickerAlerts=false`, `sectorAlerts=false`. The potential novelty lies in
+the quality of the independent timestamped forward evidence, first-order
+business exposures and actual post-news market reaction, NOT a high-volume
+sentiment ticker banner. No code from this study changes existing FinQuery
+price, news, Strategy, Portfolio, Forecast or Risk business logic.
+
+Independent read-only research runner:
+`scripts/news_impact_shadow_research.py` plus
+`.github/workflows/news-impact-shadow-research.yml`; its artifact contains
+full methodological thresholds, failure counts and each evaluated cohort.
