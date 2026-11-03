@@ -275,7 +275,7 @@ def analyze_snapshot(items, companies, finance_dir, registry_path, collected_at)
         },
         "eventFamilies":dict(sorted(counts.items())),
         "financialCoverage":coverage,
-        "researchCandidates":events[:100],
+        "researchCandidates":events[:500],
         "publicationPolicy":{
             "forecastModel":False, "historicalImpactCertified":False,
             "verifiedTickerAlerts":False, "verifiedSectorAlerts":False,
