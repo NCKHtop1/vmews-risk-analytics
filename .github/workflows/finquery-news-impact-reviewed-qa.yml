@@ -10,6 +10,7 @@ on:
       - 'financial-report/frontend/market.css'
       - 'financial-report/frontend/index.html'
       - 'financial-report/tests/news_impact_ui.test.cjs'
+      - 'financial-report/tests/news_impact_review_browser.py'
       - '.github/workflows/finquery-news-impact-reviewed-qa.yml'
   workflow_dispatch:
 permissions:
@@ -51,6 +52,10 @@ jobs:
           PY
       - name: Verify reviewed-impact UX contract
         run: node financial-report/tests/news_impact_ui.test.cjs
+      - name: Install Chrome DOM QA dependencies
+        run: pip install --disable-pip-version-check -q selenium==4.36.0
+      - name: Review evidence-only panel at 320-1440px in Chrome
+        run: python financial-report/tests/news_impact_review_browser.py
       - uses: actions/upload-artifact@v4
         with:
           name: finquery-news-impact-review-audit
