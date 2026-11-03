@@ -1,0 +1,41 @@
+name: FinQuery news impact evidence-only safety gate
+
+on:
+  pull_request:
+    paths:
+      - 'financial-report/scripts/news_impact_taxonomy.py'
+      - 'financial-report/scripts/news_intelligence.py'
+      - 'financial-report/scripts/refresh_market.py'
+      - 'financial-report/frontend/market.js'
+      - 'financial-report/frontend/index.html'
+      - 'financial-report/tests/test_news_impact_taxonomy.py'
+      - 'financial-report/tests/test_news_intelligence.py'
+      - 'financial-report/tests/news_impact_ui.test.cjs'
+      - '.github/workflows/finquery-news-impact-evidence-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  non-predictive-news-impact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test economic mechanisms and collector first-seen lineage
+        run: python financial-report/tests/test_news_impact_taxonomy.py
+      - name: Test news entity and story taxonomy regressions
+        run: python financial-report/tests/test_news_intelligence.py
+      - name: Test UI fail-closed certified-impact contract
+        run: node financial-report/tests/news_impact_ui.test.cjs
+      - name: Check historical shadow research remains no-alert
+        run: python scripts/news_impact_shadow_research_test.py
