@@ -1158,6 +1158,31 @@ svg[data-fq-inspect] .fq-chart-cursor{fill:#fff;stroke:#3565c7;stroke-width:2.5}
 .on-date-group select{max-width:120px;padding:5px 7px;border:1px solid #d5dfec;border-radius:7px;background:#fff;font:inherit;color:#344560}
 .on-timeline-controls button:focus-visible,.on-date-group select:focus-visible{outline:2px solid #477fe2;outline-offset:2px}
 @media(max-width:600px){.on-timeline-controls{align-items:stretch;gap:8px}.on-range-group{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}.on-range-group button{padding:6px 2px}.on-date-group{justify-content:space-between;width:100%}}
+
+
+/* News Impact Intelligence: calm, evidence-first UX, independent from Forecast. */
+.market-news .news-impact-reviewed-panel[hidden],.market-news #news-list[hidden],.market-news .news-intelligence-summary[hidden],.market-news .news-filter-row[hidden],.market-news #news-alert-toggle[hidden]{display:none!important}
+.news-impact-reviewed-panel{border:1px solid #dde4ee;border-radius:12px;background:#fff;padding:18px 17px;margin:14px 0 8px;min-width:0;color:#33445d;box-shadow:0 1px 5px rgba(26,47,79,.035)}
+.news-reviewed-main{display:grid;grid-template-columns:46px minmax(0,1fr);gap:14px;align-items:start}
+.news-reviewed-zero{display:flex;align-items:center;justify-content:center;height:44px;min-width:44px;border-radius:10px;background:#f1f4f8;color:#596b82;font-size:25px;font-weight:700;font-variant-numeric:tabular-nums}
+.news-reviewed-kicker{display:block;font-size:9px;font-weight:750;letter-spacing:1px;color:#718198}
+.news-impact-reviewed-panel h4{font-size:14px;line-height:1.4;font-weight:730;letter-spacing:-.1px;margin:5px 0 7px;color:#263a52}
+.news-impact-reviewed-panel p{font-size:12px;line-height:1.65;color:#65748a;margin:0;overflow-wrap:anywhere}
+.news-reviewed-asof{display:block;margin:12px 0 0 60px;font-size:10px;color:#7a879a}
+.news-reviewed-criteria{margin-top:15px;border-top:1px solid #e8edf3;padding-top:11px}
+.news-reviewed-criteria summary{cursor:pointer;min-height:28px;font-size:11px;font-weight:650;color:#4a6180}
+.news-reviewed-criteria summary:focus-visible,.news-exposure-detail summary:focus-visible{outline:2px solid #5877bf;outline-offset:3px;border-radius:4px}
+.news-reviewed-criteria p{font-size:11px;margin:7px 0}
+.news-reviewed-criteria strong{color:#3e5069}
+.news-exposure-detail{border-left:2px solid #ced9e6;background:#fafbfd;border-radius:0 7px 7px 0;padding:8px 10px;margin:9px 0 2px;color:#596b81}
+.news-exposure-detail summary{cursor:pointer;font-size:11px;font-weight:630;line-height:1.5;color:#50657d}
+.news-exposure-detail p{font-size:10px;line-height:1.55;margin:7px 0 5px;color:#63758c}
+.news-exposure-detail strong{color:#3b536d}
+.news-exposure-detail small{display:block;line-height:1.55;font-size:9px;color:#8491a1}
+#news-alert-toggle:disabled{opacity:.56;cursor:not-allowed}
+@media(max-width:760px){.news-primary-tabs{scrollbar-width:thin;overscroll-behavior-x:contain}.news-primary-tabs button{flex-shrink:0;min-height:34px}.news-impact-reviewed-panel{padding:15px 13px}.news-reviewed-main{grid-template-columns:38px minmax(0,1fr);gap:10px}.news-reviewed-zero{height:38px;min-width:38px;font-size:21px}.news-reviewed-asof{margin-left:48px}}
+
+@media(max-width:850px){.news-reviewed-criteria summary{min-height:40px;padding:8px 0}.news-primary-tabs button{min-height:40px!important}}
 </style><style>.site-locked .risk-monitor-page{display:none!important}
 .header nav a.active{color:#243b7a;font-weight:700}
 .risk-monitor-page{max-width:1500px;margin:0 auto 34px;background:#fff;border:1px solid #e1e7ef;border-radius:18px;box-shadow:0 8px 32px rgba(27,45,78,.05);overflow:hidden}
@@ -2632,17 +2657,18 @@ body{background:var(--fq-ui-paper);color:var(--fq-ui-ink)}
 
 </section>
 <div class="forecast-card"><div><span class="forecast-label">DỰ BÁO GIÁ</span><h4>Dự báo giá</h4><p>Dự báo T+1–T+5 cho <strong id="forecast-symbol">MBB</strong>.</p></div><div class="forecast-action"><a id="forecast-link" href="../forecast-final.html?symbol=MBB" target="_blank" rel="noopener noreferrer">Xem dự báo MBB ↗</a><small>Mở báo cáo dự báo</small></div></div></div>
-<aside class="market-news" id="market-news-workspace"><div class="market-news-head"><div><span class="research-ai-label">TIN THỊ TRƯỜNG</span><h3 id="news-title">Tin doanh nghiệp</h3></div><div class="news-head-actions"><span id="news-impact-summary" class="news-impact-summary"></span><button id="news-alert-toggle" type="button" aria-pressed="false">Bật cảnh báo theo dõi</button></div></div>
+<aside class="market-news" id="market-news-workspace"><div class="market-news-head"><div><span class="research-ai-label">TIN THỊ TRƯỜNG</span><h3 id="news-title">Tin doanh nghiệp</h3></div><div class="news-head-actions"><span id="news-impact-summary" class="news-impact-summary"></span><button id="news-alert-toggle" type="button" aria-pressed="false" disabled hidden>Thông báo tác động</button></div></div>
 <div id="news-primary-tabs" class="news-primary-tabs" role="tablist" aria-label="Nhóm tin tức">
 <button type="button" data-news-tab="all" role="tab" aria-selected="false">Mới nhất</button>
 <button type="button" data-news-tab="impact" role="tab" aria-selected="false">Tin đáng chú ý</button>
+<button type="button" data-news-tab="verified" role="tab" aria-selected="false">Tác động kiểm chứng</button>
 <button type="button" class="active" data-news-tab="company" role="tab" aria-selected="true">Theo mã</button>
 <button type="button" data-news-tab="watchlist" role="tab" aria-selected="false">Theo dõi</button>
 <button type="button" data-news-tab="sbv" role="tab" aria-selected="false">NHNN</button>
 <button type="button" data-news-tab="global" role="tab" aria-selected="false">Quốc tế</button>
 </div>
-<div class="news-filter-row"><label for="news-mode">Bộ lọc</label><select id="news-mode"><option value="company">Theo doanh nghiệp</option><option value="watchlist">Theo dõi</option><option value="new">Mới từ lần xem trước</option><option value="vietnam">Kinh tế Việt Nam</option><option value="sbv">NHNN & tiền tệ Việt Nam</option><option value="global">Kinh tế quốc tế</option><option value="impact">Tin đáng chú ý</option><option value="all">Tất cả tin kinh tế</option><option value="finance">Tài chính</option><option value="market">Thị trường</option><option value="rates">Lãi suất</option><option value="stocks">Chứng khoán</option><option value="banking">Ngân hàng</option><option value="investment">Đầu tư</option><option value="macro">Vĩ mô</option></select></div>
-<p id="news-status" class="market-subtitle"></p><div id="news-intelligence-summary" class="news-intelligence-summary" aria-label="Tổng hợp bản tin và góc nhìn"></div><div id="news-list"></div></aside></div>
+<div class="news-filter-row"><label for="news-mode">Bộ lọc</label><select id="news-mode"><option value="company">Theo doanh nghiệp</option><option value="watchlist">Theo dõi</option><option value="new">Mới từ lần xem trước</option><option value="vietnam">Kinh tế Việt Nam</option><option value="sbv">NHNN & tiền tệ Việt Nam</option><option value="global">Kinh tế quốc tế</option><option value="impact">Tin đáng chú ý</option><option value="verified">Tác động kiểm chứng</option><option value="all">Tất cả tin kinh tế</option><option value="finance">Tài chính</option><option value="market">Thị trường</option><option value="rates">Lãi suất</option><option value="stocks">Chứng khoán</option><option value="banking">Ngân hàng</option><option value="investment">Đầu tư</option><option value="macro">Vĩ mô</option></select></div>
+<p id="news-status" class="market-subtitle"></p><div id="news-intelligence-summary" class="news-intelligence-summary" aria-label="Tổng hợp bản tin và góc nhìn"></div><section id="news-impact-reviewed-panel" class="news-impact-reviewed-panel" aria-label="Kết quả kiểm chứng tác động tin tức" hidden><div class="news-reviewed-main"><span class="news-reviewed-zero" aria-hidden="true">0</span><div><span class="news-reviewed-kicker">BẰNG CHỨNG THỰC CHỨNG</span><h4 id="news-reviewed-headline">Đang kiểm tra bằng chứng</h4><p id="news-reviewed-note">Chỉ những ngành và doanh nghiệp có bằng chứng độc lập đạt chuẩn mới xuất hiện tại đây.</p></div></div><span id="news-reviewed-asof" class="news-reviewed-asof"></span><details class="news-reviewed-criteria"><summary>Tiêu chí kiểm chứng</summary><p><strong>Đúng doanh nghiệp:</strong> Xác thực doanh nghiệp, ngành và mức độ tiếp xúc kinh tế tại thời điểm tin.</p><p><strong>Tác động có đối chứng:</strong> Kiểm tra các sự kiện tương tự, biến động trước tin, trùng lặp và giai đoạn kiểm định độc lập.</p><p><strong>Không gây nhiễu:</strong> Không phát cảnh báo khi thiếu bằng chứng hoặc dữ liệu chưa đủ tin cậy.</p></details></section><div id="news-list"></div></aside></div>
 <section class="market-board" aria-label="Bảng giá cổ phiếu HOSE"><div class="market-top"><div class="market-board-title-row"><h3>Bảng giá HOSE · Nhóm chính và thanh khoản</h3><button class="term-info-button" type="button" data-info-key="universe-tiers" aria-label="Giải thích Core, Liquid và Discovery">i</button></div><span id="market-count" class="market-subtitle"></span></div><div class="market-toolbar"><input id="market-filter" type="search" placeholder="Tìm mã hoặc doanh nghiệp" aria-label="Lọc bảng giá"><label><input id="watch-only" type="checkbox">Đang theo dõi</label><label>Phạm vi <select id="market-universe-filter"><option value="all">Nhóm chính và thanh khoản</option><option value="CORE">Nhóm chính</option><option value="LIQUID">Nhóm thanh khoản</option></select></label><label>Sắp xếp <select id="market-sort"><option value="symbol">Mã A–Z</option><option value="change">Tăng giá nhiều nhất</option></select></label></div><div class="market-table-wrap"><table class="market-table"><thead><tr><th>Theo dõi</th><th>Mã</th><th>Giá (đ)</th><th>Tham chiếu</th><th>Thay đổi</th><th>Khối lượng (CP)</th><th>Động lực / hệ số <button class="term-info-button term-info-inline" type="button" data-info-key="market-driver" aria-label="Giải thích Động lực và hệ số">i</button></th><th>Cập nhật</th></tr></thead><tbody id="market-rows"></tbody></table></div></section>
 </section>
 <section id="macro" class="macro-section is-collapsed" aria-label="Biểu đồ vĩ mô và ESG doanh nghiệp">
@@ -3577,6 +3603,44 @@ class ChartController{
 }
 window.FinChart={create:(base,onQuote)=>{if(!L||!M){$('chart-status').textContent='Không tải được thư viện biểu đồ. Vui lòng mở lại trang.';return {select(){},load(){},snapshot(){},noteNews(){},setInsights(){},technicalContext(){return null;}};}return new ChartController(base,onQuote);}};
 })();
+</script><script>/* FinQuery evidence review: conservative, no notification based on news relevance. */
+(function(root){
+'use strict';
+const SCHEMA='FINQUERY_NEWS_IMPACT_REVIEW_V1';
+const REQUIRED=['HISTORICAL_SECTOR_MEMBERSHIP_NOT_POINT_IN_TIME','HISTORICAL_FIRST_SEEN_NOT_COLLECTOR_CERTIFIED','NO_INDEPENDENT_ISSUER_SPECIFIC_IMPACT_EVIDENCE','NO_FORWARD_PROSPECTIVE_IMPACT_STUDY','HISTORICAL_PRE_NEWS_CONFOUNDING'];
+const state={status:'LOADING',manifest:null};
+function inspectRelease(raw){
+ if(!raw||raw.schema!==SCHEMA||raw.status!=='RESEARCH_ONLY'||raw.notificationsEnabled!==false||raw.historicalImpactCertified!==false)return null;
+ if(!Array.isArray(raw.verifiedImpacts)||raw.verifiedImpacts.length!==0)return null;
+ if(!Array.isArray(raw.blockers)||REQUIRED.some(x=>!raw.blockers.includes(x)))return null;
+ const n=raw.research||{};
+ if(n.retrospectiveTickerCohorts!==0||n.historicalCollectorReceipts!==0||!Number.isInteger(n.independentEpisodes)||n.independentEpisodes<0)return null;
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(String(raw.reviewAsOf||'')))return null;
+ return {status:'RESEARCH_ONLY',reviewAsOf:raw.reviewAsOf,eligibleCount:0,independentEpisodes:n.independentEpisodes};
+}
+function summary(){return state.manifest||{status:state.status,eligibleCount:0,reviewAsOf:null};}
+function canNotify(){return false;} // Intentionally requires a separate reviewed code release.
+function reviewedImpacts(){return [];} // Never import labels from newsPriority or RSS feed.
+async function load(){
+ if(typeof root.location==='undefined'||typeof root.fetch!=='function')return summary();
+ try{
+  const rel=String(root.location.pathname||'').includes('/frontend/')?'../data/':'data/';
+  const url=new URL(rel+'news-impact-reviewed.json',root.location.href);
+  const response=await root.fetch(url.href,{cache:'no-store'});
+  if(!response.ok)throw Error('Impact review manifest not available');
+  const reviewed=inspectRelease(await response.json());
+  state.manifest=reviewed;
+  state.status=reviewed?'RESEARCH_ONLY':'INVALID';
+ }catch(_error){state.status='UNAVAILABLE';state.manifest=null;}
+ if(root.document&&typeof root.CustomEvent==='function'){
+  root.document.dispatchEvent(new root.CustomEvent('finquery:news-impact-review-ready'));
+ }
+ return summary();
+}
+const api={inspectRelease,summary,canNotify,reviewedImpacts,load};
+if(root&&root.document){root.FinNewsImpactReview=api;void load();}
+if(typeof module!=='undefined'&&module.exports)module.exports=api;
+})(typeof window!=='undefined'?window:{});
 </script><script>(function(){'use strict';
 const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const BASE=document.documentElement.dataset.hosting==='pages'?new URL('market/',location.href).href:'https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/';
@@ -3748,7 +3812,7 @@ function setMarketView(view){
  if(['peers','sector'].includes(state.marketView))void renderMarketCompare();
  if(state.marketView==='scanner')window.FinTechnicalScanner?.open?.();
 }
-const NEWS_LABELS={all:'Tin kinh tế mới nhất',company:'Tin doanh nghiệp',watchlist:'Tin theo dõi',new:'Mới từ lần xem trước',vietnam:'Kinh tế Việt Nam',sbv:'NHNN & tiền tệ Việt Nam',global:'Kinh tế quốc tế',impact:'Tin đáng chú ý',finance:'Tài chính',market:'Thị trường',rates:'Lãi suất',stocks:'Chứng khoán',banking:'Ngân hàng',investment:'Đầu tư',macro:'Kinh tế vĩ mô'};
+const NEWS_LABELS={all:'Tin kinh tế mới nhất',company:'Tin doanh nghiệp',watchlist:'Tin theo dõi',new:'Mới từ lần xem trước',vietnam:'Kinh tế Việt Nam',sbv:'NHNN & tiền tệ Việt Nam',global:'Kinh tế quốc tế',impact:'Tin đáng chú ý',verified:'Tác động đã kiểm chứng',finance:'Tài chính',market:'Thị trường',rates:'Lãi suất',stocks:'Chứng khoán',banking:'Ngân hàng',investment:'Đầu tư',macro:'Kinh tế vĩ mô'};
 const GLOBAL_RE=/\b(?:fed|federal reserve|fomc|ecb|european central bank|boj|bank of japan|pboc|people'?s bank of china|imf|world bank|opec|brent|wti|wall street|s&p 500|nasdaq|dow jones|treasury|us yields?|geopolit|middle east|china|eurozone|euro area|united states|u\.s\.)\b/i;
 const SBV_RE=/(?:ngân hàng nhà nước|\bnhnn\b|\bsbv\b|thị trường mở|\bomo\b|tín phiếu|bơm ròng|hút ròng|liên ngân hàng|tỷ giá trung tâm|dự trữ bắt buộc)/i;
 const SHOCK_RE=/(?:lao dốc|giảm mạnh|giảm sốc|rơi mạnh|sụt mạnh|tăng mạnh|tăng vọt|bật tăng|lập đỉnh|kỷ lục|plunge|plummet|tumble|slump|soar|surge|spike|crash|collapse|record high|record low|biggest (?:gain|drop|fall|rise))/i;
@@ -3770,20 +3834,16 @@ function breakingRows(){
  if(picked.length<4){for(const row of ranked){if(picked.includes(row))continue;picked.push(row);if(picked.length>=6)break;}}
  return picked;
 }
-function newsAlertsEnabled(){return localStorage.getItem('finquery-news-alert-enabled')==='1';}
-function syncNewsAlertButton(){const b=$('news-alert-toggle');if(!b)return;const on=newsAlertsEnabled();b.setAttribute('aria-pressed',String(on));b.textContent=on?'Cảnh báo Watchlist: bật':'Bật cảnh báo Watchlist';}
-function notifyWatchlistNews(rows){
- if(!newsAlertsEnabled()||!Array.isArray(rows)||!rows.length||!('Notification'in window)||Notification.permission!=='granted')return;
- const unique=[];const seen=new Set();
- for(const row of rows){const key=row.storyId||row.url||row.title;if(seen.has(key))continue;seen.add(key);unique.push(row);if(unique.length>=4)break;}
- if(!unique.length)return;
- const first=unique[0],symbols=(first.symbols||[]).filter(x=>watch.includes(String(x).toUpperCase()));
- const body=(symbols.length?symbols.join(', ')+' · ':'')+String(first.title||'').slice(0,130)+(unique.length>1?' · +'+(unique.length-1)+' tin mới':'');
- try{new Notification('FinQuery · Tin mới Watchlist',{body});}catch{}
+function newsAlertsEnabled(){return false;} // No impact notifications until an independent, reviewed E3 release.
+function syncNewsAlertButton(){
+ const b=$('news-alert-toggle');if(!b)return;
+ b.hidden=true;b.disabled=true;b.setAttribute('aria-pressed','false');
+ b.textContent='Thông báo tác động';
+ b.title='Chỉ mở khi có bằng chứng tác động độc lập đủ điều kiện';
 }
 function renderBreakingTicker(){
  const box=$('breaking-news-ticker'),track=$('breaking-news-track'),stamp=$('breaking-news-updated');if(!box||!track)return;
- const rows=breakingRows();if(!rows.length){box.hidden=true;return;}box.hidden=false;
+ if(state.newsMode==='verified'){box.hidden=true;return;}const rows=breakingRows();if(!rows.length){box.hidden=true;return;}box.hidden=false;
  const pieces=rows.map(r=>{const url=safeURL(r.url),tag=impactTag(r),score=impactScore(r),urgent=score>=80?' breaking-urgent':'';return '<a class="breaking-link'+urgent+'" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer"><b>'+(score>=80?'⚠ ':'')+esc(tag)+'</b> '+esc(r.title)+' <em>'+esc(shortAge(r))+'</em></a>';});
  track.innerHTML=(pieces.concat(pieces)).join('<span class="breaking-dot">●</span>');
  if(stamp)stamp.textContent=state.news?.checkedAt?date(state.news.checkedAt):'';
@@ -3816,15 +3876,27 @@ function renderNewsIntelligenceSummary(){
  }
  root.innerHTML=sections.join('');
 }
-function exposureExplanation(r){
- const x=r?.economicExposureHypothesis;
- if(!x||x.verification!=='HYPOTHESIS_ONLY'||x.historicalImpactCertified!==false)return '';
- const mechanisms=Array.isArray(x.candidateSectorMechanisms)?x.candidateSectorMechanisms.slice(0,3):[];
- if(!mechanisms.length)return '';
- return '<details class="news-exposure-detail"><summary>Cơ chế ảnh hưởng có thể liên quan · Chưa kiểm chứng</summary><div>'+mechanisms.map(m=>'<p><strong>'+esc(m.label||'')+'</strong> · '+esc(m.condition||'')+'</p>').join('')+'<small>Cần xác minh tiếp xúc thực tế và backtest độc lập. Chưa xác nhận mã hoặc ngành bị tác động.</small></div></details>';
-}
 function news(){
  const data=state.news,items=data?.items||[];let rows;
+ const isReviewed=state.newsMode==='verified';
+ const reviewed=window.FinNewsImpactReview?.summary?.();
+ const marker=$('news-impact-summary');if(marker)marker.textContent=reviewed?.status==='RESEARCH_ONLY'?'0 tác động đạt chuẩn':'Đang xác minh tác động';
+ const panel=$('news-impact-reviewed-panel'),list=$('news-list'),intelligence=$('news-intelligence-summary'),filter=document.querySelector('.market-news .news-filter-row');
+ if(panel)panel.hidden=!isReviewed;
+ if(list)list.hidden=isReviewed;
+ if(intelligence)intelligence.hidden=isReviewed;
+ if(filter)filter.hidden=isReviewed;
+ if(isReviewed){
+  const audit=window.FinNewsImpactReview?.summary?.()||{status:'UNAVAILABLE',eligibleCount:0};
+  $('news-title').textContent='Tác động đã kiểm chứng';
+  const ready=audit.status==='RESEARCH_ONLY';
+  const asOf=$('news-reviewed-asof'),note=$('news-reviewed-note'),head=$('news-reviewed-headline');
+  if(asOf)asOf.textContent=ready?'Kết quả thẩm định: '+String(audit.reviewAsOf||'').split('-').reverse().join('/'):'';
+  if(head)head.textContent=ready?'Chưa có sự kiện đạt chuẩn tác động':'Chưa xác minh được dữ liệu kiểm chứng';
+  if(note)note.textContent=ready?'Hiện chưa có mối liên hệ tin tức – ngành – doanh nghiệp nào đủ bằng chứng độc lập để phát cảnh báo. Tin mới vẫn hiển thị ở các mục khác.':'Dữ liệu kiểm chứng chưa sẵn sàng hoặc chưa hợp lệ. FinQuery không phát cảnh báo tác động khi chưa xác minh được dữ liệu.';
+  $('news-status').textContent=ready?'0 sự kiện được xác nhận · Không phát thông báo tác động':'Không có thông báo tác động khi dữ liệu kiểm chứng không hợp lệ.';
+  syncNewsTabs();syncNewsAlertButton();renderBreakingTicker();return;
+ }
  if(state.newsMode==='company')rows=strictCompanyNews(items,state.symbol,50);
  else rows=items.filter(r=>matchesNewsMode(r,state.newsMode));
  rows.sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt));
@@ -3832,7 +3904,7 @@ function news(){
  $('news-status').textContent=data?(newsStale(data)?'Tin tức chậm cập nhật · Kiểm tra ':'Kiểm tra ')+date(data.checkedAt)+' · '+rows.length+' bài phù hợp'+(data.status==='retained'?' · Đang dùng tin đã lưu':''):'Chưa tải được tin tức.';
  renderNewsIntelligenceSummary();
  const limit=state.newsMode==='company'?50:80;
- $('news-list').innerHTML=rows.slice(0,limit).map(r=>{const url=safeURL(r.url),score=Number(r.newsPriority??impactScore(r)),origin=newsOrigin(r),impact=score>=65?'CAO':score>=45?'ĐÁNG CHÚ Ý':'',badge=score>=45?impactTag(r):(isSBVNews(r)?'NHNN':origin==='global'?'QUỐC TẾ':state.newsMode==='company'?'DOANH NGHIỆP':'VIỆT NAM'),sources=Number(r.sourceCount||1),reaction=r.observedReaction||{},reactionBits=[['15m',reaction.return15mPct],['60m',reaction.return60mPct],['EOD',reaction.returnEodPct]].filter(x=>Number.isFinite(Number(x[1]))).map(x=>x[0]+' '+(Number(x[1])>0?'+':'')+Number(x[1]).toLocaleString('vi-VN',{maximumFractionDigits:2})+'%').join(' · ');return url?'<article class="news-item"><p><b class="news-origin-badge">'+badge+'</b> <span>· '+esc(newsTimeLabel(r))+'</span>'+(impact?' <em class="news-impact news-impact-'+(score>=65?'high':'medium')+'">MỨC ĐỘ '+impact+' · '+score+'</em>':'')+'</p><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(r.title)+' <span aria-hidden="true">↗</span></a>'+(reactionBits?'<small class="news-reaction">Phản ứng giá: '+esc(reactionBits)+'</small>':'')+exposureExplanation(r)+'</article>':'';}).join('')||(state.newsMode==='company'?'<p class="market-empty">Chưa có tin doanh nghiệp '+esc(state.symbol)+' đủ mức liên quan hiện tại.</p>':'<p class="market-empty">Chưa tìm thấy tin phù hợp trong 30 ngày gần đây.</p>');
+ $('news-list').innerHTML=rows.slice(0,limit).map(r=>{const url=safeURL(r.url),score=Number(r.newsPriority??impactScore(r)),origin=newsOrigin(r),impact=score>=65?'CAO':score>=45?'ĐÁNG CHÚ Ý':'',badge=score>=45?impactTag(r):(isSBVNews(r)?'NHNN':origin==='global'?'QUỐC TẾ':state.newsMode==='company'?'DOANH NGHIỆP':'VIỆT NAM'),sources=Number(r.sourceCount||1),reaction=r.observedReaction||{},reactionBits=[['15m',reaction.return15mPct],['60m',reaction.return60mPct],['EOD',reaction.returnEodPct]].filter(x=>Number.isFinite(Number(x[1]))).map(x=>x[0]+' '+(Number(x[1])>0?'+':'')+Number(x[1]).toLocaleString('vi-VN',{maximumFractionDigits:2})+'%').join(' · ');return url?'<article class="news-item"><p><b class="news-origin-badge">'+badge+'</b> <span>· '+esc(newsTimeLabel(r))+'</span>'+(impact?' <em class="news-impact news-impact-'+(score>=65?'high':'medium')+'">ƯU TIÊN TIN · '+score+'</em>':'')+'</p><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(r.title)+' <span aria-hidden="true">↗</span></a>'+'</article>':'';}).join('')||(state.newsMode==='company'?'<p class="market-empty">Chưa có tin doanh nghiệp '+esc(state.symbol)+' đủ mức liên quan hiện tại.</p>':'<p class="market-empty">Chưa tìm thấy tin phù hợp trong 30 ngày gần đây.</p>');
  if(rows.length)localStorage.setItem('finquery-news-last-seen',String(Math.max(Date.now(),...rows.map(x=>Date.parse(x.publishedAt)||0))));
 }
 async function refresh(){
@@ -3894,7 +3966,7 @@ async function refresh(){
  manageQuoteRetry(Boolean(currentQuoteLive));
  window.FinTechnicalScanner?.setMarketSourceTime?.(state.quoteBundleSourceTime||null);window.FinStrategyBuilder?.setMarketSourceTime?.(state.quoteBundleSourceTime||null);
  if(currentQuoteLive)chartController.snapshot(currentQuote);
- if(state.initialized&&previousNewsMax){const fresh=(state.news?.items||[]).filter(x=>(Date.parse(x.publishedAt)||0)>previousNewsMax).sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt));const relevant=strictCompanyNews(fresh,state.symbol,1)[0];if(relevant)chartController.noteNews(relevant);const watchFresh=fresh.filter(x=>(x.symbols||[]).some(sym=>watch.includes(String(sym).toUpperCase())));notifyWatchlistNews(watchFresh);}
+ if(state.initialized&&previousNewsMax){const fresh=(state.news?.items||[]).filter(x=>(Date.parse(x.publishedAt)||0)>previousNewsMax).sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt));const relevant=strictCompanyNews(fresh,state.symbol,1)[0];if(relevant)chartController.noteNews(relevant);/* Watchlist news are not validated issuer impacts: no browser push. */}
  state.initialized=true;window.FinQueryAI?.sync(state.symbol);
  const degraded=results.some(r=>r.status==='rejected'),bundleWaiting=results[0].status==='rejected';
  const refreshStatus=$('market-refresh-status');if(refreshStatus)refreshStatus.textContent=state.priceOnlyMode?'Giá đã được tải riêng; bộ phân tích, chiến lược và rủi ro đang chờ đồng bộ cùng phiên.':bundleWaiting?'Đang đồng bộ bộ dữ liệu mới; hệ thống giữ snapshot hoàn chỉnh gần nhất.':currentQuote&&!currentQuoteLive&&marketSessionActive()?(quoteFallbackError?'Nguồn trực tiếp chưa phản hồi; hệ thống đang tự thử lại.':'Đang đồng bộ snapshot mới trong phiên.'):usedQuoteFallback?'Giá trực tiếp đã cập nhật; các module phân tích giữ snapshot hoàn chỉnh gần nhất cho đến khi đồng bộ xong.':usedCloseCatch?(marketPhase()==='LUNCH'?'Đã đồng bộ giá chốt phiên sáng.':'Đã đồng bộ giá chốt phiên chiều.'):(degraded?'Một phần dữ liệu chưa tải được; giữ snapshot hoàn chỉnh gần nhất nếu có.':'');
@@ -3923,7 +3995,8 @@ function openMarketChart(symbol,companies){
 }
 window.FinancialMarket={refresh,select:selectMarketSymbol,openChart:openMarketChart,context(){const all=(state.news?.items||[]).slice().sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)),items=strictCompanyNews(all,state.symbol,15),marketNews=sectorNews(all,state.symbol,40),quote=(state.priceOnlyMode||quoteStale(state.quotes[state.symbol]))?null:(state.quotes[state.symbol]||null),scan=window.FinTechnicalScanner?.context?.()||null;return{symbol:state.symbol,universeTier:tierFor(state.symbol),quote,quoteBundleSourceTime:state.quoteBundleSourceTime||null,quoteBundleCheckedAt:state.quoteBundleCheckedAt||null,driver:state.drivers?.symbols?.[state.symbol]||null,market:{generatedAt:state.drivers?.generatedAt||null,medianChangePct:state.drivers?.marketMedianChangePct??null},technical:chartController?.technicalContext?.()||null,scanner:scan&&(!state.quoteBundleSourceTime||String(scan.sourceTime)===String(state.quoteBundleSourceTime))?scan:null,news:items,sectorNews:marketNews,marketNews,dailyBrief:state.news?.dailyBrief||null,viewpointSentiment:state.news?.viewpointSentiment||null,newsCheckedAt:state.news?.checkedAt||null,newsLiveFallback:Boolean(state.news?.liveFallback)};},alertContext(){return{symbol:state.symbol,companies:state.companies.map(c=>({symbol:c.symbol,name:c.name,tier:c.tier})),quotes:state.quotes,watch:[...watch]};},registerInsights(api){api?.attachChart?.(chartController);api?.select?.(state.symbol);},newsScore:(item,symbol)=>companyNewsScore(item,symbol||state.symbol)};
 document.querySelectorAll('[data-market-view]').forEach(btn=>btn.addEventListener('click',()=>setMarketView(btn.dataset.marketView)));
-$('watch-toggle').addEventListener('click',()=>toggleWatch(state.symbol));$('market-rows').addEventListener('error',e=>{const img=e.target;if(img.tagName!=='IMG'||!img.closest('.ticker-logo'))return;const stage=Number(img.dataset.logoStage||0);if(stage===0&&img.dataset.logoAlt){img.dataset.logoStage='1';img.src=img.dataset.logoAlt;return;}if(stage===1&&img.dataset.logoAlt2){img.dataset.logoStage='2';img.src=img.dataset.logoAlt2;return;}if(stage<=2&&img.dataset.logoPlaceholder){img.dataset.logoStage='3';img.src=img.dataset.logoPlaceholder;return;}img.hidden=true;},true);$('market-rows').addEventListener('click',e=>{const star=e.target.closest('[data-watch]'),ticker=e.target.closest('[data-market-symbol]'),driver=e.target.closest('[data-driver]');if(star)toggleWatch(star.dataset.watch);if(driver){state.driverOpen=state.driverOpen===driver.dataset.driver?'':driver.dataset.driver;board();return;}if(ticker){const symbol=ticker.dataset.marketSymbol,company=state.companies.find(x=>x.symbol===symbol);if(company?.tier&&company.tier!=='CORE'){openForecastSymbol(symbol);return;}$('ticker').value=symbol;$('company-form').requestSubmit();}});$('market-filter').addEventListener('input',board);$('market-universe-filter')?.addEventListener('change',e=>{state.universeFilter=e.target.value;board();});$('watch-only').addEventListener('change',e=>{state.watchOnly=e.target.checked;board();});$('market-sort').addEventListener('change',e=>{state.sort=e.target.value;board();});$('market-refresh')?.addEventListener('click',()=>{refresh();window.FinInsights?.reload?.();window.FinTechnicalScanner?.refresh?.();if(state.symbol)chartController.load(true);});$('news-mode').addEventListener('change',e=>{state.newsMode=e.target.value;localStorage.setItem('finquery-news-mode',state.newsMode);news();});document.querySelectorAll('[data-news-tab]').forEach(btn=>btn.addEventListener('click',()=>{state.newsMode=btn.dataset.newsTab;localStorage.setItem('finquery-news-mode',state.newsMode);news();}));$('news-alert-toggle')?.addEventListener('click',async()=>{if(!('Notification'in window))return;const enable=!newsAlertsEnabled();if(enable){const permission=Notification.permission==='granted'?'granted':await Notification.requestPermission();if(permission!=='granted'){localStorage.setItem('finquery-news-alert-enabled','0');syncNewsAlertButton();return;}localStorage.setItem('finquery-news-alert-enabled','1');}else localStorage.setItem('finquery-news-alert-enabled','0');syncNewsAlertButton();});syncNewsAlertButton();
+$('watch-toggle').addEventListener('click',()=>toggleWatch(state.symbol));$('market-rows').addEventListener('error',e=>{const img=e.target;if(img.tagName!=='IMG'||!img.closest('.ticker-logo'))return;const stage=Number(img.dataset.logoStage||0);if(stage===0&&img.dataset.logoAlt){img.dataset.logoStage='1';img.src=img.dataset.logoAlt;return;}if(stage===1&&img.dataset.logoAlt2){img.dataset.logoStage='2';img.src=img.dataset.logoAlt2;return;}if(stage<=2&&img.dataset.logoPlaceholder){img.dataset.logoStage='3';img.src=img.dataset.logoPlaceholder;return;}img.hidden=true;},true);$('market-rows').addEventListener('click',e=>{const star=e.target.closest('[data-watch]'),ticker=e.target.closest('[data-market-symbol]'),driver=e.target.closest('[data-driver]');if(star)toggleWatch(star.dataset.watch);if(driver){state.driverOpen=state.driverOpen===driver.dataset.driver?'':driver.dataset.driver;board();return;}if(ticker){const symbol=ticker.dataset.marketSymbol,company=state.companies.find(x=>x.symbol===symbol);if(company?.tier&&company.tier!=='CORE'){openForecastSymbol(symbol);return;}$('ticker').value=symbol;$('company-form').requestSubmit();}});$('market-filter').addEventListener('input',board);$('market-universe-filter')?.addEventListener('change',e=>{state.universeFilter=e.target.value;board();});$('watch-only').addEventListener('change',e=>{state.watchOnly=e.target.checked;board();});$('market-sort').addEventListener('change',e=>{state.sort=e.target.value;board();});$('market-refresh')?.addEventListener('click',()=>{refresh();window.FinInsights?.reload?.();window.FinTechnicalScanner?.refresh?.();if(state.symbol)chartController.load(true);});$('news-mode').addEventListener('change',e=>{state.newsMode=e.target.value;localStorage.setItem('finquery-news-mode',state.newsMode);news();});document.querySelectorAll('[data-news-tab]').forEach(btn=>btn.addEventListener('click',()=>{state.newsMode=btn.dataset.newsTab;localStorage.setItem('finquery-news-mode',state.newsMode);news();}));syncNewsAlertButton();
+document.addEventListener('finquery:news-impact-review-ready',()=>{news();syncNewsAlertButton();});
 const chartController=window.FinChart.create(BASE,q=>{const previous=state.quotes[q.symbol];if(window.FinMarketData.stamp(q.sourceTime)===null)return;if(previous?.sourceTime&&window.FinMarketData.stamp(previous.sourceTime)!==null&&Date.parse(previous.sourceTime)>Date.parse(q.sourceTime))return;state.quotes[q.symbol]={...previous,...q,changePct:Number.isFinite(q.changePct)?q.changePct:(q.reference||previous?.reference)>0?(q.price/(q.reference||previous.reference)-1)*100:null,unit:'VND',source:'WebSocket',status:'ok',collectedAt:new Date().toISOString()};showQuote();board();});
 setMarketView('price');refresh();setInterval(()=>{if(!document.hidden)refresh();},300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
 })();
