@@ -215,8 +215,15 @@ def analyze_snapshot(items, companies, finance_dir, registry_path, collected_at)
         counts[family] += 1
         mention = _direct_mentions(row, known)
         candidate_mentions += bool(mention)
-        receipt = (parse_utc(row.get("collectorFirstSeenAt"))
-                   if row.get("collectorFirstSeenBasis") == "COLLECTOR_RECEIPT" else None)
+        # For clustered syndicated stories, every member must have a
+        # collector-certified receipt. One recent copy cannot make an
+        # older legacy publication retrospectively point-in-time.
+        if row.get("storyId"):
+            receipt = (parse_utc(row.get("storyCollectorFirstSeenAt"))
+                       if row.get("storyCollectorFirstSeenBasis") == "COLLECTOR_RECEIPT" else None)
+        else:
+            receipt = (parse_utc(row.get("collectorFirstSeenAt"))
+                       if row.get("collectorFirstSeenBasis") == "COLLECTOR_RECEIPT" else None)
         if not receipt or receipt > observed:
             early += 1
             receipt = None

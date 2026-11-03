@@ -67,7 +67,9 @@ class HybridEngineTests(unittest.TestCase):
         news=[{"storyId":"story_test","title":"Tỷ giá USD/VND tăng mạnh",
                "entityMentions":[{"symbol":"FPT","confidence":.98}],
                "collectorFirstSeenBasis":"COLLECTOR_RECEIPT",
-               "collectorFirstSeenAt":"2026-11-03T08:20:00Z"}]
+               "collectorFirstSeenAt":"2026-11-03T08:20:00Z",
+               "storyCollectorFirstSeenBasis":"COLLECTOR_RECEIPT",
+               "storyCollectorFirstSeenAt":"2026-11-03T08:20:00Z"}]
         with tempfile.TemporaryDirectory() as folder:
             d=Path(folder);(d/"reports").mkdir()
             (d/"facts.json").write_text(json.dumps({"schema":h.EXPOSURE_SCHEMA,"facts":[example_fact()]}))
@@ -80,7 +82,9 @@ class HybridEngineTests(unittest.TestCase):
         event=[{"title":"Tỷ giá USD/VND tăng mạnh", "storyId":"early_news",
                 "entityMentions":[{"symbol":"FPT","confidence":.99}],
                 "collectorFirstSeenBasis":"COLLECTOR_RECEIPT",
-                "collectorFirstSeenAt":"2026-11-03T07:00:00Z"}]
+                "collectorFirstSeenAt":"2026-11-03T07:00:00Z",
+                "storyCollectorFirstSeenBasis":"COLLECTOR_RECEIPT",
+                "storyCollectorFirstSeenAt":"2026-11-03T07:00:00Z"}]
         later=example_fact(sourcePublishedAt="2026-11-03T08:00:00Z",
                            validFrom="2026-11-03T08:00:00Z")
         with tempfile.TemporaryDirectory() as folder:
@@ -88,6 +92,21 @@ class HybridEngineTests(unittest.TestCase):
             (d/"facts.json").write_text(json.dumps({"schema":h.EXPOSURE_SCHEMA,"facts":[later]}))
             out=h.analyze_snapshot(event,COMPANIES,d/"reports",d/"facts.json",NOW.isoformat())
         self.assertEqual(out["counts"]["reviewedSourceFacts"],1)
+        self.assertEqual(out["counts"]["storiesWithEligibleBusinessFacts"],0)
+        self.assertEqual(out["counts"]["eligibleNotifications"],0)
+
+    def test_legacy_syndicated_member_blocks_prospective_certification(self):
+        news=[{"storyId":"mixed_story","title":"Tỷ giá USD/VND tăng mạnh",
+               "entityMentions":[{"symbol":"FPT","confidence":.99}],
+               "collectorFirstSeenBasis":"COLLECTOR_RECEIPT",
+               "collectorFirstSeenAt":"2026-11-03T08:20:00Z",
+               "storyCollectorFirstSeenBasis":"LEGACY_UNCERTIFIED",
+               "storyCollectorFirstSeenAt":None}]
+        with tempfile.TemporaryDirectory() as folder:
+            d=Path(folder);(d/"reports").mkdir()
+            (d/"facts.json").write_text(json.dumps({"schema":h.EXPOSURE_SCHEMA,"facts":[example_fact()]}))
+            out=h.analyze_snapshot(news,COMPANIES,d/"reports",d/"facts.json",NOW.isoformat())
+        self.assertEqual(out["counts"]["storiesWithoutCertifiedCollectorTime"],1)
         self.assertEqual(out["counts"]["storiesWithEligibleBusinessFacts"],0)
         self.assertEqual(out["counts"]["eligibleNotifications"],0)
 
