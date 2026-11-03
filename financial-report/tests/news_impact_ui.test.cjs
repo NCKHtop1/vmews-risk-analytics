@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const js=fs.readFileSync(path.join(root,'frontend/market.js'),'utf8');
+const html=fs.readFileSync(path.join(root,'frontend/index.html'),'utf8');
+const pipeline=fs.readFileSync(path.join(root,'scripts/refresh_market.py'),'utf8');
+const news=fs.readFileSync(path.join(root,'scripts/news_intelligence.py'),'utf8');
+assert.match(js,/function exposureExplanation\(r\)/);
+assert.match(js,/Chưa kiểm chứng/);
+assert.match(js,/economicExposureHypothesis/);
+assert.match(html,/data-news-tab="impact"[^>]*>Tin đáng chú ý/);
+assert.match(pipeline,/nit\.attach_collector_receipts\(rows, retained, current\)/);
+assert.match(pipeline,/nit\.exposure_hypothesis\(row\)/);
+assert.match(news,/collectorFirstSeenBasis/);
+assert.match(news,/earliestPublishedAt/);
+assert.doesNotMatch(js,/historicalImpactCertified\s*=\s*true/);
+console.log('NEWS IMPACT EVIDENCE-ONLY UI CONTRACT PASS');

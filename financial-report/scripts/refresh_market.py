@@ -21,6 +21,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 import news_intelligence as ni
+import news_impact_taxonomy as nit
 
 ROOT = Path(__file__).resolve().parents[1]
 VN = timezone(timedelta(hours=7))
@@ -3159,7 +3160,9 @@ def news(out, companies):
         for row in previous.get('items', [])
         if _retain_news_row(row, current)
     ]
-    normalized = [ni.enrich_row(row, companies, ALIASES) for row in (rows + retained)]
+    normalized = [ni.enrich_row(row, companies, ALIASES) for row in nit.attach_collector_receipts(rows, retained, current)]
+    for row in normalized:
+        row['economicExposureHypothesis'] = nit.exposure_hypothesis(row)
     # Purge retained 24HMoney rows that no longer meet the current financial
     # relevance policy. This prevents old lifestyle/legal noise from surviving
     # indefinitely just because it was accepted by an earlier parser version.
