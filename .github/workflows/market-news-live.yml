@@ -10,6 +10,7 @@ on:
       - 'financial-report/scripts/refresh_market.py'
       - 'financial-report/scripts/news_intelligence.py'
       - 'financial-report/scripts/hybrid_news_impact.py'
+      - 'financial-report/scripts/news_impact_prospective.py'
       - 'financial-report/data/news-economic-exposure-registry.json'
   schedule:
     # Redundant quarter-hour triggers enqueue the next collector while the
@@ -106,6 +107,7 @@ jobs:
                 test -s /tmp/market-news/market/news-stories.json
                 test -s /tmp/market-news/market/news-semantic-health.json
                 test -s /tmp/market-news/market/news-impact-shadow-v2.json
+                test -s /tmp/market-news/market/news-impact-prospective-ledger-v2.json
                 python - <<'PY'
           import json
           from pathlib import Path
@@ -116,11 +118,16 @@ jobs:
               raise SystemExit('Unapproved news-impact alerts')
           if (x.get('publicationPolicy') or {}).get('killSwitch')!='LOCKED_OFF':
               raise SystemExit('Hybrid news impact kill switch unexpectedly open')
-          print('HYBRID NEWS SHADOW FAIL-CLOSED',x.get('status'),(x.get('counts') or {}).get('classifiedEventStories',0))
+          ledger=json.loads(Path('/tmp/market-news/market/news-impact-prospective-ledger-v2.json').read_text())
+          if ledger.get('schema')!='FINQUERY_NEWS_IMPACT_PROSPECTIVE_LEDGER_V2' or ledger.get('notificationsEnabled') is not False:
+              raise SystemExit('Prospective ledger improperly configured')
+          if ledger.get('eventCount')!=(x.get('counts') or {}).get('prospectiveLedgerRecords'):
+              raise SystemExit('Hybrid shadow/ledger snapshots misaligned')
+          print('HYBRID NEWS SHADOW FAIL-CLOSED',x.get('status'),(x.get('counts') or {}).get('classifiedEventStories',0),'ledger',ledger.get('eventCount'))
           PY
                 test -s /tmp/market-news/market/news-daily-brief.json
                 test -s /tmp/market-news/market/news-viewpoint-sentiment.json
-                git -C /tmp/market-news add --sparse market/news.json market/news-latest.json market/news-company-latest.json market/news-stories.json market/news-semantic-health.json market/news-impact-shadow-v2.json market/news-daily-brief.json market/news-viewpoint-sentiment.json
+                git -C /tmp/market-news add --sparse market/news.json market/news-latest.json market/news-company-latest.json market/news-stories.json market/news-semantic-health.json market/news-impact-shadow-v2.json market/news-impact-prospective-ledger-v2.json market/news-daily-brief.json market/news-viewpoint-sentiment.json
                 if ! git -C /tmp/market-news diff --cached --quiet; then
                   git -C /tmp/market-news commit -m 'Refresh market news stream [data-only]'
                   published=0
@@ -189,6 +196,9 @@ jobs:
           if company.get('status')!='ok' or company.get('selection')!='per_symbol_latest' or not company.get('items') or not company.get('companyCounts'):
               raise SystemExit(f'company news index invalid: status={company.get("status")} coverage={company.get("companyCoverage")} items={len(company.get("items") or [])}')
           shadow=json.loads((__import__('subprocess').check_output(['git','-C','/tmp/market-news','show','origin/financial-market-data:market/news-impact-shadow-v2.json'])).decode())
+          ledger=json.loads((__import__('subprocess').check_output(['git','-C','/tmp/market-news','show','origin/financial-market-data:market/news-impact-prospective-ledger-v2.json'])).decode())
+          if ledger.get('schema')!='FINQUERY_NEWS_IMPACT_PROSPECTIVE_LEDGER_V2' or ledger.get('notificationsEnabled') is not False:
+              raise SystemExit('Remote prospective evidence ledger invalid')
           if shadow.get('schema')!='FINQUERY_HYBRID_NEWS_IMPACT_SHADOW_V2' or shadow.get('checkedAt')!=data.get('checkedAt'):
               raise SystemExit('Live hybrid news impact shadow not aligned')
           if (shadow.get('counts') or {}).get('eligibleNotifications')!=0 or (shadow.get('publicationPolicy') or {}).get('killSwitch')!='LOCKED_OFF':
