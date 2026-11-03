@@ -255,5 +255,33 @@ class NewsIntelligenceTests(unittest.TestCase):
         self.assertEqual(rows,[])
         self.assertNotEqual(status['status'],'ok')
 
+
+    def test_mixed_legacy_and_certified_story_never_claims_first_seen(self):
+        base={'title':'Fed điều chỉnh lãi suất','publishedAt':'2026-11-03T04:30:00+00:00',
+              'symbols':[],'impactTag':'FED','sourcePriority':80}
+        old={**base,'source':'Earlier','publisher':'Earlier','url':'https://source.example/old',
+             'collectorFirstSeenBasis':'LEGACY_UNCERTIFIED'}
+        new={**base,'source':'New','publisher':'New','url':'https://source.example/new',
+             'collectorFirstSeenBasis':'COLLECTOR_RECEIPT',
+             'collectorFirstSeenAt':'2026-11-03T08:40:00+00:00'}
+        _,stories=ni.cluster_stories([old,new])
+        self.assertEqual(len(stories),1)
+        self.assertIsNone(stories[0]['firstSeenAt'])
+        self.assertEqual(stories[0]['firstSeenBasis'],'LEGACY_UNCERTIFIED')
+
+    def test_independent_collector_receipts_in_stories(self):
+        base={'title':'Giá dầu Brent tăng mạnh','publishedAt':'2026-11-03T04:30:00+00:00',
+              'symbols':[],'impactTag':'DẦU','sourcePriority':80}
+        a={**base,'source':'A','publisher':'A','url':'https://source.example/a',
+           'collectorFirstSeenBasis':'COLLECTOR_RECEIPT',
+           'collectorFirstSeenAt':'2026-11-03T08:42:00+00:00'}
+        b={**base,'source':'B','publisher':'B','url':'https://source.example/b',
+           'collectorFirstSeenBasis':'COLLECTOR_RECEIPT',
+           'collectorFirstSeenAt':'2026-11-03T08:47:00+00:00'}
+        _,stories=ni.cluster_stories([a,b])
+        self.assertEqual(len(stories),1)
+        self.assertEqual(stories[0]['firstSeenAt'],'2026-11-03T08:42:00+00:00')
+        self.assertEqual(stories[0]['firstSeenBasis'],'COLLECTOR_RECEIPT')
+
 if __name__=='__main__':
     unittest.main()

@@ -21,7 +21,7 @@ def build():
     html = html.replace('<link rel="stylesheet" href="portfolio-intelligence.css">', '<style>' + (front / 'portfolio-intelligence.css').read_text() + '</style>')
     html = html.replace('<link rel="stylesheet" href="portfolio-advisor.css">', '<style>' + (front / 'portfolio-advisor.css').read_text() + '</style>')
     html = html.replace('<link rel="stylesheet" href="responsive-system.css">', '<style>' + (front / 'responsive-system.css').read_text() + '</style>')
-    for filename in ('xlsx.js','metrics.js','chart-inspect.js','dashboard.js','vendor/lightweight-charts-5.0.9.js','chart-math.js','market-data.js','chart-engine.js','market.js','technical-scanner.js','strategy-engine.js','strategy-intelligence-core.js','alert-center.js','strategy-intelligence.js','alpha-radar.js','portfolio-rebalance-core.js','portfolio-intelligence.js','portfolio-policy-ui.js','portfolio-help.js','portfolio-advisor-ui.js','risk-monitor.js','section-collapse.js','workspace-tabs.js','insights.js','macro-dashboard.js','macro.js','liquidity-derivatives.js','derivatives-market.js','ownership-intelligence.js','knowledge-base.js','question-policy.js','research-agent.js','research-ai.js','app.js','google-signin.js','responsive-navigation.js'):
+    for filename in ('xlsx.js','metrics.js','chart-inspect.js','dashboard.js','vendor/lightweight-charts-5.0.9.js','chart-math.js','market-data.js','chart-engine.js','news-impact-reviewed.js','market.js','technical-scanner.js','strategy-engine.js','strategy-intelligence-core.js','alert-center.js','strategy-intelligence.js','alpha-radar.js','portfolio-rebalance-core.js','portfolio-intelligence.js','portfolio-policy-ui.js','portfolio-help.js','portfolio-advisor-ui.js','risk-monitor.js','section-collapse.js','workspace-tabs.js','insights.js','macro-dashboard.js','macro.js','liquidity-derivatives.js','derivatives-market.js','ownership-intelligence.js','knowledge-base.js','question-policy.js','research-agent.js','research-ai.js','app.js','google-signin.js','responsive-navigation.js'):
         html = html.replace('<script defer src="'+filename+'"></script>', '')
     datasets = {p.stem: json.loads(p.read_text()) for p in (ROOT / 'data').glob('*.json') if p.stem in ('MBB','VIC','FPT','VCB')}
     boot = {'companies': json.loads((ROOT / 'data/companies.json').read_text()), 'datasets': datasets}
@@ -33,6 +33,7 @@ def build():
     scripts += '<script>' + (front / 'dashboard.js').read_text() + '</script>'
     for filename in ('vendor/lightweight-charts-5.0.9.js','chart-math.js','market-data.js','chart-engine.js'):
         scripts += '<script data-config="./frontend/chart-config.json">' + (front / filename).read_text() + '</script>'
+    scripts += '<script>' + (front / 'news-impact-reviewed.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'market.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'technical-scanner.js').read_text() + '</script>'
     scripts += '<script>' + (front / 'strategy-engine.js').read_text() + '</script>'

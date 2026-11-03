@@ -25,3 +25,6 @@ Historical pooled correlations cannot certify a company/sector by themselves.
 Do not alter Forecast, Strategy, Portfolio, Risk, or price logic.
 
 Current V12 research provides no verified specific sector/ticker relationship.
+
+### UX correction 03 Nov 2026
+Potential economic transmission hypotheses remain in research metadata only; they are not rendered beneath every headline. The News header shows a neutral verified count, and the separate 'Tác động kiểm chứng' tab shows an honest empty state when no relation has adequate independent evidence. Raw Watchlist articles never trigger impact notifications. This is deliberate noise suppression, not a news ingestion failure.
