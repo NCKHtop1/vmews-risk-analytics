@@ -1121,3 +1121,26 @@ svg[data-fq-inspect] .fq-chart-cursor{fill:#fff;stroke:#3565c7;stroke-width:2.5}
 .on-date-group select{max-width:120px;padding:5px 7px;border:1px solid #d5dfec;border-radius:7px;background:#fff;font:inherit;color:#344560}
 .on-timeline-controls button:focus-visible,.on-date-group select:focus-visible{outline:2px solid #477fe2;outline-offset:2px}
 @media(max-width:600px){.on-timeline-controls{align-items:stretch;gap:8px}.on-range-group{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}.on-range-group button{padding:6px 2px}.on-date-group{justify-content:space-between;width:100%}}
+
+
+/* News Impact Intelligence: calm, evidence-first UX, independent from Forecast. */
+.market-news .news-impact-reviewed-panel[hidden],.market-news #news-list[hidden],.market-news .news-intelligence-summary[hidden],.market-news .news-filter-row[hidden],.market-news #news-alert-toggle[hidden]{display:none!important}
+.news-impact-reviewed-panel{border:1px solid #dde4ee;border-radius:12px;background:#fff;padding:18px 17px;margin:14px 0 8px;min-width:0;color:#33445d;box-shadow:0 1px 5px rgba(26,47,79,.035)}
+.news-reviewed-main{display:grid;grid-template-columns:46px minmax(0,1fr);gap:14px;align-items:start}
+.news-reviewed-zero{display:flex;align-items:center;justify-content:center;height:44px;min-width:44px;border-radius:10px;background:#f1f4f8;color:#596b82;font-size:25px;font-weight:700;font-variant-numeric:tabular-nums}
+.news-reviewed-kicker{display:block;font-size:9px;font-weight:750;letter-spacing:1px;color:#718198}
+.news-impact-reviewed-panel h4{font-size:14px;line-height:1.4;font-weight:730;letter-spacing:-.1px;margin:5px 0 7px;color:#263a52}
+.news-impact-reviewed-panel p{font-size:12px;line-height:1.65;color:#65748a;margin:0;overflow-wrap:anywhere}
+.news-reviewed-asof{display:block;margin:12px 0 0 60px;font-size:10px;color:#7a879a}
+.news-reviewed-criteria{margin-top:15px;border-top:1px solid #e8edf3;padding-top:11px}
+.news-reviewed-criteria summary{cursor:pointer;min-height:28px;font-size:11px;font-weight:650;color:#4a6180}
+.news-reviewed-criteria summary:focus-visible,.news-exposure-detail summary:focus-visible{outline:2px solid #5877bf;outline-offset:3px;border-radius:4px}
+.news-reviewed-criteria p{font-size:11px;margin:7px 0}
+.news-reviewed-criteria strong{color:#3e5069}
+.news-exposure-detail{border-left:2px solid #ced9e6;background:#fafbfd;border-radius:0 7px 7px 0;padding:8px 10px;margin:9px 0 2px;color:#596b81}
+.news-exposure-detail summary{cursor:pointer;font-size:11px;font-weight:630;line-height:1.5;color:#50657d}
+.news-exposure-detail p{font-size:10px;line-height:1.55;margin:7px 0 5px;color:#63758c}
+.news-exposure-detail strong{color:#3b536d}
+.news-exposure-detail small{display:block;line-height:1.55;font-size:9px;color:#8491a1}
+#news-alert-toggle:disabled{opacity:.56;cursor:not-allowed}
+@media(max-width:760px){.news-primary-tabs{scrollbar-width:thin;overscroll-behavior-x:contain}.news-primary-tabs button{flex-shrink:0;min-height:34px}.news-impact-reviewed-panel{padding:15px 13px}.news-reviewed-main{grid-template-columns:38px minmax(0,1fr);gap:10px}.news-reviewed-zero{height:38px;min-width:38px;font-size:21px}.news-reviewed-asof{margin-left:48px}}
