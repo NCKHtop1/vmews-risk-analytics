@@ -1,0 +1,58 @@
+name: FinQuery verified news impact backtest release gate
+on:
+  pull_request:
+    paths:
+      - 'financial-report/data/news-impact-reviewed.json'
+      - 'scripts/news_impact_publication_gate.py'
+      - 'scripts/news_impact_shadow_research.py'
+      - 'financial-report/tests/test_news_impact_publication_gate.py'
+      - 'financial-report/frontend/market.js'
+      - 'financial-report/frontend/market.css'
+      - 'financial-report/frontend/index.html'
+      - 'financial-report/tests/news_impact_ui.test.cjs'
+      - '.github/workflows/finquery-news-impact-reviewed-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  frozen-empirical-impact-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reject fabricated approvals
+        run: python financial-report/tests/test_news_impact_publication_gate.py
+      - name: Independently rerun frozen V12 event study
+        run: |
+          python scripts/news_impact_publication_gate.py \
+            --events data/event-intelligence-v12.json \
+            --sector data/sector-gate-v12.json \
+            --manifest financial-report/data/news-impact-reviewed.json \
+            --out /tmp/finquery-news-impact-publication-audit.json
+      - name: Assert no issuer or sector relation was certified
+        run: |
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/finquery-news-impact-publication-audit.json'))
+          assert d['status']=='RESEARCH_ONLY'
+          assert d['verifiedRelations']==0
+          assert d['notificationsEligible']==0
+          assert d['frozenStudy']['retrospectiveTickerCohorts']==0
+          assert d['frozenStudy']['historicalCollectorReceipts']==0
+          print('IMPACT_REVIEW: ZERO VALIDATED RELATIONS; NO NOTIFICATIONS')
+          PY
+      - name: Verify reviewed-impact UX contract
+        run: node financial-report/tests/news_impact_ui.test.cjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: finquery-news-impact-review-audit
+          path: /tmp/finquery-news-impact-publication-audit.json
+          retention-days: 30

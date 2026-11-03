@@ -1,0 +1,23 @@
+{
+  "schema": "FINQUERY_NEWS_IMPACT_REVIEW_V1",
+  "status": "RESEARCH_ONLY",
+  "reviewAsOf": "2026-11-03",
+  "notificationsEnabled": false,
+  "historicalImpactCertified": false,
+  "verifiedImpacts": [],
+  "research": {
+    "source": "frozen-v12-t2-independent-shadow",
+    "inputRecords": 12785,
+    "independentEpisodes": 1625,
+    "retrospectiveTickerCohorts": 0,
+    "retrospectiveEventCohorts": 2,
+    "historicalCollectorReceipts": 0
+  },
+  "blockers": [
+    "HISTORICAL_SECTOR_MEMBERSHIP_NOT_POINT_IN_TIME",
+    "HISTORICAL_FIRST_SEEN_NOT_COLLECTOR_CERTIFIED",
+    "NO_INDEPENDENT_ISSUER_SPECIFIC_IMPACT_EVIDENCE",
+    "NO_FORWARD_PROSPECTIVE_IMPACT_STUDY",
+    "HISTORICAL_PRE_NEWS_CONFOUNDING"
+  ]
+}
