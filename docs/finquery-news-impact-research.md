@@ -57,6 +57,17 @@ The isolated offline program financial-report/scripts/research_news_impact.py re
 
 Its exported report ALWAYS sets liveSectorAlerts=false and liveTickerAlerts=false; it never writes market snapshots or UI notifications. The exploratory test does not yet have point-in-time sector membership, independent firstSeenAt or event-day clustered bootstrap. Those are blockers to E3 and must not be hidden by attractive pilot results.
 
+## Measured research results, 03 Nov 2026 (NO production approval)
+
+Independent CI, GitHub Actions run 41601370425:
+
+- Recent retrospective archive: 13,870 articles across 404 symbols; 113 symbol histories available in the market branch for the pilot; 1,671 deduplicated representative stock-events with outcome windows. Historical collector firstSeenAt fields: **zero**.
+- Older event intelligence V12: 12,785 individual records spanning 2018-08-20 to 2026-08-18, 366 symbols and 98.5% benchmark coverage for T+5. Historical sector status remains ABSTAIN.
+- V12 directional/issuer-eligible records: 2,042; after 7-calendar-day overlapping-event cooldown: 1,712. Held-out tests for EVENT/TICKER × event category × sentiment × (1/3/5 sessions): 339 total; only 3 met pre-specified minimum independent-day/month/source counts; **zero** met exploratory evidence gates and **zero** can issue live notifications.
+- Positive EARNINGS examples: T+1 train implied UP, but validation directional effect -18.7 bps and holdout -12.5 bps, hit rate 44%. T+5 train implied DOWN but OOS hit rate 57.3%, week-bootstrap 95% interval [-10.9, 128.3] bps and FDR-adjusted exploratory q=0.594. Neither is actionable directional evidence.
+
+The outcome does not prove absence of news impact. It proves this archive, issuer/entity coverage and labeling scheme do not presently support low-noise, dependable alerts. More exhaustive news labels, news-to-factor exposure and timestamped forward ingestion are required before restarting a live-alert approval review.
+
 ## Required independent review
 
 - Senior Data Analyst: entity QA (including parent vs subsidiary), source and firstSeenAt audit, sector mapping through time, labelled precision/recall sample.
