@@ -34,6 +34,8 @@ const dummyShadow={
 };
 const clock=Date.parse('2026-11-03T10:00:00Z');
 assert.equal(reviewModule.inspectShadow(dummyShadow,clock).classifiedEventStories,60);
+assert.equal(reviewModule.inspectShadow({...dummyShadow,counts:{...dummyShadow.counts,prospectiveLedgerRecords:17}},clock).prospectiveLedgerRecords,17);
+assert.match(js,/Sổ nghiên cứu tiến cứu/);
 assert.equal(reviewModule.inspectShadow({...dummyShadow,counts:{...dummyShadow.counts,eligibleNotifications:1}},clock),null);
 assert.equal(reviewModule.inspectShadow({...dummyShadow,publicationPolicy:{...dummyShadow.publicationPolicy,killSwitch:'OPEN'}},clock),null);
 assert.equal(reviewModule.inspectShadow({...dummyShadow,checkedAt:'2026-11-03T06:00:00Z'},clock),null);

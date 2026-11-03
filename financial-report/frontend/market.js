@@ -252,7 +252,7 @@ function news(){
   if(head)head.textContent=ready?'Chưa có sự kiện đạt chuẩn tác động':'Chưa xác minh được dữ liệu kiểm chứng';
   if(note){
    const s=audit.shadow;
-   const descriptor=s?'Đã phân loại '+s.classifiedEventStories+' sự kiện tin tức; '+s.storiesWithEligibleBusinessFacts+' hồ sơ có dữ liệu tiếp xúc kinh tế phù hợp để nghiên cứu. ':'Dữ liệu nghiên cứu tiếp xúc kinh tế đang chờ đồng bộ. ';
+   const descriptor=s?'Đã phân loại '+s.classifiedEventStories+' sự kiện; '+s.storiesWithEligibleBusinessFacts+' trường hợp có dữ kiện tiếp xúc kinh tế nguồn đã kiểm tra. '+(s.prospectiveLedgerRecords!==null?'Sổ nghiên cứu tiến cứu: '+s.prospectiveLedgerRecords+' sự kiện đã ghi thời điểm nhận tin. ':''):'Dữ liệu nghiên cứu tiếp xúc kinh tế đang chờ đồng bộ. ';
    note.textContent=ready?descriptor+'Chưa có quan hệ nào vượt kiểm định thực chứng độc lập. Không phát thông báo tác động.':'Dữ liệu kiểm chứng chưa sẵn sàng hoặc chưa hợp lệ. FinQuery không phát cảnh báo tác động khi chưa xác minh được dữ liệu.';
  }
   $('news-status').textContent=ready?'0 sự kiện được xác nhận · Không phát thông báo tác động':'Không có thông báo tác động khi dữ liệu kiểm chứng không hợp lệ.';

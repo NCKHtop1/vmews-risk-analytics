@@ -28,7 +28,8 @@ function inspectShadow(raw,clock=Date.now()){
  return{checkedAt:raw.checkedAt,classifiedEventStories:count.classifiedEventStories,
         storiesWithEligibleBusinessFacts:count.storiesWithEligibleBusinessFacts,
         directIssuerMentionStories:count.directIssuerMentionStories,
-        withoutCollectorTime:count.storiesWithoutCertifiedCollectorTime};
+        withoutCollectorTime:count.storiesWithoutCertifiedCollectorTime,
+        prospectiveLedgerRecords:Number.isInteger(count.prospectiveLedgerRecords)&&count.prospectiveLedgerRecords>=0&&count.prospectiveLedgerRecords<=8000?count.prospectiveLedgerRecords:null};
 }
 function summary(){return{...(state.manifest||{status:state.status,eligibleCount:0,reviewAsOf:null}),shadow:state.shadow};}
 function canNotify(){return false;} // Intentionally requires a separate reviewed code release.

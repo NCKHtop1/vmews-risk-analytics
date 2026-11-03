@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'financial-report/scripts/hybrid_news_impact.py'
+      - 'financial-report/scripts/news_impact_prospective.py'
+      - 'financial-report/tests/test_news_impact_prospective.py'
       - 'financial-report/scripts/refresh_market.py'
       - 'financial-report/scripts/news_impact_taxonomy.py'
       - 'financial-report/data/news-economic-exposure-registry.json'
@@ -40,6 +42,7 @@ jobs:
       - name: Source-fact, no-leakage and no-false-alert unit tests
         run: |
           python financial-report/tests/test_hybrid_news_impact.py
+          python financial-report/tests/test_news_impact_prospective.py
           python financial-report/tests/test_news_impact_taxonomy.py
           python financial-report/tests/test_news_intelligence.py
           node financial-report/tests/news_impact_ui.test.cjs
@@ -94,6 +97,7 @@ jobs:
           from datetime import datetime,timezone
           sys.path.insert(0,'financial-report/scripts')
           import hybrid_news_impact as h
+          import news_impact_prospective as p
           payload=json.load(open('/tmp/hybrid-news-latest.json'))
           assert isinstance(payload.get('items'),list) and payload['items'], 'Real latest news missing'
           companies=json.loads(Path('financial-report/data/companies.json').read_text())
@@ -107,9 +111,14 @@ jobs:
           assert all(not r['notificationEligible'] and not r['validatedAffectedTickers']
                      for r in result['researchCandidates'])
           assert result['counts']['invalidSourceFacts']==0
+          ledger=p.merge({},result,now)
+          assert ledger['status']=='PROSPECTIVE_COLLECTION_ONLY'
+          assert ledger['notificationsEnabled'] is False
+          assert ledger['eventCount']<=result['counts']['classifiedEventStories']
+          assert all(e['certification']=='COLLECTOR_RECEIPT' for e in ledger['events'])
           Path('/tmp/hybrid-v2-real-news-replay.json').write_text(
                json.dumps(result,ensure_ascii=False,indent=2))
-          print('HYBRID_V2_REAL_NEWS_REPLAY_PASS',result['counts'],result['financialCoverage'])
+          print('HYBRID_V2_REAL_NEWS_REPLAY_PASS',result['counts'],result['financialCoverage'],'prospectiveLedger',ledger['eventCount'])
           PY
       - uses: actions/upload-artifact@v4
         with:
