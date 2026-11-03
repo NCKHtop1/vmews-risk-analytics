@@ -1,0 +1,62 @@
+name: FinQuery news impact shadow research
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/news_impact_shadow_research.py'
+      - 'scripts/news_impact_shadow_research_test.py'
+      - '.github/workflows/news-impact-shadow-research.yml'
+      - 'docs/finquery-news-impact-research.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  retrospective-shadow-event-study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify no-lookahead and no-notification contracts
+        run: python scripts/news_impact_shadow_research_test.py
+      - name: Run frozen historical event study without publishing alerts
+        run: |
+          set -euo pipefail
+          python scripts/news_impact_shadow_research.py \
+            --events data/event-intelligence-v12.json \
+            --sector data/sector-gate-v12.json \
+            --output /tmp/finquery-news-impact-shadow.json
+      - name: Publish research-only CI summary
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          x=json.loads(Path('/tmp/finquery-news-impact-shadow.json').read_text())
+          assert x['policy']['notificationsEnabled'] is False
+          assert x['policy']['sectorsAutomaticImpactEnabled'] is False
+          assert x['policy']['firstSeenAtArchiveCertified'] is False
+          s=[
+            '## FinQuery news impact – retrospective shadow study',
+            f"- V12 source records: {x['inputRecords']}",
+            f"- Independent event episodes: {x['filteredIndependentEvents']}",
+            f"- Split counts: {x['splitCounts']}",
+            f"- Train+validation locked hypotheses: {x['auditedHypotheses']}",
+            f"- Historical out-of-sample associations (not causal): {x['oosAssociationGroups']}",
+            '- Sector history: ABSTAIN. First-seen article archive: UNVERIFIED.',
+            '- Real-time user notifications: **OFF** (strict gate).',
+          ]
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf-8') as f:
+            f.write('\n'.join(s)+'\n')
+          PY
+      - name: Preserve reproducible shadow report as CI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: finquery-news-impact-shadow-evidence
+          path: /tmp/finquery-news-impact-shadow.json
+          retention-days: 30
