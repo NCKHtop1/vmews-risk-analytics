@@ -275,18 +275,35 @@ def run(events, sector):
     bh_qvalues(confirmed)
     for row in confirmed:
         h = row["holdout"]
-        pre_movement = h.get("preAR2")
-        # A large pre-news move can mean the headline follows the price.
-        contamination = pre_movement is not None and pre_movement > .012
-        eligible = (
+        # This is a confounder audit, NOT causal adjustment. Earlier pre-news
+        # price moves can create spurious publication-timestamp associations.
+        pretrend = {
+            stage: bool(row[stage].get("preAR2") is not None
+                        and row[stage]["preAR2"] > .012)
+            for stage in ("train", "validation", "holdout")
+        }
+        contamination = any(pretrend.values())
+        observed = (
             h["meanCAR2"] is not None and h["meanCAR2"] >= .002
             and h["hitRate"] >= .55 and h["ci95"][0] > 0
-            and h["qBH"] <= .10 and not contamination
+            and h["qBH"] <= .10
         )
-        row["researchEvidence"] = "OOS_ASSOCIATION" if eligible else "UNCONFIRMED"
+        row["preNewsTrendConfounder"] = pretrend
+        row["preNewsTrendFlagged"] = contamination
+        row["oosStatisticalAssociation"] = observed
+        row["researchEvidence"] = (
+            "OOS_ASSOCIATION_WITH_PRETREND" if observed and contamination
+            else "OOS_ASSOCIATION" if observed else "UNCONFIRMED"
+        )
+        # Historical backfills cannot validate actual first-seen availability
+        # or sector lineage; not one of these labels is a deployable alert.
         row["liveNotificationEligible"] = False
-        if eligible:
-            counts["oos_association_only"] += 1
+        if observed:
+            counts["oos_statistical_association_only"] += 1
+            if contamination:
+                counts["oos_association_pretrend_flagged"] += 1
+            else:
+                counts["oos_association_no_large_pretrend"] += 1
         else:
             counts["holdout_gate_failed"] += 1
     confirmed.sort(key=lambda r: (
@@ -321,7 +338,15 @@ def run(events, sector):
         "auditedHypotheses": len(confirmed),
         "pooledEventGroups": sum(x["group"][0] == "EVENT" for x in confirmed),
         "directTickerGroups": sum(x["group"][0] == "TICKER" for x in confirmed),
-        "oosAssociationGroups": sum(x["researchEvidence"] == "OOS_ASSOCIATION" for x in confirmed),
+        "oosAssociationGroups": sum(x["oosStatisticalAssociation"] for x in confirmed),
+        "pretrendFlaggedOOSGroups": sum(
+            x["oosStatisticalAssociation"] and x["preNewsTrendFlagged"]
+            for x in confirmed
+        ),
+        "oosGroupsWithoutLargePretrend": sum(
+            x["oosStatisticalAssociation"] and not x["preNewsTrendFlagged"]
+            for x in confirmed
+        ),
         "groups": confirmed[:100],
         "policy": policy,
         "warning": "Retrospective first-seen availability is uncertified. Current sector labels cannot be applied historically. T+2 correlation is not causal proof, intraday alpha or a recommendation. No notification may be auto-enabled by this artifact.",
@@ -345,7 +370,8 @@ def main():
     condensed = {k: result[k] for k in (
         "version", "inputVersion", "inputRecords", "filteredIndependentEvents",
         "splitCounts", "auditedHypotheses", "pooledEventGroups",
-        "directTickerGroups", "oosAssociationGroups", "screening"
+        "directTickerGroups", "oosAssociationGroups",
+        "pretrendFlaggedOOSGroups", "oosGroupsWithoutLargePretrend", "screening"
     )}
     print("FINQUERY_NEWS_IMPACT_RESEARCH_REPORT", json.dumps(condensed, ensure_ascii=False))
     for row in result["groups"][:8]:
@@ -353,6 +379,7 @@ def main():
             "group": row["group"], "direction": row["direction"],
             "train": row["train"], "validation": row["validation"],
             "holdout": row["holdout"], "label": row["researchEvidence"],
+            "pretrend": row["preNewsTrendConfounder"],
             "noti": row["liveNotificationEligible"]
         }, ensure_ascii=False))
     print("FINQUERY_NEWS_IMPACT_NOTIFICATIONS_DISABLED", result["policy"]["notificationsEnabled"] is False)
