@@ -305,7 +305,7 @@ test('news freshness relies on scheduler recovery and compact published snapshot
  assert.match(guard,/Deploy VMEWS Pages/);
  assert.match(guard,/news-latest\.json/);
  assert.match(news,/market-realtime-guard\.yml/);
- assert.match(news,/cron: '7 \* \* \* \*'/);
+ assert.match(news,/cron: '7,22,37,52 \* \* \* \*'/);
  assert.match(news,/Maintain resilient news heartbeat/);
  assert.match(news,/sleep 900/);
  assert.match(news,/market\/news\.json market\/news-latest\.json/);
