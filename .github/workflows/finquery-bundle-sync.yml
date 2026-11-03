@@ -33,7 +33,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-          fetch-depth: 0
+          # The repository contains large historical datasets. A full-history
+          # clone delays production bundle publication and can time out.
+          # The sync job resets to origin/main on every retry, so a shallow
+          # checkout is sufficient and preserves the exact release contract.
+          fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
