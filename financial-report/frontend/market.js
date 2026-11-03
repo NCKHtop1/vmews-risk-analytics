@@ -169,7 +169,7 @@ function setMarketView(view){
  if(['peers','sector'].includes(state.marketView))void renderMarketCompare();
  if(state.marketView==='scanner')window.FinTechnicalScanner?.open?.();
 }
-const NEWS_LABELS={all:'Tin kinh tế mới nhất',company:'Tin doanh nghiệp',watchlist:'Tin theo dõi',new:'Mới từ lần xem trước',vietnam:'Kinh tế Việt Nam',sbv:'NHNN & tiền tệ Việt Nam',global:'Kinh tế quốc tế',impact:'Đang tác động',finance:'Tài chính',market:'Thị trường',rates:'Lãi suất',stocks:'Chứng khoán',banking:'Ngân hàng',investment:'Đầu tư',macro:'Kinh tế vĩ mô'};
+const NEWS_LABELS={all:'Tin kinh tế mới nhất',company:'Tin doanh nghiệp',watchlist:'Tin theo dõi',new:'Mới từ lần xem trước',vietnam:'Kinh tế Việt Nam',sbv:'NHNN & tiền tệ Việt Nam',global:'Kinh tế quốc tế',impact:'Tin đáng chú ý',finance:'Tài chính',market:'Thị trường',rates:'Lãi suất',stocks:'Chứng khoán',banking:'Ngân hàng',investment:'Đầu tư',macro:'Kinh tế vĩ mô'};
 const GLOBAL_RE=/\b(?:fed|federal reserve|fomc|ecb|european central bank|boj|bank of japan|pboc|people'?s bank of china|imf|world bank|opec|brent|wti|wall street|s&p 500|nasdaq|dow jones|treasury|us yields?|geopolit|middle east|china|eurozone|euro area|united states|u\.s\.)\b/i;
 const SBV_RE=/(?:ngân hàng nhà nước|\bnhnn\b|\bsbv\b|thị trường mở|\bomo\b|tín phiếu|bơm ròng|hút ròng|liên ngân hàng|tỷ giá trung tâm|dự trữ bắt buộc)/i;
 const SHOCK_RE=/(?:lao dốc|giảm mạnh|giảm sốc|rơi mạnh|sụt mạnh|tăng mạnh|tăng vọt|bật tăng|lập đỉnh|kỷ lục|plunge|plummet|tumble|slump|soar|surge|spike|crash|collapse|record high|record low|biggest (?:gain|drop|fall|rise))/i;
@@ -237,6 +237,13 @@ function renderNewsIntelligenceSummary(){
  }
  root.innerHTML=sections.join('');
 }
+function exposureExplanation(r){
+ const x=r?.economicExposureHypothesis;
+ if(!x||x.verification!=='HYPOTHESIS_ONLY'||x.historicalImpactCertified!==false)return '';
+ const mechanisms=Array.isArray(x.candidateSectorMechanisms)?x.candidateSectorMechanisms.slice(0,3):[];
+ if(!mechanisms.length)return '';
+ return '<details class="news-exposure-detail"><summary>Cơ chế ảnh hưởng có thể liên quan · Chưa kiểm chứng</summary><div>'+mechanisms.map(m=>'<p><strong>'+esc(m.label||'')+'</strong> · '+esc(m.condition||'')+'</p>').join('')+'<small>Cần xác minh tiếp xúc thực tế và backtest độc lập. Chưa xác nhận mã hoặc ngành bị tác động.</small></div></details>';
+}
 function news(){
  const data=state.news,items=data?.items||[];let rows;
  if(state.newsMode==='company')rows=strictCompanyNews(items,state.symbol,50);
@@ -246,7 +253,7 @@ function news(){
  $('news-status').textContent=data?(newsStale(data)?'Tin tức chậm cập nhật · Kiểm tra ':'Kiểm tra ')+date(data.checkedAt)+' · '+rows.length+' bài phù hợp'+(data.status==='retained'?' · Đang dùng tin đã lưu':''):'Chưa tải được tin tức.';
  renderNewsIntelligenceSummary();
  const limit=state.newsMode==='company'?50:80;
- $('news-list').innerHTML=rows.slice(0,limit).map(r=>{const url=safeURL(r.url),score=Number(r.newsPriority??impactScore(r)),origin=newsOrigin(r),impact=score>=65?'CAO':score>=45?'ĐÁNG CHÚ Ý':'',badge=score>=45?impactTag(r):(isSBVNews(r)?'NHNN':origin==='global'?'QUỐC TẾ':state.newsMode==='company'?'DOANH NGHIỆP':'VIỆT NAM'),sources=Number(r.sourceCount||1),reaction=r.observedReaction||{},reactionBits=[['15m',reaction.return15mPct],['60m',reaction.return60mPct],['EOD',reaction.returnEodPct]].filter(x=>Number.isFinite(Number(x[1]))).map(x=>x[0]+' '+(Number(x[1])>0?'+':'')+Number(x[1]).toLocaleString('vi-VN',{maximumFractionDigits:2})+'%').join(' · ');return url?'<article class="news-item"><p><b class="news-origin-badge">'+badge+'</b> <span>· '+esc(newsTimeLabel(r))+'</span>'+(impact?' <em class="news-impact news-impact-'+(score>=65?'high':'medium')+'">MỨC ĐỘ '+impact+' · '+score+'</em>':'')+'</p><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(r.title)+' <span aria-hidden="true">↗</span></a>'+(reactionBits?'<small class="news-reaction">Phản ứng giá: '+esc(reactionBits)+'</small>':'')+'</article>':'';}).join('')||(state.newsMode==='company'?'<p class="market-empty">Chưa có tin doanh nghiệp '+esc(state.symbol)+' đủ mức liên quan hiện tại.</p>':'<p class="market-empty">Chưa tìm thấy tin phù hợp trong 30 ngày gần đây.</p>');
+ $('news-list').innerHTML=rows.slice(0,limit).map(r=>{const url=safeURL(r.url),score=Number(r.newsPriority??impactScore(r)),origin=newsOrigin(r),impact=score>=65?'CAO':score>=45?'ĐÁNG CHÚ Ý':'',badge=score>=45?impactTag(r):(isSBVNews(r)?'NHNN':origin==='global'?'QUỐC TẾ':state.newsMode==='company'?'DOANH NGHIỆP':'VIỆT NAM'),sources=Number(r.sourceCount||1),reaction=r.observedReaction||{},reactionBits=[['15m',reaction.return15mPct],['60m',reaction.return60mPct],['EOD',reaction.returnEodPct]].filter(x=>Number.isFinite(Number(x[1]))).map(x=>x[0]+' '+(Number(x[1])>0?'+':'')+Number(x[1]).toLocaleString('vi-VN',{maximumFractionDigits:2})+'%').join(' · ');return url?'<article class="news-item"><p><b class="news-origin-badge">'+badge+'</b> <span>· '+esc(newsTimeLabel(r))+'</span>'+(impact?' <em class="news-impact news-impact-'+(score>=65?'high':'medium')+'">MỨC ĐỘ '+impact+' · '+score+'</em>':'')+'</p><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(r.title)+' <span aria-hidden="true">↗</span></a>'+(reactionBits?'<small class="news-reaction">Phản ứng giá: '+esc(reactionBits)+'</small>':'')+exposureExplanation(r)+'</article>':'';}).join('')||(state.newsMode==='company'?'<p class="market-empty">Chưa có tin doanh nghiệp '+esc(state.symbol)+' đủ mức liên quan hiện tại.</p>':'<p class="market-empty">Chưa tìm thấy tin phù hợp trong 30 ngày gần đây.</p>');
  if(rows.length)localStorage.setItem('finquery-news-last-seen',String(Math.max(Date.now(),...rows.map(x=>Date.parse(x.publishedAt)||0))));
 }
 async function refresh(){
