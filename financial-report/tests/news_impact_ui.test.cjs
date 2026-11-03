@@ -6,9 +6,9 @@ const js=fs.readFileSync(path.join(root,'frontend/market.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'frontend/index.html'),'utf8');
 const pipeline=fs.readFileSync(path.join(root,'scripts/refresh_market.py'),'utf8');
 const news=fs.readFileSync(path.join(root,'scripts/news_intelligence.py'),'utf8');
-assert.match(js,/function exposureExplanation\(r\)/);
-assert.match(js,/Chưa kiểm chứng/);
-assert.match(js,/economicExposureHypothesis/);
+assert.doesNotMatch(js,/function exposureExplanation\(r\)/);
+assert.doesNotMatch(js,/\+exposureExplanation\(r\)/);
+assert.match(html,/Tiêu chí kiểm chứng/);
 assert.match(html,/data-news-tab="impact"[^>]*>Tin đáng chú ý/);
 assert.match(pipeline,/nit\.attach_collector_receipts\(rows, retained, current\)/);
 assert.match(pipeline,/nit\.exposure_hypothesis\(row\)/);
@@ -40,3 +40,5 @@ assert.match(bundleScript,/news-impact-reviewed\.js/);
 
 assert.doesNotMatch(js,/Phản ứng giá:/);
 assert.match(js,/ƯU TIÊN TIN/);
+
+assert.match(js,/0 tác động đạt chuẩn/);
