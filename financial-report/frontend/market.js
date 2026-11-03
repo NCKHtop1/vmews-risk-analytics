@@ -248,9 +248,13 @@ function news(){
   $('news-title').textContent='Tác động đã kiểm chứng';
   const ready=audit.status==='RESEARCH_ONLY';
   const asOf=$('news-reviewed-asof'),note=$('news-reviewed-note'),head=$('news-reviewed-headline');
-  if(asOf)asOf.textContent=ready?'Kết quả thẩm định: '+String(audit.reviewAsOf||'').split('-').reverse().join('/'):'';
+  if(asOf)asOf.textContent=ready?'Thẩm định: '+String(audit.reviewAsOf||'').split('-').reverse().join('/')+(audit.shadow?' · Dữ liệu tin: '+date(audit.shadow.checkedAt):' · Chưa có ảnh chụp nghiên cứu mới'):'';
   if(head)head.textContent=ready?'Chưa có sự kiện đạt chuẩn tác động':'Chưa xác minh được dữ liệu kiểm chứng';
-  if(note)note.textContent=ready?'Hiện chưa có mối liên hệ tin tức – ngành – doanh nghiệp nào đủ bằng chứng độc lập để phát cảnh báo. Tin mới vẫn hiển thị ở các mục khác.':'Dữ liệu kiểm chứng chưa sẵn sàng hoặc chưa hợp lệ. FinQuery không phát cảnh báo tác động khi chưa xác minh được dữ liệu.';
+  if(note){
+   const s=audit.shadow;
+   const descriptor=s?'Đã phân loại '+s.classifiedEventStories+' sự kiện tin tức; '+s.storiesWithEligibleBusinessFacts+' hồ sơ có dữ liệu tiếp xúc kinh tế phù hợp để nghiên cứu. ':'Dữ liệu nghiên cứu tiếp xúc kinh tế đang chờ đồng bộ. ';
+   note.textContent=ready?descriptor+'Chưa có quan hệ nào vượt kiểm định thực chứng độc lập. Không phát thông báo tác động.':'Dữ liệu kiểm chứng chưa sẵn sàng hoặc chưa hợp lệ. FinQuery không phát cảnh báo tác động khi chưa xác minh được dữ liệu.';
+ }
   $('news-status').textContent=ready?'0 sự kiện được xác nhận · Không phát thông báo tác động':'Không có thông báo tác động khi dữ liệu kiểm chứng không hợp lệ.';
   syncNewsTabs();syncNewsAlertButton();renderBreakingTicker();return;
  }

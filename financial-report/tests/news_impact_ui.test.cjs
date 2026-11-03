@@ -23,6 +23,20 @@ const css=fs.readFileSync(path.join(root,'frontend/market.css'),'utf8');
 const bundleScript=fs.readFileSync(path.join(root,'scripts/build_cdn.py'),'utf8');
 assert.equal(reviewModule.inspectRelease(manifest).eligibleCount,0);
 assert.equal(reviewModule.canNotify(),false);
+const dummyShadow={
+ schema:'FINQUERY_HYBRID_NEWS_IMPACT_SHADOW_V2',status:'SHADOW_ONLY',
+ checkedAt:'2026-11-03T09:55:00Z',
+ counts:{deduplicatedStories:100,classifiedEventStories:60,
+ directIssuerMentionStories:14,storiesWithEligibleBusinessFacts:0,
+ storiesWithoutCertifiedCollectorTime:65,eligibleNotifications:0,verifiedImpactRelations:0},
+ publicationPolicy:{killSwitch:'LOCKED_OFF',verifiedTickerAlerts:false,
+ verifiedSectorAlerts:false,noAlertFromSentimentOrNewsPriority:true}
+};
+const clock=Date.parse('2026-11-03T10:00:00Z');
+assert.equal(reviewModule.inspectShadow(dummyShadow,clock).classifiedEventStories,60);
+assert.equal(reviewModule.inspectShadow({...dummyShadow,counts:{...dummyShadow.counts,eligibleNotifications:1}},clock),null);
+assert.equal(reviewModule.inspectShadow({...dummyShadow,publicationPolicy:{...dummyShadow.publicationPolicy,killSwitch:'OPEN'}},clock),null);
+assert.equal(reviewModule.inspectShadow({...dummyShadow,checkedAt:'2026-11-03T06:00:00Z'},clock),null);
 assert.deepEqual(reviewModule.reviewedImpacts(),[]);
 assert.equal(reviewModule.inspectRelease({...manifest,status:'PRODUCTION_APPROVED'}),null);
 assert.equal(reviewModule.inspectRelease({...manifest,notificationsEnabled:true}),null);
