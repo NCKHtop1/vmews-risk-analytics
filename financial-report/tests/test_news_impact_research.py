@@ -61,6 +61,27 @@ class NewsImpactResearchTests(unittest.TestCase):
             h = M.read_history(base)
             self.assertEqual(h, {})
 
+    def test_v12_maturity_and_benchmark_are_mandatory(self):
+        row = {"benchmarkAvailable": {"3": True}, "matureDate": {"3": "2025-01-10"},
+               "cumulativeAbnormalReturn": {"3": 0.02}}
+        self.assertEqual(M._finite_outcome(row, 3), (0.02, "2025-01-10"))
+        row["benchmarkAvailable"]["3"] = False
+        self.assertIsNone(M._finite_outcome(row, 3))
+
+    def test_v12_research_cannot_issue_alerts_on_tiny_backfill(self):
+        event = {"ticker":"FPT","title":"Cổ phiếu FPT báo lãi tăng","availableDate":"2019-01-02",
+                 "publishedAt":"2019-01-02T02:00:00+00:00","eventType":"EARNINGS",
+                 "sentimentLabel":"POS", "source":"TestPress",
+                 "benchmarkAvailable":{"1":True},
+                 "matureDate":{"1":"2019-01-03"},
+                 "cumulativeAbnormalReturn":{"1":0.03}}
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/"events.json"
+            path.write_text(json.dumps({"version":"test","records":[event]}))
+            report=M.analyze_v12_events(path)
+            self.assertEqual(report["productionReadyGroups"],0)
+            self.assertEqual(report["descriptiveCandidates"],0)
+
     def test_live_notification_cannot_be_enabled_by_research_workflow(self):
         workflow = (ROOT / ".github/workflows/finquery-news-impact-research.yml").read_text()
         self.assertIn("contents: read", workflow)
