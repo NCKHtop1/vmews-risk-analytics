@@ -1,10 +1,10 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-11-03T17:37:22.261239+00:00",
+  "generatedAt": "2026-11-04T03:15:52.136723+00:00",
   "marketModelDate": "2026-11-03",
   "requested": 60,
-  "reused": 55,
-  "fetched": 5,
+  "reused": 60,
+  "fetched": 0,
   "cached": 60,
   "symbols": {
     "DVM": {
@@ -25,6 +25,11 @@
     "KOS": {
       "rows": 1800,
       "modelAsOf": "2026-09-17",
+      "source": "Yahoo Finance"
+    },
+    "TCO": {
+      "rows": 1800,
+      "modelAsOf": "2026-11-02",
       "source": "Yahoo Finance"
     },
     "CRE": {
@@ -77,10 +82,20 @@
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
+    "HII": {
+      "rows": 1800,
+      "modelAsOf": "2026-11-02",
+      "source": "Yahoo Finance"
+    },
     "PVB": {
       "rows": 1800,
       "modelAsOf": "2026-11-02",
       "source": "Vnstock"
+    },
+    "BVH": {
+      "rows": 1800,
+      "modelAsOf": "2026-11-02",
+      "source": "Yahoo Finance"
     },
     "DGW": {
       "rows": 1800,
@@ -252,6 +267,16 @@
       "modelAsOf": "2026-08-19",
       "source": "Yahoo Finance"
     },
+    "CTR": {
+      "rows": 1224,
+      "modelAsOf": "2026-11-02",
+      "source": "Yahoo Finance"
+    },
+    "BSR": {
+      "rows": 467,
+      "modelAsOf": "2026-11-02",
+      "source": "Yahoo Finance"
+    },
     "PVT": {
       "rows": 1800,
       "modelAsOf": "2026-10-29",
@@ -281,31 +306,6 @@
       "rows": 732,
       "modelAsOf": "2026-10-02",
       "source": "Vnstock"
-    },
-    "TCO": {
-      "rows": 2586,
-      "modelAsOf": "2026-11-02",
-      "source": "Yahoo Finance"
-    },
-    "HII": {
-      "rows": 2430,
-      "modelAsOf": "2026-11-02",
-      "source": "Yahoo Finance"
-    },
-    "BVH": {
-      "rows": 2586,
-      "modelAsOf": "2026-11-02",
-      "source": "Yahoo Finance"
-    },
-    "CTR": {
-      "rows": 1224,
-      "modelAsOf": "2026-11-02",
-      "source": "Yahoo Finance"
-    },
-    "BSR": {
-      "rows": 467,
-      "modelAsOf": "2026-11-02",
-      "source": "Yahoo Finance"
     }
   },
   "errors": [],
