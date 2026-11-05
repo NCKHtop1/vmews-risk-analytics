@@ -1,65 +1,30 @@
 {
   "version": "VMEWS-DEEP-ALERT-CACHE-1.1.0",
-  "generatedAt": "2026-11-05T03:45:34.069630+00:00",
-  "marketModelDate": "2026-11-04",
-  "requested": 37,
-  "reused": 37,
-  "fetched": 0,
-  "cached": 37,
+  "generatedAt": "2026-11-05T17:47:11.882833+00:00",
+  "marketModelDate": "2026-11-05",
+  "requested": 29,
+  "reused": 28,
+  "fetched": 1,
+  "cached": 29,
   "symbols": {
-    "PPT": {
-      "rows": 1074,
-      "modelAsOf": "2026-10-20",
-      "source": "Vnstock"
-    },
-    "KOS": {
-      "rows": 1800,
-      "modelAsOf": "2026-09-17",
-      "source": "Yahoo Finance"
-    },
-    "CRE": {
-      "rows": 1800,
-      "modelAsOf": "2026-09-09",
-      "source": "Yahoo Finance"
-    },
     "DST": {
       "rows": 1800,
       "modelAsOf": "2026-08-13",
       "source": "Vnstock"
     },
-    "NAP": {
-      "rows": 491,
-      "modelAsOf": "2026-11-02",
+    "PPT": {
+      "rows": 1074,
+      "modelAsOf": "2026-10-20",
       "source": "Vnstock"
-    },
-    "TTF": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-11",
-      "source": "Yahoo Finance"
     },
     "TIG": {
       "rows": 1800,
       "modelAsOf": "2026-10-26",
       "source": "Vnstock"
     },
-    "FPT": {
+    "CRE": {
       "rows": 1800,
-      "modelAsOf": "2026-10-09",
-      "source": "Yahoo Finance"
-    },
-    "VCR": {
-      "rows": 1800,
-      "modelAsOf": "2026-11-02",
-      "source": "Vnstock"
-    },
-    "PDB": {
-      "rows": 1764,
-      "modelAsOf": "2026-10-28",
-      "source": "Vnstock"
-    },
-    "PNJ": {
-      "rows": 1800,
-      "modelAsOf": "2026-08-11",
+      "modelAsOf": "2026-09-09",
       "source": "Yahoo Finance"
     },
     "CIG": {
@@ -67,39 +32,14 @@
       "modelAsOf": "2026-10-21",
       "source": "Yahoo Finance"
     },
-    "CMG": {
+    "KOS": {
       "rows": 1800,
-      "modelAsOf": "2026-10-05",
+      "modelAsOf": "2026-09-17",
       "source": "Yahoo Finance"
     },
-    "TTL": {
-      "rows": 1265,
-      "modelAsOf": "2026-11-02",
-      "source": "Vnstock"
-    },
-    "VIW": {
-      "rows": 706,
-      "modelAsOf": "2026-10-05",
-      "source": "Vnstock"
-    },
-    "ELC": {
+    "PNJ": {
       "rows": 1800,
-      "modelAsOf": "2026-09-11",
-      "source": "Yahoo Finance"
-    },
-    "D2D": {
-      "rows": 1800,
-      "modelAsOf": "2026-10-05",
-      "source": "Yahoo Finance"
-    },
-    "BKC": {
-      "rows": 1376,
-      "modelAsOf": "2026-11-02",
-      "source": "Vnstock"
-    },
-    "TVS": {
-      "rows": 1800,
-      "modelAsOf": "2026-10-09",
+      "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
     "ASP": {
@@ -107,40 +47,40 @@
       "modelAsOf": "2026-10-30",
       "source": "Yahoo Finance"
     },
-    "HPX": {
+    "CMG": {
       "rows": 1800,
-      "modelAsOf": "2026-10-30",
+      "modelAsOf": "2026-10-05",
       "source": "Yahoo Finance"
     },
-    "LPB": {
-      "rows": 1517,
-      "modelAsOf": "2026-09-14",
-      "source": "Yahoo Finance"
-    },
-    "PVC": {
-      "rows": 1800,
-      "modelAsOf": "2026-11-02",
+    "SVN": {
+      "rows": 1645,
+      "modelAsOf": "2026-10-12",
       "source": "Vnstock"
     },
-    "TRC": {
-      "rows": 1800,
-      "modelAsOf": "2026-10-30",
-      "source": "Yahoo Finance"
-    },
-    "SBB": {
-      "rows": 681,
-      "modelAsOf": "2026-10-30",
+    "PDB": {
+      "rows": 1764,
+      "modelAsOf": "2026-10-28",
       "source": "Vnstock"
     },
-    "ACC": {
+    "TTF": {
       "rows": 1800,
       "modelAsOf": "2026-08-11",
       "source": "Yahoo Finance"
     },
-    "HBC": {
+    "HII": {
       "rows": 1800,
-      "modelAsOf": "2026-08-12",
+      "modelAsOf": "2026-11-02",
+      "source": "Yahoo Finance"
+    },
+    "API": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-18",
       "source": "Vnstock"
+    },
+    "FPT": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-09",
+      "source": "Yahoo Finance"
     },
     "PVP": {
       "rows": 979,
@@ -152,24 +92,54 @@
       "modelAsOf": "2026-10-30",
       "source": "Yahoo Finance"
     },
-    "PVB": {
+    "ACC": {
       "rows": 1800,
+      "modelAsOf": "2026-08-11",
+      "source": "Yahoo Finance"
+    },
+    "BKC": {
+      "rows": 1376,
       "modelAsOf": "2026-11-02",
       "source": "Vnstock"
     },
-    "THD": {
-      "rows": 1571,
-      "modelAsOf": "2026-10-05",
+    "SBB": {
+      "rows": 681,
+      "modelAsOf": "2026-10-30",
       "source": "Vnstock"
     },
-    "KSV": {
-      "rows": 1350,
-      "modelAsOf": "2026-09-14",
+    "BSR": {
+      "rows": 467,
+      "modelAsOf": "2026-11-02",
+      "source": "Yahoo Finance"
+    },
+    "TRC": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-30",
+      "source": "Yahoo Finance"
+    },
+    "VNB": {
+      "rows": 1637,
+      "modelAsOf": "2026-10-14",
       "source": "Vnstock"
+    },
+    "D2D": {
+      "rows": 1800,
+      "modelAsOf": "2026-10-05",
+      "source": "Yahoo Finance"
+    },
+    "LPB": {
+      "rows": 1517,
+      "modelAsOf": "2026-09-14",
+      "source": "Yahoo Finance"
     },
     "VVS": {
       "rows": 643,
       "modelAsOf": "2026-10-30",
+      "source": "Vnstock"
+    },
+    "HBC": {
+      "rows": 1800,
+      "modelAsOf": "2026-08-12",
       "source": "Vnstock"
     },
     "DRI": {
@@ -177,63 +147,45 @@
       "modelAsOf": "2026-11-02",
       "source": "Vnstock"
     },
-    "MHC": {
-      "rows": 1800,
-      "modelAsOf": "2026-10-05",
-      "source": "Yahoo Finance"
-    },
-    "ASM": {
-      "rows": 1800,
-      "modelAsOf": "2026-09-09",
-      "source": "Yahoo Finance"
-    },
-    "CSM": {
-      "rows": 1800,
-      "modelAsOf": "2026-11-03",
-      "source": "Yahoo Finance"
+    "DNA": {
+      "rows": 610,
+      "modelAsOf": "2026-11-05",
+      "source": "Vnstock"
     }
   },
   "errors": [],
   "redSymbols": [
-    "PPT",
-    "KOS",
-    "CRE",
     "DST",
-    "NAP",
-    "TTF",
-    "TIG"
+    "PPT",
+    "TIG",
+    "CRE",
+    "CIG",
+    "KOS",
+    "PNJ",
+    "ASP",
+    "CMG"
   ],
   "yellowSymbols": [
-    "FPT",
-    "VCR",
+    "DNA",
+    "SVN",
     "PDB",
-    "PNJ",
-    "CIG",
-    "CMG",
-    "TTL",
-    "VIW",
-    "ELC",
-    "D2D",
-    "BKC",
-    "TVS",
-    "ASP",
-    "HPX",
-    "LPB",
-    "PVC",
-    "TRC",
-    "SBB",
-    "ACC",
-    "HBC",
+    "TTF",
+    "HII",
+    "API",
+    "FPT",
     "PVP",
     "DGW",
-    "PVB",
-    "THD",
-    "KSV",
+    "ACC",
+    "BKC",
+    "SBB",
+    "BSR",
+    "TRC",
+    "VNB",
+    "D2D",
+    "LPB",
     "VVS",
-    "DRI",
-    "MHC",
-    "ASM",
-    "CSM"
+    "HBC",
+    "DRI"
   ],
   "missingRed": [],
   "missingAlerts": [],
