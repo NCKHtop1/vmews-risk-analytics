@@ -1,8 +1,33 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-04T16:25:35+00:00",
+  "updatedAt": "2026-11-05T06:59:54+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "VIX-VIX-2026-11-05-176cd35a",
+      "symbol": "VIX",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2026-11-05",
+      "title": "DMX – Báo cáo cập nhật KQKD Quý III Kính gửi quý khách hàng, Công ty Cổ phần Chứng khoán VIX xin gửi báo cáo cập nhật “DMX – Báo cáo cập nhật KQKD Quý III”. TÓM TẮT:... XEM CHI TIẾT",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
+      "summary": "VIX có báo cáo VIX ngày 05/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "MIRAE-HDG-2026-11-05-05024639",
+      "symbol": "HDG",
+      "broker": "MIRAE",
+      "brokerName": "MIRAE",
+      "publishedAt": "2026-11-05",
+      "title": "HDG: Khuyến nghị MUA với giá mục tiêu 21,100 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hdg-khuyen-nghi-mua-voi-gia-muc-tieu-21-100-dong-co-phieu-rpid6279.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 21100,
+      "summary": "MIRAE có báo cáo HDG ngày 05/11/2026 với khuyến nghị MUA, giá mục tiêu 21.100 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "YUANTA-VCB-2026-11-04-25d2ff81",
       "symbol": "VCB",
@@ -44,6 +69,18 @@
       "recommendation": "MUA",
       "targetPrice": 26800,
       "summary": "YUANTA có báo cáo ACB ngày 04/11/2026 với khuyến nghị MUA, giá mục tiêu 26.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VPX-VHM-2026-11-04-6920097e",
+      "symbol": "VHM",
+      "broker": "VPX",
+      "brokerName": "VPX",
+      "publishedAt": "2026-11-04",
+      "title": "VHM: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vhm-bao-cao-cap-nhat-kqkd-q3-2026-rpid6285.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VPX có báo cáo VHM ngày 04/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VIX-VIX-2026-11-04-176cd35a",
@@ -112,6 +149,32 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo FPT ngày 04/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "NHSV-HPG-2026-11-04-e7417ec5",
+      "symbol": "HPG",
+      "broker": "NHSV",
+      "brokerName": "NHSV",
+      "publishedAt": "2026-11-04",
+      "title": "HPG: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hpg-bao-cao-cap-nhat-kqkd-q3-2026-rpid6282.html",
+      "dataProvider": "24HMONEY",
+      "summary": "NHSV có báo cáo HPG ngày 04/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "ACBS-CTG-2026-11-04-80bbc3b4",
+      "symbol": "CTG",
+      "broker": "ACBS",
+      "brokerName": "ACBS",
+      "publishedAt": "2026-11-04",
+      "title": "CTG: Khuyến nghị MUA với giá mục tiêu 50,200 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/ctg-khuyen-nghi-mua-voi-gia-muc-tieu-50-200-dong-co-phieu-rpid6280.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 50200,
+      "summary": "ACBS có báo cáo CTG ngày 04/11/2026 với khuyến nghị MUA, giá mục tiêu 50.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "TCBS-MWG-2026-11-03-e4c505f2",
@@ -2286,6 +2349,17 @@
       "dataProvider": "24HMONEY",
       "targetPrice": 58346,
       "summary": "VIX có báo cáo DGW ngày 05/10/2026 với giá mục tiêu 58.346 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIX-DGW-2026-10-05-176cd35a",
+      "symbol": "DGW",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2026-10-05",
+      "title": "DGW-Thiết lập doanh thu kỷ lục, triển vọng tươi sáng Kính gửi quý khách hàng, Công ty cổ phần chứng khoán VIX xin gửi báo cáo phân tích chi tiết doanh nghiệp: “DGW-Thiết lập doanh thu kỷ lục, triển... XEM CHI TIẾT 1 / 5",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
+      "summary": "VIX có báo cáo DGW ngày 05/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "VIX-DGW-2026-10-05-176cd35a",
