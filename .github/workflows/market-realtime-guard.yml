@@ -160,12 +160,23 @@ jobs:
               source_map={str(x.get('name') or ''):x for x in (n.get('sources') or [])}
               live24=source_map.get('24HMoney Live') or {}
               symbol24=source_map.get('24HMoney Symbol') or {}
-              if live24.get('status')=='error':
-                  raise ValueError(f'24HMoney Live parser/source degraded: {live24}')
               if live24.get('parser')!='24hmoney-live-v4':
                   raise ValueError(f'24HMoney Live parser version invalid: {live24.get("parser")}')
-              if int(live24.get('articleAnchors') or 0)>0 and int(live24.get('items') or 0)==0:
-                  raise ValueError(f'24HMoney Live has current article anchors but parsed 0 items: {live24}')
+              if live24.get('status') not in ('ok','empty','degraded','error'):
+                  raise ValueError(f'24HMoney Live status invalid: {live24.get("status")}')
+              # Separate one unreliable vendor SSR feed from the verified News aggregate.
+              # A single current SSR article can never make a mostly-stale feed green.
+              if live24.get('status')=='ok':
+                  if live24.get('qualityChecked') is not True:
+                      raise ValueError('24HMoney Live OK without verified source-quality audit')
+                  dated=int(live24.get('datedUnique') or 0)
+                  fresh=int(live24.get('recentUnique') or 0)
+                  if fresh<=0 or (dated>=5 and fresh*4<dated):
+                      raise ValueError(f'24HMoney Live false healthy state: fresh={fresh} dated={dated}')
+              if live24.get('status')=='empty' and int(live24.get('articleAnchors') or 0)>0 and int(live24.get('recentUnique') or 0)==0:
+                  raise ValueError(f'24HMoney Live falsely empty with stale/undated anchors: {live24}')
+              if live24.get('status') in ('degraded','error'):
+                  print('::warning::24HMoney Live isolated source degradation:',live24.get('statusReason') or live24.get('error'),'sourceMode',live24.get('sourceMode'),'fresh',live24.get('recentUnique'),'dated',live24.get('datedUnique'))
               if symbol24.get('status')=='error':
                   raise ValueError(f'24HMoney Symbol parser/source degraded: {symbol24}')
               if symbol24.get('parser')!='24hmoney-symbol-v5':
