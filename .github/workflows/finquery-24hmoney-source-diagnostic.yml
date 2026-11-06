@@ -1,0 +1,86 @@
+name: Diagnose FinQuery 24HMoney Live parser
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/finquery-24hmoney-source-diagnostic.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: financial-report
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Diagnose actual public 24HMoney markup without publishing or logging raw page
+        run: |
+          python - <<'PY'
+          import collections, html, re, sys
+          from urllib.request import Request, urlopen
+          from urllib.parse import urljoin, urlsplit
+          from datetime import datetime, timezone
+          sys.path.insert(0,'financial-report/scripts')
+          import news_intelligence as ni
+          now=datetime.now(timezone.utc)
+          url='https://24hmoney.vn/news/live'
+          agents={
+            'collector':'FinQuery/1.0 public financial dashboard',
+            'browser':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36',
+          }
+          for agent_name,agent in agents.items():
+            try:
+              req=Request(url,headers={'User-Agent':agent,'Accept':'application/json, application/xml, text/xml, */*'})
+              with urlopen(req,timeout=20) as response:
+                raw=response.read()
+                print('FETCH',agent_name,'status',response.status,'length',len(raw),'contentType',response.headers.get('Content-Type'),'url',response.url,flush=True)
+              text=raw.decode('utf-8-sig',errors='ignore')
+              matches=list(re.finditer(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',text,re.I|re.S))
+              counts=collections.Counter()
+              detail=[]
+              for match in matches:
+                href=html.unescape(match.group(1)).strip()
+                title=ni.compact(match.group(2))
+                if '/news/' not in href.lower(): continue
+                counts['news_href']+=1
+                if len(title)<24:
+                  counts['short_anchor']+=1
+                  continue
+                counts['eligible_anchor']+=1
+                host=urlsplit(urljoin(url,href)).hostname or ''
+                if not host.endswith('24hmoney.vn'):
+                  counts['wrong_host']+=1
+                  continue
+                context,anchor,_=ni._24hmoney_plain_context(text,match.start(),match.end())
+                stamp,precision,verified=ni._24hmoney_timestamp(context,now,anchor)
+                category,topics=ni._24hmoney_context_category(context,anchor)
+                if stamp is None:
+                  counts['missing_nearby_time']+=1
+                elif stamp<now-ni.timedelta(days=7):
+                  counts['stale_over_7days']+=1
+                elif stamp>now+ni.timedelta(minutes=10):
+                  counts['future_time']+=1
+                else:
+                  counts['timestamp_ok']+=1
+                  semantic,evidence=ni.classify_semantics(title,'',{'vietnam','market'}|topics)
+                  relevant,reason=ni._24hmoney_financial_relevance(title,[],semantic,evidence,category)
+                  counts['financial_ok' if relevant else 'financial_filtered']+=1
+                  counts['category_'+str(category)]+=1
+                time_re=list(re.finditer(r'(?<!\d)(\d{1,3})\s*(phút|giờ|ngày)(?:\s+trước)?(?!\w)',context,re.I))
+                nearest=min([ni._marker_distance(m,anchor) for m in time_re],default=-1)
+                if nearest>=0: counts['regex_somewhere']+=1
+                if nearest>180: counts['regex_too_far']+=1
+                detail.append((nearest,stamp is not None,len(title)))
+              print('COUNTS',agent_name,dict(counts),flush=True)
+              print('NEAREST',agent_name,detail[:20],flush=True)
+              all_rows=ni.parse_24hmoney_live(raw,now,[],{},financial_only=False)
+              fin_rows=ni.parse_24hmoney_live(raw,now,[],{},financial_only=True)
+              print('PARSER',agent_name,'raw_rows',len(all_rows),'financial_rows',len(fin_rows),'articleAnchors',ni.count_24hmoney_article_anchors(raw),'timeMarkers',len(re.findall(r'\b(?:phút|giờ|ngày)\b',ni.compact(text),re.I)),flush=True)
+            except Exception as exc:
+              print('FETCH_ERROR',agent_name,type(exc).__name__,str(exc)[:180],flush=True)
+          PY
