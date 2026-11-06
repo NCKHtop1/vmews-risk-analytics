@@ -33,6 +33,9 @@ for agent_name, user_agent in agents.items():
         counts = collections.Counter()
         distances = []
         sample_kinds = []
+        dates = collections.Counter()
+        precision_count = collections.Counter()
+        absolute_marker_distances = []
         for match in matches:
             href = html.unescape(match.group(1)).strip()
             title = ni.compact(match.group(2))
@@ -51,6 +54,17 @@ for agent_name, user_agent in agents.items():
                 text, match.start(), match.end()
             )
             stamp, precision, verified = ni._24hmoney_timestamp(context, now, anchor)
+            if stamp:
+                dates[stamp.astimezone(ni.VIETNAM_TZ).date().isoformat()] += 1
+            precision_count[str(precision)] += 1
+            abs_marks = list(re.finditer(
+                r'(?<!\d)(\d{1,2})[/-](\d{1,2})[/-](20\d{2})',
+                context, re.I
+            ))
+            absolute_marker_distances.append(min(
+                [ni._marker_distance(m, anchor) for m in abs_marks],
+                default=-1
+            ))
             category, topics = ni._24hmoney_context_category(context, anchor)
             time_marks = list(re.finditer(
                 r"(?<!\d)(\d{1,3})\s*(phút|giờ|ngày)(?:\s+trước)?(?!\w)",
@@ -92,6 +106,8 @@ for agent_name, user_agent in agents.items():
         print("COUNTS", agent_name, dict(counts), flush=True)
         print("NEAREST_DISTANCE", agent_name, distances[:20], flush=True)
         print("CATEGORIES", agent_name, sample_kinds[:20], flush=True)
+        print("DATES", agent_name, dict(dates), "PRECISION", dict(precision_count), flush=True)
+        print("ABS_DATE_NEAREST", agent_name, absolute_marker_distances[:20], flush=True)
         print("FINAL", agent_name, {
             "raw_rows": len(all_rows),
             "financial_rows": len(fin_rows),
