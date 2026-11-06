@@ -2338,6 +2338,7 @@ def _fetch_24hmoney_live(companies, current):
     try:
         raw=request(MONEY24_LIVE_URL,timeout=10)
         anchors=ni.count_24hmoney_article_anchors(raw)
+        audit=ni.audit_24hmoney_live_listing(raw,current,MONEY24_LIVE_URL)
         rows=ni.parse_24hmoney_live(raw,current,companies,ALIASES,MONEY24_LIVE_URL)
 
         # The list HTML can expose only day precision even while the rendered
@@ -2373,26 +2374,29 @@ def _fetch_24hmoney_live(companies, current):
 
         rows.sort(key=lambda x:str(x.get('publishedAt') or ''),reverse=True)
         latest=max((row.get('publishedAt') for row in rows if row.get('publishedAt')),default=None)
-        if rows:
-            status='ok';error=None
-        elif anchors:
-            status='error';error=f'parser mismatch: {anchors} article anchors found but 0 recent financial rows parsed'
-        else:
-            status='empty';error=None
+        status,reason=ni.classify_24hmoney_live_listing(audit,len(rows))
         health={
             'name':'24HMoney Live','url':MONEY24_LIVE_URL,'status':status,
+            'statusReason':reason,'qualityChecked':True,
+            'sourceMode':'HTTP_SSR_ONLY',
             'items':len(rows),'articleAnchors':anchors,'lastItemAt':latest,
             'detailTimestampAttempted':len(detail_candidates),
             'detailTimestampEnriched':detail_enriched,
             'detailTimestampErrors':len(detail_errors),
-            'parser':'24hmoney-live-v4'
+            'parser':'24hmoney-live-v4',
+            **audit,
         }
-        if error: health['error']=error
+        if status=='degraded':
+            # A stale/partial vendor SSR feed is not an all-News outage.
+            # Never present its partial data as complete or treat old titles as new.
+            health['warning']='24HMoney Live HTTP listing stale or incomplete: '+reason
         if detail_errors: health['detailErrors']=detail_errors[:4]
         return rows,health
     except Exception as exc:
         return [],{
             'name':'24HMoney Live','url':MONEY24_LIVE_URL,'status':'error',
+            'statusReason':'TRANSPORT_OR_PARSE_FAILURE','qualityChecked':False,
+            'sourceMode':'HTTP_SSR_ONLY',
             'error':str(exc)[:240],'parser':'24hmoney-live-v4'
         }
 
@@ -3218,7 +3222,17 @@ def news(out, companies):
             impact_shadow['counts']['prospectiveNewEvents'] = ledger['newEvents']
             write(out / 'news-impact-prospective-ledger-v2.json', ledger)
     write(out / 'news-impact-shadow-v2.json', impact_shadow)
-    health = {'healthy': healthy, 'empty': empty, 'error': len(sources) - healthy - empty, 'total': len(sources)}
+    degraded = sum(source.get('status') == 'degraded' for source in sources)
+    # Several RSS endpoints can belong to one publisher. Avoid calling three
+    # feeds from the same publisher three independent healthy news sources.
+    healthy_providers=sorted({
+        ni.news_provider_group(source) for source in sources
+        if source.get('status')=='ok' and source.get('name')
+    })
+    health = {'healthy': healthy, 'empty': empty, 'degraded': degraded,
+              'error': len(sources) - healthy - empty - degraded,
+              'healthyProviderCount': len(healthy_providers),
+              'healthyProviders': healthy_providers, 'total': len(sources)}
     payload = {
         'checkedAt': checked_at, 'lastSuccessAt': checked_at if ok else previous.get('lastSuccessAt'),
         'status': 'ok' if ok else 'retained', 'sources': sources, 'sourceHealth': health,

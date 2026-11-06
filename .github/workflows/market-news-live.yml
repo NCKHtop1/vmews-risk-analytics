@@ -199,6 +199,10 @@ jobs:
           age=(datetime.now(timezone.utc)-stamp.astimezone(timezone.utc)).total_seconds()/60
           if data.get('status')!='ok' or not data.get('items') or not (-5 <= age <= 30):
               raise SystemExit(f'remote news branch is stale/invalid: status={data.get("status")} age={age:.1f} items={len(data.get("items") or [])}')
+          if int((data.get('sourceHealth') or {}).get('healthy') or 0)<3:
+              raise SystemExit(f'Overall News independent sources below healthy floor: {data.get("sourceHealth")}')
+          if int((data.get('sourceHealth') or {}).get('healthyProviderCount') or 0)<3:
+              raise SystemExit(f'News independently healthy publisher count below three: {data.get("sourceHealth")}')
           if company.get('status')!='ok' or company.get('selection')!='per_symbol_latest' or not company.get('items') or not company.get('companyCounts'):
               raise SystemExit(f'company news index invalid: status={company.get("status")} coverage={company.get("companyCoverage")} items={len(company.get("items") or [])}')
           shadow=json.loads((__import__('subprocess').check_output(['git','-C','/tmp/market-news','show','origin/financial-market-data:market/news-impact-shadow-v2.json'])).decode())
@@ -223,19 +227,30 @@ jobs:
           source_map={str(x.get('name') or ''):x for x in (data.get('sources') or [])}
           live24=source_map.get('24HMoney Live') or {}
           symbol24=source_map.get('24HMoney Symbol') or {}
-          if live24.get('status')=='error':
-              raise SystemExit(f'24HMoney Live parser/source degraded: {live24}')
           if live24.get('parser')!='24hmoney-live-v4':
               raise SystemExit(f'24HMoney Live parser version invalid: {live24.get("parser")}')
-          if int(live24.get('articleAnchors') or 0)>0 and int(live24.get('items') or 0)==0:
-              raise SystemExit(f'24HMoney Live has current article anchors but parsed 0 items: {live24}')
+          if live24.get('status') not in ('ok','empty','degraded','error'):
+              raise SystemExit(f'24HMoney Live status invalid: {live24.get("status")}')
+          # Separate one unreliable vendor SSR feed from the verified News aggregate.
+          # A single current SSR article can never make a mostly-stale feed green.
+          if live24.get('status')=='ok':
+              if live24.get('qualityChecked') is not True:
+                  raise SystemExit('24HMoney Live OK without verified source-quality audit')
+              dated=int(live24.get('datedUnique') or 0)
+              fresh=int(live24.get('recentUnique') or 0)
+              if fresh<=0 or (dated>=5 and fresh*4<dated):
+                  raise SystemExit(f'24HMoney Live false healthy state: fresh={fresh} dated={dated}')
+          if live24.get('status')=='empty' and int(live24.get('articleAnchors') or 0)>0 and int(live24.get('recentUnique') or 0)==0:
+              raise SystemExit(f'24HMoney Live falsely empty with stale/undated anchors: {live24}')
+          if live24.get('status') in ('degraded','error'):
+              print('::warning::24HMoney Live isolated source degradation:',live24.get('statusReason') or live24.get('error'),'sourceMode',live24.get('sourceMode'),'fresh',live24.get('recentUnique'),'dated',live24.get('datedUnique'))
           if symbol24.get('status')=='error':
-              raise SystemExit(f'24HMoney Symbol parser/source degraded: {symbol24}')
+              print('::warning::24HMoney Symbol isolated provider failure:',symbol24.get('errors') or symbol24.get('error'))
           if symbol24.get('parser')!='24hmoney-symbol-v5':
               raise SystemExit(f'24HMoney Symbol parser version invalid: {symbol24.get("parser")}')
           attempted=max(1,int(symbol24.get('symbolsAttempted') or 0))
           reachable=int(symbol24.get('symbolsReachable') or 0)
           if reachable < math.ceil(attempted*.70):
-              raise SystemExit(f'24HMoney Symbol reachability too low: {reachable}/{attempted}')
+              print('::warning::24HMoney Symbol isolated low reachability:',reachable,'/',attempted)
           print('REMOTE NEWS CONTRACT PASS',round(age,1),len(data.get('items') or []),'companyCoverage',company.get('companyCoverage'),'luat',luat,'24hmoney',{k:(source_map.get(k) or {}).get('items') for k in ('24HMoney Live','24HMoney Symbol')})
           PY
