@@ -625,6 +625,77 @@ def _24hmoney_financial_relevance(title, symbols, topics, evidence, content_type
     return False,'non_financial'
 
 
+
+def audit_24hmoney_live_listing(raw, current, base_url='https://24hmoney.vn/news/live'):
+    """Audit only the HTML delivered over HTTP, not the JS-hydrated browser feed.
+
+    Counts unique article links and their *observed* timestamps independently
+    of editorial relevance. A partially refreshed SSR page cannot become
+    healthy just because one current headline is present.
+    """
+    text=raw.decode('utf-8-sig',errors='ignore') if isinstance(raw,bytes) else str(raw or '')
+    anchor_re=re.compile(r'<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',re.I|re.S)
+    counts={'eligibleUnique':0,'datedUnique':0,'recentUnique':0,'staleUnique':0,
+            'undatedUnique':0,'futureUnique':0}
+    seen=set()
+    latest=None
+    for match in anchor_re.finditer(text):
+        href=html.unescape(match.group(1)).strip()
+        title=compact(match.group(2))
+        if '/news/' not in href.lower() or len(title)<24:
+            continue
+        parsed=urlsplit(urljoin(base_url,href))
+        if not (parsed.hostname or '').endswith('24hmoney.vn'):
+            continue
+        url=urlunsplit((parsed.scheme or 'https',parsed.netloc,parsed.path,'',''))
+        if url in seen:
+            continue
+        seen.add(url)
+        counts['eligibleUnique']+=1
+        context,anchor,_=_24hmoney_plain_context(text,match.start(),match.end())
+        stamp,precision,_=_24hmoney_timestamp(context,current,anchor)
+        if stamp is None:
+            counts['undatedUnique']+=1
+            continue
+        counts['datedUnique']+=1
+        if latest is None or stamp>latest:
+            latest=stamp
+        if stamp>current+timedelta(minutes=10):
+            counts['futureUnique']+=1
+        elif stamp<current-timedelta(days=7):
+            counts['staleUnique']+=1
+        else:
+            counts['recentUnique']+=1
+    counts['freshShareOfDated']=round(
+        counts['recentUnique']/counts['datedUnique'],4
+    ) if counts['datedUnique'] else 0.0
+    counts['latestListingTime']=latest.isoformat() if latest else None
+    return counts
+
+
+def classify_24hmoney_live_listing(audit, financial_items):
+    """Explicit source quality, separate from overall News bundle health.
+
+    The 25% threshold flags a clearly incomplete HTML listing (e.g. one
+    current article among 19 old ones). It is a *diagnostic* fraction of
+    observed SSR links, not a claim to know the supplier's full article count.
+    """
+    eligible=int(audit.get('eligibleUnique') or 0)
+    dated=int(audit.get('datedUnique') or 0)
+    recent=int(audit.get('recentUnique') or 0)
+    stale=int(audit.get('staleUnique') or 0)
+    if eligible==0:
+        return 'empty','NO_LISTING_ARTICLES'
+    if recent==0:
+        if stale:
+            return 'degraded','SOURCE_SSR_STALE'
+        return 'degraded','SOURCE_TIMESTAMP_UNAVAILABLE'
+    if dated>=5 and recent*4<dated:
+        return 'degraded','SOURCE_SSR_PARTIAL'
+    if int(financial_items or 0)==0:
+        return 'empty','FINANCIAL_FILTERED'
+    return 'ok','CURRENT_HTTP_LISTING'
+
 def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https://24hmoney.vn/news/live', financial_only=True):
     text=raw.decode('utf-8-sig',errors='ignore') if isinstance(raw,bytes) else str(raw or '')
     rows=[];seen=set()
