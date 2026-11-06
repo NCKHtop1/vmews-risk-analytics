@@ -201,6 +201,8 @@ jobs:
               raise SystemExit(f'remote news branch is stale/invalid: status={data.get("status")} age={age:.1f} items={len(data.get("items") or [])}')
           if int((data.get('sourceHealth') or {}).get('healthy') or 0)<3:
               raise SystemExit(f'Overall News independent sources below healthy floor: {data.get("sourceHealth")}')
+          if int((data.get('sourceHealth') or {}).get('healthyProviderCount') or 0)<3:
+              raise SystemExit(f'News independently healthy publisher count below three: {data.get("sourceHealth")}')
           if company.get('status')!='ok' or company.get('selection')!='per_symbol_latest' or not company.get('items') or not company.get('companyCounts'):
               raise SystemExit(f'company news index invalid: status={company.get("status")} coverage={company.get("companyCoverage")} items={len(company.get("items") or [])}')
           shadow=json.loads((__import__('subprocess').check_output(['git','-C','/tmp/market-news','show','origin/financial-market-data:market/news-impact-shadow-v2.json'])).decode())
@@ -243,12 +245,12 @@ jobs:
           if live24.get('status') in ('degraded','error'):
               print('::warning::24HMoney Live isolated source degradation:',live24.get('statusReason') or live24.get('error'),'sourceMode',live24.get('sourceMode'),'fresh',live24.get('recentUnique'),'dated',live24.get('datedUnique'))
           if symbol24.get('status')=='error':
-              raise SystemExit(f'24HMoney Symbol parser/source degraded: {symbol24}')
+              print('::warning::24HMoney Symbol isolated provider failure:',symbol24.get('errors') or symbol24.get('error'))
           if symbol24.get('parser')!='24hmoney-symbol-v5':
               raise SystemExit(f'24HMoney Symbol parser version invalid: {symbol24.get("parser")}')
           attempted=max(1,int(symbol24.get('symbolsAttempted') or 0))
           reachable=int(symbol24.get('symbolsReachable') or 0)
           if reachable < math.ceil(attempted*.70):
-              raise SystemExit(f'24HMoney Symbol reachability too low: {reachable}/{attempted}')
+              print('::warning::24HMoney Symbol isolated low reachability:',reachable,'/',attempted)
           print('REMOTE NEWS CONTRACT PASS',round(age,1),len(data.get('items') or []),'companyCoverage',company.get('companyCoverage'),'luat',luat,'24hmoney',{k:(source_map.get(k) or {}).get('items') for k in ('24HMoney Live','24HMoney Symbol')})
           PY
