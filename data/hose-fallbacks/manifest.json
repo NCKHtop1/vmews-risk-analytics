@@ -1,6 +1,6 @@
 {
   "version": "VMEWS-HOSE-RESOLVER-1.0.0",
-  "generatedAt": "2026-11-05T03:38:10.047544+00:00",
+  "generatedAt": "2026-11-06T03:33:17.008007+00:00",
   "hoseReference": 408,
   "primaryYahooDeep": 386,
   "cdnVnstockDeep": 14,
@@ -46,17 +46,17 @@
   "routes": {
     "AAA": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "AAM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "AAT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1458,
+      "rows": 1459,
       "source": "Yahoo Finance"
     },
     "ABR": {
@@ -66,7 +66,7 @@
     },
     "ABS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1621,
+      "rows": 1622,
       "source": "Yahoo Finance"
     },
     "ABT": {
@@ -76,17 +76,17 @@
     },
     "ACB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1542,
+      "rows": 1543,
       "source": "Yahoo Finance"
     },
     "ACC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "ACG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1054,
+      "rows": 1056,
       "source": "Yahoo Finance"
     },
     "ACL": {
@@ -96,7 +96,7 @@
     },
     "ADG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1477,
+      "rows": 1478,
       "source": "Yahoo Finance"
     },
     "ADP": {
@@ -106,137 +106,137 @@
     },
     "ADS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "AGG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1780,
+      "rows": 1781,
       "source": "Yahoo Finance"
     },
     "AGR": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "ANV": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "APG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "APH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1629,
+      "rows": 1630,
       "source": "Yahoo Finance"
     },
     "ASG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1587,
+      "rows": 1588,
       "source": "Yahoo Finance"
     },
     "ASM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "ASP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "AST": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2301,
+      "rows": 2302,
       "source": "Yahoo Finance"
     },
     "BAF": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1285,
+      "rows": 1286,
       "source": "Yahoo Finance"
     },
     "BCE": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "BCM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1465,
+      "rows": 1466,
       "source": "Yahoo Finance"
     },
     "BFC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "BHN": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2535,
+      "rows": 2536,
       "source": "Yahoo Finance"
     },
     "BIC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "BID": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "BKG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1517,
+      "rows": 1518,
       "source": "Yahoo Finance"
     },
     "BMC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "BMI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "BMP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "BRC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2587,
       "source": "Yahoo Finance"
     },
     "BSI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2600,
+      "rows": 2601,
       "source": "Yahoo Finance"
     },
     "BSR": {
       "route": "PRIMARY_YAHOO",
-      "rows": 470,
+      "rows": 471,
       "source": "Yahoo Finance"
     },
     "BTP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "BTT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2591,
+      "rows": 2592,
       "source": "Yahoo Finance"
     },
     "BVH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "BWE": {
@@ -246,7 +246,7 @@
     },
     "C32": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2595,
+      "rows": 2596,
       "source": "Yahoo Finance"
     },
     "C47": {
@@ -256,62 +256,62 @@
     },
     "CCC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 384,
+      "rows": 385,
       "source": "Yahoo Finance"
     },
     "CCI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2589,
+      "rows": 2590,
       "source": "Yahoo Finance"
     },
     "CCL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "CDC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "CHP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "CIG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2587,
       "source": "Yahoo Finance"
     },
     "CII": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "CKG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1718,
+      "rows": 1719,
       "source": "Yahoo Finance"
     },
     "CLC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2587,
       "source": "Yahoo Finance"
     },
     "CLL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "CLW": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2591,
+      "rows": 2592,
       "source": "Yahoo Finance"
     },
     "CMG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "CMV": {
@@ -321,87 +321,87 @@
     },
     "CMX": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "CNG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "COM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2591,
+      "rows": 2592,
       "source": "Yahoo Finance"
     },
     "CRC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2131,
+      "rows": 2132,
       "source": "Yahoo Finance"
     },
     "CRE": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2119,
+      "rows": 2120,
       "source": "Yahoo Finance"
     },
     "CRV": {
       "route": "PRIMARY_YAHOO",
-      "rows": 273,
+      "rows": 274,
       "source": "Yahoo Finance"
     },
     "CSM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "CSV": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "CTD": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "CTF": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2450,
+      "rows": 2451,
       "source": "Yahoo Finance"
     },
     "CTG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "CTI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "CTR": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1227,
+      "rows": 1228,
       "source": "Yahoo Finance"
     },
     "CTS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "CVT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2360,
+      "rows": 2361,
       "source": "Yahoo Finance"
     },
     "D2D": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "DAH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "DAT": {
@@ -411,42 +411,42 @@
     },
     "DBC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1893,
+      "rows": 1894,
       "source": "Yahoo Finance"
     },
     "DBD": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2176,
+      "rows": 2178,
       "source": "Yahoo Finance"
     },
     "DBT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1571,
+      "rows": 1572,
       "source": "Yahoo Finance"
     },
     "DC4": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1474,
+      "rows": 1475,
       "source": "Yahoo Finance"
     },
     "DCL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "DCM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "DGC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1629,
+      "rows": 1630,
       "source": "Yahoo Finance"
     },
     "DGW": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2589,
+      "rows": 2590,
       "source": "Yahoo Finance"
     },
     "DHA": {
@@ -456,7 +456,7 @@
     },
     "DHC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "DHG": {
@@ -466,37 +466,37 @@
     },
     "DHM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "DIG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "DLG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "DMC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2589,
       "source": "Yahoo Finance"
     },
     "DPG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2195,
+      "rows": 2196,
       "source": "Yahoo Finance"
     },
     "DPM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "DPR": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "DQC": {
@@ -506,172 +506,172 @@
     },
     "DRC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "DRH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "DRL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "DSC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 530,
+      "rows": 531,
       "source": "Yahoo Finance"
     },
     "DSE": {
       "route": "PRIMARY_YAHOO",
-      "rows": 610,
+      "rows": 611,
       "source": "Yahoo Finance"
     },
     "DSN": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "DTA": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "DTL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2587,
       "source": "Yahoo Finance"
     },
     "DTT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2590,
+      "rows": 2591,
       "source": "Yahoo Finance"
     },
     "DVP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "DXG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "DXS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1340,
+      "rows": 1341,
       "source": "Yahoo Finance"
     },
     "DXV": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2587,
       "source": "Yahoo Finance"
     },
     "EIB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2589,
+      "rows": 2590,
       "source": "Yahoo Finance"
     },
     "ELC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "EVE": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "EVF": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1248,
+      "rows": 1249,
       "source": "Yahoo Finance"
     },
     "EVG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2452,
+      "rows": 2453,
       "source": "Yahoo Finance"
     },
     "FCM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "FCN": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "FDC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2592,
+      "rows": 2593,
       "source": "Yahoo Finance"
     },
     "FIR": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2097,
+      "rows": 2098,
       "source": "Yahoo Finance"
     },
     "FIT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "FMC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "FPT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "FRT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2222,
+      "rows": 2223,
       "source": "Yahoo Finance"
     },
     "FTS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2548,
+      "rows": 2549,
       "source": "Yahoo Finance"
     },
     "GAS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "GDT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "GEE": {
       "route": "PRIMARY_YAHOO",
-      "rows": 582,
+      "rows": 583,
       "source": "Yahoo Finance"
     },
     "GEG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1857,
+      "rows": 1858,
       "source": "Yahoo Finance"
     },
     "GEX": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2287,
+      "rows": 2288,
       "source": "Yahoo Finance"
     },
     "GIL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "GMD": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "GMH": {
@@ -681,7 +681,7 @@
     },
     "GSP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "GTA": {
@@ -691,87 +691,87 @@
     },
     "GVR": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1724,
+      "rows": 1725,
       "source": "Yahoo Finance"
     },
     "HAG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "HAH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "HAP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2591,
+      "rows": 2592,
       "source": "Yahoo Finance"
     },
     "HAR": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "HAS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2588,
+      "rows": 2589,
       "source": "Yahoo Finance"
     },
     "HAX": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2589,
+      "rows": 2590,
       "source": "Yahoo Finance"
     },
     "HCD": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "HCM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "HDB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2301,
+      "rows": 2302,
       "source": "Yahoo Finance"
     },
     "HDC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "HDG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "HHP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1482,
+      "rows": 1483,
       "source": "Yahoo Finance"
     },
     "HHS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "HHV": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1251,
+      "rows": 1252,
       "source": "Yahoo Finance"
     },
     "HID": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "HII": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2433,
+      "rows": 2434,
       "source": "Yahoo Finance"
     },
     "HMC": {
@@ -781,52 +781,52 @@
     },
     "HNA": {
       "route": "PRIMARY_YAHOO",
-      "rows": 725,
+      "rows": 726,
       "source": "Yahoo Finance"
     },
     "HPG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "HPX": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2152,
+      "rows": 2153,
       "source": "Yahoo Finance"
     },
     "HQC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "HRC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2588,
+      "rows": 2589,
       "source": "Yahoo Finance"
     },
     "HSG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "HSL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2203,
+      "rows": 2204,
       "source": "Yahoo Finance"
     },
     "HT1": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "HTG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 781,
+      "rows": 782,
       "source": "Yahoo Finance"
     },
     "HTI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "HTL": {
@@ -836,47 +836,47 @@
     },
     "HTN": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2080,
+      "rows": 2081,
       "source": "Yahoo Finance"
     },
     "HTV": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2589,
+      "rows": 2590,
       "source": "Yahoo Finance"
     },
     "HU1": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "HUB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2004,
+      "rows": 2005,
       "source": "Yahoo Finance"
     },
     "HVH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2066,
+      "rows": 2067,
       "source": "Yahoo Finance"
     },
     "HVN": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1945,
+      "rows": 1946,
       "source": "Yahoo Finance"
     },
     "ICT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1766,
+      "rows": 1767,
       "source": "Yahoo Finance"
     },
     "IDI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "IJC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "ILB": {
@@ -891,42 +891,42 @@
     },
     "ITC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "ITD": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "JVC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "KBC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "KDC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "KDH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "KHG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1340,
+      "rows": 1341,
       "source": "Yahoo Finance"
     },
     "KHP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2595,
+      "rows": 2596,
       "source": "Yahoo Finance"
     },
     "KMR": {
@@ -936,12 +936,12 @@
     },
     "KOS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1891,
+      "rows": 1892,
       "source": "Yahoo Finance"
     },
     "KSB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2590,
+      "rows": 2591,
       "source": "Yahoo Finance"
     },
     "L10": {
@@ -961,62 +961,62 @@
     },
     "LCG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "LDG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "LGC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2588,
+      "rows": 2589,
       "source": "Yahoo Finance"
     },
     "LGL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "LHG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "LIX": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "LM8": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2591,
+      "rows": 2592,
       "source": "Yahoo Finance"
     },
     "LPB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1555,
+      "rows": 1556,
       "source": "Yahoo Finance"
     },
     "LSS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "MBB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "MCM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 614,
+      "rows": 615,
       "source": "Yahoo Finance"
     },
     "MCP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "MDG": {
@@ -1026,182 +1026,182 @@
     },
     "MHC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "MIG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1511,
+      "rows": 1512,
       "source": "Yahoo Finance"
     },
     "MSB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1532,
+      "rows": 1533,
       "source": "Yahoo Finance"
     },
     "MSH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2059,
+      "rows": 2060,
       "source": "Yahoo Finance"
     },
     "MSN": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "MWG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "NAB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 695,
+      "rows": 696,
       "source": "Yahoo Finance"
     },
     "NAF": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "NAV": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2589,
+      "rows": 2590,
       "source": "Yahoo Finance"
     },
     "NBB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "NCT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "NHA": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1511,
+      "rows": 1512,
       "source": "Yahoo Finance"
     },
     "NHH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1791,
+      "rows": 1792,
       "source": "Yahoo Finance"
     },
     "NHT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1293,
+      "rows": 1294,
       "source": "Yahoo Finance"
     },
     "NKG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "NLG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "NNC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "NO1": {
       "route": "PRIMARY_YAHOO",
-      "rows": 991,
+      "rows": 992,
       "source": "Yahoo Finance"
     },
     "NSC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2590,
+      "rows": 2591,
       "source": "Yahoo Finance"
     },
     "NT2": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "NTC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 267,
+      "rows": 268,
       "source": "Yahoo Finance"
     },
     "NTL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "NVL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2559,
+      "rows": 2560,
       "source": "Yahoo Finance"
     },
     "NVT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "OCB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1506,
+      "rows": 1507,
       "source": "Yahoo Finance"
     },
     "OGC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "OPC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2595,
+      "rows": 2596,
       "source": "Yahoo Finance"
     },
     "ORS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1295,
+      "rows": 1296,
       "source": "Yahoo Finance"
     },
     "PAC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "PAN": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2600,
+      "rows": 2601,
       "source": "Yahoo Finance"
     },
     "PC1": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2589,
+      "rows": 2590,
       "source": "Yahoo Finance"
     },
     "PDN": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2590,
+      "rows": 2591,
       "source": "Yahoo Finance"
     },
     "PDR": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "PDV": {
       "route": "PRIMARY_YAHOO",
-      "rows": 249,
+      "rows": 250,
       "source": "Yahoo Finance"
     },
     "PET": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "PGC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "PGD": {
@@ -1211,107 +1211,107 @@
     },
     "PGI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2589,
+      "rows": 2591,
       "source": "Yahoo Finance"
     },
     "PGV": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1236,
+      "rows": 1237,
       "source": "Yahoo Finance"
     },
     "PHC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2099,
+      "rows": 2100,
       "source": "Yahoo Finance"
     },
     "PHR": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "PIT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "PJT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2592,
+      "rows": 2593,
       "source": "Yahoo Finance"
     },
     "PLP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2391,
+      "rows": 2392,
       "source": "Yahoo Finance"
     },
     "PLX": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2475,
+      "rows": 2476,
       "source": "Yahoo Finance"
     },
     "PMG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2282,
+      "rows": 2283,
       "source": "Yahoo Finance"
     },
     "PNC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2588,
+      "rows": 2589,
       "source": "Yahoo Finance"
     },
     "PNJ": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "POW": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2035,
+      "rows": 2036,
       "source": "Yahoo Finance"
     },
     "PPC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "PTB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "PTC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "PTL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "PVD": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "PVP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 984,
+      "rows": 985,
       "source": "Yahoo Finance"
     },
     "PVT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "QCG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "QNP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 721,
+      "rows": 722,
       "source": "Yahoo Finance"
     },
     "RAL": {
@@ -1321,12 +1321,12 @@
     },
     "REE": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "RYG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 430,
+      "rows": 431,
       "source": "Yahoo Finance"
     },
     "S4A": {
@@ -1336,12 +1336,12 @@
     },
     "SAB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2566,
+      "rows": 2567,
       "source": "Yahoo Finance"
     },
     "SAM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "SAV": {
@@ -1351,37 +1351,37 @@
     },
     "SBA": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "SBG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 765,
+      "rows": 766,
       "source": "Yahoo Finance"
     },
     "SBT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "SBV": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2468,
+      "rows": 2469,
       "source": "Yahoo Finance"
     },
     "SC5": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2587,
       "source": "Yahoo Finance"
     },
     "SCR": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "SCS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2142,
+      "rows": 2143,
       "source": "Yahoo Finance"
     },
     "SFC": {
@@ -1391,27 +1391,27 @@
     },
     "SFG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "SFI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "SGN": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2144,
+      "rows": 2145,
       "source": "Yahoo Finance"
     },
     "SGR": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2295,
+      "rows": 2296,
       "source": "Yahoo Finance"
     },
     "SGT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "SHA": {
@@ -1421,12 +1421,12 @@
     },
     "SHB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2600,
+      "rows": 2601,
       "source": "Yahoo Finance"
     },
     "SHI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "SHP": {
@@ -1436,47 +1436,47 @@
     },
     "SIP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1339,
+      "rows": 1340,
       "source": "Yahoo Finance"
     },
     "SJD": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "SJS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "SKG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "SMA": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2591,
+      "rows": 2592,
       "source": "Yahoo Finance"
     },
     "SMB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2142,
+      "rows": 2143,
       "source": "Yahoo Finance"
     },
     "SMC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "SPM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2589,
+      "rows": 2590,
       "source": "Yahoo Finance"
     },
     "SRC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2595,
+      "rows": 2596,
       "source": "Yahoo Finance"
     },
     "SRF": {
@@ -1486,27 +1486,27 @@
     },
     "SSB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1467,
+      "rows": 1468,
       "source": "Yahoo Finance"
     },
     "SSC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2591,
+      "rows": 2592,
       "source": "Yahoo Finance"
     },
     "SSI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "ST8": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "STB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "STG": {
@@ -1516,102 +1516,102 @@
     },
     "STK": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2600,
+      "rows": 2601,
       "source": "Yahoo Finance"
     },
     "SVC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2595,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "SVD": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1493,
+      "rows": 1494,
       "source": "Yahoo Finance"
     },
     "SVT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2589,
+      "rows": 2590,
       "source": "Yahoo Finance"
     },
     "SZC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2025,
+      "rows": 2026,
       "source": "Yahoo Finance"
     },
     "SZL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "TAL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 322,
+      "rows": 323,
       "source": "Yahoo Finance"
     },
     "TBC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TCB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2195,
+      "rows": 2196,
       "source": "Yahoo Finance"
     },
     "TCH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "TCI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 718,
+      "rows": 719,
       "source": "Yahoo Finance"
     },
     "TCL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TCM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "TCO": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TCR": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2590,
+      "rows": 2591,
       "source": "Yahoo Finance"
     },
     "TCT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TCX": {
       "route": "PRIMARY_YAHOO",
-      "rows": 272,
+      "rows": 273,
       "source": "Yahoo Finance"
     },
     "TDC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TDG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2437,
+      "rows": 2439,
       "source": "Yahoo Finance"
     },
     "TDH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TDM": {
@@ -1621,52 +1621,52 @@
     },
     "TDP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1584,
+      "rows": 1585,
       "source": "Yahoo Finance"
     },
     "TDW": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2589,
       "source": "Yahoo Finance"
     },
     "TEG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "THG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "TIP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TIX": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TLD": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2322,
+      "rows": 2323,
       "source": "Yahoo Finance"
     },
     "TLG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "TLH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TMP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TMS": {
@@ -1681,87 +1681,87 @@
     },
     "TN1": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1936,
+      "rows": 1937,
       "source": "Yahoo Finance"
     },
     "TNC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2590,
+      "rows": 2591,
       "source": "Yahoo Finance"
     },
     "TNH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1522,
+      "rows": 1523,
       "source": "Yahoo Finance"
     },
     "TNI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2451,
+      "rows": 2452,
       "source": "Yahoo Finance"
     },
     "TNT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TPB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2227,
+      "rows": 2228,
       "source": "Yahoo Finance"
     },
     "TPC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TRA": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "TRC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "TSC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TTA": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1600,
+      "rows": 1601,
       "source": "Yahoo Finance"
     },
     "TTE": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2053,
+      "rows": 2054,
       "source": "Yahoo Finance"
     },
     "TTF": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "TV2": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1923,
+      "rows": 1924,
       "source": "Yahoo Finance"
     },
     "TVB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2171,
+      "rows": 2172,
       "source": "Yahoo Finance"
     },
     "TVS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "TVT": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2416,
+      "rows": 2417,
       "source": "Yahoo Finance"
     },
     "TYA": {
@@ -1771,42 +1771,42 @@
     },
     "UIC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2587,
       "source": "Yahoo Finance"
     },
     "VCA": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1465,
+      "rows": 1467,
       "source": "Yahoo Finance"
     },
     "VCB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "VCF": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2587,
       "source": "Yahoo Finance"
     },
     "VCG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1528,
+      "rows": 1529,
       "source": "Yahoo Finance"
     },
     "VCI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2431,
+      "rows": 2432,
       "source": "Yahoo Finance"
     },
     "VDP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2394,
+      "rows": 2395,
       "source": "Yahoo Finance"
     },
     "VDS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2423,
+      "rows": 2424,
       "source": "Yahoo Finance"
     },
     "VFG": {
@@ -1816,27 +1816,27 @@
     },
     "VGC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1929,
+      "rows": 1930,
       "source": "Yahoo Finance"
     },
     "VHC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "VHM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2207,
+      "rows": 2208,
       "source": "Yahoo Finance"
     },
     "VIB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1563,
+      "rows": 1564,
       "source": "Yahoo Finance"
     },
     "VIC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2596,
+      "rows": 2597,
       "source": "Yahoo Finance"
     },
     "VID": {
@@ -1846,143 +1846,143 @@
     },
     "VIP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "VIX": {
       "route": "PRIMARY_YAHOO",
-      "rows": 1520,
+      "rows": 1521,
       "source": "Yahoo Finance"
     },
     "VJC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2521,
+      "rows": 2522,
       "source": "Yahoo Finance"
     },
     "VMD": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "VND": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2396,
+      "rows": 2397,
       "source": "Yahoo Finance"
     },
     "VNG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2587,
       "source": "Yahoo Finance"
     },
     "VNL": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "VNM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "VNS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2587,
       "source": "Yahoo Finance"
     },
     "VOS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "VPB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2402,
+      "rows": 2403,
       "source": "Yahoo Finance"
     },
     "VPD": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2281,
+      "rows": 2283,
       "source": "Yahoo Finance"
     },
     "VPG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2283,
+      "rows": 2284,
       "source": "Yahoo Finance"
     },
     "VPH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "VPI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2176,
+      "rows": 2177,
       "source": "Yahoo Finance"
     },
     "VPS": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2590,
+      "rows": 2591,
       "source": "Yahoo Finance"
     },
     "VRC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "VRE": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2336,
+      "rows": 2337,
       "source": "Yahoo Finance"
     },
     "VSC": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2589,
+      "rows": 2590,
       "source": "Yahoo Finance"
     },
     "VSH": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "VSI": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "VTB": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2586,
+      "rows": 2587,
       "source": "Yahoo Finance"
     },
     "VTO": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2587,
+      "rows": 2588,
       "source": "Yahoo Finance"
     },
     "VTP": {
       "route": "PRIMARY_YAHOO",
-      "rows": 693,
+      "rows": 694,
       "source": "Yahoo Finance"
     },
     "YBM": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2138,
+      "rows": 2139,
       "source": "Yahoo Finance"
     },
     "YEG": {
       "route": "PRIMARY_YAHOO",
-      "rows": 2179,
+      "rows": 2180,
       "source": "Yahoo Finance"
     },
     "AAN": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 117,
+      "rows": 118,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
     "AFX": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 1901,
+      "rows": 1902,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
@@ -1994,25 +1994,25 @@
     },
     "BVB": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 1572,
+      "rows": 1573,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
     "DMX": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 63,
+      "rows": 64,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
     "DSH": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 353,
+      "rows": 354,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
     "DVV": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 4,
+      "rows": 5,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
@@ -2024,7 +2024,7 @@
     },
     "GEL": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 184,
+      "rows": 185,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
@@ -2036,7 +2036,7 @@
     },
     "HPA": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 184,
+      "rows": 185,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
@@ -2048,7 +2048,7 @@
     },
     "LPS": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 55,
+      "rows": 56,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
@@ -2060,49 +2060,49 @@
     },
     "MZG": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 485,
+      "rows": 486,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
     "TSA": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 566,
+      "rows": 567,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
     "VAB": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 1314,
+      "rows": 1315,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
     "VBB": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 1773,
+      "rows": 1774,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
     "VCK": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 220,
+      "rows": 221,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
     "VPL": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 373,
+      "rows": 374,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
     "VPX": {
       "route": "CDN_LIMITED_HISTORY",
-      "rows": 223,
+      "rows": 224,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     },
     "VVS": {
       "route": "CDN_VNSTOCK_DEEP",
-      "rows": 647,
+      "rows": 648,
       "source": "Vnstock",
       "provider": "Unified Market equity OHLCV (KBS/VCI routing)"
     }
