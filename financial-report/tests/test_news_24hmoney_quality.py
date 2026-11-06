@@ -64,7 +64,7 @@ class HmLiveQualityTests(unittest.TestCase):
         self.assertEqual(ni.classify_24hmoney_live_listing(a,0),('degraded','SOURCE_TIMESTAMP_UNAVAILABLE'))
 
     def test_no_article_listing_is_explicitly_empty(self):
-        a=self.audit(b'<html><p>Chưa co tin moi</p></html>')
+        a=self.audit('<html><p>Chưa co tin moi</p></html>'.encode())
         self.assertEqual(ni.classify_24hmoney_live_listing(a,0),('empty','NO_LISTING_ARTICLES'))
 
     def test_future_time_never_counts_as_fresh(self):
