@@ -1,19 +1,17 @@
 {
   "version": "VMEWS-LIVE-MONITOR-1.0.0",
-  "generatedAt": "2026-11-05T18:06:35.431156+00:00",
+  "generatedAt": "2026-11-06T05:34:15.367868+00:00",
   "trackingStarted": "2026-08-11",
-  "latestArchivedEod": "2026-11-04",
-  "archivedSnapshots": 39,
+  "latestArchivedEod": "2026-11-05",
+  "archivedSnapshots": 40,
   "horizonSessions": 20,
   "eventDefinition": "20-session forward maximum drawdown <= -12%",
   "currentIntegrity": {
-    "status": "WAITING_OR_REVIEW",
-    "reasons": [
-      "market/pooled EOD mismatch (2026-11-05 vs 2026-11-04)"
-    ],
+    "status": "PASS",
+    "reasons": [],
     "marketModelDate": "2026-11-05",
-    "pooledModelDate": "2026-11-04",
-    "sameCompletedEod": false,
+    "pooledModelDate": "2026-11-05",
+    "sameCompletedEod": true,
     "policyVersion": "VMEWS-ALERT-POLICY-4.0.0",
     "policyAligned": true,
     "marketVersion": "VMEWS-MARKET-SCAN-4.2.0",
@@ -25,86 +23,86 @@
     "timeBasis": "LATEST_COMPLETED_EOD_ONLY",
     "watchlistBasis": "SAME_CANONICAL_EOD_AS_MARKET_SCAN",
     "rule": "Archive only aligned market + pooled completed-EOD states. Missing/stale auxiliary context is excluded, never neutral-imputed.",
-    "archiveStatus": "NOT_ARCHIVED_WAITING_FOR_ALIGNMENT",
+    "archiveStatus": "CREATED",
     "revision": null
   },
   "tDayLiveTrack": {
     "status": "LIVE_EVIDENCE_AVAILABLE",
     "bySignalBand": {
       "RED": {
-        "matured": 92,
-        "events": 36,
-        "eventRate": 0.391304347826087,
-        "medianMaxDrawdown20": -0.09284388260254595,
+        "matured": 124,
+        "events": 41,
+        "eventRate": 0.33064516129032256,
+        "medianMaxDrawdown20": -0.08237149946827366,
         "pending": null
       },
       "YELLOW": {
-        "matured": 355,
-        "events": 132,
-        "eventRate": 0.37183098591549296,
-        "medianMaxDrawdown20": -0.0732323232323232,
+        "matured": 385,
+        "events": 135,
+        "eventRate": 0.35064935064935066,
+        "medianMaxDrawdown20": -0.06698564593301437,
         "pending": null
       }
     },
     "combinedAlerts": {
-      "matured": 447,
-      "events": 168,
-      "eventRate": 0.37583892617449666,
-      "medianMaxDrawdown20": -0.07845579078455789,
-      "liftVsEligibleMarketStates": 1.380074780605012
+      "matured": 509,
+      "events": 176,
+      "eventRate": 0.34577603143418467,
+      "medianMaxDrawdown20": -0.069672131147541,
+      "liftVsEligibleMarketStates": 1.3024015882946198
     },
     "eligibleMarketBaseline": {
-      "matured": 5754,
-      "events": 1567,
-      "eventRate": 0.27233229058046576,
-      "medianMaxDrawdown20": -0.06847028151942736
+      "matured": 6068,
+      "events": 1611,
+      "eventRate": 0.26549110085695454,
+      "medianMaxDrawdown20": -0.06646801474387681
     },
-    "maturedSignals": 447,
-    "pendingSignals": 851,
-    "unresolvedSignals": 173,
-    "baselinePending": 7547,
-    "baselineUnresolved": 1366,
+    "maturedSignals": 509,
+    "pendingSignals": 804,
+    "unresolvedSignals": 187,
+    "baselinePending": 7560,
+    "baselineUnresolved": 1427,
     "minimumRecommendedMaturedSignals": 100
   },
   "pooledLiveTrack": {
     "status": "RANKING_LIVE_PASS",
-    "maturedStates": 3596,
-    "events": 1028,
-    "baseRate": 0.28587319243604004,
-    "prAuc": 0.3876961905443919,
+    "maturedStates": 3789,
+    "events": 1054,
+    "baseRate": 0.2781736605964634,
+    "prAuc": 0.37669962612457863,
     "topDecile": {
-      "matured": 824,
-      "events": 311,
-      "eventRate": 0.3774271844660194,
-      "medianMaxDrawdown20": -0.09591649670390623,
-      "liftVsLiveBase": 1.3202608514978655
+      "matured": 878,
+      "events": 322,
+      "eventRate": 0.36674259681093396,
+      "medianMaxDrawdown20": -0.09343178154925574,
+      "liftVsLiveBase": 1.3183944016286802
     },
-    "pendingStates": 3895,
-    "unresolvedStates": 113,
+    "pendingStates": 3902,
+    "unresolvedStates": 115,
     "minimumLiveEvidenceMet": true,
     "rankMonitorPass": true,
     "effect": "Live rank monitoring can trigger review or downgrade. It never auto-promotes a model."
   },
   "calibrationLiveMonitor": {
-    "maturedAuditStates": 3401,
-    "events": 959,
-    "baseRate": 0.2819758894442811,
-    "brier": 0.20647400110024677,
-    "baseRateBrier": 0.20246548721638766,
-    "brierSkill": -0.019798504619085833,
-    "ece10": 0.09840760139644096,
+    "maturedAuditStates": 3594,
+    "events": 985,
+    "baseRate": 0.27406789092932665,
+    "brier": 0.20170684414527046,
+    "baseRateBrier": 0.19895468209087738,
+    "brierSkill": -0.013833110261441073,
+    "ece10": 0.08971484566088073,
     "halves": [
       {
         "period": "first",
-        "n": 1700,
-        "events": 575,
-        "brierSkill": -0.0984033311145871
+        "n": 1797,
+        "events": 595,
+        "brierSkill": -0.09020773338842614
       },
       {
         "period": "second",
-        "n": 1701,
-        "events": 384,
-        "brierSkill": 0.04390238071886299
+        "n": 1797,
+        "events": 390,
+        "brierSkill": 0.046887459936688636
       }
     ],
     "minimumLiveEvidenceMet": true,
