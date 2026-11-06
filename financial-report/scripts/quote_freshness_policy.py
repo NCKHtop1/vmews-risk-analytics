@@ -14,7 +14,6 @@ CALENDAR_DIR = Path(__file__).resolve().parents[2] / "scripts"
 if str(CALENDAR_DIR) not in sys.path:
     sys.path.insert(0, str(CALENDAR_DIR))
 
-from vn_exchange_calendar import VN_TZ, is_trading_day, latest_completed_session
 
 ACTIVE_MAX_AGE_MINUTES = 20
 HEARTBEAT_MAX_AGE_MINUTES = 15
@@ -48,6 +47,12 @@ def _age_min(now, stamp):
 
 
 def _session_phase(now):
+    # Import lazily: some isolated smoke checks import this module with sparse checkout.
+    # A real freshness assessment still fails closed when the certified calendar is absent.
+    try:
+        from vn_exchange_calendar import VN_TZ, is_trading_day, latest_completed_session
+    except ImportError as exc:
+        raise QuoteFreshnessError('certified VN exchange calendar is unavailable') from exc
     local = now.astimezone(VN_TZ)
     try:
         trading = is_trading_day(local.date(), require_certified=True)
@@ -83,6 +88,7 @@ def assess_quote_source(data, *, now=None):
 
     phase, expected_date, active = _session_phase(now)
     latest = _stamp(data.get("latestSourceTime"), "latestSourceTime", now)
+    from vn_exchange_calendar import VN_TZ
     latest_day = latest.astimezone(VN_TZ).date()
     if latest_day != expected_date:
         raise QuoteFreshnessError(
