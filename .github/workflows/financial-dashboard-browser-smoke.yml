@@ -511,11 +511,18 @@ jobs:
               if false_sbv:
                   raise AssertionError(f'Global OMO-substring false positives leaked into NHNN: {false_sbv[:5]}')
 
-              watch=driver.execute_async_script("""
-                const done=arguments[arguments.length-1];
-                window.FinMarketData.get('watch-today.json')
-                  .then(x=>done({status:x.status,checkedAt:x.checkedAt,sourceTime:x.sourceTime,items:(x.items||[]).length}))
-                  .catch(e=>done({error:String(e)}));
+              # Read Today Watch from the *committed atomic browser bundle*.
+              # A fresh independent HTTP read can advance mid-smoke while the
+              # active view still legitimately shows the previous 5m revision.
+              # Verify one coherent revision, not two different arrival times.
+              watch=driver.execute_script("""
+                const current=window.FinMarketData?.currentBundle?.();
+                const row=current?.watch;
+                return current && row ? {
+                  status:row.status,checkedAt:row.checkedAt,
+                  sourceTime:row.sourceTime,committedSourceTime:current.sourceTime,
+                  items:(row.items||[]).length
+                } : {error:'No committed atomic Today Watch bundle'};
               """)
               local=datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=7)))
               mins=local.hour*60+local.minute
@@ -533,7 +540,7 @@ jobs:
                       raise AssertionError(f'Scanner is not aligned with quote snapshot: {snapshot}')
                   if str(snapshot.get('strategySourceTime') or '')!=str(bundle_source):
                       raise AssertionError(f'Strategy snapshot is not aligned with quote snapshot: {snapshot}')
-                  if watch.get('error') or str(watch.get('sourceTime') or '')!=str(bundle_source):
+                  if watch.get('error') or watch.get('status')!='ok' or str(watch.get('sourceTime') or '')!=str(bundle_source) or str(watch.get('committedSourceTime') or '')!=str(bundle_source):
                       raise AssertionError(f'Today-watch is not aligned with quote snapshot: watch={watch} snapshot={snapshot}')
               driver.execute_script("window.FinRiskMonitor.open();")
               wait.until(lambda d:d.execute_script("""
