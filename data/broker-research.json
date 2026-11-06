@@ -1,8 +1,94 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-05T16:32:57+00:00",
+  "updatedAt": "2026-11-06T16:00:43+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-DBC-2026-11-06-001b1c7b",
+      "symbol": "DBC",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-06",
+      "title": "Cập nhật KQKD DBC – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo DBC ngày 06/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-BID-2026-11-06-001b1c7b",
+      "symbol": "BID",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-06",
+      "title": "Cập nhật KQKD BID – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo BID ngày 06/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "SHS-BSR-2026-11-06-e37a16a6",
+      "symbol": "BSR",
+      "broker": "SHS",
+      "brokerName": "SHS",
+      "publishedAt": "2026-11-06",
+      "title": "BSR: Khuyến nghị KHẢ QUAN với giá mục tiêu 30,200 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/bsr-khuyen-nghi-kha-quan-voi-gia-muc-tieu-30-200-dong-co-phieu-rpid6298.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 30200,
+      "summary": "SHS có báo cáo BSR ngày 06/11/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 30.200 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "MBS-HSG-2026-11-06-162432e6",
+      "symbol": "HSG",
+      "broker": "MBS",
+      "brokerName": "MBS",
+      "publishedAt": "2026-11-06",
+      "title": "HSG: Khuyến nghị KHẢ QUAN với giá mục tiêu 14,250 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hsg-khuyen-nghi-kha-quan-voi-gia-muc-tieu-14-250-dong-co-phieu-rpid6297.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 14250,
+      "summary": "MBS có báo cáo HSG ngày 06/11/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 14.250 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "MBS-HSG-2026-11-06-db47030b",
+      "symbol": "HSG",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-11-06",
+      "title": "HSG – BCPT – Thị trường nội địa giữ nhịp tăng trưởng, lợi nhuận phục hồi từ năm tài chính 2027",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/hsg-bcpt-thi-truong-noi-dia-giu-nhip-tang-truong-loi-nhuan-phuc-hoi-tu-nam-tai-chinh-2027/",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 14250,
+      "summary": "MBS công bố báo cáo ngày 06/11/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 14.250 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "MBS-HDB-2026-11-06-be79ada2",
+      "symbol": "HDB",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-11-06",
+      "title": "HDB – BCPT – Báo cáo gặp gỡ nhà đầu tư Tháng 10/2026: Cập nhật KQKD Q3/2026 & Triển vọng kinh doanh",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/hdb-bcpt-bao-cao-gap-go-nha-dau-tu-thang-10-2026-cap-nhat-kqkd-q3-2026-trien-vong-kinh-doanh/",
+      "summary": "MBS công bố báo cáo ngày 06/11/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "BETA-POW-2026-11-06-e3986cc6",
+      "symbol": "POW",
+      "broker": "BETA",
+      "brokerName": "BETA",
+      "publishedAt": "2026-11-06",
+      "title": "POW: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/pow-bao-cao-cap-nhat-kqkd-q3-2026-rpid6296.html",
+      "dataProvider": "24HMONEY",
+      "summary": "BETA có báo cáo POW ngày 06/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "YUANTA-MCH-2026-11-05-5135f9f4",
       "symbol": "MCH",
@@ -69,6 +155,17 @@
       "recommendation": "MUA",
       "targetPrice": 79761,
       "summary": "VCBS có báo cáo CTD ngày 05/11/2026 với khuyến nghị MUA, giá mục tiêu 79.761 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-VCG-2026-11-05-001b1c7b",
+      "symbol": "VCG",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-05",
+      "title": "Cập nhật KQKD VCG – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElementById('tcbs-ticker-options'); if (!datalist) { return; } fetch('https://www.tcbs.com.vn/wp-c",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VCG ngày 05/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "TCBS-VCG-2026-11-05-001b1c7b",
