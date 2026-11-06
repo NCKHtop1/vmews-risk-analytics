@@ -116,6 +116,20 @@ class HmLiveQualityTests(unittest.TestCase):
         self.assertEqual(health['statusReason'],'TRANSPORT_OR_PARSE_FAILURE')
         self.assertFalse(health['qualityChecked'])
 
+    def test_news_healthy_providers_not_counted_twice(self):
+        self.assertEqual(ni.news_provider_group({'name':'CafeF'}),'CafeF')
+        self.assertEqual(ni.news_provider_group({'name':'LuatVietnam Direct · Chứng khoán'}),'LuatVietnam')
+        self.assertEqual(ni.news_provider_group({'name':'24HMoney Live'}),'24HMoney')
+        self.assertEqual(ni.news_provider_group({'name':'24HMoney Symbol'}),'24HMoney')
+        self.assertEqual(ni.news_provider_group({'name':'Vietnam Policy Watch'}),'Google News Discovery')
+        self.assertEqual(ni.news_provider_group({'name':'Global Markets'}),'Google News Discovery')
+        fixtures=[{'name':x,'status':'ok'} for x in
+                  ('CafeF','CafeF','LuatVietnam Direct · Chứng khoán',
+                   'LuatVietnam Direct · Văn bản mới','24HMoney Symbol','24HMoney Live')]
+        unique={ni.news_provider_group(x) for x in fixtures}
+        self.assertEqual(len(fixtures),6)
+        self.assertEqual(len(unique),3)
+
     def test_independent_workflows_keep_total_news_freshness_gates(self):
         base=ROOT.parent
         live=(base/'.github/workflows/market-news-live.yml').read_text()
@@ -125,6 +139,8 @@ class HmLiveQualityTests(unittest.TestCase):
             self.assertIn("fresh*4<dated",code)
             self.assertIn("('degraded','error')",code)
             self.assertIn("symbol24.get('status')=='error'",code)
+            self.assertIn("'healthyProviderCount') or 0)<3",code)
+            self.assertIn('24HMoney Symbol isolated low reachability',code)
         self.assertIn("'healthy') or 0)<3",live)
         self.assertIn("'healthy') or 0)<3",guard)
 
