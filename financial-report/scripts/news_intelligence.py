@@ -659,7 +659,7 @@ def audit_24hmoney_live_listing(raw, current, base_url='https://24hmoney.vn/news
         if '/news/' not in href.lower() or len(title)<24:
             continue
         parsed=urlsplit(urljoin(base_url,href))
-        if not (parsed.hostname or '').endswith('24hmoney.vn'):
+        if not ((parsed.hostname or '')=='24hmoney.vn' or (parsed.hostname or '').endswith('.24hmoney.vn')):
             continue
         url=urlunsplit((parsed.scheme or 'https',parsed.netloc,parsed.path,'',''))
         if url in seen:
@@ -721,7 +721,7 @@ def parse_24hmoney_live(raw, current, companies, aliases=None, base_url='https:/
             continue
         url=urljoin(base_url,href)
         parsed=urlsplit(url)
-        if not (parsed.hostname or '').endswith('24hmoney.vn'):
+        if not ((parsed.hostname or '')=='24hmoney.vn' or (parsed.hostname or '').endswith('.24hmoney.vn')):
             continue
         clean_url=urlunsplit((parsed.scheme or 'https',parsed.netloc,parsed.path,'',''))
         if clean_url in seen:
