@@ -79,6 +79,7 @@ class HmLiveQualityTests(unittest.TestCase):
             f'<span>06/11/2026</span><a href="{url}?a=1">{title}</a>'
             f'<span>06/11/2026</span><a href="{url}?a=2">{title}</a>'
             f'<span>06/11/2026</span><a href="https://attacker.example/news/any">{title}</a>'
+            f'<span>06/11/2026</span><a href="https://fake24hmoney.vn/news/any">{title}</a>'
         ).encode()
         a=self.audit(raw)
         self.assertEqual((a['eligibleUnique'],a['recentUnique']),(1,1))
