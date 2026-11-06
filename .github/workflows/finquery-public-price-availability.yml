@@ -6,6 +6,9 @@ on:
     paths:
       - '.github/workflows/finquery-public-price-availability.yml'
       - 'financial-report/scripts/guard_public_quotes.py'
+      - 'financial-report/scripts/quote_freshness_policy.py'
+      - 'scripts/vn_exchange_calendar.py'
+      - 'financial-report/tests/test_quote_freshness_policy.py'
       - 'financial-report/tests/test_public_price_guard.py'
   workflow_run:
     workflows: ['Deploy VMEWS Pages']
@@ -33,8 +36,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Verify quote guard regression tests
-        run: python -m unittest discover -s financial-report/tests -p test_public_price_guard.py
+      - name: Verify quote and exchange-session freshness regression tests
+        run: |
+          python -m unittest discover -s financial-report/tests -p test_public_price_guard.py -v
+          python -m unittest discover -s financial-report/tests -p test_quote_freshness_policy.py -v
       - name: Probe source, Pages and custom-domain quote availability
         shell: bash
         env:
@@ -52,6 +57,14 @@ jobs:
               echo "::notice::Pages recovery triggered; this run remains FAILED until a later probe verifies data."
             else
               echo "::warning::Pages deployment already active; not dispatching duplicate."
+            fi
+          elif [ "$code" -eq 22 ] || [ "$code" -eq 24 ]; then
+            echo "::error::Current market source unavailable or stale; do not mark recovered until a new successful probe."
+            active=$(gh run list --workflow market-price-live.yml --limit 10 --json status --jq 'any(.[]; .status=="queued" or .status=="in_progress" or .status=="waiting" or .status=="pending")' 2>/dev/null) || active=unknown
+            if [ "$active" = "false" ]; then
+              gh workflow run market-price-live.yml --ref main || echo "::error::Market price recovery dispatch failed"
+            else
+              echo "::warning::Publisher running or runner state unavailable; avoid duplicate dispatch."
             fi
           fi
           exit "$code"

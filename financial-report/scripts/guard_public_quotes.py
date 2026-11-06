@@ -5,6 +5,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
+from quote_freshness_policy import QuoteFreshnessError, assess_quote_source
 
 SOURCE = "https://raw.githubusercontent.com/NCKHtop1/vmews-risk-analytics/financial-market-data/market/quotes.json"
 PAGES = "https://nckhtop1.github.io/vmews-risk-analytics/financial-report/market/quotes.json"
@@ -104,6 +105,12 @@ def main():
     except Exception as exc:
         print(f"::error::SOURCE_PRICE_UNAVAILABLE {type(exc).__name__}: {exc}")
         return 22
+    try:
+        freshness = assess_quote_source(source)
+        print(json.dumps({"site": "source", "freshness": freshness}, ensure_ascii=False))
+    except QuoteFreshnessError as exc:
+        print(f"::error::SOURCE_PRICE_STALE {type(exc).__name__}: {exc}")
+        return 24
     try:
         report = compare(source, read(PAGES), "pages")
         print(json.dumps(report, ensure_ascii=False))
