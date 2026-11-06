@@ -626,6 +626,20 @@ def _24hmoney_financial_relevance(title, symbols, topics, evidence, content_type
 
 
 
+
+def news_provider_group(source):
+    """Group multiple feeds from one publisher for genuinely independent SLOs."""
+    name=str((source or {}).get('name') or '').strip()
+    if name.startswith('LuatVietnam Direct'):
+        return 'LuatVietnam'
+    if name.startswith('24HMoney '):
+        return '24HMoney'
+    if name in {'Vietnam Policy Watch','Vietnam Disclosure Watch',
+                'Global Central Banks','Global Markets','Global Risk'}:
+        return 'Google News Discovery'
+    return name
+
+
 def audit_24hmoney_live_listing(raw, current, base_url='https://24hmoney.vn/news/live'):
     """Audit only the HTML delivered over HTTP, not the JS-hydrated browser feed.
 
