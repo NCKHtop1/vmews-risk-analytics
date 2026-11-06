@@ -90,6 +90,8 @@ jobs:
           assert not missing,('standalone News bundle is stale/incomplete',missing)
           print('NEWS BUNDLE CONTRACT PASS',len(page),required)
           PY
+      - name: Diagnose 24HMoney Live public HTML without publishing
+        run: python financial-report/tests/diagnose_24hmoney_live.py
       - name: Verify News-to-Pages handoff contract
         run: |
           python - <<'PY'
