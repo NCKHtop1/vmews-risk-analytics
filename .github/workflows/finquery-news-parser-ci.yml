@@ -92,6 +92,10 @@ jobs:
           PY
       - name: Diagnose 24HMoney Live public HTML without publishing
         run: python financial-report/tests/diagnose_24hmoney_live.py
+      - name: Inspect public Live browser hydration without publishing
+        run: |
+          pip install --disable-pip-version-check -q selenium==4.36.0
+          python financial-report/tests/diagnose_24hmoney_browser.py
       - name: Verify News-to-Pages handoff contract
         run: |
           python - <<'PY'
