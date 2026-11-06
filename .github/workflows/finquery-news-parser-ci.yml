@@ -13,6 +13,7 @@ on:
       - 'financial-report/frontend/research-agent.js'
       - 'financial-report/frontend/market.css'
       - 'financial-report/tests/test_news_parser.py'
+      - 'financial-report/tests/diagnose_24hmoney_browser.py'
       - 'financial-report/tests/test_news_intelligence.py'
       - '.github/workflows/finquery-news-parser-ci.yml'
       - '.github/workflows/finquery-bundle-sync.yml'
