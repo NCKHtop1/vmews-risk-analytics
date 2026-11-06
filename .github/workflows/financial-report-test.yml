@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['financial-report/**', '.github/workflows/financial-report-test.yml']
+    paths: ['financial-report/**', 'scripts/vn_exchange_calendar.py', '.github/workflows/financial-report-test.yml']
   pull_request:
     paths: ['financial-report/**', '.github/workflows/financial-report-test.yml']
 permissions:
@@ -17,6 +17,7 @@ jobs:
         with:
           sparse-checkout: |
             financial-report
+            scripts
             api
             .github/workflows
       - uses: actions/setup-python@v5
