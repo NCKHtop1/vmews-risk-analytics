@@ -12,6 +12,8 @@ on:
       - 'forecast-*.css'
       - 'solution-ai-v17.js'
       - '.github/workflows/pages.yml'
+  # market-news-live also calls workflow_dispatch after every successful
+  # financial-market-data News publish so the public Pages bundle stays in sync.
   workflow_dispatch:
   # The HOSE price/minute publishers stay alive through each trading session.
   # workflow_run fires only at their end; publish the read-only Pages mirror
