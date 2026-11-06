@@ -3225,18 +3225,8 @@ def news(out, companies):
     degraded = sum(source.get('status') == 'degraded' for source in sources)
     # Several RSS endpoints can belong to one publisher. Avoid calling three
     # feeds from the same publisher three independent healthy news sources.
-    def provider_group(source):
-        name=str(source.get('name') or '').strip()
-        if name.startswith('LuatVietnam Direct'):
-            return 'LuatVietnam'
-        if name.startswith('24HMoney '):
-            return '24HMoney'
-        if name in {'Vietnam Policy Watch','Vietnam Disclosure Watch',
-                    'Global Central Banks','Global Markets','Global Risk'}:
-            return 'Google News Discovery'
-        return name
     healthy_providers=sorted({
-        provider_group(source) for source in sources
+        ni.news_provider_group(source) for source in sources
         if source.get('status')=='ok' and source.get('name')
     })
     health = {'healthy': healthy, 'empty': empty, 'degraded': degraded,
