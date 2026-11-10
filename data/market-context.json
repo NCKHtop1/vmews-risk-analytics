@@ -1,51 +1,51 @@
 {
-  "generatedAt": "2026-11-10T07:24:43.545676+00:00",
+  "generatedAt": "2026-11-10T19:47:09.797021+00:00",
   "market": {
-    "score": 7.330891145794447,
+    "score": 8.72800153731524,
     "available": true,
-    "technical": 11.278294070452995,
+    "technical": 13.427694672792676,
     "analog20": {
       "score": 0.0,
       "rate": 0.0,
-      "threshold": -0.13391719051784992,
+      "threshold": -0.1338393352353644,
       "matches": 40,
       "available": true,
       "examples": [
         {
           "date": "2023-03-22",
-          "similarity": 0.8724392390334489,
+          "similarity": 0.8603387648757179,
           "forwardDrawdown": 0.002277658742783961,
           "event": false
         },
         {
           "date": "2023-03-23",
-          "similarity": 0.8692420637144571,
+          "similarity": 0.8519530135300303,
           "forwardDrawdown": -0.0035785956575858924,
           "event": false
         },
         {
           "date": "2023-03-24",
-          "similarity": 0.8508435386462955,
+          "similarity": 0.8217159338200967,
           "forwardDrawdown": -0.011406359471337724,
           "event": false
         },
         {
           "date": "2023-12-21",
-          "similarity": 0.8363282618537577,
+          "similarity": 0.8122682374948486,
           "forwardDrawdown": 0.0005714692562053258,
           "event": false
         },
         {
-          "date": "2023-03-08",
-          "similarity": 0.8197070221660793,
-          "forwardDrawdown": -0.02485758095834467,
+          "date": "2023-12-18",
+          "similarity": 0.8076891889287803,
+          "forwardDrawdown": 0.009662278621227482,
           "event": false
         }
       ]
     },
-    "date": "2026-11-06",
+    "date": "2026-11-09",
     "ticker": "0P0000HY8X.VN",
-    "rows": 1547,
+    "rows": 1548,
     "source": "Yahoo Finance",
     "provider": "query1.finance.yahoo.com",
     "audit": [
@@ -53,7 +53,7 @@
         "source": "Yahoo Finance",
         "provider": "query1.finance.yahoo.com",
         "symbol": "0P0000HY8X.VN",
-        "rows": 1547,
+        "rows": 1548,
         "ok": true
       }
     ]
