@@ -1,8 +1,104 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-11T06:42:35+00:00",
+  "updatedAt": "2026-11-11T16:19:08+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "VIX-GMD-2026-11-11-176cd35a",
+      "symbol": "GMD",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2026-11-11",
+      "title": "GMD – Cập nhật kết quả kinh doanh Q3/2026 Kính gửi quý khách hàng, Công ty cổ phần chứng khoán VIX xin gửi báo cáo: “GMD – Cập nhật kết quả kinh doanh Q3/2026”. (Tiếp theo báo cáo... XEM CHI TIẾT",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
+      "summary": "VIX có báo cáo GMD ngày 11/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "VIKKIBANKS-GMD-2026-11-11-f2d9b9c2",
+      "symbol": "GMD",
+      "broker": "VIKKIBANKS",
+      "brokerName": "VikkiBankS",
+      "publishedAt": "2026-11-11",
+      "title": "GMD: Khuyến nghị MUA với giá mục tiêu 58,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/gmd-khuyen-nghi-mua-voi-gia-muc-tieu-58-000-dong-co-phieu-rpid6311.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 58000,
+      "summary": "VIKKIBANKS có báo cáo GMD ngày 11/11/2026 với khuyến nghị MUA, giá mục tiêu 58.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-VRE-2026-11-11-001b1c7b",
+      "symbol": "VRE",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-11",
+      "title": "Cập nhật KQKD VRE – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VRE ngày 11/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-VIB-2026-11-11-001b1c7b",
+      "symbol": "VIB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-11",
+      "title": "Cập nhật KQKD VIB – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VIB ngày 11/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-GVR-2026-11-11-001b1c7b",
+      "symbol": "GVR",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-11",
+      "title": "Cập nhật KQKD GVR – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo GVR ngày 11/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-BCM-2026-11-11-001b1c7b",
+      "symbol": "BCM",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-11",
+      "title": "Cập nhật KQKD BCM – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo BCM ngày 11/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "MBS-VNM-2026-11-11-99e1d248",
+      "symbol": "VNM",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-11-11",
+      "title": "VNM – BCPT – Áp lực đầu vào ngắn hạn, dài hạn vững chắc",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/vnm-bcpt-ap-luc-dau-vao-ngan-han-dai-han-vung-chac/",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 69500,
+      "summary": "MBS công bố báo cáo ngày 11/11/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 69.500 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "MBS-NLG-2026-11-11-ba631136",
+      "symbol": "NLG",
+      "broker": "MBS",
+      "brokerName": "MBS",
+      "publishedAt": "2026-11-11",
+      "title": "NLG: Khuyến nghị KHẢ QUAN với giá mục tiêu 31,300 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/nlg-khuyen-nghi-kha-quan-voi-gia-muc-tieu-31-300-dong-co-phieu-rpid6312.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 31300,
+      "summary": "MBS có báo cáo NLG ngày 11/11/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 31.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "MBS-NLG-2026-11-11-17f2db19",
       "symbol": "NLG",
@@ -15,6 +111,34 @@
       "recommendation": "KHẢ QUAN",
       "targetPrice": 31300,
       "summary": "MBS công bố báo cáo ngày 11/11/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 31.300 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "BSC-VPB-2026-11-11-f5b357a8",
+      "symbol": "VPB",
+      "broker": "BSC",
+      "brokerName": "BSC",
+      "publishedAt": "2026-11-11",
+      "title": "VPB: Khuyến nghị MUA với giá mục tiêu 31,800 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vpb-khuyen-nghi-mua-voi-gia-muc-tieu-31-800-dong-co-phieu-rpid6315.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 31800,
+      "summary": "BSC có báo cáo VPB ngày 11/11/2026 với khuyến nghị MUA, giá mục tiêu 31.800 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "AGR-TCH-2026-11-11-b1e0d433",
+      "symbol": "TCH",
+      "broker": "AGR",
+      "brokerName": "AGR",
+      "publishedAt": "2026-11-11",
+      "title": "TCH: Khuyến nghị TĂNG TỶ TRỌNG với giá mục tiêu 16,000 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tch-khuyen-nghi-tang-ty-trong-voi-gia-muc-tieu-16-000-dong-co-phieu-rpid6313.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "TĂNG TỶ TRỌNG",
+      "targetPrice": 16000,
+      "summary": "AGR có báo cáo TCH ngày 11/11/2026 với khuyến nghị TĂNG TỶ TRỌNG, giá mục tiêu 16.000 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "VNDIRECT-GMD-2026-11-10-d542db3b",
@@ -929,6 +1053,17 @@
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/dcm-bao-cao-cap-nhat-kqkd-q3-2026-rpid6237.html",
       "dataProvider": "24HMONEY",
       "summary": "VNDIRECT có báo cáo DCM ngày 30/10/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIX-FRT-2026-10-30-176cd35a",
+      "symbol": "FRT",
+      "broker": "VIX",
+      "brokerName": "VIX Securities",
+      "publishedAt": "2026-10-30",
+      "title": "FRT – Báo cáo cập nhật KQKD Quý III Kính gửi quý khách hàng, Công ty Cổ phần Chứng khoán VIX xin gửi báo cáo cập nhật “FRT – Báo cáo cập nhật KQKD Quý III”. TÓM TẮT:... XEM CHI TIẾT 1 / 6 1 2 3 ... » » jQuery(document).r",
+      "currency": "VND",
+      "sourceUrl": "https://vixs.vn/bao-cao-phan-tich/bao-cao-doanh-nghiep",
+      "summary": "VIX có báo cáo FRT ngày 30/10/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "VIX-FRT-2026-10-30-176cd35a",
