@@ -1,8 +1,21 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-10T16:29:09+00:00",
+  "updatedAt": "2026-11-11T06:42:35+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "MBS-NLG-2026-11-11-17f2db19",
+      "symbol": "NLG",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-11-11",
+      "title": "NLG – BCPT – Định giá hấp dẫn trong bối cảnh thị trường xuất hiện những chuyển biến tích cực",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/nlg-bcpt-dinh-gia-hap-dan-trong-boi-canh-thi-truong-xuat-hien-nhung-chuyen-bien-tich-cuc/",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 31300,
+      "summary": "MBS công bố báo cáo ngày 11/11/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 31.300 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
     {
       "id": "VNDIRECT-GMD-2026-11-10-d542db3b",
       "symbol": "GMD",
