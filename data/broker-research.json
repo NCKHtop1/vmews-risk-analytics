@@ -1,8 +1,21 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-12T16:54:02+00:00",
+  "updatedAt": "2026-11-13T06:56:27+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "ACBS-KDH-2026-11-13-180b4b2f",
+      "symbol": "KDH",
+      "broker": "ACBS",
+      "brokerName": "ACB Securities",
+      "publishedAt": "2026-11-13",
+      "title": "Khuyến nghị gần nhất KDH",
+      "currency": "VND",
+      "sourceUrl": "https://acbs.com.vn/bao-cao",
+      "recommendation": "MUA",
+      "targetPrice": 19000,
+      "summary": "ACBS có báo cáo KDH ngày 13/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "YUANTA-SBT-2026-11-11-daaf1872",
       "symbol": "SBT",
@@ -274,6 +287,19 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo KDH ngày 10/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "MBS-VGC-2026-11-10-dc7ffbef",
+      "symbol": "VGC",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-11-10",
+      "title": "VGC – BCPT – Tăng trưởng bền vững trong chu kỳ phát triển hạ tầng",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/vgc-bcpt-tang-truong-ben-vung-trong-chu-ky-phat-trien-ha-tang/",
+      "recommendation": "KHẢ QUAN",
+      "targetPrice": 56000,
+      "summary": "MBS công bố báo cáo ngày 10/11/2026 với khuyến nghị KHẢ QUAN, giá mục tiêu 56.000 đồng/cp. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
     },
     {
       "id": "ACBS-SIP-2026-11-10-180b4b2f",
