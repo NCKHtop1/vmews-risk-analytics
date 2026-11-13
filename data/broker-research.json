@@ -1,8 +1,19 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-13T06:56:27+00:00",
+  "updatedAt": "2026-11-13T16:33:08+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-NVL-2026-11-13-001b1c7b",
+      "symbol": "NVL",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-13",
+      "title": "Cập nhật KQKD NVL – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo NVL ngày 13/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "ACBS-KDH-2026-11-13-180b4b2f",
       "symbol": "KDH",
@@ -15,6 +26,19 @@
       "recommendation": "MUA",
       "targetPrice": 19000,
       "summary": "ACBS có báo cáo KDH ngày 13/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "ACBS-FPT-2026-11-13-180b4b2f",
+      "symbol": "FPT",
+      "broker": "ACBS",
+      "brokerName": "ACB Securities",
+      "publishedAt": "2026-11-13",
+      "title": "Khuyến nghị gần nhất FPT",
+      "currency": "VND",
+      "sourceUrl": "https://acbs.com.vn/bao-cao",
+      "recommendation": "MUA",
+      "targetPrice": 75700,
+      "summary": "ACBS có báo cáo FPT ngày 13/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "YUANTA-SBT-2026-11-11-daaf1872",
