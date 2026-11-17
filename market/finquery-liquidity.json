@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "asOf": "2026-11-11",
+  "asOf": "2026-11-13",
   "publishedAt": "2026-10-23T18:18:00+07:00",
-  "lastCheckedAt": "2026-11-16T20:35:24+00:00",
+  "lastCheckedAt": "2026-11-17T19:15:47+00:00",
   "mode": "SOURCE_REFERENCE",
   "title": "Interbank VND & HNX futures; VBMA FX swap curve if verified",
   "disclaimer": "Public observation archive, no investment signals, no invented observations.",
@@ -13,7 +13,7 @@
     "status": "secondary_source_crosschecked",
     "originAgency": "NHNN",
     "frequency": "business_daily",
-    "asOf": "2026-11-11",
+    "asOf": "2026-11-13",
     "source": "https://stockbiz.vn/vi-mo/du-lieu/lai-suat-lien-ngan-hang",
     "crossCheck": "https://dulieukinhte.com/du-lieu-dong/lai-suat-thi-truong-lien-ngan-hang-qua-dem-34248",
     "observations": [
@@ -120,6 +120,14 @@
       {
         "date": "2026-11-11",
         "value": 4.33
+      },
+      {
+        "date": "2026-11-12",
+        "value": 4.76
+      },
+      {
+        "date": "2026-11-13",
+        "value": 5.54
       }
     ]
   },
@@ -170,7 +178,7 @@
     "instrument": "USD/VND FX Swap",
     "measurement": "FX Swap implied yield curve",
     "unit": "%/năm",
-    "asOf": "2026-11-16",
+    "asOf": "2026-11-17",
     "status": "verified",
     "points": [
       {
@@ -179,43 +187,43 @@
       },
       {
         "tenor": "ON",
-        "value": 1.317
+        "value": 1.313
       },
       {
         "tenor": "1W",
-        "value": 1.362
+        "value": 1.317
       },
       {
         "tenor": "2W",
-        "value": 1.335
+        "value": 1.5
       },
       {
         "tenor": "3W",
-        "value": 1.423
+        "value": 1.517
       },
       {
         "tenor": "1M",
-        "value": 1.413
+        "value": 1.445
       },
       {
         "tenor": "2M",
-        "value": 2.208
+        "value": 2.245
       },
       {
         "tenor": "3M",
-        "value": 2.311
+        "value": 2.363
       },
       {
         "tenor": "6M",
-        "value": 2.262
+        "value": 2.265
       },
       {
         "tenor": "9M",
-        "value": 2.25
+        "value": 2.26
       },
       {
         "tenor": "1Y",
-        "value": 2.25
+        "value": 2.26
       }
     ],
     "licenseStatus": "source_attributed",
@@ -233,7 +241,7 @@
   "vbmaCurves": {
     "swap": {
       "status": "verified",
-      "asOf": "2026-11-16",
+      "asOf": "2026-11-17",
       "unit": "%/năm",
       "measurement": "FX Swap implied yield curve",
       "dateLayout": "MM/DD/YYYY",
@@ -245,43 +253,43 @@
         },
         {
           "tenor": "ON",
-          "value": 1.317
+          "value": 1.313
         },
         {
           "tenor": "1W",
-          "value": 1.362
+          "value": 1.317
         },
         {
           "tenor": "2W",
-          "value": 1.335
+          "value": 1.5
         },
         {
           "tenor": "3W",
-          "value": 1.423
+          "value": 1.517
         },
         {
           "tenor": "1M",
-          "value": 1.413
+          "value": 1.445
         },
         {
           "tenor": "2M",
-          "value": 2.208
+          "value": 2.245
         },
         {
           "tenor": "3M",
-          "value": 2.311
+          "value": 2.363
         },
         {
           "tenor": "6M",
-          "value": 2.262
+          "value": 2.265
         },
         {
           "tenor": "9M",
-          "value": 2.25
+          "value": 2.26
         },
         {
           "tenor": "1Y",
-          "value": 2.25
+          "value": 2.26
         }
       ],
       "source": "https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv",
@@ -297,7 +305,7 @@
     },
     "gov_bond": {
       "status": "verified",
-      "asOf": "2026-11-16",
+      "asOf": "2026-11-17",
       "unit": "%/năm",
       "measurement": "Government Bond Yield",
       "dateLayout": "MM/DD/YYYY",
@@ -317,11 +325,11 @@
         },
         {
           "tenor": "4Y",
-          "value": 3.991
+          "value": 3.99
         },
         {
           "tenor": "5Y",
-          "value": 4.266
+          "value": 4.264
         },
         {
           "tenor": "7Y",
@@ -329,7 +337,7 @@
         },
         {
           "tenor": "10Y",
-          "value": 4.463
+          "value": 4.462
         },
         {
           "tenor": "15Y",
