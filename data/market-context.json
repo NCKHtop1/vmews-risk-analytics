@@ -1,51 +1,51 @@
 {
-  "generatedAt": "2026-11-17T08:00:06.192339+00:00",
+  "generatedAt": "2026-11-17T20:59:18.859938+00:00",
   "market": {
-    "score": 19.318375023786132,
+    "score": 18.055090200245054,
     "available": true,
-    "technical": 11.77185901095302,
+    "technical": 9.828343897812905,
     "analog20": {
       "score": 33.333333333333336,
       "rate": 0.1,
-      "threshold": -0.13352791410542236,
+      "threshold": -0.13345005882293687,
       "matches": 40,
       "available": true,
       "examples": [
         {
-          "date": "2023-03-13",
-          "similarity": 0.8215663224872332,
-          "forwardDrawdown": -0.02821055458274979,
-          "event": false
-        },
-        {
           "date": "2023-03-14",
-          "similarity": 0.8155793137719793,
+          "similarity": 0.8336066531041906,
           "forwardDrawdown": -0.016372981470516912,
           "event": false
         },
         {
+          "date": "2023-03-13",
+          "similarity": 0.8269860084585748,
+          "forwardDrawdown": -0.02821055458274979,
+          "event": false
+        },
+        {
           "date": "2023-03-29",
-          "similarity": 0.7901722031845881,
+          "similarity": 0.8245109033859382,
           "forwardDrawdown": -0.020334536898845568,
           "event": false
         },
         {
           "date": "2023-03-28",
-          "similarity": 0.7796863675708718,
+          "similarity": 0.8110551188148334,
           "forwardDrawdown": -0.01843900895985806,
           "event": false
         },
         {
           "date": "2023-03-10",
-          "similarity": 0.7692086293359232,
+          "similarity": 0.797420388211791,
           "forwardDrawdown": -0.028395084913639623,
           "event": false
         }
       ]
     },
-    "date": "2026-11-13",
+    "date": "2026-11-16",
     "ticker": "0P0000HY8X.VN",
-    "rows": 1552,
+    "rows": 1553,
     "source": "Yahoo Finance",
     "provider": "query1.finance.yahoo.com",
     "audit": [
@@ -53,7 +53,7 @@
         "source": "Yahoo Finance",
         "provider": "query1.finance.yahoo.com",
         "symbol": "0P0000HY8X.VN",
-        "rows": 1552,
+        "rows": 1553,
         "ok": true
       }
     ]
