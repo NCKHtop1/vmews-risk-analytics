@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "asOf": "2026-11-13",
   "publishedAt": "2026-10-23T18:18:00+07:00",
-  "lastCheckedAt": "2026-11-17T19:15:47+00:00",
+  "lastCheckedAt": "2026-11-18T18:54:46+00:00",
   "mode": "SOURCE_REFERENCE",
   "title": "Interbank VND & HNX futures; VBMA FX swap curve if verified",
   "disclaimer": "Public observation archive, no investment signals, no invented observations.",
@@ -178,28 +178,28 @@
     "instrument": "USD/VND FX Swap",
     "measurement": "FX Swap implied yield curve",
     "unit": "%/năm",
-    "asOf": "2026-11-17",
+    "asOf": "2026-11-18",
     "status": "verified",
     "points": [
       {
         "tenor": "SPOT",
-        "value": 1.35
+        "value": 0.898
       },
       {
         "tenor": "ON",
-        "value": 1.313
+        "value": 0.8
       },
       {
         "tenor": "1W",
-        "value": 1.317
+        "value": 1.012
       },
       {
         "tenor": "2W",
-        "value": 1.5
+        "value": 1.385
       },
       {
         "tenor": "3W",
-        "value": 1.517
+        "value": 1.425
       },
       {
         "tenor": "1M",
@@ -207,23 +207,23 @@
       },
       {
         "tenor": "2M",
-        "value": 2.245
+        "value": 2.267
       },
       {
         "tenor": "3M",
-        "value": 2.363
+        "value": 2.423
       },
       {
         "tenor": "6M",
-        "value": 2.265
+        "value": 2.337
       },
       {
         "tenor": "9M",
-        "value": 2.26
+        "value": 2.327
       },
       {
         "tenor": "1Y",
-        "value": 2.26
+        "value": 2.327
       }
     ],
     "licenseStatus": "source_attributed",
@@ -236,12 +236,13 @@
   },
   "sourceIssues": [
     "VBMA fi_bond: source observation stale 2026-02-06",
+    "VBMA gov_bond TimeoutError: The read operation timed out",
     "VBMA short_benchmark: source observation stale 2022-10-18"
   ],
   "vbmaCurves": {
     "swap": {
       "status": "verified",
-      "asOf": "2026-11-17",
+      "asOf": "2026-11-18",
       "unit": "%/năm",
       "measurement": "FX Swap implied yield curve",
       "dateLayout": "MM/DD/YYYY",
@@ -249,23 +250,23 @@
       "points": [
         {
           "tenor": "SPOT",
-          "value": 1.35
+          "value": 0.898
         },
         {
           "tenor": "ON",
-          "value": 1.313
+          "value": 0.8
         },
         {
           "tenor": "1W",
-          "value": 1.317
+          "value": 1.012
         },
         {
           "tenor": "2W",
-          "value": 1.5
+          "value": 1.385
         },
         {
           "tenor": "3W",
-          "value": 1.517
+          "value": 1.425
         },
         {
           "tenor": "1M",
@@ -273,23 +274,23 @@
         },
         {
           "tenor": "2M",
-          "value": 2.245
+          "value": 2.267
         },
         {
           "tenor": "3M",
-          "value": 2.363
+          "value": 2.423
         },
         {
           "tenor": "6M",
-          "value": 2.265
+          "value": 2.337
         },
         {
           "tenor": "9M",
-          "value": 2.26
+          "value": 2.327
         },
         {
           "tenor": "1Y",
-          "value": 2.26
+          "value": 2.327
         }
       ],
       "source": "https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv",
