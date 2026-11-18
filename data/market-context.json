@@ -1,51 +1,51 @@
 {
-  "generatedAt": "2026-11-18T07:35:10.847679+00:00",
+  "generatedAt": "2026-11-18T20:36:50.313050+00:00",
   "market": {
-    "score": 18.055090200245054,
+    "score": 19.5454247262767,
     "available": true,
-    "technical": 9.828343897812905,
+    "technical": 12.1211662455539,
     "analog20": {
       "score": 33.333333333333336,
       "rate": 0.1,
-      "threshold": -0.13345005882293687,
+      "threshold": -0.13337220354045132,
       "matches": 40,
       "available": true,
       "examples": [
         {
           "date": "2023-03-14",
-          "similarity": 0.8336066531041906,
+          "similarity": 0.8209268089378665,
           "forwardDrawdown": -0.016372981470516912,
           "event": false
         },
         {
           "date": "2023-03-13",
-          "similarity": 0.8269860084585748,
+          "similarity": 0.8070126666401485,
           "forwardDrawdown": -0.02821055458274979,
           "event": false
         },
         {
           "date": "2023-03-29",
-          "similarity": 0.8245109033859382,
+          "similarity": 0.7889937378599112,
           "forwardDrawdown": -0.020334536898845568,
           "event": false
         },
         {
           "date": "2023-03-28",
-          "similarity": 0.8110551188148334,
+          "similarity": 0.7827979718821896,
           "forwardDrawdown": -0.01843900895985806,
           "event": false
         },
         {
           "date": "2023-03-10",
-          "similarity": 0.797420388211791,
+          "similarity": 0.7676302699864522,
           "forwardDrawdown": -0.028395084913639623,
           "event": false
         }
       ]
     },
-    "date": "2026-11-16",
+    "date": "2026-11-17",
     "ticker": "0P0000HY8X.VN",
-    "rows": 1553,
+    "rows": 1554,
     "source": "Yahoo Finance",
     "provider": "query1.finance.yahoo.com",
     "audit": [
@@ -53,7 +53,7 @@
         "source": "Yahoo Finance",
         "provider": "query1.finance.yahoo.com",
         "symbol": "0P0000HY8X.VN",
-        "rows": 1553,
+        "rows": 1554,
         "ok": true
       }
     ]
