@@ -1,8 +1,64 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-19T07:38:19+00:00",
+  "updatedAt": "2026-11-19T17:27:23+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "VIKKIBANKS-FRT-2026-11-19-e246ac42",
+      "symbol": "FRT",
+      "broker": "VIKKIBANKS",
+      "brokerName": "VikkiBankS",
+      "publishedAt": "2026-11-19",
+      "title": "FRT: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/frt-bao-cao-cap-nhat-kqkd-q3-2026-rpid6356.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VIKKIBANKS có báo cáo FRT ngày 19/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-POW-2026-11-19-001b1c7b",
+      "symbol": "POW",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-19",
+      "title": "Cập nhật KQKD POW – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo POW ngày 19/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-PHR-2026-11-19-001b1c7b",
+      "symbol": "PHR",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-19",
+      "title": "Cập nhật KQKD PHR – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo PHR ngày 19/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-HDB-2026-11-19-001b1c7b",
+      "symbol": "HDB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-19",
+      "title": "Cập nhật KQKD HDB – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo HDB ngày 19/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-FRT-2026-11-19-001b1c7b",
+      "symbol": "FRT",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-19",
+      "title": "Cập nhật KQKD FRT – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo FRT ngày 19/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "MBS-FPT-2026-11-19-80c1ca09",
       "symbol": "FPT",
@@ -26,6 +82,84 @@
       "summary": "MBS công bố báo cáo ngày 19/11/2026. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
     },
     {
+      "id": "MBS-BID-2026-11-19-fc0c22e0",
+      "symbol": "BID",
+      "broker": "MBS",
+      "brokerName": "MB Securities",
+      "publishedAt": "2026-11-19",
+      "title": "BID – BCPT – Báo cáo gặp gỡ nhà đầu tư Tháng 11/2026: Cập nhật KQKD Q3/2026 & Triển vọng kinh doanh",
+      "currency": "VND",
+      "sourceUrl": "https://www.mbs.com.vn/bid-bcpt-bao-cao-gap-go-nha-dau-tu-thang-11-2026-cap-nhat-kqkd-q3-2026-trien-vong-kinh-doanh/",
+      "recommendation": "BÁN",
+      "summary": "MBS công bố báo cáo ngày 19/11/2026 với khuyến nghị BÁN. FinQuery lưu metadata và dẫn về nguồn gốc; xem báo cáo gốc để đọc đầy đủ luận điểm."
+    },
+    {
+      "id": "KIS-GAS-2026-11-19-5ff32a7a",
+      "symbol": "GAS",
+      "broker": "KIS",
+      "brokerName": "KIS",
+      "publishedAt": "2026-11-19",
+      "title": "GAS: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/gas-bao-cao-cap-nhat-kqkd-q3-2026-rpid6355.html",
+      "dataProvider": "24HMONEY",
+      "summary": "KIS có báo cáo GAS ngày 19/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "ACBS-MBB-2026-11-19-4629765b",
+      "symbol": "MBB",
+      "broker": "ACBS",
+      "brokerName": "ACBS",
+      "publishedAt": "2026-11-19",
+      "title": "MBB: Khuyến nghị MUA với giá mục tiêu 24,700 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mbb-khuyen-nghi-mua-voi-gia-muc-tieu-24-700-dong-co-phieu-rpid6354.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 24700,
+      "summary": "ACBS có báo cáo MBB ngày 19/11/2026 với khuyến nghị MUA, giá mục tiêu 24.700 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VPX-VCB-2026-11-18-04565cd3",
+      "symbol": "VCB",
+      "broker": "VPX",
+      "brokerName": "VPX",
+      "publishedAt": "2026-11-18",
+      "title": "VCB: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vcb-bao-cao-cap-nhat-kqkd-q3-2026-rpid6359.html",
+      "dataProvider": "24HMONEY",
+      "summary": "VPX có báo cáo VCB ngày 18/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIETCAP-VNM-2026-11-18-8bf2c27f",
+      "symbol": "VNM",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap",
+      "publishedAt": "2026-11-18",
+      "title": "VNM: Khuyến nghị MUA với giá mục tiêu 72,500 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vnm-khuyen-nghi-mua-voi-gia-muc-tieu-72-500-dong-co-phieu-rpid6358.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 72500,
+      "summary": "VIETCAP có báo cáo VNM ngày 18/11/2026 với khuyến nghị MUA, giá mục tiêu 72.500 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "VIETCAP-REE-2026-11-18-48ad7050",
+      "symbol": "REE",
+      "broker": "VIETCAP",
+      "brokerName": "Vietcap",
+      "publishedAt": "2026-11-18",
+      "title": "REE: Khuyến nghị MUA với giá mục tiêu 61,900 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/ree-khuyen-nghi-mua-voi-gia-muc-tieu-61-900-dong-co-phieu-rpid6361.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 61900,
+      "summary": "VIETCAP có báo cáo REE ngày 18/11/2026 với khuyến nghị MUA, giá mục tiêu 61.900 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "TCBS-SBT-2026-11-18-001b1c7b",
       "symbol": "SBT",
       "broker": "TCBS",
@@ -35,6 +169,20 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo SBT ngày 18/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "CTS-TAL-2026-11-18-c3f94a93",
+      "symbol": "TAL",
+      "broker": "CTS",
+      "brokerName": "VietinbankSC",
+      "publishedAt": "2026-11-18",
+      "title": "TAL: Khuyến nghị MUA với giá mục tiêu 30,100 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/tal-khuyen-nghi-mua-voi-gia-muc-tieu-30-100-dong-co-phieu-rpid6360.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 30100,
+      "summary": "CTS có báo cáo TAL ngày 18/11/2026 với khuyến nghị MUA, giá mục tiêu 30.100 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "YUANTA-PAN-2026-11-17-c637af4d",
@@ -144,6 +292,17 @@
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/dpm-bao-cao-cap-nhat-kqkd-q3-2026-rpid6340.html",
       "dataProvider": "24HMONEY",
       "summary": "TCBS có báo cáo DPM ngày 17/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-DPM-2026-11-17-001b1c7b",
+      "symbol": "DPM",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-17",
+      "title": "Cập nhật KQKD DPM – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElementById('tcbs-ticker-options'); if (!datalist) { return; } fetch('https://www.tcbs.com.vn/wp-c",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo DPM ngày 17/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "TCBS-DPM-2026-11-17-001b1c7b",
