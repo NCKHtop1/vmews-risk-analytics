@@ -1,8 +1,80 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-19T17:27:23+00:00",
+  "updatedAt": "2026-11-23T07:52:23+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "VCBS-HT1-2026-11-20-e7d17aac",
+      "symbol": "HT1",
+      "broker": "VCBS",
+      "brokerName": "VCBS",
+      "publishedAt": "2026-11-20",
+      "title": "HT1: Khuyến nghị MUA với giá mục tiêu 15,360 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/ht1-khuyen-nghi-mua-voi-gia-muc-tieu-15-360-dong-co-phieu-rpid6378.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 15360,
+      "summary": "VCBS có báo cáo HT1 ngày 20/11/2026 với khuyến nghị MUA, giá mục tiêu 15.360 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-HDG-2026-11-20-001b1c7b",
+      "symbol": "HDG",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-20",
+      "title": "Cập nhật KQKD HDG – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo HDG ngày 20/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-GMD-2026-11-20-001b1c7b",
+      "symbol": "GMD",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-20",
+      "title": "Cập nhật KQKD GMD – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo GMD ngày 20/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "KIS-MWG-2026-11-20-deb89d2e",
+      "symbol": "MWG",
+      "broker": "KIS",
+      "brokerName": "KIS",
+      "publishedAt": "2026-11-20",
+      "title": "MWG: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/mwg-bao-cao-cap-nhat-kqkd-q3-2026-rpid6374.html",
+      "dataProvider": "24HMONEY",
+      "summary": "KIS có báo cáo MWG ngày 20/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "KIS-HDB-2026-11-20-7b64799e",
+      "symbol": "HDB",
+      "broker": "KIS",
+      "brokerName": "KIS",
+      "publishedAt": "2026-11-20",
+      "title": "HDB: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hdb-bao-cao-cap-nhat-kqkd-q3-2026-rpid6375.html",
+      "dataProvider": "24HMONEY",
+      "summary": "KIS có báo cáo HDB ngày 20/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "BETA-FRT-2026-11-20-a0e8fec0",
+      "symbol": "FRT",
+      "broker": "BETA",
+      "brokerName": "BETA",
+      "publishedAt": "2026-11-20",
+      "title": "FRT: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/frt-bao-cao-cap-nhat-kqkd-q3-2026-rpid6377.html",
+      "dataProvider": "24HMONEY",
+      "summary": "BETA có báo cáo FRT ngày 20/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "VIKKIBANKS-FRT-2026-11-19-e246ac42",
       "symbol": "FRT",
@@ -16,6 +88,18 @@
       "summary": "VIKKIBANKS có báo cáo FRT ngày 19/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
+      "id": "TCBS-POW-2026-11-19-9debe68d",
+      "symbol": "POW",
+      "broker": "TCBS",
+      "brokerName": "TCBS",
+      "publishedAt": "2026-11-19",
+      "title": "POW: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/pow-bao-cao-cap-nhat-kqkd-q3-2026-rpid6362.html",
+      "dataProvider": "24HMONEY",
+      "summary": "TCBS có báo cáo POW ngày 19/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "TCBS-POW-2026-11-19-001b1c7b",
       "symbol": "POW",
       "broker": "TCBS",
@@ -27,6 +111,18 @@
       "summary": "TCBS có báo cáo POW ngày 19/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
+      "id": "TCBS-PHR-2026-11-19-d1d098cf",
+      "symbol": "PHR",
+      "broker": "TCBS",
+      "brokerName": "TCBS",
+      "publishedAt": "2026-11-19",
+      "title": "PHR: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/phr-bao-cao-cap-nhat-kqkd-q3-2026-rpid6363.html",
+      "dataProvider": "24HMONEY",
+      "summary": "TCBS có báo cáo PHR ngày 19/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
       "id": "TCBS-PHR-2026-11-19-001b1c7b",
       "symbol": "PHR",
       "broker": "TCBS",
@@ -36,6 +132,29 @@
       "currency": "VND",
       "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
       "summary": "TCBS có báo cáo PHR ngày 19/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-HDB-2026-11-19-06eb947d",
+      "symbol": "HDB",
+      "broker": "TCBS",
+      "brokerName": "TCBS",
+      "publishedAt": "2026-11-19",
+      "title": "HDB: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/hdb-bao-cao-cap-nhat-kqkd-q3-2026-rpid6365.html",
+      "dataProvider": "24HMONEY",
+      "summary": "TCBS có báo cáo HDB ngày 19/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-HDB-2026-11-19-001b1c7b",
+      "symbol": "HDB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-19",
+      "title": "Cập nhật KQKD HDB – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElementById('tcbs-ticker-options'); if (!datalist) { return; } fetch('https://www.tcbs.com.vn/wp-c",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo HDB ngày 19/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "TCBS-HDB-2026-11-19-001b1c7b",
@@ -104,6 +223,32 @@
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/gas-bao-cao-cap-nhat-kqkd-q3-2026-rpid6355.html",
       "dataProvider": "24HMONEY",
       "summary": "KIS có báo cáo GAS ngày 19/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "GTJAVIETNAM-FPT-2026-11-19-25ea228e",
+      "symbol": "FPT",
+      "broker": "GTJAVIETNAM",
+      "brokerName": "GTJA (Vietnam)",
+      "publishedAt": "2026-11-19",
+      "title": "FPT: Cập nhật cuộc gặp Nhà đầu tư ngày 18/11/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/fpt-cap-nhat-cuoc-gap-nha-dau-tu-ngay-18-11-2026-rpid6370.html",
+      "dataProvider": "24HMONEY",
+      "summary": "GTJAVIETNAM có báo cáo FPT ngày 19/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "ACBS-VCG-2026-11-19-7bfa3a88",
+      "symbol": "VCG",
+      "broker": "ACBS",
+      "brokerName": "ACBS",
+      "publishedAt": "2026-11-19",
+      "title": "VCG: Khuyến nghị MUA với giá mục tiêu 21,300 đồng/cổ phiếu",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vcg-khuyen-nghi-mua-voi-gia-muc-tieu-21-300-dong-co-phieu-rpid6366.html",
+      "dataProvider": "24HMONEY",
+      "recommendation": "MUA",
+      "targetPrice": 21300,
+      "summary": "ACBS có báo cáo VCG ngày 19/11/2026 với khuyến nghị MUA, giá mục tiêu 21.300 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
     },
     {
       "id": "ACBS-MBB-2026-11-19-4629765b",
