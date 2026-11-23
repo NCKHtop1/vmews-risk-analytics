@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "asOf": "2026-11-16",
   "publishedAt": "2026-10-23T18:18:00+07:00",
-  "lastCheckedAt": "2026-11-20T18:40:07+00:00",
+  "lastCheckedAt": "2026-11-23T22:07:00+00:00",
   "mode": "SOURCE_REFERENCE",
   "title": "Interbank VND & HNX futures; VBMA FX swap curve if verified",
   "disclaimer": "Public observation archive, no investment signals, no invented observations.",
@@ -182,52 +182,52 @@
     "instrument": "USD/VND FX Swap",
     "measurement": "FX Swap implied yield curve",
     "unit": "%/năm",
-    "asOf": "2026-11-20",
+    "asOf": "2026-11-23",
     "status": "verified",
     "points": [
       {
         "tenor": "SPOT",
-        "value": 1.407
+        "value": 1.043
       },
       {
         "tenor": "ON",
-        "value": 1.403
+        "value": 1.027
       },
       {
         "tenor": "1W",
-        "value": 1.413
+        "value": 1.103
       },
       {
         "tenor": "2W",
-        "value": 1.57
+        "value": 1.327
       },
       {
         "tenor": "3W",
-        "value": 1.575
+        "value": 1.34
       },
       {
         "tenor": "1M",
-        "value": 1.495
+        "value": 1.475
       },
       {
         "tenor": "2M",
-        "value": 2.313
+        "value": 2.343
       },
       {
         "tenor": "3M",
-        "value": 2.45
+        "value": 2.467
       },
       {
         "tenor": "6M",
-        "value": 2.338
+        "value": 2.355
       },
       {
         "tenor": "9M",
-        "value": 2.33
+        "value": 2.341
       },
       {
         "tenor": "1Y",
-        "value": 2.33
+        "value": 2.341
       }
     ],
     "licenseStatus": "source_attributed",
@@ -239,13 +239,14 @@
     "sourceAttribution": "VBMA public reference curve"
   },
   "sourceIssues": [
-    "VBMA fi_bond: source observation stale 2026-02-06",
+    "ON TimeoutError: The read operation timed out",
+    "VBMA fi_bond TimeoutError: The read operation timed out",
     "VBMA short_benchmark: source observation stale 2022-10-18"
   ],
   "vbmaCurves": {
     "swap": {
       "status": "verified",
-      "asOf": "2026-11-20",
+      "asOf": "2026-11-23",
       "unit": "%/năm",
       "measurement": "FX Swap implied yield curve",
       "dateLayout": "MM/DD/YYYY",
@@ -253,47 +254,47 @@
       "points": [
         {
           "tenor": "SPOT",
-          "value": 1.407
+          "value": 1.043
         },
         {
           "tenor": "ON",
-          "value": 1.403
+          "value": 1.027
         },
         {
           "tenor": "1W",
-          "value": 1.413
+          "value": 1.103
         },
         {
           "tenor": "2W",
-          "value": 1.57
+          "value": 1.327
         },
         {
           "tenor": "3W",
-          "value": 1.575
+          "value": 1.34
         },
         {
           "tenor": "1M",
-          "value": 1.495
+          "value": 1.475
         },
         {
           "tenor": "2M",
-          "value": 2.313
+          "value": 2.343
         },
         {
           "tenor": "3M",
-          "value": 2.45
+          "value": 2.467
         },
         {
           "tenor": "6M",
-          "value": 2.338
+          "value": 2.355
         },
         {
           "tenor": "9M",
-          "value": 2.33
+          "value": 2.341
         },
         {
           "tenor": "1Y",
-          "value": 2.33
+          "value": 2.341
         }
       ],
       "source": "https://vbma.org.vn/csv/markets/charts/vi/fx_swap_curve.csv",
@@ -309,7 +310,7 @@
     },
     "gov_bond": {
       "status": "verified",
-      "asOf": "2026-11-20",
+      "asOf": "2026-11-23",
       "unit": "%/năm",
       "measurement": "Government Bond Yield",
       "dateLayout": "MM/DD/YYYY",
@@ -329,15 +330,15 @@
         },
         {
           "tenor": "4Y",
-          "value": 3.988
+          "value": 3.987
         },
         {
           "tenor": "5Y",
-          "value": 4.26
+          "value": 4.258
         },
         {
           "tenor": "7Y",
-          "value": 4.334
+          "value": 4.338
         },
         {
           "tenor": "10Y",
