@@ -1,15 +1,15 @@
 {
   "version": "FINQUERY-PORTFOLIO-ADVISOR-RESEARCH-1.0",
-  "asOf": "2026-11-23",
-  "generatedAt": "2026-11-23T22:17:46.792Z",
+  "asOf": "2026-11-24",
+  "generatedAt": "2026-11-24T20:56:41.980Z",
   "status": "RESEARCH_ONLY",
   "publication": "RESEARCH_ONLY",
   "source": {
     "history": "financial-market-data/history",
-    "quoteDate": "2026-11-23",
-    "riskDate": "2026-11-23",
-    "marketRevision": "42ae8607c9695483a92d7a4e470f361b8b7dc4ba",
-    "quoteSourceTime": "2026-11-23T07:45:00.029000+00:00",
+    "quoteDate": "2026-11-24",
+    "riskDate": "2026-11-24",
+    "marketRevision": "a928a161f9de2370552aac3002d18dee04dfbc0c",
+    "quoteSourceTime": "2026-11-24T07:45:00+00:00",
     "riskMethod": "FINQUERY-RISK-RULES-2.0"
   },
   "warnings": [
@@ -21,11 +21,11 @@
     "input": 71,
     "historyReady": 71,
     "liquid": 71,
-    "withSignal": 12,
+    "withSignal": 10,
     "classified": 71
   },
   "reason": null,
-  "eligibleCount": 12,
+  "eligibleCount": 10,
   "models": {
     "defensive": {
       "profile": "defensive",
@@ -36,9 +36,9 @@
           "symbol": "HVN",
           "sectorId": "transport",
           "weightPct": 7.5,
-          "score": 75,
-          "turnoverVnd": 24812816250,
-          "volatility": 0.3191,
+          "score": 69,
+          "turnoverVnd": 27782602750,
+          "volatility": 0.3187,
           "price": 23750,
           "matchedStrategies": [
             "breakout_volume",
@@ -49,9 +49,9 @@
           "symbol": "POW",
           "sectorId": "utilities",
           "weightPct": 7.5,
-          "score": 63,
-          "turnoverVnd": 109433038500,
-          "volatility": 0.2221,
+          "score": 64,
+          "turnoverVnd": 115507883500,
+          "volatility": 0.2207,
           "price": 13700,
           "matchedStrategies": [
             "ema_adx"
@@ -61,9 +61,9 @@
           "symbol": "CTD",
           "sectorId": "construction",
           "weightPct": 7.5,
-          "score": 59,
-          "turnoverVnd": 57976080500,
-          "volatility": 0.3154,
+          "score": 57,
+          "turnoverVnd": 57676065500,
+          "volatility": 0.3151,
           "price": 73200,
           "matchedStrategies": [
             "ema_adx"
@@ -73,33 +73,21 @@
           "symbol": "NT2",
           "sectorId": "utilities",
           "weightPct": 7.5,
-          "score": 59,
-          "turnoverVnd": 25190453750,
-          "volatility": 0.2537,
+          "score": 57,
+          "turnoverVnd": 24983393750,
+          "volatility": 0.2533,
           "price": 23800,
           "matchedStrategies": [
             "ema_adx"
           ]
         },
         {
-          "symbol": "VIC",
-          "sectorId": "real-estate",
-          "weightPct": 7.5,
-          "score": 57,
-          "turnoverVnd": 449800292500,
-          "volatility": 0.3439,
-          "price": 245700,
-          "matchedStrategies": [
-            "macd_rsi"
-          ]
-        },
-        {
           "symbol": "MSB",
           "sectorId": "banking",
           "weightPct": 7.5,
-          "score": 56,
-          "turnoverVnd": 132422894500,
-          "volatility": 0.2144,
+          "score": 55,
+          "turnoverVnd": 128831626750,
+          "volatility": 0.2111,
           "price": 16450,
           "matchedStrategies": [
             "ema_adx"
@@ -109,9 +97,9 @@
           "symbol": "VJC",
           "sectorId": "transport",
           "weightPct": 7.5,
-          "score": 54,
-          "turnoverVnd": 133494050000,
-          "volatility": 0.1984,
+          "score": 53,
+          "turnoverVnd": 133621332000,
+          "volatility": 0.1981,
           "price": 137300,
           "matchedStrategies": [
             "ema_adx"
@@ -121,12 +109,24 @@
           "symbol": "DXG",
           "sectorId": "real-estate",
           "weightPct": 7.5,
-          "score": 51,
-          "turnoverVnd": 134468525800,
-          "volatility": 0.2957,
+          "score": 47,
+          "turnoverVnd": 131738107800,
+          "volatility": 0.2954,
           "price": 10850,
           "matchedStrategies": [
             "ema_adx"
+          ]
+        },
+        {
+          "symbol": "MBB",
+          "sectorId": "banking",
+          "weightPct": 7.5,
+          "score": 40,
+          "turnoverVnd": 219798250000,
+          "volatility": 0.1883,
+          "price": 18100,
+          "matchedStrategies": [
+            "bollinger_rebound"
           ]
         }
       ],
@@ -134,7 +134,7 @@
       "targetCashPct": 40,
       "maxStockPct": 12,
       "maxSectorPct": 30,
-      "qualifiedCount": 11,
+      "qualifiedCount": 9,
       "reviewFrequency": "WEEKLY_OR_MONTHLY_USER_SELECTED",
       "note": "Research model only. No predicted return or automatic trading."
     },
@@ -147,9 +147,9 @@
           "symbol": "HVN",
           "sectorId": "transport",
           "weightPct": 10,
-          "score": 75,
-          "turnoverVnd": 24812816250,
-          "volatility": 0.3191,
+          "score": 69,
+          "turnoverVnd": 27782602750,
+          "volatility": 0.3187,
           "price": 23750,
           "matchedStrategies": [
             "breakout_volume",
@@ -160,9 +160,9 @@
           "symbol": "POW",
           "sectorId": "utilities",
           "weightPct": 10,
-          "score": 63,
-          "turnoverVnd": 109433038500,
-          "volatility": 0.2221,
+          "score": 64,
+          "turnoverVnd": 115507883500,
+          "volatility": 0.2207,
           "price": 13700,
           "matchedStrategies": [
             "ema_adx"
@@ -172,9 +172,9 @@
           "symbol": "CTD",
           "sectorId": "construction",
           "weightPct": 10,
-          "score": 59,
-          "turnoverVnd": 57976080500,
-          "volatility": 0.3154,
+          "score": 57,
+          "turnoverVnd": 57676065500,
+          "volatility": 0.3151,
           "price": 73200,
           "matchedStrategies": [
             "ema_adx"
@@ -184,33 +184,21 @@
           "symbol": "NT2",
           "sectorId": "utilities",
           "weightPct": 10,
-          "score": 59,
-          "turnoverVnd": 25190453750,
-          "volatility": 0.2537,
+          "score": 57,
+          "turnoverVnd": 24983393750,
+          "volatility": 0.2533,
           "price": 23800,
           "matchedStrategies": [
             "ema_adx"
           ]
         },
         {
-          "symbol": "VIC",
-          "sectorId": "real-estate",
-          "weightPct": 10,
-          "score": 57,
-          "turnoverVnd": 449800292500,
-          "volatility": 0.3439,
-          "price": 245700,
-          "matchedStrategies": [
-            "macd_rsi"
-          ]
-        },
-        {
           "symbol": "MSB",
           "sectorId": "banking",
           "weightPct": 10,
-          "score": 56,
-          "turnoverVnd": 132422894500,
-          "volatility": 0.2144,
+          "score": 55,
+          "turnoverVnd": 128831626750,
+          "volatility": 0.2111,
           "price": 16450,
           "matchedStrategies": [
             "ema_adx"
@@ -220,9 +208,9 @@
           "symbol": "VJC",
           "sectorId": "transport",
           "weightPct": 10,
-          "score": 54,
-          "turnoverVnd": 133494050000,
-          "volatility": 0.1984,
+          "score": 53,
+          "turnoverVnd": 133621332000,
+          "volatility": 0.1981,
           "price": 137300,
           "matchedStrategies": [
             "ema_adx"
@@ -232,12 +220,24 @@
           "symbol": "DXG",
           "sectorId": "real-estate",
           "weightPct": 10,
-          "score": 51,
-          "turnoverVnd": 134468525800,
-          "volatility": 0.2957,
+          "score": 47,
+          "turnoverVnd": 131738107800,
+          "volatility": 0.2954,
           "price": 10850,
           "matchedStrategies": [
             "ema_adx"
+          ]
+        },
+        {
+          "symbol": "MBB",
+          "sectorId": "banking",
+          "weightPct": 10,
+          "score": 40,
+          "turnoverVnd": 219798250000,
+          "volatility": 0.1883,
+          "price": 18100,
+          "matchedStrategies": [
+            "bollinger_rebound"
           ]
         }
       ],
@@ -245,7 +245,7 @@
       "targetCashPct": 20,
       "maxStockPct": 18,
       "maxSectorPct": 38,
-      "qualifiedCount": 12,
+      "qualifiedCount": 10,
       "reviewFrequency": "WEEKLY_OR_MONTHLY_USER_SELECTED",
       "note": "Research model only. No predicted return or automatic trading."
     },
@@ -258,9 +258,9 @@
           "symbol": "HVN",
           "sectorId": "transport",
           "weightPct": 11.25,
-          "score": 75,
-          "turnoverVnd": 24812816250,
-          "volatility": 0.3191,
+          "score": 69,
+          "turnoverVnd": 27782602750,
+          "volatility": 0.3187,
           "price": 23750,
           "matchedStrategies": [
             "breakout_volume",
@@ -271,9 +271,9 @@
           "symbol": "POW",
           "sectorId": "utilities",
           "weightPct": 11.25,
-          "score": 63,
-          "turnoverVnd": 109433038500,
-          "volatility": 0.2221,
+          "score": 64,
+          "turnoverVnd": 115507883500,
+          "volatility": 0.2207,
           "price": 13700,
           "matchedStrategies": [
             "ema_adx"
@@ -283,9 +283,9 @@
           "symbol": "CTD",
           "sectorId": "construction",
           "weightPct": 11.25,
-          "score": 59,
-          "turnoverVnd": 57976080500,
-          "volatility": 0.3154,
+          "score": 57,
+          "turnoverVnd": 57676065500,
+          "volatility": 0.3151,
           "price": 73200,
           "matchedStrategies": [
             "ema_adx"
@@ -295,33 +295,21 @@
           "symbol": "NT2",
           "sectorId": "utilities",
           "weightPct": 11.25,
-          "score": 59,
-          "turnoverVnd": 25190453750,
-          "volatility": 0.2537,
+          "score": 57,
+          "turnoverVnd": 24983393750,
+          "volatility": 0.2533,
           "price": 23800,
           "matchedStrategies": [
             "ema_adx"
           ]
         },
         {
-          "symbol": "VIC",
-          "sectorId": "real-estate",
-          "weightPct": 11.25,
-          "score": 57,
-          "turnoverVnd": 449800292500,
-          "volatility": 0.3439,
-          "price": 245700,
-          "matchedStrategies": [
-            "macd_rsi"
-          ]
-        },
-        {
           "symbol": "MSB",
           "sectorId": "banking",
           "weightPct": 11.25,
-          "score": 56,
-          "turnoverVnd": 132422894500,
-          "volatility": 0.2144,
+          "score": 55,
+          "turnoverVnd": 128831626750,
+          "volatility": 0.2111,
           "price": 16450,
           "matchedStrategies": [
             "ema_adx"
@@ -331,9 +319,9 @@
           "symbol": "VJC",
           "sectorId": "transport",
           "weightPct": 11.25,
-          "score": 54,
-          "turnoverVnd": 133494050000,
-          "volatility": 0.1984,
+          "score": 53,
+          "turnoverVnd": 133621332000,
+          "volatility": 0.1981,
           "price": 137300,
           "matchedStrategies": [
             "ema_adx"
@@ -343,12 +331,24 @@
           "symbol": "DXG",
           "sectorId": "real-estate",
           "weightPct": 11.25,
-          "score": 51,
-          "turnoverVnd": 134468525800,
-          "volatility": 0.2957,
+          "score": 47,
+          "turnoverVnd": 131738107800,
+          "volatility": 0.2954,
           "price": 10850,
           "matchedStrategies": [
             "ema_adx"
+          ]
+        },
+        {
+          "symbol": "MBB",
+          "sectorId": "banking",
+          "weightPct": 11.25,
+          "score": 40,
+          "turnoverVnd": 219798250000,
+          "volatility": 0.1883,
+          "price": 18100,
+          "matchedStrategies": [
+            "bollinger_rebound"
           ]
         }
       ],
@@ -356,7 +356,7 @@
       "targetCashPct": 10,
       "maxStockPct": 22,
       "maxSectorPct": 45,
-      "qualifiedCount": 12,
+      "qualifiedCount": 10,
       "reviewFrequency": "WEEKLY_OR_MONTHLY_USER_SELECTED",
       "note": "Research model only. No predicted return or automatic trading."
     }
@@ -369,7 +369,7 @@
     "noLookAhead": true,
     "missingSignalsNotZero": true
   },
-  "marketRiskScore": 34.4,
+  "marketRiskScore": 34,
   "researchEvaluation": {
     "version": "FINQUERY-PORTFOLIO-PROXY-1.0",
     "status": "RESEARCH_PROXY_NOT_VALIDATED",
@@ -377,80 +377,80 @@
     "holdingSessions": 20,
     "periods": [
       {
-        "from": "2026-04-03",
-        "to": "2026-05-06",
-        "n": 8,
+        "from": "2026-04-06",
+        "to": "2026-05-07",
+        "n": 6,
         "exposure": 0.8,
-        "modelNetPct": -0.35,
-        "equalUniverseNetPct": 4.11,
+        "modelNetPct": 4.7,
+        "equalUniverseNetPct": 4.82,
         "transactionCostBps": 60
       },
       {
-        "from": "2026-05-06",
-        "to": "2026-06-03",
+        "from": "2026-05-07",
+        "to": "2026-06-04",
         "n": 8,
         "exposure": 0.8,
-        "modelNetPct": -6.81,
-        "equalUniverseNetPct": -4.35,
+        "modelNetPct": -2.83,
+        "equalUniverseNetPct": -3.47,
         "transactionCostBps": 60
       },
       {
-        "from": "2026-06-03",
-        "to": "2026-07-01",
+        "from": "2026-06-04",
+        "to": "2026-07-02",
         "n": 8,
         "exposure": 0.8,
-        "modelNetPct": 1.19,
-        "equalUniverseNetPct": 1.16,
+        "modelNetPct": -0.93,
+        "equalUniverseNetPct": 0.59,
         "transactionCostBps": 60
       },
       {
-        "from": "2026-07-01",
-        "to": "2026-07-29",
+        "from": "2026-07-02",
+        "to": "2026-07-30",
         "n": 8,
         "exposure": 0.8,
-        "modelNetPct": -8.73,
-        "equalUniverseNetPct": -13.02,
+        "modelNetPct": -11.76,
+        "equalUniverseNetPct": -10.54,
         "transactionCostBps": 60
       },
       {
-        "from": "2026-07-29",
-        "to": "2026-08-26",
-        "n": 4,
-        "exposure": 0.72,
-        "modelNetPct": -0.32,
-        "equalUniverseNetPct": 7.78,
+        "from": "2026-07-30",
+        "to": "2026-08-27",
+        "n": 5,
+        "exposure": 0.8,
+        "modelNetPct": 4.03,
+        "equalUniverseNetPct": 4.79,
         "transactionCostBps": 60
       },
       {
-        "from": "2026-08-26",
-        "to": "2026-09-28",
+        "from": "2026-08-27",
+        "to": "2026-09-29",
         "n": 8,
         "exposure": 0.8,
-        "modelNetPct": -1.25,
-        "equalUniverseNetPct": -5.92,
+        "modelNetPct": -1.64,
+        "equalUniverseNetPct": -5.74,
         "transactionCostBps": 60
       },
       {
-        "from": "2026-09-28",
-        "to": "2026-10-26",
+        "from": "2026-09-29",
+        "to": "2026-10-27",
         "n": 8,
         "exposure": 0.8,
-        "modelNetPct": -2.16,
-        "equalUniverseNetPct": -0.3,
+        "modelNetPct": -0.36,
+        "equalUniverseNetPct": -0.92,
         "transactionCostBps": 60
       },
       {
-        "from": "2026-10-26",
-        "to": "2026-11-23",
+        "from": "2026-10-27",
+        "to": "2026-11-24",
         "n": 8,
         "exposure": 0.8,
-        "modelNetPct": 2.03,
-        "equalUniverseNetPct": -5.9,
+        "modelNetPct": -1.29,
+        "equalUniverseNetPct": -5.45,
         "transactionCostBps": 60
       }
     ],
-    "avgModelNetPct": -2.05,
-    "avgEqualUniverseNetPct": -2.05,
+    "avgModelNetPct": -1.26,
+    "avgEqualUniverseNetPct": -1.99,
     "notes": [
       "Historical window is forward-only from each signal date, no future bars in screening.",
       "Uses CURRENT listed symbol universe and current sector classification: survivorship bias.",
