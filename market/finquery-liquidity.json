@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "asOf": "2026-11-16",
+  "asOf": "2026-11-20",
   "publishedAt": "2026-10-23T18:18:00+07:00",
-  "lastCheckedAt": "2026-11-23T22:07:00+00:00",
+  "lastCheckedAt": "2026-11-24T20:43:38+00:00",
   "mode": "SOURCE_REFERENCE",
   "title": "Interbank VND & HNX futures; VBMA FX swap curve if verified",
   "disclaimer": "Public observation archive, no investment signals, no invented observations.",
@@ -13,7 +13,7 @@
     "status": "secondary_source_crosschecked",
     "originAgency": "NHNN",
     "frequency": "business_daily",
-    "asOf": "2026-11-16",
+    "asOf": "2026-11-20",
     "source": "https://stockbiz.vn/vi-mo/du-lieu/lai-suat-lien-ngan-hang",
     "crossCheck": "https://dulieukinhte.com/du-lieu-dong/lai-suat-thi-truong-lien-ngan-hang-qua-dem-34248",
     "observations": [
@@ -132,6 +132,22 @@
       {
         "date": "2026-11-16",
         "value": 4.99
+      },
+      {
+        "date": "2026-11-17",
+        "value": 4.9
+      },
+      {
+        "date": "2026-11-18",
+        "value": 4.47
+      },
+      {
+        "date": "2026-11-19",
+        "value": 4.68
+      },
+      {
+        "date": "2026-11-20",
+        "value": 5.26
       }
     ]
   },
@@ -239,8 +255,7 @@
     "sourceAttribution": "VBMA public reference curve"
   },
   "sourceIssues": [
-    "ON TimeoutError: The read operation timed out",
-    "VBMA fi_bond TimeoutError: The read operation timed out",
+    "VBMA fi_bond: source observation stale 2026-02-06",
     "VBMA short_benchmark: source observation stale 2022-10-18"
   ],
   "vbmaCurves": {
