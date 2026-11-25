@@ -1,20 +1,20 @@
 {
   "version": "VMEWS-FORECAST-LIVE-10.0.0",
-  "generatedAt": "2026-11-24T20:48:33.226831+00:00",
+  "generatedAt": "2026-11-25T07:31:06.464061+00:00",
   "method": "Immutable completed-EOD prequential test-then-score.",
   "summary": {
     "3": {
-      "matureOrigins": 57,
-      "nPredictions": 18054,
-      "alphaIC": -0.044469694697571754,
-      "directionHitRate": 0.5185771047445233,
+      "matureOrigins": 58,
+      "nPredictions": 18361,
+      "alphaIC": -0.04409753480727005,
+      "directionHitRate": 0.5160946173157595,
       "evidenceState": "MATURE"
     },
     "5": {
-      "matureOrigins": 55,
-      "nPredictions": 17364,
-      "alphaIC": 0.021811705084908574,
-      "directionHitRate": 0.5334392256857609,
+      "matureOrigins": 56,
+      "nPredictions": 17686,
+      "alphaIC": 0.020111941215503255,
+      "directionHitRate": 0.5303465332128895,
       "evidenceState": "MATURE"
     }
   },
@@ -964,8 +964,10 @@
           "directionHitRate": 0.4059701492537313
         },
         "5": {
-          "n": 0,
-          "state": "IMMATURE"
+          "n": 322,
+          "marketReturn": -0.024653457187026745,
+          "alphaIC": -0.07337507160178929,
+          "directionHitRate": 0.36024844720496896
         }
       }
     },
@@ -979,7 +981,7 @@
           "directionHitRate": 0.49262536873156343
         },
         "5": {
-          "n": 0,
+          "n": 12,
           "state": "IMMATURE"
         }
       }
@@ -988,8 +990,10 @@
       "asOf": "2026-11-19",
       "horizons": {
         "3": {
-          "n": 0,
-          "state": "IMMATURE"
+          "n": 307,
+          "marketReturn": -0.008620743043906975,
+          "alphaIC": -0.022884421060072786,
+          "directionHitRate": 0.3745928338762215
         },
         "5": {
           "n": 0,
@@ -1001,7 +1005,7 @@
       "asOf": "2026-11-20",
       "horizons": {
         "3": {
-          "n": 0,
+          "n": 8,
           "state": "IMMATURE"
         },
         "5": {
@@ -1012,6 +1016,19 @@
     },
     {
       "asOf": "2026-11-23",
+      "horizons": {
+        "3": {
+          "n": 0,
+          "state": "IMMATURE"
+        },
+        "5": {
+          "n": 0,
+          "state": "IMMATURE"
+        }
+      }
+    },
+    {
+      "asOf": "2026-11-25",
       "horizons": {
         "3": {
           "n": 0,
