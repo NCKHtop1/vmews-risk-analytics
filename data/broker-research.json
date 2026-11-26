@@ -1,8 +1,19 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-26T08:35:28+00:00",
+  "updatedAt": "2026-11-26T19:43:12+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-VNM-2026-11-26-001b1c7b",
+      "symbol": "VNM",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-26",
+      "title": "Cập nhật KQKD VNM – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VNM ngày 26/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
     {
       "id": "VIX-BSR-2026-11-25-f977ca26",
       "symbol": "BSR",
@@ -165,6 +176,17 @@
       "recommendation": "MUA",
       "targetPrice": 15360,
       "summary": "VCBS có báo cáo HT1 ngày 20/11/2026 với khuyến nghị MUA, giá mục tiêu 15.360 đồng/cp. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-HDG-2026-11-20-001b1c7b",
+      "symbol": "HDG",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-20",
+      "title": "Cập nhật KQKD HDG – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElementById('tcbs-ticker-options'); if (!datalist) { return; } fetch('https://www.tcbs.com.vn/wp-c",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo HDG ngày 20/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "TCBS-HDG-2026-11-20-001b1c7b",
