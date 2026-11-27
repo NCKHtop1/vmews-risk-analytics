@@ -1,8 +1,64 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-27T08:47:10+00:00",
+  "updatedAt": "2026-11-27T19:32:11+00:00",
   "policy": "Ratings and target prices are attributed to the publishing broker. FinQuery aggregates source-linked metadata and does not convert them into its own recommendation.",
   "reports": [
+    {
+      "id": "TCBS-VPL-2026-11-27-001b1c7b",
+      "symbol": "VPL",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-27",
+      "title": "Cập nhật KQKD VPL – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VPL ngày 27/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-EIB-2026-11-27-001b1c7b",
+      "symbol": "EIB",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-27",
+      "title": "Cập nhật KQKD EIB – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo EIB ngày 27/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-DXG-2026-11-27-001b1c7b",
+      "symbol": "DXG",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-27",
+      "title": "Cập nhật KQKD DXG – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo DXG ngày 27/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-BVH-2026-11-27-001b1c7b",
+      "symbol": "BVH",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-27",
+      "title": "Cập nhật KQKD BVH – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo BVH ngày 27/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
+    },
+    {
+      "id": "TCBS-VNM-2026-11-26-890e498b",
+      "symbol": "VNM",
+      "broker": "TCBS",
+      "brokerName": "TCBS",
+      "publishedAt": "2026-11-26",
+      "title": "VNM: Báo cáo cập nhật KQKD Q3/2026",
+      "currency": "VND",
+      "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vnm-bao-cao-cap-nhat-kqkd-q3-2026-rpid6394.html",
+      "dataProvider": "24HMONEY",
+      "summary": "TCBS có báo cáo VNM ngày 26/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
     {
       "id": "TCBS-VNM-2026-11-26-001b1c7b",
       "symbol": "VNM",
@@ -50,6 +106,17 @@
       "sourceUrl": "https://24hmoney.vn/bao-cao-phan-tich/vsc-bao-cao-cap-nhat-kqkd-q3-2026-rpid6386.html",
       "dataProvider": "24HMONEY",
       "summary": "TCBS có báo cáo VSC ngày 25/11/2026. FinQuery lấy metadata từ chỉ mục công khai 24HMONEY và giữ nguyên CTCK phát hành."
+    },
+    {
+      "id": "TCBS-VSC-2026-11-25-001b1c7b",
+      "symbol": "VSC",
+      "broker": "TCBS",
+      "brokerName": "Techcom Securities",
+      "publishedAt": "2026-11-25",
+      "title": "Cập nhật KQKD VSC – Báo cáo cập nhật KQKD Q3/2026 Xem báo cáo Tải file Xem thêm (function () { var datalist = document.getElementById('tcbs-ticker-options'); if (!datalist) { return; } fetch('https://www.tcbs.com.vn/wp-c",
+      "currency": "VND",
+      "sourceUrl": "https://www.tcbs.com.vn/thong-tin/bao-cao-phan-tich/",
+      "summary": "TCBS có báo cáo VSC ngày 25/11/2026. FinQuery lưu metadata và link nguồn; mở nguồn để đọc nội dung đầy đủ."
     },
     {
       "id": "TCBS-VSC-2026-11-25-001b1c7b",
